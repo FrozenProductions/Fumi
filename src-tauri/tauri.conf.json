@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "Fumi",
+    "version": "1.0.0",
+    "identifier": "frozenproductions.fumi",
+    "build": {
+        "frontendDist": "../dist",
+        "devUrl": "http://localhost:5173",
+        "beforeDevCommand": "bun run dev:web",
+        "beforeBuildCommand": "bun run build:web"
+    },
+    "app": {
+        "macOSPrivateApi": true,
+        "windows": [
+            {
+                "label": "main",
+                "title": "Fumi",
+                "width": 1000,
+                "height": 750,
+                "x": 200,
+                "y": 200,
+                "decorations": true,
+                "transparent": true,
+                "hiddenTitle": true,
+                "titleBarStyle": "Overlay",
+                "trafficLightPosition": {
+                    "x": 18,
+                    "y": 23.5
+                },
+                "acceptFirstMouse": true,
+                "resizable": true,
+                "fullscreen": false,
+                "visible": true
+            }
+        ],
+        "security": {
+            "csp": {
+                "default-src": "'self' customprotocol: asset:",
+                "connect-src": "ipc: http://ipc.localhost https:",
+                "img-src": "'self' asset: http://asset.localhost blob: data:",
+                "script-src": "'self' 'unsafe-eval'",
+                "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "font-src": "'self' asset: data: https://fonts.gstatic.com"
+            },
+            "devCsp": {
+                "default-src": "'self' customprotocol: asset: http://localhost:5173",
+                "connect-src": "ipc: http://ipc.localhost ws://localhost:5173 http://localhost:5173 https:",
+                "img-src": "'self' asset: http://asset.localhost blob: data: http://localhost:5173",
+                "script-src": "'self' 'unsafe-eval' http://localhost:5173",
+                "style-src": "'self' 'unsafe-inline' http://localhost:5173 https://fonts.googleapis.com",
+                "font-src": "'self' asset: data: https://fonts.gstatic.com"
+            }
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["app", "dmg"],
+        "macOS": {
+            "minimumSystemVersion": "10.15"
+        },
+        "icon": ["icons/icon.icns"]
+    }
+}

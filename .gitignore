@@ -1,0 +1,10 @@
+artifacts
+build
+dist
+node_modules
+.DS_Store
+
+*.md
+!README.md
+!resources/logo.png
+!resources/logo.ico

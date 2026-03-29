@@ -1,0 +1,25 @@
+[package]
+name = "fumi"
+version = "1.0.0"
+description = "Elegant and soft UI wrapper for MacSploit."
+authors = ["FrozenProductions"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "fumi_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.5", features = [] }
+
+[dependencies]
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri = { version = "2.5.1", features = ["macos-private-api"] }
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-dialog = "2"
+uuid = { version = "1.18.1", features = ["v4"] }

@@ -1,0 +1,42 @@
+{
+    "name": "fumi",
+    "version": "1.0.0",
+    "description": "Elegant and soft UI wrapper for MacSploit.",
+    "scripts": {
+        "dev": "bunx tauri dev",
+        "dev:web": "vite",
+        "build:web": "vite build",
+        "build": "bunx tauri build",
+        "typecheck": "tsc --noEmit",
+        "lint": "biome check",
+        "format": "biome format --write"
+    },
+    "dependencies": {
+        "@hugeicons/core-free-icons": "^4.0.0",
+        "@hugeicons/react": "^1.1.6",
+        "@tanstack/react-hotkeys": "^0.4.2",
+        "@tauri-apps/api": "^2.8.0",
+        "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
+        "@tauri-apps/plugin-dialog": "^2.4.0",
+        "ace-builds": "^1.43.4",
+        "react": "^19.2.4",
+        "react-ace": "^14.0.1",
+        "react-dom": "^19.2.4",
+        "tailwindcss-motion": "^1.1.1",
+        "zustand": "^5.0.12"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.0.6",
+        "@tauri-apps/cli": "^2.3.1",
+        "@types/bun": "latest",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@types/three": "^0.181.0",
+        "@vitejs/plugin-react": "^6.0.1",
+        "autoprefixer": "^10.4.20",
+        "postcss": "^8.4.49",
+        "tailwindcss": "^3.4.16",
+        "typescript": "^6.0.2",
+        "vite": "^8.0.0"
+    }
+}
