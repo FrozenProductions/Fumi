@@ -1,16 +1,36 @@
 import {
-    ArchiveRestoreIcon,
     Delete02Icon,
     DeletePutBackIcon,
+    Search01Icon,
 } from "@hugeicons/core-free-icons";
-import type { ReactElement } from "react";
+import {
+    type ChangeEvent,
+    type ReactElement,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { useAppStore } from "../../../hooks/app/useAppStore";
+import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
 import type { UseWorkspaceSessionResult } from "../../../types/workspace/session";
 import { AppIcon } from "../AppIcon";
+import { AppSelect } from "../AppSelect";
+import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
+import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 
 type AppSettingsWorkspaceSectionProps = {
     workspaceSession: UseWorkspaceSessionResult;
 };
+
+type SortOption = "dateDesc" | "dateAsc" | "nameAsc" | "nameDesc";
+
+const ARCHIVE_SORT_OPTIONS = [
+    { value: "dateDesc", label: "Date (Newest)" },
+    { value: "dateAsc", label: "Date (Oldest)" },
+    { value: "nameAsc", label: "Name (A-Z)" },
+    { value: "nameDesc", label: "Name (Z-A)" },
+] as const;
 
 export function AppSettingsWorkspaceSection({
     workspaceSession,
@@ -18,24 +38,77 @@ export function AppSettingsWorkspaceSection({
     const theme = useAppStore((state) => state.theme);
     const workspace = workspaceSession.workspace;
 
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<SortOption>("dateDesc");
+
+    const filteredAndSortedTabs = useMemo(() => {
+        if (!workspace) return [];
+        let tabs = workspace.archivedTabs;
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            tabs = tabs.filter((t) => t.fileName.toLowerCase().includes(query));
+        }
+
+        return [...tabs].sort((a, b) => {
+            if (sortBy.startsWith("name")) {
+                const cmp = a.fileName.localeCompare(b.fileName);
+                return sortBy === "nameAsc" ? cmp : -cmp;
+            }
+
+            const timeA = a.archivedAt ?? 0;
+            const timeB = b.archivedAt ?? 0;
+            return sortBy === "dateDesc" ? timeB - timeA : timeA - timeB;
+        });
+    }, [workspace, searchQuery, sortBy]);
+
+    const sentinelRef = useRef<HTMLDivElement>(null);
+    const [isMinified, setIsMinified] = useState(false);
+    const [isExpandedFully, setIsExpandedFully] = useState(true);
+
+    useEffect(() => {
+        const el = sentinelRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsMinified(!entry.isIntersecting);
+            },
+            {
+                root: null,
+                threshold: 0,
+                rootMargin: "0px",
+            },
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!isMinified) {
+            const timer = setTimeout(() => setIsExpandedFully(true), 150);
+            return () => clearTimeout(timer);
+        } else {
+            setIsExpandedFully(false);
+        }
+    }, [isMinified]);
+
+    const { isPresent, isClosing } = usePresenceTransition({
+        isOpen: !isMinified,
+        exitDurationMs: 150,
+    });
+
+    const searchMotionClass = isClosing
+        ? "motion-safe:motion-opacity-out-0 motion-safe:-motion-translate-y-out-[10%] motion-safe:motion-duration-150"
+        : "motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[10%] motion-safe:motion-duration-150 motion-safe:motion-ease-out-cubic";
+
     if (!workspace) {
         return (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8 text-center">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-fumi-100 ring-1 ring-fumi-200">
-                    <AppIcon
-                        icon={ArchiveRestoreIcon}
-                        size={22}
-                        strokeWidth={2}
-                        className="text-fumi-400"
-                    />
-                </div>
-                <p className="mt-4 text-sm font-semibold text-fumi-500">
-                    No workspace open
-                </p>
-                <p className="mt-2 max-w-sm text-sm leading-[1.6] text-fumi-400">
-                    Open a workspace to view and restore archived tabs.
-                </p>
-            </div>
+            <AppSettingsWorkspaceEmptyState
+                title="No workspace open"
+                description="Open a workspace to view and restore archived tabs."
+            />
         );
     }
 
@@ -47,73 +120,151 @@ export function AppSettingsWorkspaceSection({
         void workspaceSession.deleteArchivedWorkspaceTab(tabId);
     };
 
+    const handleRestoreAll = (): void => {
+        void workspaceSession.restoreAllArchivedWorkspaceTabs();
+    };
+
+    const handleDeleteAll = (): void => {
+        void workspaceSession.deleteAllArchivedWorkspaceTabs();
+    };
+
     const deleteButtonClass =
         theme === "dark"
             ? "inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-rose-500/50 bg-rose-950/70 px-2.5 text-[11px] font-semibold text-rose-100 transition-[background-color,border-color,color] hover:border-rose-400 hover:bg-rose-900/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
             : "inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-rose-200 bg-rose-50 px-2.5 text-[11px] font-semibold text-rose-700 transition-[background-color,border-color,color] hover:border-rose-300 hover:bg-rose-100 hover:text-rose-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500";
 
+    const baseActionButtonClass =
+        "inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-100 px-2.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600";
+
     if (workspace.archivedTabs.length === 0) {
         return (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8 text-center">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-fumi-100 ring-1 ring-fumi-200">
-                    <AppIcon
-                        icon={ArchiveRestoreIcon}
-                        size={22}
-                        strokeWidth={2}
-                        className="text-fumi-400"
-                    />
-                </div>
-                <p className="mt-4 text-sm font-semibold text-fumi-500">
-                    No archived tabs yet
-                </p>
-                <p className="mt-2 max-w-sm text-sm leading-[1.6] text-fumi-400">
-                    When you archive a tab it will appear here. You can restore
-                    or permanently delete it at any time.
-                </p>
-            </div>
+            <AppSettingsWorkspaceEmptyState
+                title="No archived tabs yet"
+                description="When you archive a tab it will appear here. You can restore or permanently delete it at any time."
+            />
         );
     }
 
+    const dateFormatter = new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+    });
+    const actionButtonClassNames = {
+        base: baseActionButtonClass,
+        delete: deleteButtonClass,
+    };
+    const handleSearchQueryChange = (
+        event: ChangeEvent<HTMLInputElement>,
+    ): void => {
+        setSearchQuery(event.target.value);
+    };
+    const handleSortByChange = (value: SortOption): void => {
+        setSortBy(value);
+    };
+
     return (
-        <div className="flex w-full flex-col gap-3">
-            {workspace.archivedTabs.map((tab) => (
+        <div className="relative flex w-full flex-col gap-4">
+            <div
+                ref={sentinelRef}
+                className="pointer-events-none absolute left-0 h-[60px] w-full"
+                style={{ top: "0px" }}
+            />
+
+            <div className="sticky top-0 z-30 -mx-6 -mt-6 bg-fumi-50 px-6 pt-6 pb-2">
                 <div
-                    key={tab.id}
-                    className="flex items-center justify-between gap-3 rounded-[0.85rem] border border-fumi-200 bg-fumi-50 px-3 py-2.5"
+                    className={`flex flex-col rounded-[1rem] border border-fumi-200 bg-fumi-100/95 backdrop-blur-md transition-shadow ${
+                        isMinified ? "shadow-md" : "shadow-sm"
+                    }`}
                 >
-                    <div className="min-w-0">
-                        <p className="truncate text-[0.8125rem] font-semibold text-fumi-900">
-                            {tab.fileName}
-                        </p>
+                    <div
+                        className={`relative z-20 grid transition-[grid-template-rows] duration-[150ms] ${
+                            !isMinified ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                        }`}
+                    >
+                        <div
+                            className={
+                                isExpandedFully
+                                    ? "overflow-visible"
+                                    : "overflow-hidden"
+                            }
+                        >
+                            {isPresent ? (
+                                <div
+                                    className={`flex items-center justify-between gap-4 border-b border-fumi-200/50 p-4 ${searchMotionClass}`}
+                                >
+                                    <div className="relative flex-1">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <AppIcon
+                                                icon={Search01Icon}
+                                                size={14}
+                                                strokeWidth={2.4}
+                                                className="text-fumi-400"
+                                            />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Search archived tabs..."
+                                            value={searchQuery}
+                                            onChange={handleSearchQueryChange}
+                                            className="h-8 w-full rounded-[0.65rem] border border-fumi-200 bg-fumi-50 pl-9 pr-3 text-xs font-semibold text-fumi-900 placeholder:text-fumi-400 transition-colors hover:border-fumi-300 focus-visible:border-fumi-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-fumi-200"
+                                        />
+                                    </div>
+                                    <AppSelect
+                                        value={sortBy}
+                                        onChange={handleSortByChange}
+                                        options={ARCHIVE_SORT_OPTIONS}
+                                    />
+                                </div>
+                            ) : null}
+                        </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => handleRestoreTab(tab.id)}
-                            className="inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-100 px-2.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
-                        >
-                            <AppIcon
-                                icon={DeletePutBackIcon}
-                                size={12}
-                                strokeWidth={2.4}
-                            />
-                            Restore
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleDeleteTab(tab.id)}
-                            className={deleteButtonClass}
-                        >
-                            <AppIcon
-                                icon={Delete02Icon}
-                                size={12}
-                                strokeWidth={2.4}
-                            />
-                            Delete permanently
-                        </button>
+
+                    <div
+                        className={`flex items-center justify-between px-4 transition-[padding] ${
+                            isMinified ? "py-2.5" : "py-2"
+                        }`}
+                    >
+                        <p className="text-xs font-semibold text-fumi-500">
+                            {filteredAndSortedTabs.length} tab
+                            {filteredAndSortedTabs.length !== 1 ? "s" : ""}
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={handleRestoreAll}
+                                className={baseActionButtonClass}
+                            >
+                                <AppIcon
+                                    icon={DeletePutBackIcon}
+                                    size={12}
+                                    strokeWidth={2.4}
+                                />
+                                Restore All
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteAll}
+                                className={deleteButtonClass}
+                            >
+                                <AppIcon
+                                    icon={Delete02Icon}
+                                    size={12}
+                                    strokeWidth={2.4}
+                                />
+                                Delete All
+                            </button>
+                        </div>
                     </div>
                 </div>
-            ))}
+            </div>
+
+            <AppSettingsArchivedTabsList
+                archivedTabs={filteredAndSortedTabs}
+                actionButtonClassNames={actionButtonClassNames}
+                dateFormatter={dateFormatter}
+                onDeleteTab={handleDeleteTab}
+                onRestoreTab={handleRestoreTab}
+            />
         </div>
     );
 }

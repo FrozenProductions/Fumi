@@ -54,10 +54,19 @@
     },
     "bundle": {
         "active": true,
+        "createUpdaterArtifacts": true,
         "targets": ["app", "dmg"],
         "macOS": {
             "minimumSystemVersion": "10.15"
         },
         "icon": ["icons/icon.icns"]
+    },
+    "plugins": {
+        "updater": {
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYwQjhGMDVGOUE2NDcwRTIKUldUaWNHU2FYL0M0OEhnaXN5OFEyQlF5SnJleTVrc1liQlR2YjArN3NoZFZWZjNUWm5YU0RuY1gK",
+            "endpoints": [
+                "https://github.com/FrozenProductions/Fumi/releases/latest/download/latest.json"
+            ]
+        }
     }
 }

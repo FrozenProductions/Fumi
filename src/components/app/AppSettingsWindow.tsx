@@ -1,8 +1,9 @@
-import { type MouseEvent, type ReactElement, useState } from "react";
+import { type MouseEvent, type ReactElement, useEffect, useState } from "react";
 import {
     APP_SETTINGS_SECTIONS,
     DEFAULT_APP_SETTINGS_SECTION,
 } from "../../constants/app/settings";
+import type { UseAppUpdaterResult } from "../../hooks/app/useAppUpdater";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
 import type { AppSettingsSection } from "../../types/app/settings";
 import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
@@ -13,6 +14,7 @@ import { AppSettingsWorkspaceSection } from "./settings/AppSettingsWorkspaceSect
 type AppSettingsWindowProps = {
     isOpen: boolean;
     onClose: () => void;
+    updater: UseAppUpdaterResult;
     workspaceSession: UseWorkspaceSessionResult;
 };
 
@@ -21,6 +23,7 @@ const SETTINGS_WINDOW_EXIT_DURATION_MS = 220;
 export function AppSettingsWindow({
     isOpen,
     onClose,
+    updater,
     workspaceSession,
 }: AppSettingsWindowProps): ReactElement | null {
     const [activeSection, setActiveSection] = useState<AppSettingsSection>(
@@ -31,9 +34,15 @@ export function AppSettingsWindow({
         exitDurationMs: SETTINGS_WINDOW_EXIT_DURATION_MS,
     });
 
+    useEffect(() => {
+        if (isOpen) {
+            setActiveSection(DEFAULT_APP_SETTINGS_SECTION);
+        }
+    }, [isOpen]);
+
     const renderSectionContent = (): ReactElement => {
         if (activeSection === "general") {
-            return <AppSettingsGeneralSection />;
+            return <AppSettingsGeneralSection updater={updater} />;
         }
 
         if (activeSection === "workspace") {
@@ -48,7 +57,7 @@ export function AppSettingsWindow({
             return <AppSettingsEditorSection />;
         }
 
-        return <AppSettingsGeneralSection />;
+        return <AppSettingsGeneralSection updater={updater} />;
     };
 
     const handlePanelClick = (event: MouseEvent<HTMLElement>): void => {
@@ -124,7 +133,7 @@ export function AppSettingsWindow({
                     </nav>
                 </div>
 
-                <div className="flex min-w-0 flex-1 flex-col overflow-auto bg-fumi-50 [&::-webkit-scrollbar-thumb:hover]:bg-[rgb(var(--color-scrollbar-thumb-hover)/1)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-[rgb(var(--color-scrollbar-thumb)/1)] [&::-webkit-scrollbar-thumb]:bg-clip-padding [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[6px]">
+                <div className="flex min-w-0 flex-1 flex-col overflow-auto bg-fumi-50 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="flex flex-1 flex-col px-6 py-6">
                         {renderSectionContent()}
                     </div>

@@ -126,6 +126,41 @@ export function upsertWorkspaceTab(
     };
 }
 
+export function reorderWorkspaceTabs(
+    currentWorkspace: WorkspaceSession,
+    draggedTabId: string,
+    targetTabId: string,
+): WorkspaceSession {
+    if (draggedTabId === targetTabId) {
+        return currentWorkspace;
+    }
+
+    const draggedTabIndex = currentWorkspace.tabs.findIndex(
+        (tab) => tab.id === draggedTabId,
+    );
+    const targetTabIndex = currentWorkspace.tabs.findIndex(
+        (tab) => tab.id === targetTabId,
+    );
+
+    if (draggedTabIndex < 0 || targetTabIndex < 0) {
+        return currentWorkspace;
+    }
+
+    const nextTabs = [...currentWorkspace.tabs];
+    const [draggedTab] = nextTabs.splice(draggedTabIndex, 1);
+
+    if (!draggedTab) {
+        return currentWorkspace;
+    }
+
+    nextTabs.splice(targetTabIndex, 0, draggedTab);
+
+    return {
+        ...currentWorkspace,
+        tabs: nextTabs,
+    };
+}
+
 export function updateWorkspaceTab(
     currentWorkspace: WorkspaceSession,
     tabId: string,

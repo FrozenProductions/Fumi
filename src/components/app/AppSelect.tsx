@@ -10,7 +10,7 @@ type AppSelectOption<TValue extends string> = {
 
 type AppSelectProps<TValue extends string> = {
     value: TValue;
-    options: AppSelectOption<TValue>[];
+    options: readonly AppSelectOption<TValue>[];
     onChange: (value: TValue) => void;
     className?: string;
 };

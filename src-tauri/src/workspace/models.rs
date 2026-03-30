@@ -23,6 +23,8 @@ pub struct WorkspaceTabState {
     pub id: String,
     pub file_name: String,
     pub cursor: WorkspaceCursorState,
+    #[serde(default)]
+    pub archived_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

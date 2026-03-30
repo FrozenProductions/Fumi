@@ -33,12 +33,15 @@ export type UseWorkspaceSessionResult = {
     ) => Promise<boolean>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
     restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;
+    restoreAllArchivedWorkspaceTabs: () => Promise<void>;
     deleteArchivedWorkspaceTab: (tabId: string) => Promise<void>;
+    deleteAllArchivedWorkspaceTabs: () => Promise<void>;
     renameWorkspaceTab: (
         tabId: string,
         nextBaseName: string,
     ) => Promise<boolean>;
     selectWorkspaceTab: (tabId: string) => void;
+    reorderWorkspaceTab: (draggedTabId: string, targetTabId: string) => void;
     saveActiveWorkspaceTab: () => Promise<void>;
     updateActiveTabContent: (content: string) => void;
     updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;

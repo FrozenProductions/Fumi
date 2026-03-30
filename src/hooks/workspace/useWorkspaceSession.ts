@@ -31,14 +31,23 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const restoreArchivedWorkspaceTab = useWorkspaceStore(
         (state) => state.restoreArchivedWorkspaceTab,
     );
+    const restoreAllArchivedWorkspaceTabs = useWorkspaceStore(
+        (state) => state.restoreAllArchivedWorkspaceTabs,
+    );
     const deleteArchivedWorkspaceTab = useWorkspaceStore(
         (state) => state.deleteArchivedWorkspaceTab,
+    );
+    const deleteAllArchivedWorkspaceTabs = useWorkspaceStore(
+        (state) => state.deleteAllArchivedWorkspaceTabs,
     );
     const renameWorkspaceTab = useWorkspaceStore(
         (state) => state.renameWorkspaceTab,
     );
     const selectWorkspaceTab = useWorkspaceStore(
         (state) => state.selectWorkspaceTab,
+    );
+    const reorderWorkspaceTab = useWorkspaceStore(
+        (state) => state.reorderWorkspaceTab,
     );
     const saveActiveWorkspaceTab = useWorkspaceStore(
         (state) => state.saveActiveWorkspaceTab,
@@ -72,9 +81,12 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
         addWorkspaceScriptTab,
         archiveWorkspaceTab,
         restoreArchivedWorkspaceTab,
+        restoreAllArchivedWorkspaceTabs,
         deleteArchivedWorkspaceTab,
+        deleteAllArchivedWorkspaceTabs,
         renameWorkspaceTab,
         selectWorkspaceTab,
+        reorderWorkspaceTab,
         saveActiveWorkspaceTab,
         updateActiveTabContent,
         updateActiveTabCursor,

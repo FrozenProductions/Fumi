@@ -1,5 +1,12 @@
+import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
+import { PointerActivationConstraints } from "@dnd-kit/dom";
+import {
+    type DragDropEventHandlers,
+    DragDropProvider,
+    PointerSensor,
+} from "@dnd-kit/react";
 import { Add01Icon, Menu02Icon } from "@hugeicons/core-free-icons";
-import { type ReactElement, useEffect, useRef } from "react";
+import { type ReactElement, useEffect, useRef, useState } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
@@ -14,18 +21,63 @@ type WorkspaceTabBarProps = {
     renameState: UseWorkspaceTabRenameResult;
     onCreateFile: () => void;
     onSelectTab: (tabId: string) => void;
+    onReorderTab: (draggedTabId: string, targetTabId: string) => void;
     onArchiveTab: (tabId: string) => void;
 };
+
+const TAB_BAR_MODIFIERS = [RestrictToHorizontalAxis];
+const TAB_BAR_SENSORS = [
+    PointerSensor.configure({
+        activationConstraints: [
+            new PointerActivationConstraints.Distance({
+                value: 6,
+            }),
+        ],
+    }),
+];
+const TAB_BAR_SORTABLE_GROUP = "workspace-tabs";
+
+function reorderTabPreview(
+    tabs: WorkspaceSession["tabs"],
+    draggedTabId: string,
+    targetTabId: string,
+): WorkspaceSession["tabs"] {
+    if (draggedTabId === targetTabId) {
+        return tabs;
+    }
+
+    const draggedTabIndex = tabs.findIndex((tab) => tab.id === draggedTabId);
+    const targetTabIndex = tabs.findIndex((tab) => tab.id === targetTabId);
+
+    if (draggedTabIndex < 0 || targetTabIndex < 0) {
+        return tabs;
+    }
+
+    const nextTabs = [...tabs];
+    const [draggedTab] = nextTabs.splice(draggedTabIndex, 1);
+
+    if (!draggedTab) {
+        return tabs;
+    }
+
+    nextTabs.splice(targetTabIndex, 0, draggedTab);
+    return nextTabs;
+}
 
 export function WorkspaceTabBar({
     workspace,
     renameState,
     onCreateFile,
     onSelectTab,
+    onReorderTab,
     onArchiveTab,
 }: WorkspaceTabBarProps): ReactElement {
     const tabListContainerRef = useRef<HTMLDivElement | null>(null);
     const tabListDropdownRef = useRef<HTMLDivElement | null>(null);
+    const lastDropTargetTabIdRef = useRef<string | null>(null);
+    const lastPreviewTargetTabIdRef = useRef<string | null>(null);
+    const [isTabDragActive, setIsTabDragActive] = useState(false);
+    const [previewTabs, setPreviewTabs] = useState(workspace.tabs);
     const isTabListOpen = useWorkspaceUiStore((state) => state.isTabListOpen);
     const closeTabList = useWorkspaceUiStore((state) => state.closeTabList);
     const toggleTabList = useWorkspaceUiStore((state) => state.toggleTabList);
@@ -88,33 +140,121 @@ export function WorkspaceTabBar({
         };
     }, [activeTabId]);
 
+    useEffect(() => {
+        setPreviewTabs(workspace.tabs);
+    }, [workspace.tabs]);
+
+    const resetPreviewTabs = (): void => {
+        setPreviewTabs(workspace.tabs);
+    };
+
+    const handleDragOver: DragDropEventHandlers["onDragOver"] = ({
+        operation,
+    }): void => {
+        const draggedTabId = operation.source?.id;
+        const targetTabId = operation.target?.id;
+
+        if (
+            typeof draggedTabId !== "string" ||
+            typeof targetTabId !== "string"
+        ) {
+            return;
+        }
+
+        if (draggedTabId === targetTabId) {
+            return;
+        }
+
+        if (lastPreviewTargetTabIdRef.current === targetTabId) {
+            return;
+        }
+
+        lastDropTargetTabIdRef.current = targetTabId;
+        lastPreviewTargetTabIdRef.current = targetTabId;
+        setPreviewTabs(
+            reorderTabPreview(workspace.tabs, draggedTabId, targetTabId),
+        );
+    };
+
+    const handleDragStart: DragDropEventHandlers["onDragStart"] = (): void => {
+        setIsTabDragActive(true);
+        lastDropTargetTabIdRef.current = null;
+        lastPreviewTargetTabIdRef.current = null;
+        setPreviewTabs(workspace.tabs);
+    };
+
+    const handleDragEnd: DragDropEventHandlers["onDragEnd"] = ({
+        canceled,
+        operation,
+    }): void => {
+        setIsTabDragActive(false);
+        lastPreviewTargetTabIdRef.current = null;
+
+        if (canceled) {
+            lastDropTargetTabIdRef.current = null;
+            resetPreviewTabs();
+            return;
+        }
+
+        const draggedTabId = operation.source?.id;
+        const rawTargetTabId = operation.target?.id;
+        const targetTabId =
+            typeof rawTargetTabId === "string" &&
+            rawTargetTabId !== draggedTabId
+                ? rawTargetTabId
+                : lastDropTargetTabIdRef.current;
+
+        lastDropTargetTabIdRef.current = null;
+
+        if (
+            typeof draggedTabId !== "string" ||
+            typeof targetTabId !== "string"
+        ) {
+            resetPreviewTabs();
+            return;
+        }
+
+        onReorderTab(draggedTabId, targetTabId);
+    };
+
     return (
         <div className="shrink-0 flex items-center gap-2 border-b border-fumi-200 bg-fumi-100 px-2 py-1.5">
-            <div
-                ref={tabListContainerRef}
-                role="tablist"
-                aria-label="Workspace files"
-                className="min-w-0 flex flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            <DragDropProvider
+                modifiers={TAB_BAR_MODIFIERS}
+                sensors={TAB_BAR_SENSORS}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
             >
-                {workspace.tabs.map((tab) => (
-                    <WorkspaceTabItem
-                        key={tab.id}
-                        tab={tab}
-                        isActive={tab.id === workspace.activeTabId}
-                        onArchiveTab={onArchiveTab}
-                        onSelectTab={onSelectTab}
-                        handleRenameInputBlur={handleRenameInputBlur}
-                        handleRenameInputChange={handleRenameInputChange}
-                        handleRenameInputKeyDown={handleRenameInputKeyDown}
-                        handleStartRename={handleStartRename}
-                        hasRenameError={hasRenameError}
-                        isRenameSubmitting={isRenameSubmitting}
-                        renameInputRef={renameInputRef}
-                        renameValue={renameValue}
-                        renamingTabId={renamingTabId}
-                    />
-                ))}
-            </div>
+                <div
+                    ref={tabListContainerRef}
+                    role="tablist"
+                    aria-label="Workspace files"
+                    className="min-w-0 flex flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                >
+                    {previewTabs.map((tab, index) => (
+                        <WorkspaceTabItem
+                            key={tab.id}
+                            index={index}
+                            sortableGroup={TAB_BAR_SORTABLE_GROUP}
+                            tab={tab}
+                            isActive={tab.id === workspace.activeTabId}
+                            isTabDragActive={isTabDragActive}
+                            onArchiveTab={onArchiveTab}
+                            onSelectTab={onSelectTab}
+                            handleRenameInputBlur={handleRenameInputBlur}
+                            handleRenameInputChange={handleRenameInputChange}
+                            handleRenameInputKeyDown={handleRenameInputKeyDown}
+                            handleStartRename={handleStartRename}
+                            hasRenameError={hasRenameError}
+                            isRenameSubmitting={isRenameSubmitting}
+                            renameInputRef={renameInputRef}
+                            renameValue={renameValue}
+                            renamingTabId={renamingTabId}
+                        />
+                    ))}
+                </div>
+            </DragDropProvider>
             <div
                 ref={tabListDropdownRef}
                 className="relative ml-auto flex shrink-0 items-center gap-1"

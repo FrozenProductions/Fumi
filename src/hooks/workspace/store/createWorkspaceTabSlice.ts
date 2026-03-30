@@ -2,8 +2,10 @@ import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/work
 import { confirmAction } from "../../../lib/platform/dialog";
 import {
     createWorkspaceFile as createWorkspaceFileCommand,
+    deleteAllArchivedWorkspaceTabs as deleteAllArchivedWorkspaceTabsCommand,
     deleteArchivedWorkspaceTab as deleteArchivedWorkspaceTabCommand,
     renameWorkspaceFile as renameWorkspaceFileCommand,
+    restoreAllArchivedWorkspaceTabs as restoreAllArchivedWorkspaceTabsCommand,
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
 } from "../../../lib/platform/workspace";
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
@@ -19,6 +21,7 @@ import {
 } from "../../../lib/workspace/persistence";
 import {
     getNextActiveTabId,
+    reorderWorkspaceTabs,
     serializeTabState,
     updateWorkspaceTab,
     upsertWorkspaceTab,
@@ -201,7 +204,10 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                                 ...currentWorkspace.archivedTabs.filter(
                                     (tab) => tab.id !== tabId,
                                 ),
-                                serializeTabState(currentTabToArchive),
+                                {
+                                    ...serializeTabState(currentTabToArchive),
+                                    archivedAt: Date.now(),
+                                },
                             ],
                             tabs: nextTabs,
                         };
@@ -258,6 +264,42 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                 });
             }
         },
+        restoreAllArchivedWorkspaceTabs: async (): Promise<void> => {
+            const {
+                workspace,
+                persistWorkspaceState,
+                refreshWorkspaceFromFilesystem,
+            } = get();
+
+            if (!workspace || workspace.archivedTabs.length === 0) {
+                return;
+            }
+
+            try {
+                const didPersist = await persistWorkspaceState();
+
+                if (!didPersist) {
+                    return;
+                }
+
+                await restoreAllArchivedWorkspaceTabsCommand({
+                    workspacePath: workspace.workspacePath,
+                });
+                await refreshWorkspaceFromFilesystem();
+                set({ errorMessage: null });
+            } catch (error) {
+                console.error(
+                    "Failed to restore all archived workspace tabs.",
+                    error,
+                );
+                set({
+                    errorMessage: getErrorMessage(
+                        error,
+                        "Could not restore the archived tabs.",
+                    ),
+                });
+            }
+        },
         deleteArchivedWorkspaceTab: async (tabId: string): Promise<void> => {
             const {
                 workspace,
@@ -300,6 +342,50 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                     errorMessage: getErrorMessage(
                         error,
                         "Could not delete the archived tab.",
+                    ),
+                });
+            }
+        },
+        deleteAllArchivedWorkspaceTabs: async (): Promise<void> => {
+            const {
+                workspace,
+                persistWorkspaceState,
+                refreshWorkspaceFromFilesystem,
+            } = get();
+
+            if (!workspace || workspace.archivedTabs.length === 0) {
+                return;
+            }
+
+            const shouldDelete = await confirmAction(
+                "Are you sure you want to permanently delete all archived tabs? This action cannot be undone.",
+            );
+
+            if (!shouldDelete) {
+                return;
+            }
+
+            try {
+                const didPersist = await persistWorkspaceState();
+
+                if (!didPersist) {
+                    return;
+                }
+
+                await deleteAllArchivedWorkspaceTabsCommand({
+                    workspacePath: workspace.workspacePath,
+                });
+                await refreshWorkspaceFromFilesystem();
+                set({ errorMessage: null });
+            } catch (error) {
+                console.error(
+                    "Failed to delete all archived workspace tabs.",
+                    error,
+                );
+                set({
+                    errorMessage: getErrorMessage(
+                        error,
+                        "Could not delete the archived tabs.",
                     ),
                 });
             }
@@ -403,6 +489,30 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
             });
 
             if (hasSelectedTab) {
+                void get().persistWorkspaceState();
+            }
+        },
+        reorderWorkspaceTab: (
+            draggedTabId: string,
+            targetTabId: string,
+        ): void => {
+            const { workspace } = get();
+
+            if (!workspace) {
+                return;
+            }
+
+            const nextWorkspace = updateWorkspaceForPath(
+                workspace.workspacePath,
+                (currentWorkspace) =>
+                    reorderWorkspaceTabs(
+                        currentWorkspace,
+                        draggedTabId,
+                        targetTabId,
+                    ),
+            );
+
+            if (nextWorkspace && nextWorkspace !== workspace) {
                 void get().persistWorkspaceState();
             }
         },

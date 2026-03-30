@@ -4,6 +4,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
+import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
 import {
     startCurrentWindowDragging,
     toggleCurrentWindowMaximize,
@@ -11,6 +12,7 @@ import {
 import { AppIcon } from "./AppIcon";
 import { AppIconButton } from "./AppIconButton";
 import { AppTooltip } from "./AppTooltip";
+import { AppTopbarExecutorControls } from "./AppTopbarExecutorControls";
 
 type AppTopbarProps = {
     title: string;
@@ -19,6 +21,15 @@ type AppTopbarProps = {
     workspaceName?: string | null;
     workspacePath?: string | null;
     onOpenWorkspace?: () => void;
+    executorControls?: Pick<
+        UseWorkspaceExecutorResult,
+        | "port"
+        | "isAttached"
+        | "didRecentAttachFail"
+        | "isBusy"
+        | "updatePort"
+        | "toggleConnection"
+    >;
 };
 
 function formatWorkspaceTooltipPath(
@@ -59,6 +70,7 @@ export function AppTopbar({
     workspaceName,
     workspacePath,
     onOpenWorkspace,
+    executorControls,
 }: AppTopbarProps): ReactElement {
     const animatedTitleCharacters = Array.from(title).map(
         (char, index, chars) => {
@@ -152,7 +164,10 @@ export function AppTopbar({
                 </div>
             </div>
 
-            <div className="relative z-10 ml-auto flex items-center">
+            <div className="relative z-10 ml-auto flex items-center gap-2">
+                {executorControls ? (
+                    <AppTopbarExecutorControls {...executorControls} />
+                ) : null}
                 {workspaceName && onOpenWorkspace ? (
                     <AppTooltip
                         content={formatWorkspaceTooltipPath(workspacePath)}

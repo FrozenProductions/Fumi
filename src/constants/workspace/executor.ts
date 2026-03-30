@@ -1,0 +1,3 @@
+export const DEFAULT_EXECUTOR_PORT = 5553;
+export const MIN_EXECUTOR_PORT = 5553;
+export const MAX_EXECUTOR_PORT = 5562;

@@ -4,11 +4,15 @@ use tauri::{
 };
 
 use crate::{
-    events::{emit_open_settings, emit_zoom_in, emit_zoom_out, emit_zoom_reset},
+    events::{
+        emit_check_for_updates, emit_open_settings, emit_zoom_in, emit_zoom_out,
+        emit_zoom_reset,
+    },
     request_app_exit,
 };
 
 const APP_OPEN_SETTINGS_ID: &str = "app-open-settings";
+const APP_CHECK_FOR_UPDATES_ID: &str = "app-check-for-updates";
 const APP_QUIT_ID: &str = "app-quit";
 const VIEW_ZOOM_IN_ID: &str = "view-zoom-in";
 const VIEW_ZOOM_OUT_ID: &str = "view-zoom-out";
@@ -25,6 +29,11 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
     let open_settings = MenuItemBuilder::with_id(APP_OPEN_SETTINGS_ID, "Open Settings")
         .accelerator("CmdOrCtrl+,")
         .build(app)?;
+    let check_for_updates = MenuItemBuilder::with_id(
+        APP_CHECK_FOR_UPDATES_ID,
+        "Check for Updates…",
+    )
+    .build(app)?;
     let quit = MenuItemBuilder::with_id(APP_QUIT_ID, format!("Quit {}", package_info.name))
         .accelerator("CmdOrCtrl+Q")
         .build(app)?;
@@ -49,6 +58,7 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
                     &PredefinedMenuItem::about(app, None, Some(about_metadata))?,
                     &PredefinedMenuItem::separator(app)?,
                     &open_settings,
+                    &check_for_updates,
                     &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::hide(app, None)?,
                     &PredefinedMenuItem::hide_others(app, None)?,
@@ -96,6 +106,7 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
 pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
     let result = match event.id().as_ref() {
         APP_OPEN_SETTINGS_ID => emit_open_settings(app),
+        APP_CHECK_FOR_UPDATES_ID => emit_check_for_updates(app),
         APP_QUIT_ID => {
             request_app_exit(app);
             Ok(())

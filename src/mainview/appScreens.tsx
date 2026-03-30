@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
+import type { UseWorkspaceExecutorResult } from "../hooks/workspace/useWorkspaceExecutor";
 import { showsWorkspaceContext } from "../lib/app/sidebar";
 import type { AppSidebarItem } from "../types/app/sidebar";
 import type { UseWorkspaceSessionResult } from "../types/workspace/session";
@@ -35,10 +36,16 @@ export function getAppTopbarWorkspaceContext(
 export function renderActiveAppScreen(
     activeSidebarItem: AppSidebarItem,
     workspaceSession: UseWorkspaceSessionResult,
+    workspaceExecutor: UseWorkspaceExecutorResult,
 ): ReactElement {
     switch (activeSidebarItem) {
         case "workspace":
-            return <WorkspaceScreen session={workspaceSession} />;
+            return (
+                <WorkspaceScreen
+                    session={workspaceSession}
+                    executor={workspaceExecutor}
+                />
+            );
         case "script-library":
             return <ScriptLibraryScreen workspaceSession={workspaceSession} />;
     }

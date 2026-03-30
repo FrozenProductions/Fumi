@@ -212,6 +212,7 @@ fn normalize_workspace_tab_state(
         id: normalized_id,
         file_name: normalized_file_name,
         cursor: normalize_cursor_state(&tab.cursor),
+        archived_at: tab.archived_at,
     })
 }
 
@@ -625,3 +626,6 @@ pub(super) fn resolve_workspace_file_delete_path(
 
     Err(anyhow!("Archived workspace tab file name is invalid."))
 }
+
+#[cfg(test)]
+mod tests;

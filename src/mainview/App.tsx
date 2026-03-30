@@ -7,11 +7,14 @@ import { APP_TITLE } from "../constants/app/app";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
 import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
+import { useAppUpdater } from "../hooks/app/useAppUpdater";
 import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
+import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
 import {
     isPreparingToExit,
+    subscribeToCheckForUpdatesRequested,
     subscribeToOpenSettings,
 } from "../lib/platform/window";
 import {
@@ -42,7 +45,11 @@ export function App(): ReactElement {
     const closeSettings = useAppStore((state) => state.closeSettings);
     const openSettings = useAppStore((state) => state.openSettings);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
+    const updater = useAppUpdater();
     const workspaceSession = useWorkspaceSession();
+    const workspaceExecutor = useWorkspaceExecutor({
+        activeTabContent: workspaceSession.activeTab?.content ?? null,
+    });
     const { hasUnsavedChanges } = workspaceSession;
     const topbarWorkspaceContext = getAppTopbarWorkspaceContext(
         activeSidebarItem,
@@ -72,6 +79,12 @@ export function App(): ReactElement {
         });
     }, [openSettings]);
 
+    useEffect(() => {
+        return subscribeToCheckForUpdatesRequested(() => {
+            openSettings();
+        });
+    }, [openSettings]);
+
     return (
         <AppHotkeysProvider workspaceSession={workspaceSession}>
             <div className="relative flex h-screen flex-col overflow-hidden rounded-[0.95rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-shell)]">
@@ -82,6 +95,11 @@ export function App(): ReactElement {
                     workspaceName={topbarWorkspaceContext.workspaceName}
                     workspacePath={topbarWorkspaceContext.workspacePath}
                     onOpenWorkspace={topbarWorkspaceContext.onOpenWorkspace}
+                    executorControls={
+                        activeSidebarItem === "workspace"
+                            ? workspaceExecutor
+                            : undefined
+                    }
                 />
                 <div className="flex min-h-0 flex-1 bg-fumi-50">
                     <AppSidebar
@@ -99,6 +117,7 @@ export function App(): ReactElement {
                             {renderActiveAppScreen(
                                 activeSidebarItem,
                                 workspaceSession,
+                                workspaceExecutor,
                             )}
                         </div>
                     </main>
@@ -117,6 +136,7 @@ export function App(): ReactElement {
                 <AppSettingsWindow
                     isOpen={isSettingsOpen}
                     onClose={closeSettings}
+                    updater={updater}
                     workspaceSession={workspaceSession}
                 />
             </div>

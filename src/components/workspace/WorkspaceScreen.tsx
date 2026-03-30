@@ -1,11 +1,18 @@
-import { Add01Icon, FolderOpenIcon } from "@hugeicons/core-free-icons";
+import {
+    Add01Icon,
+    FolderOpenIcon,
+    PlayIcon,
+} from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
+import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import { AppIcon } from "../app/AppIcon";
+import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
@@ -13,10 +20,12 @@ import { WorkspaceTabBar } from "./WorkspaceTabBar";
 
 type WorkspaceScreenProps = {
     session: UseWorkspaceSessionResult;
+    executor: UseWorkspaceExecutorResult;
 };
 
 export function WorkspaceScreen({
     session,
+    executor,
 }: WorkspaceScreenProps): ReactElement {
     const appTheme = useAppStore((state) => state.theme);
     const editorSettings = useAppStore((state) => state.editorSettings);
@@ -31,6 +40,7 @@ export function WorkspaceScreen({
         archiveWorkspaceTab,
         renameWorkspaceTab,
         selectWorkspaceTab,
+        reorderWorkspaceTab,
         saveActiveWorkspaceTab,
         updateActiveTabContent,
         updateActiveTabCursor,
@@ -47,14 +57,15 @@ export function WorkspaceScreen({
     const {
         acceptCompletion,
         completionPopup,
+        createHandleCursorChange,
+        createHandleEditorChange,
+        createHandleEditorLoad,
+        createHandleScroll,
         handleCompletionHover,
-        handleCursorChange,
-        handleEditorChange,
-        handleEditorLoad,
-        handleScroll,
     } = useWorkspaceCodeCompletion({
         activeEditorMode,
-        activeTab,
+        activeTabId: activeTab?.id ?? null,
+        tabs: workspace?.tabs ?? [],
         isIntellisenseEnabled: editorSettings.isIntellisenseEnabled,
         intellisensePriority: editorSettings.intellisensePriority,
         saveActiveWorkspaceTab,
@@ -74,6 +85,10 @@ export function WorkspaceScreen({
     const handleArchiveWorkspaceTab = (tabId: string): void => {
         void archiveWorkspaceTab(tabId);
     };
+    const executeButtonClassName =
+        appTheme === "dark"
+            ? "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-300 bg-fumi-700 px-3.5 text-xs font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-400 hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+            : "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-200 bg-fumi-600 px-3.5 text-xs font-semibold tracking-wide text-white shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-700 hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50";
 
     if (isBootstrapping) {
         return (
@@ -92,6 +107,11 @@ export function WorkspaceScreen({
             <section className="flex h-full min-h-0 flex-col bg-gradient-to-br from-fumi-50 via-fumi-50 to-fumi-100/80">
                 {errorMessage ? (
                     <WorkspaceErrorBanner errorMessage={errorMessage} />
+                ) : null}
+                {executor.errorMessage ? (
+                    <WorkspaceErrorBanner
+                        errorMessage={executor.errorMessage}
+                    />
                 ) : null}
                 <WorkspaceMessageState
                     eyebrow="Workspace"
@@ -112,12 +132,16 @@ export function WorkspaceScreen({
             {errorMessage ? (
                 <WorkspaceErrorBanner errorMessage={errorMessage} />
             ) : null}
+            {executor.errorMessage ? (
+                <WorkspaceErrorBanner errorMessage={executor.errorMessage} />
+            ) : null}
             {workspace.tabs.length > 0 ? (
                 <WorkspaceTabBar
                     workspace={workspace}
                     renameState={renameState}
                     onCreateFile={handleCreateWorkspaceFile}
                     onSelectTab={selectWorkspaceTab}
+                    onReorderTab={reorderWorkspaceTab}
                     onArchiveTab={handleArchiveWorkspaceTab}
                 />
             ) : null}
@@ -148,19 +172,50 @@ export function WorkspaceScreen({
                         }}
                     />
                 ) : activeTab ? (
-                    <WorkspaceEditor
-                        activeEditorMode={activeEditorMode}
-                        activeTab={activeTab}
-                        appTheme={appTheme}
-                        editorFontSize={editorSettings.fontSize}
-                        acceptCompletion={acceptCompletion}
-                        completionPopup={completionPopup}
-                        handleCompletionHover={handleCompletionHover}
-                        handleCursorChange={handleCursorChange}
-                        handleEditorChange={handleEditorChange}
-                        handleEditorLoad={handleEditorLoad}
-                        handleScroll={handleScroll}
-                    />
+                    <div className="relative flex min-h-0 flex-1">
+                        <WorkspaceEditor
+                            activeTabId={activeTab.id}
+                            appTheme={appTheme}
+                            editorFontSize={editorSettings.fontSize}
+                            tabs={workspace.tabs}
+                            acceptCompletion={acceptCompletion}
+                            completionPopup={completionPopup}
+                            createHandleCursorChange={createHandleCursorChange}
+                            createHandleEditorChange={createHandleEditorChange}
+                            createHandleEditorLoad={createHandleEditorLoad}
+                            createHandleScroll={createHandleScroll}
+                            handleCompletionHover={handleCompletionHover}
+                        />
+                        <div className="pointer-events-none absolute bottom-5 right-5 z-20">
+                            <AppTooltip
+                                content={
+                                    executor.isAttached
+                                        ? "Execute the current tab in MacSploit"
+                                        : "Attach to a MacSploit port before executing"
+                                }
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        void executor.executeActiveTab();
+                                    }}
+                                    disabled={executor.isBusy}
+                                    className={`${executeButtonClassName} ${
+                                        executor.isBusy
+                                            ? "cursor-wait opacity-70"
+                                            : ""
+                                    }`}
+                                >
+                                    <AppIcon
+                                        icon={PlayIcon}
+                                        className={`size-3.5 ${executor.isBusy ? "opacity-50" : ""}`}
+                                        strokeWidth={2.5}
+                                    />
+                                    {executor.isBusy ? "Executing" : "Execute"}
+                                </button>
+                            </AppTooltip>
+                        </div>
+                    </div>
                 ) : (
                     <WorkspaceMessageState
                         eyebrow="Workspace ready"

@@ -8,6 +8,7 @@ export type WorkspaceTabState = {
     id: string;
     fileName: string;
     cursor: WorkspaceCursorState;
+    archivedAt?: number;
 };
 
 export type WorkspaceTabSnapshot = WorkspaceTabState & {

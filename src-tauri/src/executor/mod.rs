@@ -1,0 +1,606 @@
+mod models;
+
+pub(crate) mod commands;
+
+use std::{
+    io::{ErrorKind, Read, Write},
+    net::{Ipv4Addr, Shutdown, SocketAddrV4, TcpStream},
+    sync::{Arc, Mutex, MutexGuard},
+    thread::{self, JoinHandle},
+    time::Duration,
+};
+
+use anyhow::{anyhow, Context, Result};
+use tauri::{AppHandle, Runtime};
+
+use crate::events::{emit_executor_message, emit_executor_status_changed};
+
+pub use self::models::{ExecutorMessagePayload, ExecutorMessageType, ExecutorStatusPayload};
+
+const DEFAULT_EXECUTOR_PORT: u16 = 5553;
+const LOCALHOST: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
+const HEADER_LENGTH: usize = 16;
+const FRAME_TERMINATOR_LENGTH: usize = 1;
+const SOCKET_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
+const MAX_MESSAGE_LENGTH_BYTES: usize = 8 * 1024 * 1024;
+const POST_RECONNECT_SETTLE_DURATION: Duration = Duration::from_millis(75);
+
+fn log_executor_debug(message: impl AsRef<str>) {
+    eprintln!("[executor] {}", message.as_ref());
+}
+
+#[derive(Clone)]
+pub struct ExecutorRuntimeState {
+    inner: Arc<Mutex<ExecutorState>>,
+}
+
+struct ExecutorState {
+    port: u16,
+    next_connection_id: u64,
+    suppressed_disconnect_connection_id: Option<u64>,
+    connection: Option<ExecutorConnection>,
+}
+
+struct ExecutorConnection {
+    id: u64,
+    writer: TcpStream,
+    reader_thread: JoinHandle<()>,
+}
+
+#[derive(Clone, Copy)]
+#[repr(u8)]
+enum ExecutorIpcType {
+    Execute = 0,
+    Setting = 1,
+}
+
+impl Default for ExecutorRuntimeState {
+    fn default() -> Self {
+        Self {
+            inner: Arc::new(Mutex::new(ExecutorState {
+                port: DEFAULT_EXECUTOR_PORT,
+                next_connection_id: 0,
+                suppressed_disconnect_connection_id: None,
+                connection: None,
+            })),
+        }
+    }
+}
+
+impl ExecutorRuntimeState {
+    fn lock(&self) -> MutexGuard<'_, ExecutorState> {
+        self.inner.lock().unwrap_or_else(|error| error.into_inner())
+    }
+
+    #[must_use]
+    pub fn status(&self) -> ExecutorStatusPayload {
+        let state = self.lock();
+
+        ExecutorStatusPayload {
+            port: state.port,
+            is_attached: state.connection.is_some(),
+        }
+    }
+
+    pub fn attach<R: Runtime>(
+        &self,
+        app: &AppHandle<R>,
+        port: u16,
+    ) -> Result<ExecutorStatusPayload> {
+        log_executor_debug(format!("attach requested for port {port}"));
+
+        {
+            let state = self.lock();
+
+            if state.connection.is_some() {
+                log_executor_debug("attach rejected because a connection already exists");
+                return Err(anyhow!(
+                    "AlreadyInjectedError: Socket is already connected."
+                ));
+            }
+        }
+
+        let address = SocketAddrV4::new(LOCALHOST, port);
+        let writer = TcpStream::connect_timeout(&address.into(), SOCKET_CONNECT_TIMEOUT)
+            .map_err(format_attach_error)?;
+        writer
+            .set_nodelay(true)
+            .context("failed to configure the MacSploit socket")?;
+        let reader = writer
+            .try_clone()
+            .context("failed to clone the MacSploit socket")?;
+
+        let connection_id = {
+            let mut state = self.lock();
+            state.port = port;
+            state.next_connection_id += 1;
+            state.next_connection_id
+        };
+
+        log_executor_debug(format!(
+            "attach succeeded for port {port} with connection id {connection_id}"
+        ));
+
+        let app_handle = app.clone();
+        let state_handle = Arc::clone(&self.inner);
+        let reader_thread = thread::spawn(move || {
+            run_reader_loop(app_handle, state_handle, connection_id, reader);
+        });
+
+        {
+            let mut state = self.lock();
+            state.connection = Some(ExecutorConnection {
+                id: connection_id,
+                writer,
+                reader_thread,
+            });
+        }
+
+        let status = self.status();
+        let _ = emit_executor_status_changed(app, &status);
+        Ok(status)
+    }
+
+    pub fn reattach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
+        let port = self.status().port;
+        log_executor_debug(format!("reattach requested for port {port}"));
+        self.attach(app, port)
+    }
+
+    pub fn detach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
+        log_executor_debug("detach requested");
+        let connection = {
+            let mut state = self.lock();
+            state
+                .connection
+                .take()
+                .ok_or_else(|| anyhow!("NotInjectedError: Socket is already closed."))?
+        };
+
+        log_executor_debug(format!(
+            "detaching connection id {} on port {}",
+            connection.id,
+            self.status().port
+        ));
+        let _ = connection.writer.shutdown(Shutdown::Both);
+        let _ = connection.reader_thread.join();
+
+        let status = self.status();
+        log_executor_debug(format!(
+            "detach completed; attached={}, port={}",
+            status.is_attached, status.port
+        ));
+        let _ = emit_executor_status_changed(app, &status);
+        Ok(status)
+    }
+
+    pub fn execute_script<R: Runtime>(&self, app: &AppHandle<R>, script: &str) -> Result<()> {
+        log_executor_debug(format!(
+            "execute requested; script_bytes={}, attached={}",
+            script.len(),
+            self.status().is_attached
+        ));
+        let port = self
+            .connected_port()
+            .ok_or_else(|| anyhow!("NotInjectedError: Please attach before executing scripts."))?;
+
+        log_executor_debug(format!(
+            "execute will reset the active connection and reconnect on port {port}"
+        ));
+
+        self.reconnect_on_port(app, port)?;
+        self.write_frame_with_reconnect(app, ExecutorIpcType::Execute, script.as_bytes())
+    }
+
+    pub fn update_setting<R: Runtime>(
+        &self,
+        app: &AppHandle<R>,
+        key: &str,
+        value: bool,
+    ) -> Result<()> {
+        log_executor_debug(format!(
+            "update setting requested; key={key}, value={value}"
+        ));
+        let payload = format!("{key} {}", if value { "true" } else { "false" });
+        self.write_frame_with_reconnect(app, ExecutorIpcType::Setting, payload.as_bytes())
+    }
+
+    fn write_frame(&self, ipc_type: ExecutorIpcType, payload: &[u8]) -> Result<()> {
+        let mut state = self.lock();
+        let connection = state
+            .connection
+            .as_mut()
+            .ok_or_else(|| anyhow!("NotInjectedError: Please attach before executing scripts."))?;
+        let connection_id = connection.id;
+        let frame = build_frame(ipc_type, payload)?;
+
+        log_executor_debug(format!(
+            "writing frame; connection_id={connection_id}, ipc_type={}, payload_bytes={}, frame_bytes={}",
+            ipc_type as u8,
+            payload.len(),
+            frame.len()
+        ));
+
+        let write_result = connection
+            .writer
+            .write_all(&frame)
+            .context("failed to write to the MacSploit socket");
+
+        match &write_result {
+            Ok(()) => {
+                log_executor_debug(format!("write succeeded; connection_id={connection_id}"));
+            }
+            Err(error) => {
+                log_executor_debug(format!(
+                    "write failed; connection_id={connection_id}; error={error:#}"
+                ));
+            }
+        }
+
+        write_result
+    }
+
+    fn write_frame_with_reconnect<R: Runtime>(
+        &self,
+        app: &AppHandle<R>,
+        ipc_type: ExecutorIpcType,
+        payload: &[u8],
+    ) -> Result<()> {
+        match self.write_frame(ipc_type, payload) {
+            Ok(()) => Ok(()),
+            Err(error) if should_retry_after_write_error(&error) => {
+                let port = self.status().port;
+
+                log_executor_debug(format!(
+                    "write failed with retryable socket error; reconnecting on port {port}"
+                ));
+
+                self.reconnect_on_port(app, port)?;
+                let retry_result = self.write_frame(ipc_type, payload);
+
+                match &retry_result {
+                    Ok(()) => {
+                        log_executor_debug("retry write succeeded after reconnect");
+                    }
+                    Err(retry_error) => {
+                        log_executor_debug(format!(
+                            "retry write failed after reconnect; error={retry_error:#}"
+                        ));
+                    }
+                }
+
+                retry_result
+            }
+            Err(error) => {
+                log_executor_debug(format!(
+                    "write failed with non-retryable error; error={error:#}"
+                ));
+                Err(error)
+            }
+        }
+    }
+
+    fn reconnect_on_port<R: Runtime>(&self, app: &AppHandle<R>, port: u16) -> Result<()> {
+        self.reset_connection(app, false);
+        self.attach(app, port)?;
+        log_executor_debug(format!(
+            "waiting {:?} after reconnect before sending data",
+            POST_RECONNECT_SETTLE_DURATION
+        ));
+        thread::sleep(POST_RECONNECT_SETTLE_DURATION);
+        Ok(())
+    }
+
+    fn connected_port(&self) -> Option<u16> {
+        let state = self.lock();
+
+        state.connection.as_ref().map(|_| state.port)
+    }
+
+    fn reset_connection<R: Runtime>(&self, app: &AppHandle<R>, emit_status_change: bool) {
+        let connection = {
+            let mut state = self.lock();
+            state.connection.take()
+        };
+
+        if let Some(connection) = connection {
+            if !emit_status_change {
+                let mut state = self.lock();
+                state.suppressed_disconnect_connection_id = Some(connection.id);
+            }
+
+            log_executor_debug(format!(
+                "resetting connection id {} on port {}",
+                connection.id,
+                self.status().port
+            ));
+            let _ = connection.writer.shutdown(Shutdown::Both);
+            let _ = connection.reader_thread.join();
+
+            if emit_status_change {
+                let _ = emit_executor_status_changed(app, &self.status());
+            }
+
+            log_executor_debug("connection reset completed");
+        }
+    }
+}
+
+fn format_attach_error(error: std::io::Error) -> anyhow::Error {
+    match error.kind() {
+        ErrorKind::ConnectionRefused => {
+            anyhow!("ConnectionRefusedError: Socket is not open.")
+        }
+        _ => anyhow!("ConnectionError: {error}"),
+    }
+}
+
+fn build_frame(ipc_type: ExecutorIpcType, payload: &[u8]) -> Result<Vec<u8>> {
+    let payload_length = u32::try_from(payload.len())
+        .context("script payload is too large for the MacSploit IPC protocol")?;
+    let mut frame = vec![0_u8; HEADER_LENGTH + payload.len() + FRAME_TERMINATOR_LENGTH];
+
+    frame[0] = ipc_type as u8;
+    frame[8..12].copy_from_slice(&payload_length.to_le_bytes());
+    frame[HEADER_LENGTH..HEADER_LENGTH + payload.len()].copy_from_slice(payload);
+
+    Ok(frame)
+}
+
+fn should_retry_after_write_error(error: &anyhow::Error) -> bool {
+    error
+        .chain()
+        .find_map(|cause| cause.downcast_ref::<std::io::Error>())
+        .is_some_and(|io_error| {
+            matches!(
+                io_error.kind(),
+                ErrorKind::BrokenPipe
+                    | ErrorKind::ConnectionAborted
+                    | ErrorKind::ConnectionReset
+                    | ErrorKind::NotConnected
+                    | ErrorKind::UnexpectedEof
+            )
+        })
+}
+
+fn run_reader_loop<R: Runtime>(
+    app: AppHandle<R>,
+    state_handle: Arc<Mutex<ExecutorState>>,
+    connection_id: u64,
+    mut reader: TcpStream,
+) {
+    log_executor_debug(format!(
+        "reader loop started; connection_id={connection_id}"
+    ));
+    let mut pending = Vec::new();
+    let mut chunk = [0_u8; 4096];
+
+    loop {
+        match reader.read(&mut chunk) {
+            Ok(0) => {
+                log_executor_debug(format!(
+                    "reader loop reached EOF; connection_id={connection_id}"
+                ));
+                break;
+            }
+            Ok(bytes_read) => {
+                log_executor_debug(format!(
+                    "reader received bytes; connection_id={connection_id}, bytes_read={bytes_read}"
+                ));
+                pending.extend_from_slice(&chunk[..bytes_read]);
+
+                match extract_complete_messages(&mut pending) {
+                    Ok(messages) => {
+                        log_executor_debug(format!(
+                            "reader decoded messages; connection_id={connection_id}, count={}",
+                            messages.len()
+                        ));
+                        for message in messages {
+                            log_executor_debug(format!(
+                                "emitting executor message; connection_id={connection_id}, type={:?}, message_bytes={}",
+                                message.message_type,
+                                message.message.len()
+                            ));
+                            let _ = emit_executor_message(&app, &message);
+                        }
+                    }
+                    Err(error) => {
+                        log_executor_debug(format!(
+                            "reader decode failed; connection_id={connection_id}; error={error:#}"
+                        ));
+                        eprintln!("Failed to decode a MacSploit IPC frame: {error:#}");
+                        break;
+                    }
+                }
+            }
+            Err(error) if error.kind() == ErrorKind::Interrupted => continue,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    ErrorKind::UnexpectedEof
+                        | ErrorKind::ConnectionAborted
+                        | ErrorKind::ConnectionReset
+                        | ErrorKind::BrokenPipe
+                ) =>
+            {
+                log_executor_debug(format!(
+                    "reader loop ended on socket error; connection_id={connection_id}; kind={:?}; error={error}",
+                    error.kind()
+                ));
+                break;
+            }
+            Err(error) => {
+                log_executor_debug(format!(
+                    "reader loop failed; connection_id={connection_id}; kind={:?}; error={error}",
+                    error.kind()
+                ));
+                eprintln!("MacSploit socket read failed: {error}");
+                break;
+            }
+        }
+    }
+
+    let status = {
+        let mut state = state_handle
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        let should_suppress_disconnect_event =
+            state.suppressed_disconnect_connection_id == Some(connection_id);
+
+        if state
+            .connection
+            .as_ref()
+            .is_some_and(|connection| connection.id == connection_id)
+        {
+            state.connection = None;
+        }
+
+        if should_suppress_disconnect_event {
+            state.suppressed_disconnect_connection_id = None;
+        }
+
+        (
+            ExecutorStatusPayload {
+                port: state.port,
+                is_attached: state.connection.is_some(),
+            },
+            should_suppress_disconnect_event,
+        )
+    };
+
+    let (status, should_suppress_disconnect_event) = status;
+
+    log_executor_debug(format!(
+        "reader loop finished; connection_id={connection_id}, attached={}, port={}",
+        status.is_attached, status.port
+    ));
+
+    if should_suppress_disconnect_event {
+        log_executor_debug(format!(
+            "suppressing disconnect status emission for intentionally reset connection_id={connection_id}"
+        ));
+        return;
+    }
+
+    let _ = emit_executor_status_changed(&app, &status);
+}
+
+fn extract_complete_messages(pending: &mut Vec<u8>) -> Result<Vec<ExecutorMessagePayload>> {
+    let mut messages = Vec::new();
+    let mut cursor = 0;
+
+    while pending.len().saturating_sub(cursor) >= HEADER_LENGTH {
+        let payload_length = u64::from_le_bytes(
+            pending[cursor + 8..cursor + HEADER_LENGTH]
+                .try_into()
+                .context("invalid MacSploit IPC frame header")?,
+        );
+        let payload_length = usize::try_from(payload_length)
+            .context("MacSploit IPC frame length does not fit in usize")?;
+
+        if payload_length > MAX_MESSAGE_LENGTH_BYTES {
+            return Err(anyhow!("MacSploit IPC frame exceeds the maximum size"));
+        }
+
+        let frame_length = HEADER_LENGTH
+            .checked_add(payload_length)
+            .context("MacSploit IPC frame length overflow")?;
+
+        if pending.len().saturating_sub(cursor) < frame_length {
+            break;
+        }
+
+        let payload_start = cursor + HEADER_LENGTH;
+        let payload_end = payload_start + payload_length;
+        let optional_terminator_length =
+            usize::from(pending.get(payload_end).is_some_and(|byte| *byte == 0));
+        let message_type = ExecutorMessageType::try_from(pending[cursor]).ok();
+
+        if let Some(message_type) = message_type {
+            messages.push(ExecutorMessagePayload {
+                message: String::from_utf8_lossy(&pending[payload_start..payload_end]).into_owned(),
+                message_type,
+            });
+        }
+
+        cursor = payload_end + optional_terminator_length;
+    }
+
+    if cursor > 0 {
+        pending.drain(..cursor);
+    }
+
+    Ok(messages)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn build_incoming_message(
+        message_type: ExecutorMessageType,
+        payload: &str,
+        include_terminator: bool,
+    ) -> Vec<u8> {
+        let mut frame = vec![0_u8; HEADER_LENGTH + payload.len() + usize::from(include_terminator)];
+
+        frame[0] = match message_type {
+            ExecutorMessageType::Print => 1,
+            ExecutorMessageType::Error => 2,
+        };
+        frame[8..16].copy_from_slice(&(payload.len() as u64).to_le_bytes());
+        frame[HEADER_LENGTH..HEADER_LENGTH + payload.len()].copy_from_slice(payload.as_bytes());
+
+        frame
+    }
+
+    #[test]
+    fn build_frame_matches_macsploit_layout() {
+        let frame =
+            build_frame(ExecutorIpcType::Execute, b"print('hi')").expect("frame should build");
+
+        assert_eq!(frame[0], ExecutorIpcType::Execute as u8);
+        assert_eq!(u64::from_le_bytes(frame[8..16].try_into().unwrap()), 11);
+        assert_eq!(&frame[16..27], b"print('hi')");
+        assert_eq!(frame[27], 0);
+    }
+
+    #[test]
+    fn extract_complete_messages_handles_back_to_back_frames() {
+        let mut buffer = build_incoming_message(ExecutorMessageType::Print, "hello", true);
+        buffer.extend(build_incoming_message(
+            ExecutorMessageType::Error,
+            "goodbye",
+            false,
+        ));
+
+        let messages = extract_complete_messages(&mut buffer).expect("messages should parse");
+
+        assert_eq!(
+            messages,
+            vec![
+                ExecutorMessagePayload {
+                    message: "hello".to_string(),
+                    message_type: ExecutorMessageType::Print,
+                },
+                ExecutorMessagePayload {
+                    message: "goodbye".to_string(),
+                    message_type: ExecutorMessageType::Error,
+                },
+            ]
+        );
+        assert!(buffer.is_empty());
+    }
+
+    #[test]
+    fn should_retry_after_write_error_matches_connection_failures() {
+        let connection_error = std::io::Error::new(ErrorKind::BrokenPipe, "broken pipe");
+        let wrapped_error = anyhow::Error::new(connection_error).context("write failed");
+
+        assert!(should_retry_after_write_error(&wrapped_error));
+
+        let validation_error = anyhow!("not a socket issue");
+
+        assert!(!should_retry_after_write_error(&validation_error));
+    }
+}

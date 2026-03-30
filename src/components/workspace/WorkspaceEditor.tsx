@@ -6,6 +6,7 @@ import "ace-builds/src-noconflict/mode-text";
 import "ace-builds/src-noconflict/theme-github_dark";
 import "ace-builds/src-noconflict/theme-github_light_default";
 import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/useWorkspaceCodeCompletion";
+import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { configureLuauAce } from "../../lib/luau/registerAceLuau";
 import type { AppTheme } from "../../types/app/settings";
 import type { WorkspaceTab } from "../../types/workspace/session";
@@ -28,68 +29,85 @@ const WORKSPACE_EDITOR_STYLE = {
 } as const;
 
 type WorkspaceEditorProps = {
-    activeEditorMode: string;
-    activeTab: WorkspaceTab;
+    activeTabId: string;
     appTheme: AppTheme;
     editorFontSize: number;
+    tabs: WorkspaceTab[];
 } & Pick<
     UseWorkspaceCodeCompletionResult,
     | "acceptCompletion"
     | "completionPopup"
+    | "createHandleCursorChange"
+    | "createHandleEditorChange"
+    | "createHandleEditorLoad"
+    | "createHandleScroll"
     | "handleCompletionHover"
-    | "handleCursorChange"
-    | "handleEditorChange"
-    | "handleEditorLoad"
-    | "handleScroll"
 >;
 
 export function WorkspaceEditor({
-    activeEditorMode,
-    activeTab,
+    activeTabId,
     appTheme,
     editorFontSize,
+    tabs,
     acceptCompletion,
     completionPopup,
+    createHandleCursorChange,
+    createHandleEditorChange,
+    createHandleEditorLoad,
+    createHandleScroll,
     handleCompletionHover,
-    handleCursorChange,
-    handleEditorChange,
-    handleEditorLoad,
-    handleScroll,
 }: WorkspaceEditorProps): ReactElement {
     return (
         <div className="flex min-h-0 flex-1 overflow-hidden bg-fumi-50">
             <div className="relative flex min-h-0 flex-1">
-                <AceEditor
-                    key={activeTab.id}
-                    className="workspace-ace-editor"
-                    name={`workspace-editor-${activeTab.id}`}
-                    mode={activeEditorMode}
-                    theme={
-                        appTheme === "dark"
-                            ? "github_dark"
-                            : "github_light_default"
-                    }
-                    width="100%"
-                    height="100%"
-                    value={activeTab.content}
-                    onBeforeLoad={configureLuauAce}
-                    onLoad={handleEditorLoad}
-                    onChange={handleEditorChange}
-                    onCursorChange={handleCursorChange}
-                    onScroll={handleScroll}
-                    enableBasicAutocompletion={false}
-                    enableLiveAutocompletion={false}
-                    enableSnippets={false}
-                    fontSize={editorFontSize}
-                    showGutter
-                    showPrintMargin={false}
-                    highlightActiveLine
-                    tabSize={4}
-                    wrapEnabled={false}
-                    setOptions={WORKSPACE_EDITOR_OPTIONS}
-                    editorProps={WORKSPACE_EDITOR_PROPS}
-                    style={WORKSPACE_EDITOR_STYLE}
-                />
+                {tabs.map((tab) => {
+                    const isActiveTab = tab.id === activeTabId;
+
+                    return (
+                        <div
+                            key={tab.id}
+                            aria-hidden={!isActiveTab}
+                            className={`absolute inset-0 ${
+                                isActiveTab
+                                    ? "z-10 opacity-100"
+                                    : "pointer-events-none opacity-0"
+                            }`}
+                        >
+                            <AceEditor
+                                className="workspace-ace-editor"
+                                name={`workspace-editor-${tab.id}`}
+                                mode={getEditorModeForFileName(tab.fileName)}
+                                theme={
+                                    appTheme === "dark"
+                                        ? "github_dark"
+                                        : "github_light_default"
+                                }
+                                width="100%"
+                                height="100%"
+                                value={tab.content}
+                                onBeforeLoad={configureLuauAce}
+                                onLoad={createHandleEditorLoad(tab.id)}
+                                onChange={createHandleEditorChange(tab.id)}
+                                onCursorChange={createHandleCursorChange(
+                                    tab.id,
+                                )}
+                                onScroll={createHandleScroll(tab.id)}
+                                enableBasicAutocompletion={false}
+                                enableLiveAutocompletion={false}
+                                enableSnippets={false}
+                                fontSize={editorFontSize}
+                                showGutter
+                                showPrintMargin={false}
+                                highlightActiveLine
+                                tabSize={4}
+                                wrapEnabled={false}
+                                setOptions={WORKSPACE_EDITOR_OPTIONS}
+                                editorProps={WORKSPACE_EDITOR_PROPS}
+                                style={WORKSPACE_EDITOR_STYLE}
+                            />
+                        </div>
+                    );
+                })}
                 {completionPopup ? (
                     <AppCodeCompletion
                         items={completionPopup.items}

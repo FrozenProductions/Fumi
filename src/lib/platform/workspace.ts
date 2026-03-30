@@ -110,6 +110,16 @@ export function restoreArchivedWorkspaceTab(options: {
     );
 }
 
+export function restoreAllArchivedWorkspaceTabs(options: {
+    workspacePath: string;
+}): Promise<void> {
+    if (!isTauriEnvironment()) {
+        return Promise.reject(new Error(DESKTOP_SHELL_REQUIRED_ERROR));
+    }
+
+    return invoke<void>("restore_all_archived_workspace_tabs", options);
+}
+
 export function deleteArchivedWorkspaceTab(options: {
     workspacePath: string;
     tabId: string;
@@ -120,6 +130,16 @@ export function deleteArchivedWorkspaceTab(options: {
     }
 
     return invoke<void>("delete_archived_workspace_tab", options);
+}
+
+export function deleteAllArchivedWorkspaceTabs(options: {
+    workspacePath: string;
+}): Promise<void> {
+    if (!isTauriEnvironment()) {
+        return Promise.reject(new Error(DESKTOP_SHELL_REQUIRED_ERROR));
+    }
+
+    return invoke<void>("delete_all_archived_workspace_tabs", options);
 }
 
 export function setWorkspaceUnsavedChanges(

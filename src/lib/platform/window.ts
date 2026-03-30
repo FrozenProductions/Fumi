@@ -4,6 +4,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauriEnvironment } from "./runtime";
 
 const OPEN_SETTINGS_EVENT = "app://open-settings";
+const CHECK_FOR_UPDATES_EVENT = "app://check-for-updates";
 const PREPARE_FOR_EXIT_EVENT = "app://prepare-for-exit";
 const REQUEST_EXIT_GUARD_SYNC_EVENT = "app://request-exit-guard-sync";
 const ZOOM_IN_EVENT = "app://zoom-in";
@@ -14,6 +15,7 @@ let initializationPromise: Promise<void> | null = null;
 let isPreparingToExitState = false;
 
 const openSettingsListeners = new Set<() => void>();
+const checkForUpdatesListeners = new Set<() => void>();
 const prepareForExitListeners = new Set<() => void>();
 const exitGuardSyncListeners = new Set<(syncId: number) => void>();
 const zoomInListeners = new Set<() => void>();
@@ -38,6 +40,9 @@ export function initializeWindowShell(): Promise<void> {
     initializationPromise = Promise.all([
         listen(OPEN_SETTINGS_EVENT, () => {
             notifyListeners(openSettingsListeners);
+        }),
+        listen(CHECK_FOR_UPDATES_EVENT, () => {
+            notifyListeners(checkForUpdatesListeners);
         }),
         listen(PREPARE_FOR_EXIT_EVENT, () => {
             isPreparingToExitState = true;
@@ -82,6 +87,16 @@ export function subscribeToOpenSettings(listener: () => void): () => void {
 
     return () => {
         openSettingsListeners.delete(listener);
+    };
+}
+
+export function subscribeToCheckForUpdatesRequested(
+    listener: () => void,
+): () => void {
+    checkForUpdatesListeners.add(listener);
+
+    return () => {
+        checkForUpdatesListeners.delete(listener);
     };
 }
 

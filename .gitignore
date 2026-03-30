@@ -8,3 +8,8 @@ node_modules
 !README.md
 !resources/logo.png
 !resources/logo.ico
+
+target/
+gen/
+src-tauri/target/
+src-tauri/gen/

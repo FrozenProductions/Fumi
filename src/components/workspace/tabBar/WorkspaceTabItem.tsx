@@ -1,3 +1,4 @@
+import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
@@ -10,8 +11,11 @@ import { AppIcon } from "../../app/AppIcon";
 import { AppTooltip } from "../../app/AppTooltip";
 
 type WorkspaceTabItemProps = {
+    index: number;
+    sortableGroup: string;
     tab: WorkspaceTab;
     isActive: boolean;
+    isTabDragActive: boolean;
     onArchiveTab: (tabId: string) => void;
     onSelectTab: (tabId: string) => void;
 } & Pick<
@@ -28,8 +32,11 @@ type WorkspaceTabItemProps = {
 >;
 
 export function WorkspaceTabItem({
+    index,
+    sortableGroup,
     tab,
     isActive,
+    isTabDragActive,
     onArchiveTab,
     onSelectTab,
     handleRenameInputBlur,
@@ -45,18 +52,32 @@ export function WorkspaceTabItem({
     const isDirty = tab.content !== tab.savedContent;
     const isRenaming = tab.id === renamingTabId;
     const { baseName } = splitWorkspaceFileName(tab.fileName);
+    const { handleRef, isDragging, isDropTarget, ref } = useSortable({
+        id: tab.id,
+        index,
+        group: sortableGroup,
+        disabled: isRenaming,
+    });
+    const shouldShowDropTarget = isDropTarget && !isTabDragActive;
 
     return (
         <div
+            ref={ref}
             data-tab-id={tab.id}
             onDoubleClick={() => handleStartRename(tab.id, tab.fileName)}
             className={[
                 "group relative flex shrink-0 items-center overflow-hidden rounded-[0.75rem] border transition-[background-color,border-color,box-shadow,transform] duration-150",
-                isActive
-                    ? isRenaming && hasRenameError
-                        ? "border-rose-400 bg-rose-50 ring-2 ring-rose-200/50 shadow-sm"
-                        : "border-fumi-200 bg-fumi-50 shadow-sm"
-                    : "border-transparent bg-transparent hover:border-fumi-200 hover:bg-fumi-50",
+                isDragging
+                    ? "z-10 border-fumi-300 bg-fumi-50/95 shadow-lg"
+                    : isActive
+                      ? isRenaming && hasRenameError
+                          ? "border-rose-400 bg-rose-50 ring-2 ring-rose-200/50 shadow-sm"
+                          : "border-fumi-200 bg-fumi-50 shadow-sm"
+                      : shouldShowDropTarget
+                        ? "border-fumi-300 bg-fumi-50"
+                        : isTabDragActive
+                          ? "border-transparent bg-transparent"
+                          : "border-transparent bg-transparent hover:border-fumi-200 hover:bg-fumi-50",
             ].join(" ")}
         >
             {isRenaming ? (
@@ -94,15 +115,21 @@ export function WorkspaceTabItem({
             ) : (
                 <>
                     <button
+                        ref={handleRef}
                         type="button"
                         onClick={() => onSelectTab(tab.id)}
                         role="tab"
                         aria-selected={isActive}
                         className={[
-                            "flex max-w-[15rem] items-center py-1.5 pl-3 pr-3 text-left text-[0.8125rem] font-semibold tracking-[0.01em] transition-[color,padding] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 group-hover:pr-7 group-focus-within:pr-7",
+                            "flex max-w-[15rem] cursor-grab items-center py-1.5 pl-3 pr-3 text-left text-[0.8125rem] font-semibold tracking-[0.01em] transition-[color,padding] duration-150 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100",
+                            isTabDragActive
+                                ? ""
+                                : "group-hover:pr-7 group-focus-within:pr-7",
                             isActive
                                 ? "text-fumi-600"
-                                : "text-fumi-500 hover:text-fumi-600",
+                                : isTabDragActive
+                                  ? "text-fumi-500"
+                                  : "text-fumi-500 hover:text-fumi-600",
                         ].join(" ")}
                     >
                         <span className="min-w-0 truncate">{baseName}</span>
@@ -133,7 +160,15 @@ export function WorkspaceTabItem({
                             onDoubleClick={(event) => {
                                 event.stopPropagation();
                             }}
-                            className="pointer-events-none absolute right-0.5 top-1/2 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 hover:bg-fumi-200 hover:text-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100 group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100"
+                            className={[
+                                "pointer-events-none absolute right-0.5 top-1/2 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+                                isTabDragActive
+                                    ? ""
+                                    : "hover:bg-fumi-200 hover:text-fumi-600",
+                                isTabDragActive
+                                    ? ""
+                                    : "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
+                            ].join(" ")}
                         >
                             <AppIcon
                                 icon={Cancel01Icon}
