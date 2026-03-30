@@ -6,7 +6,7 @@ authors = ["FrozenProductions"]
 license = ""
 repository = ""
 edition = "2021"
-rust-version = "1.85.0"
+rust-version = "1.88.0"
 
 [lib]
 name = "fumi_lib"

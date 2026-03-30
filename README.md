@@ -37,7 +37,7 @@ Primary stack information comes from [package.json](./package.json) and [src-tau
 | ------------------------- | ------------------------- | ------------------- |
 | Runtime / package manager | Bun                       | `1.3.10+`           |
 | Desktop shell             | Tauri                     | `v2`                |
-| Native backend            | Rust                      | `1.85.0+`           |
+| Native backend            | Rust                      | `1.88.0+`           |
 | Frontend                  | React                     | `19.2.4`            |
 | Frontend runtime          | React DOM                 | `19.2.4`            |
 | Build tool                | Vite                      | `8.0.0`             |
@@ -86,7 +86,7 @@ flowchart LR
 - Xcode Command Line Tools
 - Node.js `20.19.0+`
 - Bun `1.3.10+`
-- Rust `1.85.0+`
+- Rust `1.88.0+`
 
 ### Installation
 
