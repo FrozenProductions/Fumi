@@ -10,6 +10,7 @@ const packageJson = JSON.parse(
 
 export default defineConfig({
     clearScreen: false,
+    base: "./",
     define: {
         __APP_VERSION__: JSON.stringify(packageJson.version),
     },
@@ -18,6 +19,7 @@ export default defineConfig({
     build: {
         outDir: "../../dist",
         emptyOutDir: true,
+        assetsInlineLimit: 0,
         target:
             process.env.TAURI_ENV_PLATFORM === "windows"
                 ? "chrome105"

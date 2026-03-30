@@ -1,13 +1,8 @@
 import type { ReactElement } from "react";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/ext-language_tools";
-import "ace-builds/src-noconflict/mode-lua";
-import "ace-builds/src-noconflict/mode-text";
-import "ace-builds/src-noconflict/theme-github_dark";
-import "ace-builds/src-noconflict/theme-github_light_default";
+import { useEffect, useState } from "react";
 import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/useWorkspaceCodeCompletion";
-import { getEditorModeForFileName } from "../../lib/luau/fileType";
-import { configureLuauAce } from "../../lib/luau/registerAceLuau";
+import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime";
+import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { AppTheme } from "../../types/app/settings";
 import type { WorkspaceTab } from "../../types/workspace/session";
 import { AppCodeCompletion } from "./AppCodeCompletion";
@@ -27,6 +22,8 @@ const WORKSPACE_EDITOR_PROPS = {
 const WORKSPACE_EDITOR_STYLE = {
     fontFamily: WORKSPACE_EDITOR_FONT_FAMILY,
 } as const;
+
+type AceEditorComponent = typeof import("react-ace").default;
 
 type WorkspaceEditorProps = {
     activeTabId: string;
@@ -57,57 +54,85 @@ export function WorkspaceEditor({
     createHandleScroll,
     handleCompletionHover,
 }: WorkspaceEditorProps): ReactElement {
+    const [isAceReady, setIsAceReady] = useState(false);
+    const [AceEditorComponent, setAceEditorComponent] =
+        useState<AceEditorComponent | null>(null);
+    const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        void (async () => {
+            const loadedAceRuntime = await loadAceRuntime();
+            const reactAceModule = await import("react-ace");
+
+            if (isMounted) {
+                setAceRuntime(loadedAceRuntime);
+                setAceEditorComponent(() => reactAceModule.default);
+                setIsAceReady(true);
+            }
+        })();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return (
         <div className="flex min-h-0 flex-1 overflow-hidden bg-fumi-50">
             <div className="relative flex min-h-0 flex-1">
-                {tabs.map((tab) => {
-                    const isActiveTab = tab.id === activeTabId;
+                {!isAceReady ? (
+                    <div className="flex h-full w-full items-center justify-center bg-fumi-50 text-xs font-semibold uppercase tracking-[0.16em] text-fumi-400">
+                        Loading editor
+                    </div>
+                ) : null}
+                {AceEditorComponent && aceRuntime
+                    ? tabs.map((tab) => {
+                          const isActiveTab = tab.id === activeTabId;
 
-                    return (
-                        <div
-                            key={tab.id}
-                            aria-hidden={!isActiveTab}
-                            className={`absolute inset-0 ${
-                                isActiveTab
-                                    ? "z-10 opacity-100"
-                                    : "pointer-events-none opacity-0"
-                            }`}
-                        >
-                            <AceEditor
-                                className="workspace-ace-editor"
-                                name={`workspace-editor-${tab.id}`}
-                                mode={getEditorModeForFileName(tab.fileName)}
-                                theme={
-                                    appTheme === "dark"
-                                        ? "github_dark"
-                                        : "github_light_default"
-                                }
-                                width="100%"
-                                height="100%"
-                                value={tab.content}
-                                onBeforeLoad={configureLuauAce}
-                                onLoad={createHandleEditorLoad(tab.id)}
-                                onChange={createHandleEditorChange(tab.id)}
-                                onCursorChange={createHandleCursorChange(
-                                    tab.id,
-                                )}
-                                onScroll={createHandleScroll(tab.id)}
-                                enableBasicAutocompletion={false}
-                                enableLiveAutocompletion={false}
-                                enableSnippets={false}
-                                fontSize={editorFontSize}
-                                showGutter
-                                showPrintMargin={false}
-                                highlightActiveLine
-                                tabSize={4}
-                                wrapEnabled={false}
-                                setOptions={WORKSPACE_EDITOR_OPTIONS}
-                                editorProps={WORKSPACE_EDITOR_PROPS}
-                                style={WORKSPACE_EDITOR_STYLE}
-                            />
-                        </div>
-                    );
-                })}
+                          return (
+                              <div
+                                  key={tab.id}
+                                  aria-hidden={!isActiveTab}
+                                  className={`absolute inset-0 ${
+                                      isAceReady && isActiveTab
+                                          ? "z-10 opacity-100"
+                                          : "pointer-events-none opacity-0"
+                                  }`}
+                              >
+                                  <AceEditorComponent
+                                      className="workspace-ace-editor"
+                                      name={`workspace-editor-${tab.id}`}
+                                      mode={aceRuntime.getMode(tab.fileName)}
+                                      theme={aceRuntime.getTheme(appTheme)}
+                                      width="100%"
+                                      height="100%"
+                                      value={tab.content}
+                                      onLoad={createHandleEditorLoad(tab.id)}
+                                      onChange={createHandleEditorChange(
+                                          tab.id,
+                                      )}
+                                      onCursorChange={createHandleCursorChange(
+                                          tab.id,
+                                      )}
+                                      onScroll={createHandleScroll(tab.id)}
+                                      enableBasicAutocompletion={false}
+                                      enableLiveAutocompletion={false}
+                                      enableSnippets={false}
+                                      fontSize={editorFontSize}
+                                      showGutter
+                                      showPrintMargin={false}
+                                      highlightActiveLine
+                                      tabSize={4}
+                                      wrapEnabled={false}
+                                      setOptions={WORKSPACE_EDITOR_OPTIONS}
+                                      editorProps={WORKSPACE_EDITOR_PROPS}
+                                      style={WORKSPACE_EDITOR_STYLE}
+                                  />
+                              </div>
+                          );
+                      })
+                    : null}
                 {completionPopup ? (
                     <AppCodeCompletion
                         items={completionPopup.items}
