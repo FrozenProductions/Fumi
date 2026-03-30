@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { ComponentType, ReactElement } from "react";
 import { useEffect, useState } from "react";
 import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime";
@@ -23,7 +23,28 @@ const WORKSPACE_EDITOR_STYLE = {
     fontFamily: WORKSPACE_EDITOR_FONT_FAMILY,
 } as const;
 
-type AceEditorComponent = typeof import("react-ace").default;
+type AceEditorComponent = ComponentType<Record<string, unknown>>;
+
+function getReactAceComponent(
+    reactAceModule: typeof import("react-ace"),
+): AceEditorComponent {
+    const defaultExport: unknown = reactAceModule.default;
+
+    if (typeof defaultExport === "function") {
+        return defaultExport as AceEditorComponent;
+    }
+
+    if (
+        defaultExport &&
+        typeof defaultExport === "object" &&
+        "default" in defaultExport &&
+        typeof defaultExport.default === "function"
+    ) {
+        return defaultExport.default as AceEditorComponent;
+    }
+
+    throw new Error("React Ace component export is unavailable");
+}
 
 type WorkspaceEditorProps = {
     activeTabId: string;
@@ -65,10 +86,11 @@ export function WorkspaceEditor({
         void (async () => {
             const loadedAceRuntime = await loadAceRuntime();
             const reactAceModule = await import("react-ace");
+            const reactAceComponent = getReactAceComponent(reactAceModule);
 
             if (isMounted) {
                 setAceRuntime(loadedAceRuntime);
-                setAceEditorComponent(() => reactAceModule.default);
+                setAceEditorComponent(() => reactAceComponent);
                 setIsAceReady(true);
             }
         })();

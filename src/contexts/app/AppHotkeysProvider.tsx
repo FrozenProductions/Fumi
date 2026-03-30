@@ -142,20 +142,17 @@ export function AppHotkeysProvider({
     useHotkey(
         "Escape",
         () => {
-            closeCommandPalette();
-        },
-        {
-            enabled: isCommandPaletteOpen,
-        },
-    );
+            if (isCommandPaletteOpen) {
+                closeCommandPalette();
+                return;
+            }
 
-    useHotkey(
-        "Escape",
-        () => {
-            closeSettings();
+            if (isSettingsOpen) {
+                closeSettings();
+            }
         },
         {
-            enabled: isSettingsOpen && !isCommandPaletteOpen,
+            enabled: isCommandPaletteOpen || isSettingsOpen,
         },
     );
 
