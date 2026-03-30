@@ -1,6 +1,6 @@
 use tauri::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItemBuilder, PredefinedMenuItem, Submenu},
-    AppHandle, Runtime,
+    AppHandle, Manager, Runtime,
 };
 
 use crate::{
@@ -14,6 +14,7 @@ use crate::{
 const APP_OPEN_SETTINGS_ID: &str = "app-open-settings";
 const APP_CHECK_FOR_UPDATES_ID: &str = "app-check-for-updates";
 const APP_QUIT_ID: &str = "app-quit";
+const VIEW_OPEN_DEVTOOLS_ID: &str = "view-open-devtools";
 const VIEW_ZOOM_IN_ID: &str = "view-zoom-in";
 const VIEW_ZOOM_OUT_ID: &str = "view-zoom-out";
 const VIEW_ZOOM_RESET_ID: &str = "view-zoom-reset";
@@ -40,6 +41,10 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
     let zoom_reset = MenuItemBuilder::with_id(VIEW_ZOOM_RESET_ID, "Actual Size")
         .accelerator("CmdOrCtrl+0")
         .build(app)?;
+    let open_devtools =
+        MenuItemBuilder::with_id(VIEW_OPEN_DEVTOOLS_ID, "Developer Tools")
+            .accelerator("CmdOrCtrl+Alt+I")
+            .build(app)?;
     let zoom_in = MenuItemBuilder::with_id(VIEW_ZOOM_IN_ID, "Zoom In")
         .accelerator("CmdOrCtrl+=")
         .build(app)?;
@@ -87,7 +92,12 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
                 true,
                 &[&PredefinedMenuItem::close_window(app, None)?],
             )?,
-            &Submenu::with_items(app, "View", true, &[&zoom_reset, &zoom_in, &zoom_out])?,
+            &Submenu::with_items(
+                app,
+                "View",
+                true,
+                &[&zoom_reset, &zoom_in, &zoom_out, &PredefinedMenuItem::separator(app)?, &open_devtools],
+            )?,
             &Submenu::with_items(
                 app,
                 "Window",
@@ -114,6 +124,13 @@ pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
         VIEW_ZOOM_IN_ID => emit_zoom_in(app),
         VIEW_ZOOM_OUT_ID => emit_zoom_out(app),
         VIEW_ZOOM_RESET_ID => emit_zoom_reset(app),
+        VIEW_OPEN_DEVTOOLS_ID => {
+            if let Some(window) = app.get_webview_window(crate::events::MAIN_WINDOW_LABEL) {
+                window.open_devtools();
+            }
+
+            Ok(())
+        }
         _ => Ok(()),
     };
 

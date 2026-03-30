@@ -73,7 +73,7 @@
 
     body {
         margin: 0;
-        background: transparent;
+        background: var(--color-fumi-50);
         color: rgb(var(--color-fumi-900) / 1);
         font-family: "Plus Jakarta Sans", sans-serif;
     }
