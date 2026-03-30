@@ -18,6 +18,9 @@ import type {
 } from "../../types/app/settings";
 import type { AppSidebarItem } from "../../types/app/sidebar";
 
+const APP_SIDEBAR_ITEMS = ["workspace", "script-library"] as const;
+const APP_THEMES = ["light", "dark"] as const;
+
 type AppStoreState = {
     isSidebarOpen: boolean;
     isSettingsOpen: boolean;
@@ -65,6 +68,17 @@ function clampZoomPercent(zoomPercent: number): number {
     }
 
     return Math.min(APP_ZOOM_MAX, Math.max(APP_ZOOM_MIN, zoomPercent));
+}
+
+function isAppSidebarItem(value: unknown): value is AppSidebarItem {
+    return (
+        typeof value === "string" &&
+        APP_SIDEBAR_ITEMS.includes(value as AppSidebarItem)
+    );
+}
+
+function isAppTheme(value: unknown): value is AppTheme {
+    return typeof value === "string" && APP_THEMES.includes(value as AppTheme);
 }
 
 export const useAppStore = create<AppStore>()(
@@ -219,10 +233,26 @@ export const useAppStore = create<AppStore>()(
             merge: (persistedState, currentState) => {
                 const persistedAppState =
                     (persistedState as Partial<AppStoreState>) ?? {};
+                const zoomPercent = clampZoomPercent(
+                    typeof persistedAppState.zoomPercent === "number"
+                        ? persistedAppState.zoomPercent
+                        : APP_ZOOM_DEFAULT,
+                );
+                const activeSidebarItem = isAppSidebarItem(
+                    persistedAppState.activeSidebarItem,
+                )
+                    ? persistedAppState.activeSidebarItem
+                    : currentState.activeSidebarItem;
+                const theme = isAppTheme(persistedAppState.theme)
+                    ? persistedAppState.theme
+                    : currentState.theme;
 
                 return {
                     ...currentState,
                     ...persistedAppState,
+                    activeSidebarItem,
+                    zoomPercent,
+                    theme,
                     editorSettings: {
                         ...currentState.editorSettings,
                         ...persistedAppState.editorSettings,
