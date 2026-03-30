@@ -26,23 +26,6 @@ type AppSettingsGeneralSectionProps = {
     updater: UseAppUpdaterResult;
 };
 
-function formatUpdateDate(date: string | null): string | null {
-    if (!date) {
-        return null;
-    }
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-        return null;
-    }
-
-    return new Intl.DateTimeFormat(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-    }).format(parsedDate);
-}
-
 function formatByteCount(value: number | null): string | null {
     if (value === null || value <= 0) {
         return null;
@@ -102,14 +85,29 @@ export function AppSettingsGeneralSection({
         downloadAndInstallUpdate,
         relaunchToApplyUpdate,
     } = updater;
-    const formattedUpdateDate = formatUpdateDate(availableUpdate?.date ?? null);
-    const progressSummary = getProgressSummary(downloadProgress);
+    const displayedAvailableUpdate = availableUpdate;
+    const displayedUpdaterStatus = updaterStatus;
+    const displayedDownloadProgress = downloadProgress;
+    const progressSummary = getProgressSummary(displayedDownloadProgress);
     const shouldDisableCheckButton =
-        updaterStatus === "checking" ||
-        updaterStatus === "downloading" ||
-        updaterStatus === "installing";
-    const shouldDisableInstallButton =
-        updaterStatus === "downloading" || updaterStatus === "installing";
+        displayedUpdaterStatus === "checking" ||
+        displayedUpdaterStatus === "downloading" ||
+        displayedUpdaterStatus === "installing";
+    const updaterButtonBaseClassName =
+        "inline-flex h-8 items-center justify-center rounded-[0.65rem] px-3 text-xs font-semibold tracking-[0.01em] transition-[background-color,border-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:pointer-events-none disabled:opacity-50";
+    const checkForUpdatesButtonLabel =
+        displayedUpdaterStatus === "checking"
+            ? "Checking..."
+            : displayedUpdaterStatus === "available" && displayedAvailableUpdate
+              ? `Download v${displayedAvailableUpdate.version}`
+              : "Check for updates";
+    const checkForUpdatesButtonClassName =
+        displayedUpdaterStatus === "available" && displayedAvailableUpdate
+            ? theme === "dark"
+                ? "pointer-events-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-300 bg-fumi-700 px-3 text-[11px] font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-400 hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:pointer-events-none disabled:opacity-50"
+                : "pointer-events-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-200 bg-fumi-600 px-3 text-[11px] font-semibold tracking-wide text-white shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-700 hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:pointer-events-none disabled:opacity-50"
+            : `${updaterButtonBaseClassName} border border-fumi-200 bg-fumi-100 text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900`;
+    const restartButtonClassName = `${updaterButtonBaseClassName} border border-fumi-700 bg-fumi-900 text-fumi-50 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08),0_1px_2px_rgb(15_23_42_/_0.12)] hover:border-fumi-800 hover:bg-fumi-800`;
 
     const handleZoomPercentChange = (value: string): void => {
         void setZoomPercent(Number(value));
@@ -121,6 +119,18 @@ export function AppSettingsGeneralSection({
 
     const handleZoomIn = (): void => {
         void setZoomPercent(zoomPercent + APP_ZOOM_STEP);
+    };
+
+    const handleCheckForUpdatesAction = (): void => {
+        if (
+            displayedUpdaterStatus === "available" &&
+            displayedAvailableUpdate
+        ) {
+            void downloadAndInstallUpdate();
+            return;
+        }
+
+        void checkForUpdates();
     };
 
     return (
@@ -168,35 +178,19 @@ export function AppSettingsGeneralSection({
                         <div className="flex shrink-0 items-center gap-2">
                             <button
                                 type="button"
-                                onClick={() => {
-                                    void checkForUpdates();
-                                }}
+                                onClick={handleCheckForUpdatesAction}
                                 disabled={shouldDisableCheckButton}
-                                className="rounded-[0.6rem] border border-fumi-200 bg-fumi-50 px-3 py-1.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] duration-150 hover:border-fumi-300 hover:bg-fumi-200 disabled:cursor-not-allowed disabled:opacity-60"
+                                className={checkForUpdatesButtonClassName}
                             >
-                                {updaterStatus === "checking"
-                                    ? "Checking..."
-                                    : "Check for updates"}
+                                {checkForUpdatesButtonLabel}
                             </button>
-                            {updaterStatus === "available" ? (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        void downloadAndInstallUpdate();
-                                    }}
-                                    disabled={shouldDisableInstallButton}
-                                    className="rounded-[0.6rem] border border-fumi-700 bg-fumi-900 px-3 py-1.5 text-[11px] font-semibold text-fumi-50 shadow-sm transition-[background-color,border-color,color] duration-150 hover:bg-fumi-800 disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    Download and install
-                                </button>
-                            ) : null}
-                            {updaterStatus === "readyToRestart" ? (
+                            {displayedUpdaterStatus === "readyToRestart" ? (
                                 <button
                                     type="button"
                                     onClick={() => {
                                         void relaunchToApplyUpdate();
                                     }}
-                                    className="rounded-[0.6rem] border border-fumi-700 bg-fumi-900 px-3 py-1.5 text-[11px] font-semibold text-fumi-50 shadow-sm transition-[background-color,border-color,color] duration-150 hover:bg-fumi-800"
+                                    className={restartButtonClassName}
                                 >
                                     Restart now
                                 </button>
@@ -204,41 +198,22 @@ export function AppSettingsGeneralSection({
                         </div>
                     </div>
 
-                    {(availableUpdate ||
-                        progressSummary ||
+                    {(progressSummary ||
                         errorMessage ||
-                        updaterStatus === "unsupported") && (
+                        displayedUpdaterStatus === "unsupported") && (
                         <div className="border-t border-fumi-200/60 bg-fumi-50/30 px-4 py-3">
                             <div className="space-y-3">
-                                {(availableUpdate || formattedUpdateDate) && (
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fumi-500">
-                                        {availableUpdate ? (
-                                            <span>
-                                                Latest version{" "}
-                                                <span className="font-semibold text-fumi-800">
-                                                    v{availableUpdate.version}
-                                                </span>
-                                            </span>
-                                        ) : null}
-                                        {formattedUpdateDate ? (
-                                            <span>
-                                                Published {formattedUpdateDate}
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                )}
-
                                 {progressSummary ? (
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between gap-3 text-xs text-fumi-500">
                                             <span>{progressSummary}</span>
-                                            {downloadProgress?.progressPercent !==
+                                            {displayedDownloadProgress?.progressPercent !==
                                                 null &&
-                                            downloadProgress?.progressPercent !==
+                                            displayedDownloadProgress?.progressPercent !==
                                                 undefined ? (
                                                 <span className="font-semibold text-fumi-800">
                                                     {
-                                                        downloadProgress?.progressPercent
+                                                        displayedDownloadProgress?.progressPercent
                                                     }
                                                     %
                                                 </span>
@@ -248,7 +223,7 @@ export function AppSettingsGeneralSection({
                                             <div
                                                 className="h-full rounded-full bg-fumi-700 transition-[width] duration-200 ease-out"
                                                 style={{
-                                                    width: `${downloadProgress?.progressPercent ?? 10}%`,
+                                                    width: `${displayedDownloadProgress?.progressPercent ?? 10}%`,
                                                 }}
                                             />
                                         </div>
@@ -261,20 +236,7 @@ export function AppSettingsGeneralSection({
                                     </p>
                                 ) : null}
 
-                                {availableUpdate?.body ? (
-                                    <div>
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fumi-400">
-                                            Release notes
-                                        </p>
-                                        <div className="mt-1.5 max-h-32 overflow-y-auto rounded-[0.5rem] border border-fumi-200/50 bg-fumi-50/50 p-2.5">
-                                            <p className="whitespace-pre-wrap text-xs leading-[1.65] text-fumi-600">
-                                                {availableUpdate.body}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : null}
-
-                                {updaterStatus === "unsupported" ? (
+                                {displayedUpdaterStatus === "unsupported" ? (
                                     <p className="text-xs leading-[1.6] text-fumi-500">
                                         Web-only mode keeps the updater disabled
                                         so local UI work can run without the
