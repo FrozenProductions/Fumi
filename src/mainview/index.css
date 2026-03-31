@@ -29,6 +29,9 @@
         --color-editor-cursor: var(--color-fumi-700);
         --color-editor-print-margin: var(--color-fumi-200);
         --color-editor-string: 47 125 87;
+        --color-traffic-close: 255 95 87;
+        --color-traffic-minimize: 254 188 46;
+        --color-traffic-maximize: 40 200 64;
         --shadow-app-shell:
             0 18px 50px rgb(53 23 21 / 0.18), 0 2px 10px rgb(53 23 21 / 0.08);
         --shadow-app-elevated:
@@ -62,6 +65,9 @@
         --color-editor-cursor: 255 212 198;
         --color-editor-print-margin: 54 57 61;
         --color-editor-string: 120 210 167;
+        --color-traffic-close: 255 95 87;
+        --color-traffic-minimize: 254 188 46;
+        --color-traffic-maximize: 40 200 64;
         --shadow-app-shell:
             0 18px 54px rgb(0 0 0 / 0.45), 0 4px 14px rgb(0 0 0 / 0.3);
         --shadow-app-elevated:

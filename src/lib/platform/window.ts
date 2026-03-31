@@ -152,12 +152,52 @@ export async function startCurrentWindowDragging(): Promise<void> {
     await getCurrentWindow().startDragging();
 }
 
-export async function toggleCurrentWindowMaximize(): Promise<void> {
+export async function toggleCurrentWindowMaximize(): Promise<boolean> {
+    if (!isTauriEnvironment()) {
+        return false;
+    }
+
+    const currentWindow = getCurrentWindow();
+
+    await currentWindow.toggleMaximize();
+
+    return currentWindow.isMaximized();
+}
+
+export async function minimizeCurrentWindow(): Promise<void> {
     if (!isTauriEnvironment()) {
         return;
     }
 
-    await getCurrentWindow().toggleMaximize();
+    await getCurrentWindow().minimize();
+}
+
+export async function closeCurrentWindow(): Promise<void> {
+    if (!isTauriEnvironment()) {
+        return;
+    }
+
+    await getCurrentWindow().close();
+}
+
+export async function readCurrentWindowMaximizedState(): Promise<boolean> {
+    if (!isTauriEnvironment()) {
+        return false;
+    }
+
+    return getCurrentWindow().isMaximized();
+}
+
+export async function subscribeToCurrentWindowResize(
+    listener: () => void,
+): Promise<() => void> {
+    if (!isTauriEnvironment()) {
+        return () => undefined;
+    }
+
+    return getCurrentWindow().onResized(() => {
+        listener();
+    });
 }
 
 export async function completeExitPreparation(): Promise<void> {

@@ -13,6 +13,7 @@ import { AppIcon } from "./AppIcon";
 import { AppIconButton } from "./AppIconButton";
 import { AppTooltip } from "./AppTooltip";
 import { AppTopbarExecutorControls } from "./AppTopbarExecutorControls";
+import { AppTopbarTrafficLights } from "./AppTopbarTrafficLights";
 
 type AppTopbarProps = {
     title: string;
@@ -103,10 +104,11 @@ export function AppTopbar({
 
     return (
         <header
-            className="relative z-20 box-border flex h-11 shrink-0 items-center gap-1.5 border-b border-fumi-200 bg-fumi-100 pl-[4.5rem] pr-3 select-none [cursor:default] [-webkit-user-select:none]"
+            className="relative z-20 box-border flex h-11 shrink-0 items-center gap-1.5 border-b border-fumi-200 bg-fumi-100 pl-[4rem] pr-3 select-none [cursor:default] [-webkit-user-select:none]"
             onMouseDownCapture={handleTopbarMouseDown}
         >
-            <div className="pointer-events-none absolute left-[5.40rem] top-1/2 z-10 h-4 w-0.5 -translate-y-1/2 rounded-full bg-fumi-300" />
+            <AppTopbarTrafficLights />
+            <div className="pointer-events-none absolute left-[4.8rem] top-1/2 z-10 h-4 w-0.5 -translate-y-1/2 rounded-full bg-fumi-300" />
             <div className="relative z-10 ml-5 flex items-center gap-1.5">
                 <AppTooltip
                     content={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
