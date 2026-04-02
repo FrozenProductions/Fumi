@@ -1,5 +1,5 @@
 import { Add01Icon, MinusSignIcon } from "@hugeicons/core-free-icons";
-import type { ReactElement } from "react";
+import { type ReactElement, useEffect, useRef, useState } from "react";
 import fumiIcon from "../../../assets/fumi.png";
 import {
     APP_AUTHOR_NAME,
@@ -17,7 +17,15 @@ import {
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import type { UseAppUpdaterResult } from "../../../hooks/app/useAppUpdater";
 import { useAppZoom } from "../../../hooks/app/useAppZoom";
-import type { AppUpdateDownloadProgress } from "../../../types/app/updater";
+import {
+    getAppUpdaterPhrase,
+    shouldRefreshAppUpdaterPhrase,
+} from "../../../lib/app/updatePhrases";
+import type {
+    AppUpdateDownloadProgress,
+    AppUpdaterStatus,
+} from "../../../types/app/updater";
+import { AppAnimatedText } from "../AppAnimatedText";
 import { AppIcon } from "../AppIcon";
 import { AppInput } from "../AppInput";
 import { AppSelect } from "../AppSelect";
@@ -45,10 +53,6 @@ function formatByteCount(value: number | null): string | null {
     }
 
     return `${currentValue.toFixed(currentValue >= 10 ? 0 : 1)} ${units[unitIndex]}`;
-}
-
-function getUpdaterDescription(): string {
-    return "See whether a new desktop update is available.";
 }
 
 function getProgressSummary(
@@ -88,6 +92,12 @@ export function AppSettingsGeneralSection({
     const displayedAvailableUpdate = availableUpdate;
     const displayedUpdaterStatus = updaterStatus;
     const displayedDownloadProgress = downloadProgress;
+    const [updaterPhrase, setUpdaterPhrase] = useState(() =>
+        getAppUpdaterPhrase(displayedUpdaterStatus),
+    );
+    const previousUpdaterStatusRef = useRef<AppUpdaterStatus>(
+        displayedUpdaterStatus,
+    );
     const progressSummary = getProgressSummary(displayedDownloadProgress);
     const shouldDisableCheckButton =
         displayedUpdaterStatus === "checking" ||
@@ -133,6 +143,20 @@ export function AppSettingsGeneralSection({
         void checkForUpdates();
     };
 
+    useEffect(() => {
+        if (displayedUpdaterStatus === previousUpdaterStatusRef.current) {
+            return;
+        }
+
+        previousUpdaterStatusRef.current = displayedUpdaterStatus;
+
+        if (!shouldRefreshAppUpdaterPhrase(displayedUpdaterStatus)) {
+            return;
+        }
+
+        setUpdaterPhrase(getAppUpdaterPhrase(displayedUpdaterStatus));
+    }, [displayedUpdaterStatus]);
+
     return (
         <div className="flex w-full flex-col divide-y divide-fumi-200/80">
             <div className="py-4">
@@ -173,7 +197,7 @@ export function AppSettingsGeneralSection({
 
                     <div className="flex items-center justify-between gap-3 border-t border-fumi-200/60 bg-fumi-50/50 pl-4 pr-3 py-3">
                         <p className="min-w-0 flex-1 whitespace-nowrap text-xs font-medium text-fumi-600">
-                            {getUpdaterDescription()}
+                            <AppAnimatedText text={updaterPhrase} />
                         </p>
                         <div className="flex shrink-0 items-center gap-2">
                             <button
