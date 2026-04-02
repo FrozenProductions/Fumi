@@ -11,6 +11,10 @@ const packageJson = JSON.parse(
 export default defineConfig({
     fmt: {},
     lint: { options: { typeAware: true, typeCheck: true } },
+    test: {
+        root: ".",
+        include: ["src/**/*.test.ts"],
+    },
     clearScreen: false,
     base: "./",
     define: {
