@@ -33,21 +33,26 @@ This README is based on the public repository structure and config files such as
 
 Primary stack information comes from [package.json](./package.json) and [src-tauri/tauri.conf.json](./src-tauri/tauri.conf.json).
 
-| Layer                     | Technology                | Version             |
-| ------------------------- | ------------------------- | ------------------- |
-| Runtime / package manager | Bun                       | `1.3.10+`           |
-| Desktop shell             | Tauri                     | `v2`                |
-| Native backend            | Rust                      | `1.88.0+`           |
-| Frontend                  | React                     | `19.2.4`            |
-| Frontend runtime          | React DOM                 | `19.2.4`            |
-| Build tool                | Vite                      | `8.0.0`             |
-| Language                  | TypeScript                | `6.0.2`             |
-| Styling                   | Tailwind CSS              | `3.4.16`            |
-| Formatting / linting      | Biome                     | `2.0.6`             |
-| State management          | Zustand                   | `5.0.12`            |
-| Editor                    | Ace / React Ace           | `1.43.4` / `14.0.1` |
-| Icons                     | Hugeicons                 | `4.0.0` / `1.1.6`   |
-| Tauri plugins             | Clipboard Manager, Dialog | `v2`                |
+| Layer                     | Technology                                      | Version             |
+| ------------------------- | ----------------------------------------------- | ------------------- |
+| Runtime / package manager | Bun                                             | `1.3.10+`           |
+| Desktop shell             | Tauri                                           | `v2`                |
+| Native backend            | Rust                                            | `1.88.0+`           |
+| Frontend                  | React                                           | `19.2.4`            |
+| Frontend renderer         | React DOM                                       | `19.2.4`            |
+| Build toolchain           | Vite+ (`vite-plus`)                             | `latest`            |
+| Vite-compatible core      | `@voidzero-dev/vite-plus-core` via `vite` alias | `latest`            |
+| Language                  | TypeScript                                      | `6.0.2`             |
+| Styling                   | Tailwind CSS                                    | `3.4.16`            |
+| Motion utilities          | `tailwindcss-motion`                            | `1.1.1`             |
+| Formatting / linting      | Biome                                           | `2.0.6`             |
+| State management          | Zustand                                         | `5.0.12`            |
+| Effects / runtime helpers | Effect                                          | `3.21.0`            |
+| Hotkeys                   | `@tanstack/react-hotkeys`                       | `0.4.2`             |
+| Drag and drop             | `@dnd-kit/react`                                | `0.3.2`             |
+| Editor                    | Ace / React Ace                                 | `1.43.4` / `14.0.1` |
+| Icons                     | Hugeicons                                       | `4.0.0` / `1.1.6`   |
+| Tauri plugins             | Clipboard Manager, Dialog, Process, Updater     | `v2`                |
 
 ## Project Architecture
 
@@ -166,10 +171,9 @@ Requires the Tauri desktop shell:
 |   |-- constants/         # Shared constants grouped by feature
 |   |-- contexts/          # React providers
 |   |-- hooks/             # Reusable hooks by domain
-|   |-- lib/               # Helpers and frontend platform wrappers
+|   |-- lib/               # Helpers, shared domain types, and platform wrappers
 |   |-- mainview/          # Frontend entrypoint and top-level app composition
 |   |-- shared/            # Shared frontend-side contracts
-|   `-- types/             # Shared TypeScript types
 |-- src-tauri/
 |   |-- capabilities/      # Tauri capability permissions
 |   |-- icons/             # Desktop app icons
@@ -224,6 +228,8 @@ The current codebase follows these conventions:
 - Use functional code and keep responsibilities small and explicit.
 - Prefer strict TypeScript with precise types and `type` aliases over loose typing.
 - Use `import type` for type-only imports.
+- Store reusable contracts in domain `*.type.ts` files instead of a central `src/types` folder.
+- Keep component prop types in adjacent component `*.type.ts` files when they are shared across that component area.
 - Keep React components focused on rendering and push side effects or subscriptions into hooks.
 - Avoid derived state in `useEffect`; compute it inline when possible.
 - Route frontend-native interactions through [`src/lib/platform`](./src/lib/platform) wrappers.
