@@ -14,7 +14,7 @@
 
 # Fumi
 
-Fumi is an Elegant custom api wrapper interface for the MacSploit API.
+Fumi is an elegant and soft UI wrapper for MacSploit.
 
 This README is based on the public repository structure and config files such as [package.json](./package.json), [src-tauri/tauri.conf.json](./src-tauri/tauri.conf.json), and [.github/workflows/ci.yml](./.github/workflows/ci.yml).
 
@@ -58,9 +58,9 @@ Primary stack information comes from [package.json](./package.json) and [src-tau
 
 Fumi is split into a React frontend and a Rust/Tauri backend:
 
-- The React app in [`src/`](./src) renders the desktop UI, workspace editor, settings, command palette, and script library screens.
+- The frontend under [`src/`](./src) is organized around [`src/mainview`](./src/mainview), reusable UI in [`src/components`](./src/components), hooks in [`src/hooks`](./src/hooks), and domain helpers in [`src/lib`](./src/lib).
 - Frontend access to native capabilities is funneled through wrappers in [`src/lib/platform`](./src/lib/platform) instead of calling raw Tauri APIs throughout the component tree.
-- The Rust backend in [`src-tauri/src`](./src-tauri/src) registers Tauri commands, menu events, lifecycle hooks, workspace persistence, and MacSploit executor behavior.
+- The Rust backend in [`src-tauri/src`](./src-tauri/src) registers Tauri commands, menu events, lifecycle hooks, workspace persistence, updater/plugin setup, and MacSploit executor behavior.
 - The script library is fetched by the frontend, while local workspace operations and executor actions go through the native backend.
 
 ```mermaid
@@ -76,10 +76,10 @@ flowchart LR
 
 ### Main Runtime Areas
 
-- [`src/mainview/App.tsx`](./src/mainview/App.tsx) composes the app shell, sidebar, topbar, settings window, and command palette.
+- [`src/mainview/App.tsx`](./src/mainview/App.tsx) composes the app shell, sidebar, topbar, settings window, updater flow, and command palette.
 - [`src/mainview/appScreens.tsx`](./src/mainview/appScreens.tsx) switches between the workspace and script-library screens.
-- [`src-tauri/src/lib.rs`](./src-tauri/src/lib.rs) wires commands, plugins, menu handling, and guarded app/window shutdown.
-- [`src-tauri/src/workspace`](./src-tauri/src/workspace) owns workspace metadata, file operations, and session restore behavior.
+- [`src-tauri/src/lib.rs`](./src-tauri/src/lib.rs) wires commands, plugins, menu handling, guarded app/window shutdown, and quit preparation.
+- [`src-tauri/src/workspace`](./src-tauri/src/workspace) owns workspace metadata, file operations, archive/restore flows, and session restore behavior.
 - [`src-tauri/src/executor`](./src-tauri/src/executor) manages the MacSploit socket protocol, attach/detach flow, and execution messages.
 - [`src-tauri/src/menu.rs`](./src-tauri/src/menu.rs) defines native app, edit, file, view, and window menus.
 
@@ -136,7 +136,7 @@ bun run dev        # Start the Tauri desktop app in development
 bun run dev:web    # Start only the Vite frontend
 bun run build:web  # Build frontend assets
 bun run build      # Build the Tauri desktop bundle
-bun run test       # Run Rust tests
+bun run test       # Run frontend tests and Rust tests
 bun run typecheck  # Run TypeScript type checks
 bun run lint       # Run Biome lint/format checks
 bun run format     # Apply Biome formatting
@@ -164,7 +164,7 @@ Requires the Tauri desktop shell:
 .
 |-- .github/
 |   `-- workflows/         # CI workflow definitions
-|-- resources/             # Branding assets and project-specific docs
+|-- resources/             # Branding assets
 |-- src/
 |   |-- assets/            # Bundled frontend assets
 |   |-- components/        # Reusable React UI by domain
@@ -173,14 +173,17 @@ Requires the Tauri desktop shell:
 |   |-- hooks/             # Reusable hooks by domain
 |   |-- lib/               # Helpers, shared domain types, and platform wrappers
 |   |-- mainview/          # Frontend entrypoint and top-level app composition
-|   |-- shared/            # Shared frontend-side contracts
 |-- src-tauri/
 |   |-- capabilities/      # Tauri capability permissions
+|   |-- gen/               # Generated Tauri schemas
 |   |-- icons/             # Desktop app icons
 |   |-- src/               # Rust backend, commands, menu, events, state
 |   `-- tauri.conf.json    # Tauri app, bundle, and dev/build configuration
+|-- biome.json
 |-- LICENSE
-`-- package.json
+|-- package.json
+|-- tailwind.config.js
+`-- vite.config.mts
 ```
 
 ## Development Workflow
@@ -239,12 +242,11 @@ The current codebase follows these conventions:
 
 ## Testing
 
-The repository’s test entrypoint is currently Rust-focused:
+The repository currently has both frontend and Rust tests:
 
-- `bun run test` maps to `cargo test --manifest-path src-tauri/Cargo.toml`
+- `bun run test` runs `vp test run` and `cargo test --manifest-path src-tauri/Cargo.toml`
+- Frontend test files currently live in [`src/lib/app`](./src/lib/app) and [`src/lib/workspace`](./src/lib/workspace)
 - CI runs tests together with linting, typechecking, and a frontend production build
-
-At the moment, there is no dedicated frontend unit test script in [package.json](./package.json). Frontend validation is covered by TypeScript checks, Biome checks, and `bun run build:web`.
 
 ## Contributing
 
