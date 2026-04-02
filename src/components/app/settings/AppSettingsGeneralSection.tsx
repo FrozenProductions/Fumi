@@ -171,7 +171,7 @@ export function AppSettingsGeneralSection({
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 border-t border-fumi-200/60 bg-fumi-50/50 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3 border-t border-fumi-200/60 bg-fumi-50/50 pl-4 pr-3 py-3">
                         <p className="min-w-0 flex-1 whitespace-nowrap text-xs font-medium text-fumi-600">
                             {getUpdaterDescription()}
                         </p>
