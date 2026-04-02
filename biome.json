@@ -11,12 +11,31 @@
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
-        "indentWidth": 4
+        "indentWidth": 4,
+        "lineEnding": "lf"
     },
     "linter": {
         "enabled": true,
         "rules": {
             "recommended": true,
+            "style": {
+                "noDefaultExport": "error",
+                "noEnum": "error",
+                "noNonNullAssertion": "error",
+                "useConsistentTypeDefinitions": {
+                    "level": "error",
+                    "options": {
+                        "style": "type"
+                    }
+                },
+                "useImportType": {
+                    "level": "error",
+                    "options": {
+                        "style": "auto"
+                    }
+                },
+                "useNodejsImportProtocol": "error"
+            },
             "suspicious": {
                 "noExplicitAny": "off",
                 "noUnknownAtRules": "off"
@@ -29,9 +48,62 @@
     },
     "javascript": {
         "formatter": {
-            "quoteStyle": "double"
+            "quoteStyle": "double",
+            "jsxQuoteStyle": "double"
         }
     },
+    "overrides": [
+        {
+            "includes": ["src/**/*.ts", "src/**/*.tsx"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": {
+                            "level": "error",
+                            "options": {
+                                "paths": {
+                                    "@tauri-apps/api": "Use the wrappers in src/lib/platform/ instead of importing Tauri APIs directly in application code."
+                                },
+                                "patterns": [
+                                    {
+                                        "group": ["@tauri-apps/api/**"],
+                                        "message": "Use the wrappers in src/lib/platform/ instead of importing Tauri APIs directly in application code."
+                                    },
+                                    {
+                                        "group": ["@tauri-apps/plugin-*"],
+                                        "message": "Use the wrappers in src/lib/platform/ instead of importing Tauri plugins directly in application code."
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "includes": [
+                "src/lib/platform/**/*.ts",
+                "src/lib/platform/**/*.tsx"
+            ],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": "off"
+                    }
+                }
+            }
+        },
+        {
+            "includes": ["tailwind.config.js", "vite.config.mts"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noDefaultExport": "off"
+                    }
+                }
+            }
+        }
+    ],
     "assist": {
         "enabled": true,
         "actions": {
