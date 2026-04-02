@@ -12,48 +12,10 @@ import {
     UserCheck01Icon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import type {
-    ScriptLibraryEntry,
-    ScriptLibraryViewFormat,
-} from "../../types/scriptLibrary/scriptLibrary";
+import { formatScriptLibraryDate } from "../../lib/scriptLibrary/scriptLibrary";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
-
-type ScriptLibraryCardActions = {
-    hasWorkspace: boolean;
-    isAddingToWorkspace: boolean;
-    isAddedToWorkspace: boolean;
-    isCopyingScript: boolean;
-    isCopiedLink: boolean;
-    isCopiedScript: boolean;
-    onAddToWorkspace: () => void;
-    onCopyLink: () => void;
-    onCopyScript: () => void;
-};
-
-type ScriptLibraryCardProps = {
-    script: ScriptLibraryEntry;
-    viewFormat: ScriptLibraryViewFormat;
-    actions: ScriptLibraryCardActions;
-};
-
-function formatDate(dateString: string): string {
-    if (!dateString) {
-        return "Unknown date";
-    }
-
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-        return "Unknown date";
-    }
-
-    return new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    }).format(date);
-}
+import type { ScriptLibraryCardProps } from "./scriptLibrary.type";
 
 export function ScriptLibraryCard({
     script,
@@ -168,7 +130,7 @@ export function ScriptLibraryCard({
                             size={12}
                             strokeWidth={2.5}
                         />
-                        {formatDate(script.createdAt)}
+                        {formatScriptLibraryDate(script.createdAt)}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">

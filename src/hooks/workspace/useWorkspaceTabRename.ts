@@ -5,7 +5,7 @@ import type {
 } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { splitWorkspaceFileName } from "../../lib/workspace/fileName";
-import type { WorkspaceSession } from "../../types/workspace/session";
+import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import { useWorkspaceUiStore } from "./useWorkspaceUiStore";
 
 type UseWorkspaceTabRenameOptions = {

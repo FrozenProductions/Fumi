@@ -6,7 +6,7 @@ import {
 import type {
     AppSidebarActionItem,
     AppSidebarNavigationItem,
-} from "../../types/app/sidebar";
+} from "../../lib/app/app.type";
 import { APP_HOTKEYS } from "./hotkeys";
 
 export const APP_SIDEBAR_ITEMS = [

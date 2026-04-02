@@ -3,17 +3,9 @@ import {
     APP_SETTINGS_SIDEBAR_ITEM,
     APP_SIDEBAR_ITEMS,
 } from "../../constants/app/sidebar";
-import type { AppSidebarItem } from "../../types/app/sidebar";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
-
-type AppSidebarProps = {
-    isOpen: boolean;
-    activeItem: AppSidebarItem;
-    isSettingsOpen: boolean;
-    onSelectItem: (item: AppSidebarItem) => void;
-    onToggleSettings: () => void;
-};
+import type { AppSidebarProps } from "./app.type";
 
 export function AppSidebar({
     isOpen,

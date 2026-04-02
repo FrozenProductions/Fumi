@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { WorkspaceSession } from "../../types/workspace/session";
 import type {
     WorkspaceCursorState,
+    WorkspaceSession,
     WorkspaceSnapshot,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../../types/workspace/workspace";
+} from "../../lib/workspace/workspace.type";
 import {
     buildWorkspaceSession,
     clampCursorToContent,

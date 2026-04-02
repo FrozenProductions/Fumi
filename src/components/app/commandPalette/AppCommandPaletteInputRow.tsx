@@ -1,29 +1,9 @@
 import { CommandIcon, FolderOpenIcon } from "@hugeicons/core-free-icons";
-import type {
-    ChangeEvent,
-    KeyboardEvent,
-    ReactElement,
-    RefObject,
-} from "react";
+import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
 import { APP_TEXT_INPUT_PROPS } from "../../../lib/app/textInput";
-import type {
-    AppCommandPaletteMode,
-    AppCommandPaletteScope,
-} from "../../../types/app/commandPalette";
 import { AppCommandPaletteScopeButton } from "../AppCommandPaletteScopeButton";
-
-type AppCommandPaletteInputRowProps = {
-    inputRef: RefObject<HTMLInputElement | null>;
-    mode: "default" | AppCommandPaletteMode;
-    query: string;
-    scope: AppCommandPaletteScope;
-    scopeLabels: Record<AppCommandPaletteScope, string>;
-    scopePlaceholders: Record<AppCommandPaletteScope, string>;
-    onInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
-    onScopeSelect: (scope: Exclude<AppCommandPaletteScope, "tabs">) => void;
-};
+import type { AppCommandPaletteInputRowProps } from "./commandPalette.type";
 
 export function AppCommandPaletteInputRow({
     inputRef,

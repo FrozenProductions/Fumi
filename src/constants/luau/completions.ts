@@ -1,7 +1,7 @@
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
-} from "../../types/luau/editor";
+} from "../../lib/luau/luau.type";
 
 function createItem(
     label: string,

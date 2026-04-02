@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { create } from "zustand";
 import { TOOLTIP_VIEWPORT_MARGIN } from "../../constants/tooltip/tooltip";
-import type { TooltipSide } from "../../types/tooltip/tooltip";
+import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
 
 type TooltipDefinition = {
     id: string;

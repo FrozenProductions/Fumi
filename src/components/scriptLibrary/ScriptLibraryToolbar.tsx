@@ -9,25 +9,10 @@ import {
     SCRIPT_LIBRARY_SORT_OPTIONS,
 } from "../../constants/scriptLibrary/scriptLibrary";
 import { APP_TEXT_INPUT_PROPS } from "../../lib/app/textInput";
-import type {
-    ScriptLibraryFilters,
-    ScriptLibrarySort,
-    ScriptLibraryViewFormat,
-} from "../../types/scriptLibrary/scriptLibrary";
 import { AppIcon } from "../app/AppIcon";
 import { AppSelect } from "../app/AppSelect";
 import { AppTooltip } from "../app/AppTooltip";
-
-type ScriptLibraryToolbarProps = {
-    query: string;
-    filters: ScriptLibraryFilters;
-    orderBy: ScriptLibrarySort;
-    viewFormat: ScriptLibraryViewFormat;
-    onQueryChange: (query: string) => void;
-    onToggleFilter: (filterKey: keyof ScriptLibraryFilters) => void;
-    onOrderByChange: (orderBy: ScriptLibrarySort) => void;
-    onViewFormatChange: (viewFormat: ScriptLibraryViewFormat) => void;
-};
+import type { ScriptLibraryToolbarProps } from "./scriptLibrary.type";
 
 export function ScriptLibraryToolbar({
     query,

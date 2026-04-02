@@ -1,7 +1,7 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { describe, expect, it, vi } from "vite-plus/test";
-import type { AppCommandPaletteItem } from "../../types/app/commandPalette";
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import type { AppCommandPaletteItem } from "../../lib/app/app.type";
+import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
 import {
     getCommandCommandPaletteItems,
     getTabCommandPaletteItems,

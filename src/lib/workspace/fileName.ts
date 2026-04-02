@@ -1,5 +1,5 @@
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../constants/workspace/workspace";
-import type { WorkspaceFileNameParts } from "../../types/workspace/file";
+import type { WorkspaceFileNameParts } from "../../lib/workspace/workspace.type";
 
 export function splitWorkspaceFileName(
     fileName: string,

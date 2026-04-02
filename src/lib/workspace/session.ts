@@ -1,13 +1,11 @@
 import type {
-    WorkspaceSession,
-    WorkspaceTab,
-} from "../../types/workspace/session";
-import type {
     WorkspaceCursorState,
+    WorkspaceSession,
     WorkspaceSnapshot,
+    WorkspaceTab,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../../types/workspace/workspace";
+} from "../../lib/workspace/workspace.type";
 import { clamp } from "../shared/math";
 
 export function clampCursorToContent(

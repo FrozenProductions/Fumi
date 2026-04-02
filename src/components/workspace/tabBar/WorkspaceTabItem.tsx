@@ -3,33 +3,11 @@ import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
-import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename";
 import { APP_TEXT_INPUT_PROPS } from "../../../lib/app/textInput";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
-import type { WorkspaceTab } from "../../../types/workspace/session";
 import { AppIcon } from "../../app/AppIcon";
 import { AppTooltip } from "../../app/AppTooltip";
-
-type WorkspaceTabItemProps = {
-    index: number;
-    sortableGroup: string;
-    tab: WorkspaceTab;
-    isActive: boolean;
-    isTabDragActive: boolean;
-    onArchiveTab: (tabId: string) => void;
-    onSelectTab: (tabId: string) => void;
-} & Pick<
-    UseWorkspaceTabRenameResult,
-    | "handleRenameInputBlur"
-    | "handleRenameInputChange"
-    | "handleRenameInputKeyDown"
-    | "handleStartRename"
-    | "hasRenameError"
-    | "isRenameSubmitting"
-    | "renameInputRef"
-    | "renameValue"
-    | "renamingTabId"
->;
+import type { WorkspaceTabItemProps } from "./tabBar.type";
 
 export function WorkspaceTabItem({
     index,

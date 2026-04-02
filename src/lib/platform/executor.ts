@@ -5,7 +5,7 @@ import { DEFAULT_EXECUTOR_PORT } from "../../constants/workspace/executor";
 import type {
     ExecutorMessagePayload,
     ExecutorStatusPayload,
-} from "../../types/workspace/executor";
+} from "../../lib/workspace/workspace.type";
 import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { decodeUnknownWithSchema } from "../shared/schema";

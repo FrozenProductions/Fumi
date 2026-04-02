@@ -7,11 +7,11 @@ import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import type {
     AppCommandPaletteItem,
     AppCommandPaletteScope,
-} from "../../types/app/commandPalette";
+} from "../../lib/app/app.type";
 import type {
     UseWorkspaceSessionResult,
     WorkspaceTab,
-} from "../../types/workspace/session";
+} from "../../lib/workspace/workspace.type";
 import { splitWorkspaceFileName } from "../workspace/fileName";
 
 type GetCommandPaletteCommandItemsOptions = {

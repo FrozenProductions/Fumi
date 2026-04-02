@@ -3,20 +3,12 @@ import {
     APP_SETTINGS_SECTIONS,
     DEFAULT_APP_SETTINGS_SECTION,
 } from "../../constants/app/settings";
-import type { UseAppUpdaterResult } from "../../hooks/app/useAppUpdater";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
-import type { AppSettingsSection } from "../../types/app/settings";
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import type { AppSettingsSection } from "../../lib/app/app.type";
+import type { AppSettingsWindowProps } from "./app.type";
 import { AppSettingsEditorSection } from "./settings/AppSettingsEditorSection";
 import { AppSettingsGeneralSection } from "./settings/AppSettingsGeneralSection";
 import { AppSettingsWorkspaceSection } from "./settings/AppSettingsWorkspaceSection";
-
-type AppSettingsWindowProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    updater: UseAppUpdaterResult;
-    workspaceSession: UseWorkspaceSessionResult;
-};
 
 const SETTINGS_WINDOW_EXIT_DURATION_MS = 220;
 

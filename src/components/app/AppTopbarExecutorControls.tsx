@@ -4,19 +4,9 @@ import {
     MAX_EXECUTOR_PORT,
     MIN_EXECUTOR_PORT,
 } from "../../constants/workspace/executor";
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
-
-type AppTopbarExecutorControlsProps = Pick<
-    UseWorkspaceExecutorResult,
-    | "port"
-    | "isAttached"
-    | "didRecentAttachFail"
-    | "isBusy"
-    | "updatePort"
-    | "toggleConnection"
->;
+import type { AppTopbarExecutorControlsProps } from "./app.type";
 
 export function AppTopbarExecutorControls({
     port,

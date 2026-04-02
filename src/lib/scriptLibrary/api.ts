@@ -9,7 +9,7 @@ import type {
     ScriptLibraryEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
-} from "../../types/scriptLibrary/scriptLibrary";
+} from "../../lib/scriptLibrary/scriptLibrary.type";
 import { copyTextToClipboardEffect } from "../platform/clipboard";
 import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";

@@ -1,10 +1,6 @@
 import { Effect } from "effect";
 import { useEffect, useRef, useState } from "react";
-import {
-    DEFAULT_EXECUTOR_PORT,
-    MAX_EXECUTOR_PORT,
-    MIN_EXECUTOR_PORT,
-} from "../../constants/workspace/executor";
+import { DEFAULT_EXECUTOR_PORT } from "../../constants/workspace/executor";
 import {
     attachExecutorEffect,
     detachExecutorEffect,
@@ -19,7 +15,11 @@ import {
     runPromise,
 } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
-import type { ExecutorStatusPayload } from "../../types/workspace/executor";
+import {
+    getExecutorPortRangeErrorMessage,
+    parseExecutorPort,
+} from "../../lib/workspace/executor";
+import type { ExecutorStatusPayload } from "../../lib/workspace/workspace.type";
 
 type UseWorkspaceExecutorOptions = {
     activeTabContent: string | null;
@@ -36,26 +36,6 @@ export type UseWorkspaceExecutorResult = {
     toggleConnection: () => Promise<void>;
     executeActiveTab: () => Promise<void>;
 };
-
-function parseExecutorPort(port: string): number | null {
-    const trimmedPort = port.trim();
-
-    if (trimmedPort.length === 0) {
-        return null;
-    }
-
-    const parsedPort = Number.parseInt(trimmedPort, 10);
-
-    if (
-        !Number.isInteger(parsedPort) ||
-        parsedPort < MIN_EXECUTOR_PORT ||
-        parsedPort > MAX_EXECUTOR_PORT
-    ) {
-        return null;
-    }
-
-    return parsedPort;
-}
 
 export function useWorkspaceExecutor({
     activeTabContent,
@@ -218,9 +198,7 @@ export function useWorkspaceExecutor({
 
             if (parsedPort === null) {
                 setDidRecentAttachFail(false);
-                setErrorMessage(
-                    `Port must be between ${MIN_EXECUTOR_PORT} and ${MAX_EXECUTOR_PORT}.`,
-                );
+                setErrorMessage(getExecutorPortRangeErrorMessage());
                 return;
             }
 

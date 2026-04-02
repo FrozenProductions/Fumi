@@ -17,8 +17,8 @@ import {
     UNC_NAMESPACE_COMPLETIONS,
     UNC_TOP_LEVEL_COMPLETIONS,
 } from "../../constants/luau/uncCompletions";
-import type { AppIntellisensePriority } from "../../types/app/settings";
-import type { LuauCompletionItem } from "../../types/luau/editor";
+import type { AppIntellisensePriority } from "../../lib/app/app.type";
+import type { LuauCompletionItem } from "../../lib/luau/luau.type";
 
 const MAX_LUAU_COMPLETION_ITEMS = 6;
 

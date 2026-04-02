@@ -1,7 +1,7 @@
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
-} from "../../types/luau/editor";
+} from "../../lib/luau/luau.type";
 
 const SUNC_DOC_SOURCE = "sUNC Documentation";
 

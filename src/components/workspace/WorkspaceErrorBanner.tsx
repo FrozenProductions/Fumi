@@ -1,10 +1,7 @@
 import { Alert01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { AppIcon } from "../app/AppIcon";
-
-type WorkspaceErrorBannerProps = {
-    errorMessage: string;
-};
+import type { WorkspaceErrorBannerProps } from "./workspace.type";
 
 export function WorkspaceErrorBanner({
     errorMessage,

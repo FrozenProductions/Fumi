@@ -1,12 +1,5 @@
-import type { ReactElement, ReactNode } from "react";
-
-type AppSettingsToggleProps = {
-    label: string;
-    description: string;
-    isEnabled: boolean;
-    onChange: () => void;
-    children?: ReactNode;
-};
+import type { ReactElement } from "react";
+import type { AppSettingsToggleProps } from "./app.type";
 
 export function AppSettingsToggle({
     label,

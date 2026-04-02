@@ -1,14 +1,6 @@
 import type { ReactElement } from "react";
-import type { AppCommandPaletteItem } from "../../../types/app/commandPalette";
 import { AppIcon } from "../AppIcon";
-
-type AppCommandPaletteResultsProps = {
-    activeResultIndex: number;
-    isClosing: boolean;
-    results: AppCommandPaletteItem[];
-    onCommitSelection: (item: AppCommandPaletteItem) => void;
-    onHoverItem: (index: number) => void;
-};
+import type { AppCommandPaletteResultsProps } from "./commandPalette.type";
 
 export function AppCommandPaletteResults({
     activeResultIndex,

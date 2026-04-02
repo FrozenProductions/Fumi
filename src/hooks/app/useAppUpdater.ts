@@ -1,5 +1,10 @@
 import { Effect } from "effect";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type {
+    AppUpdateDownloadProgress,
+    AppUpdateMetadata,
+    AppUpdaterStatus,
+} from "../../lib/app/app.type";
 import { confirmActionEffect } from "../../lib/platform/dialog";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
 import {
@@ -10,11 +15,6 @@ import {
 import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window";
 import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
-import type {
-    AppUpdateDownloadProgress,
-    AppUpdateMetadata,
-    AppUpdaterStatus,
-} from "../../types/app/updater";
 
 export type UseAppUpdaterResult = {
     status: AppUpdaterStatus;

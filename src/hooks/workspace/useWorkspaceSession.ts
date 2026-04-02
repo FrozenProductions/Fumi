@@ -1,4 +1,4 @@
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
 import {
     selectWorkspaceActiveTab,
     selectWorkspaceActiveTabIndex,

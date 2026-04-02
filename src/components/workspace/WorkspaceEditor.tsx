@@ -1,66 +1,16 @@
-import type { ComponentType, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
-import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
-import type { AppTheme } from "../../types/app/settings";
-import type { WorkspaceTab } from "../../types/workspace/session";
+import {
+    type AceEditorComponent,
+    getReactAceComponent,
+    WORKSPACE_EDITOR_OPTIONS,
+    WORKSPACE_EDITOR_PROPS,
+    WORKSPACE_EDITOR_STYLE,
+} from "../../lib/workspace/editor";
 import { AppCodeCompletion } from "./AppCodeCompletion";
-
-const WORKSPACE_EDITOR_FONT_FAMILY =
-    '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace';
-const WORKSPACE_EDITOR_OPTIONS = {
-    fontFamily: WORKSPACE_EDITOR_FONT_FAMILY,
-    useWorker: false,
-    displayIndentGuides: true,
-    showFoldWidgets: false,
-    scrollPastEnd: true,
-} as const;
-const WORKSPACE_EDITOR_PROPS = {
-    $blockScrolling: true,
-} as const;
-const WORKSPACE_EDITOR_STYLE = {
-    fontFamily: WORKSPACE_EDITOR_FONT_FAMILY,
-} as const;
-
-type AceEditorComponent = ComponentType<Record<string, unknown>>;
-
-function getReactAceComponent(
-    reactAceModule: typeof import("react-ace"),
-): AceEditorComponent {
-    const defaultExport: unknown = reactAceModule.default;
-
-    if (typeof defaultExport === "function") {
-        return defaultExport as AceEditorComponent;
-    }
-
-    if (
-        defaultExport &&
-        typeof defaultExport === "object" &&
-        "default" in defaultExport &&
-        typeof defaultExport.default === "function"
-    ) {
-        return defaultExport.default as AceEditorComponent;
-    }
-
-    throw new Error("React Ace component export is unavailable");
-}
-
-type WorkspaceEditorProps = {
-    activeTabId: string;
-    appTheme: AppTheme;
-    editorFontSize: number;
-    tabs: WorkspaceTab[];
-} & Pick<
-    UseWorkspaceCodeCompletionResult,
-    | "acceptCompletion"
-    | "completionPopup"
-    | "createHandleCursorChange"
-    | "createHandleEditorChange"
-    | "createHandleEditorLoad"
-    | "createHandleScroll"
-    | "handleCompletionHover"
->;
+import type { WorkspaceEditorProps } from "./workspace.type";
 
 export function WorkspaceEditor({
     activeTabId,

@@ -10,14 +10,14 @@ import {
     hasActiveScriptLibraryFilters,
     type ScriptLibraryCachedSession,
 } from "../../lib/scriptLibrary/api";
-import { runPromise } from "../../lib/shared/effectRuntime";
-import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type {
     ScriptLibraryEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
     ScriptLibraryViewFormat,
-} from "../../types/scriptLibrary/scriptLibrary";
+} from "../../lib/scriptLibrary/scriptLibrary.type";
+import { runPromise } from "../../lib/shared/effectRuntime";
+import { getErrorMessage } from "../../lib/shared/errorMessage";
 
 type ScriptLibraryStoreState = {
     query: string;

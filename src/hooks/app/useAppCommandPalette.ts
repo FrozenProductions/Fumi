@@ -11,6 +11,16 @@ import {
     useState,
 } from "react";
 import {
+    COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS,
+    COMMAND_PALETTE_EXIT_DURATION_MS,
+} from "../../constants/app/commandPalette";
+import type {
+    AppCommandPaletteItem,
+    AppCommandPaletteScope,
+    AppCommandPaletteViewMode,
+    AppCommandPaletteMode as RequestedAppCommandPaletteMode,
+} from "../../lib/app/app.type";
+import {
     getCommandCommandPaletteItems,
     getGoToLineCommandPaletteItems,
     getTabCommandPaletteItems,
@@ -19,17 +29,8 @@ import {
     normalizeAppCommandPaletteSearchValue,
     parseGoToLineQuery,
 } from "../../lib/app/commandPalette";
-import type {
-    AppCommandPaletteItem,
-    AppCommandPaletteScope,
-    AppCommandPaletteViewMode,
-    AppCommandPaletteMode as RequestedAppCommandPaletteMode,
-} from "../../types/app/commandPalette";
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
-
-const COMMAND_PALETTE_EXIT_DURATION_MS = 220;
-const COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS = 170;
 
 type UseAppCommandPaletteOptions = {
     isOpen: boolean;

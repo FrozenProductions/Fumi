@@ -1,4 +1,4 @@
-import type { AppIconGlyph } from "../app/icon";
+import type { AppIconGlyph } from "../app/app.type";
 
 export type ScriptLibrarySort = "date" | "views" | "likes";
 

@@ -1,11 +1,8 @@
 import {
     cloneElement,
     type FocusEvent,
-    type MutableRefObject,
     type PointerEvent,
     type ReactElement,
-    type ReactNode,
-    type Ref,
     useEffect,
     useId,
     useRef,
@@ -13,88 +10,19 @@ import {
 import {
     DEFAULT_TOOLTIP_DELAY_MS,
     DEFAULT_TOOLTIP_OFFSET,
-    TOOLTIP_WARM_RESET_DELAY_MS,
 } from "../../constants/tooltip/tooltip";
 import {
     selectActiveTooltipId,
     useTooltipStore,
 } from "../../hooks/tooltip/useTooltipStore";
-import type { TooltipSide } from "../../types/tooltip/tooltip";
-
-let isGlobalWarm = false;
-let globalWarmTimer: number | null = null;
-
-function setGlobalWarm() {
-    isGlobalWarm = true;
-    if (globalWarmTimer !== null) {
-        window.clearTimeout(globalWarmTimer);
-        globalWarmTimer = null;
-    }
-}
-
-function setGlobalCold() {
-    if (globalWarmTimer !== null) {
-        window.clearTimeout(globalWarmTimer);
-    }
-    globalWarmTimer = window.setTimeout(() => {
-        isGlobalWarm = false;
-    }, TOOLTIP_WARM_RESET_DELAY_MS);
-}
-
-type AppTooltipProps = {
-    children: ReactElement<TooltipTriggerProps>;
-    content: ReactNode;
-    shortcut?: ReactNode;
-    side?: TooltipSide;
-    offset?: number;
-    delayMs?: number;
-    disabled?: boolean;
-};
-
-type TooltipTriggerProps = {
-    "aria-describedby"?: string;
-    onPointerEnter?: (event: PointerEvent<HTMLElement>) => void;
-    onPointerLeave?: (event: PointerEvent<HTMLElement>) => void;
-    onFocus?: (event: FocusEvent<HTMLElement>) => void;
-    onBlur?: (event: FocusEvent<HTMLElement>) => void;
-    onPointerDown?: (event: PointerEvent<HTMLElement>) => void;
-    ref?: Ref<HTMLElement>;
-};
-
-function isMutableRefObject<T>(ref: Ref<T>): ref is MutableRefObject<T | null> {
-    return typeof ref === "object" && ref !== null && "current" in ref;
-}
-
-function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
-    if (!ref) {
-        return;
-    }
-
-    if (typeof ref === "function") {
-        ref(value);
-        return;
-    }
-
-    if (isMutableRefObject(ref)) {
-        ref.current = value;
-    }
-}
-
-function mergeDescribedBy(
-    existingValue: string | undefined,
-    tooltipId: string,
-    isVisible: boolean,
-): string | undefined {
-    if (!isVisible) {
-        return existingValue;
-    }
-
-    if (!existingValue) {
-        return tooltipId;
-    }
-
-    return `${existingValue} ${tooltipId}`;
-}
+import {
+    assignRef,
+    markTooltipWarm,
+    mergeAriaDescribedBy,
+    scheduleTooltipCooldown,
+    shouldSkipTooltipDelay,
+} from "../../lib/tooltip/tooltip";
+import type { AppTooltipProps } from "./app.type";
 
 export function AppTooltip({
     children,
@@ -135,7 +63,7 @@ export function AppTooltip({
                 return;
             }
 
-            setGlobalWarm();
+            markTooltipWarm();
 
             showTooltip({
                 id: tooltipId,
@@ -147,7 +75,7 @@ export function AppTooltip({
             });
         };
 
-        if (!useDelay || isGlobalWarm) {
+        if (!useDelay || shouldSkipTooltipDelay()) {
             show();
             return;
         }
@@ -161,7 +89,7 @@ export function AppTooltip({
     const closeTooltip = (): void => {
         clearOpenTimer();
         hideTooltip(tooltipId);
-        setGlobalCold();
+        scheduleTooltipCooldown();
     };
 
     useEffect(() => {
@@ -206,7 +134,7 @@ export function AppTooltip({
             triggerElementRef.current = node;
             assignRef(childElement.props.ref, node);
         },
-        "aria-describedby": mergeDescribedBy(
+        "aria-describedby": mergeAriaDescribedBy(
             childElement.props["aria-describedby"],
             tooltipId,
             isVisible,

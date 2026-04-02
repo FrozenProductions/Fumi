@@ -15,64 +15,18 @@ import {
     APP_ZOOM_STEP,
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import type { UseAppUpdaterResult } from "../../../hooks/app/useAppUpdater";
 import { useAppZoom } from "../../../hooks/app/useAppZoom";
+import type { AppUpdaterStatus } from "../../../lib/app/app.type";
 import {
     getAppUpdaterPhrase,
     shouldRefreshAppUpdaterPhrase,
 } from "../../../lib/app/updatePhrases";
-import type {
-    AppUpdateDownloadProgress,
-    AppUpdaterStatus,
-} from "../../../types/app/updater";
+import { getAppUpdateProgressSummary } from "../../../lib/app/updaterPresentation";
 import { AppAnimatedText } from "../AppAnimatedText";
 import { AppIcon } from "../AppIcon";
 import { AppInput } from "../AppInput";
 import { AppSelect } from "../AppSelect";
-
-type AppSettingsGeneralSectionProps = {
-    updater: UseAppUpdaterResult;
-};
-
-function formatByteCount(value: number | null): string | null {
-    if (value === null || value <= 0) {
-        return null;
-    }
-
-    if (value < 1024) {
-        return `${value} B`;
-    }
-
-    const units = ["KB", "MB", "GB"];
-    let currentValue = value / 1024;
-    let unitIndex = 0;
-
-    while (currentValue >= 1024 && unitIndex < units.length - 1) {
-        currentValue /= 1024;
-        unitIndex += 1;
-    }
-
-    return `${currentValue.toFixed(currentValue >= 10 ? 0 : 1)} ${units[unitIndex]}`;
-}
-
-function getProgressSummary(
-    progress: AppUpdateDownloadProgress | null,
-): string | null {
-    if (!progress) {
-        return null;
-    }
-
-    const downloadedText = formatByteCount(progress.downloadedBytes);
-    const totalText = formatByteCount(progress.contentLength);
-
-    if (!downloadedText || !totalText) {
-        return progress.progressPercent === null
-            ? null
-            : `${progress.progressPercent}% downloaded`;
-    }
-
-    return `${downloadedText} of ${totalText} downloaded`;
-}
+import type { AppSettingsGeneralSectionProps } from "./settings.type";
 
 export function AppSettingsGeneralSection({
     updater,
@@ -98,7 +52,9 @@ export function AppSettingsGeneralSection({
     const previousUpdaterStatusRef = useRef<AppUpdaterStatus>(
         displayedUpdaterStatus,
     );
-    const progressSummary = getProgressSummary(displayedDownloadProgress);
+    const progressSummary = getAppUpdateProgressSummary(
+        displayedDownloadProgress,
+    );
     const shouldDisableCheckButton =
         displayedUpdaterStatus === "checking" ||
         displayedUpdaterStatus === "downloading" ||
@@ -154,7 +110,9 @@ export function AppSettingsGeneralSection({
             return;
         }
 
-        setUpdaterPhrase(getAppUpdaterPhrase(displayedUpdaterStatus));
+        setUpdaterPhrase((currentPhrase) =>
+            getAppUpdaterPhrase(displayedUpdaterStatus, currentPhrase),
+        );
     }, [displayedUpdaterStatus]);
 
     return (

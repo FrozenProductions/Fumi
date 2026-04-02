@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import type { WorkspaceSession } from "../../types/workspace/session";
+import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import { runSync } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { decodeUnknownWithSchema } from "../shared/schema";

@@ -3,7 +3,7 @@ import { hasWorkspaceDraftChanges } from "../../../lib/workspace/session";
 import type {
     WorkspaceSession,
     WorkspaceTab,
-} from "../../../types/workspace/session";
+} from "../../../lib/workspace/workspace.type";
 
 export function isMatchingWorkspacePath(
     workspace: WorkspaceSession | null,

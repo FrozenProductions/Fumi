@@ -4,7 +4,7 @@ import type {
     ScriptLibraryFilters,
     ScriptLibrarySort,
     ScriptLibraryViewFormat,
-} from "../../types/scriptLibrary/scriptLibrary";
+} from "../../lib/scriptLibrary/scriptLibrary.type";
 import { useDebouncedValue } from "../shared/useDebouncedValue";
 import {
     selectHasActiveScriptLibraryFilters,

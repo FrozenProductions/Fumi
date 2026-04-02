@@ -1,4 +1,4 @@
-import type { TooltipSide } from "../../types/tooltip/tooltip";
+import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
 
 export const TOOLTIP_VIEWPORT_MARGIN = 8;
 export const DEFAULT_TOOLTIP_DELAY_MS = 1000;

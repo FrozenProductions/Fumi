@@ -8,8 +8,11 @@ import {
     toggleCurrentWindowMaximize,
 } from "../../lib/platform/window";
 import { AppTooltip } from "./AppTooltip";
-
-type TrafficLightTone = "close" | "minimize" | "maximize";
+import type {
+    MaximizeGlyphProps,
+    TrafficLightButtonProps,
+    TrafficLightTone,
+} from "./app.type";
 
 const TRAFFIC_LIGHT_STYLE_MAP: Record<TrafficLightTone, CSSProperties> = {
     close: {
@@ -21,14 +24,6 @@ const TRAFFIC_LIGHT_STYLE_MAP: Record<TrafficLightTone, CSSProperties> = {
     maximize: {
         backgroundColor: "rgb(var(--color-traffic-maximize) / 1)",
     },
-};
-
-type TrafficLightButtonProps = {
-    glyph: ReactElement;
-    label: string;
-    onClick: () => void;
-    tone: TrafficLightTone;
-    isActive?: boolean;
 };
 
 function AppTopbarTrafficLightButton({
@@ -75,10 +70,6 @@ function MinimizeGlyph(): ReactElement {
         <span className="pointer-events-none block h-[1.2px] w-[6px] rounded-full bg-black/50 opacity-0 transition-all duration-75 group-hover:opacity-100 group-focus-visible:opacity-100" />
     );
 }
-
-type MaximizeGlyphProps = {
-    isWindowMaximized: boolean;
-};
 
 function MaximizeGlyph({
     isWindowMaximized,

@@ -3,7 +3,7 @@ import modeLuaScriptUrl from "ace-builds/src-noconflict/mode-lua.js?url";
 import modeTextScriptUrl from "ace-builds/src-noconflict/mode-text.js?url";
 import themeGithubDarkScriptUrl from "ace-builds/src-noconflict/theme-github_dark.js?url";
 import themeGithubLightDefaultScriptUrl from "ace-builds/src-noconflict/theme-github_light_default.js?url";
-import type { AppTheme } from "../../types/app/settings";
+import type { AppTheme } from "../../lib/app/app.type";
 import { getEditorModeForFileName } from "./fileType";
 import { configureLuauAce } from "./registerAceLuau";
 

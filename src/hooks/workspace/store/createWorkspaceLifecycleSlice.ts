@@ -20,7 +20,7 @@ import {
     mergeWorkspaceSession,
     serializeTabState,
 } from "../../../lib/workspace/session";
-import type { WorkspaceSession } from "../../../types/workspace/session";
+import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
 import {
     isMatchingWorkspacePath,
     shouldProceedWithWorkspaceSwitch,

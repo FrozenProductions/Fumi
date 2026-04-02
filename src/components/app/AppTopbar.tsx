@@ -4,7 +4,11 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
+import {
+    formatWorkspaceTooltipPath,
+    getAnimatedTitleCharacters,
+    isTopbarInteractiveTarget,
+} from "../../lib/app/topbar";
 import {
     startCurrentWindowDragging,
     toggleCurrentWindowMaximize,
@@ -14,55 +18,7 @@ import { AppIconButton } from "./AppIconButton";
 import { AppTooltip } from "./AppTooltip";
 import { AppTopbarExecutorControls } from "./AppTopbarExecutorControls";
 import { AppTopbarTrafficLights } from "./AppTopbarTrafficLights";
-
-type AppTopbarProps = {
-    title: string;
-    isSidebarOpen: boolean;
-    onToggleSidebar: () => void;
-    workspaceName?: string | null;
-    workspacePath?: string | null;
-    onOpenWorkspace?: () => void;
-    executorControls?: Pick<
-        UseWorkspaceExecutorResult,
-        | "port"
-        | "isAttached"
-        | "didRecentAttachFail"
-        | "isBusy"
-        | "updatePort"
-        | "toggleConnection"
-    >;
-};
-
-function formatWorkspaceTooltipPath(
-    workspacePath: string | null | undefined,
-): string {
-    if (!workspacePath) {
-        return "Open a workspace";
-    }
-
-    return workspacePath
-        .replace(/^\/Users\/[^/]+/, "~")
-        .replace(/^\/home\/[^/]+/, "~");
-}
-
-const TOPBAR_INTERACTIVE_SELECTOR = [
-    "button",
-    "input",
-    "select",
-    "textarea",
-    "a",
-    "[role='button']",
-    "[contenteditable='true']",
-    "[data-topbar-interactive='true']",
-].join(", ");
-
-function isTopbarInteractiveTarget(target: EventTarget | null): boolean {
-    if (!(target instanceof HTMLElement)) {
-        return false;
-    }
-
-    return target.closest(TOPBAR_INTERACTIVE_SELECTOR) !== null;
-}
+import type { AppTopbarProps } from "./app.type";
 
 export function AppTopbar({
     title,
@@ -73,19 +29,7 @@ export function AppTopbar({
     onOpenWorkspace,
     executorControls,
 }: AppTopbarProps): ReactElement {
-    const animatedTitleCharacters = Array.from(title).map(
-        (char, index, chars) => {
-            const duplicateIndex = chars
-                .slice(0, index)
-                .filter((existingChar) => existingChar === char).length;
-
-            return {
-                char,
-                index,
-                key: `${char}-${duplicateIndex}`,
-            };
-        },
-    );
+    const animatedTitleCharacters = getAnimatedTitleCharacters(title);
 
     const handleTopbarMouseDown = (event: MouseEvent<HTMLElement>): void => {
         if (event.button !== 0 || isTopbarInteractiveTarget(event.target)) {
@@ -144,11 +88,8 @@ export function AppTopbar({
             <div className="relative z-10 mx-3 flex min-w-0 flex-1 items-center justify-center self-stretch">
                 <div className="group relative inline-flex items-center justify-center px-3 py-2">
                     <span className="pointer-events-none inline-flex text-sm font-semibold tracking-[0.02em] text-fumi-900">
-                        {animatedTitleCharacters.map(({ char, index, key }) => {
-                            const mid = (title.length - 1) / 2;
-                            const offsetX = (index - mid) * 4.25;
-
-                            return (
+                        {animatedTitleCharacters.map(
+                            ({ char, key, offsetX }) => (
                                 <span
                                     key={key}
                                     className="inline-block [transition:transform_260ms_cubic-bezier(0.22,1,0.36,1),color_220ms_ease-out] [will-change:transform,color] group-hover:text-fumi-700 group-hover:[transform:translateX(var(--title-letter-x,0))]"
@@ -160,8 +101,8 @@ export function AppTopbar({
                                 >
                                     {char}
                                 </span>
-                            );
-                        })}
+                            ),
+                        )}
                     </span>
                 </div>
             </div>

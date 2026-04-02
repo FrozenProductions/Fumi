@@ -8,7 +8,7 @@ import { Effect } from "effect";
 import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
-} from "../../types/app/updater";
+} from "../../lib/app/app.type";
 import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { UpdaterError } from "./errors";

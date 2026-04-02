@@ -26,7 +26,7 @@ import {
     updateWorkspaceTab,
     upsertWorkspaceTab,
 } from "../../../lib/workspace/session";
-import type { WorkspaceSession } from "../../../types/workspace/session";
+import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
 import { isMatchingWorkspacePath } from "./helpers";
 import type {
     WorkspaceStoreSliceCreator,

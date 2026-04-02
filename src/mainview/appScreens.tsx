@@ -2,15 +2,10 @@ import type { ReactElement } from "react";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
 import type { UseWorkspaceExecutorResult } from "../hooks/workspace/useWorkspaceExecutor";
+import type { AppSidebarItem } from "../lib/app/app.type";
 import { showsWorkspaceContext } from "../lib/app/sidebar";
-import type { AppSidebarItem } from "../types/app/sidebar";
-import type { UseWorkspaceSessionResult } from "../types/workspace/session";
-
-type AppTopbarWorkspaceContext = {
-    workspaceName: string | null;
-    workspacePath: string | null;
-    onOpenWorkspace: (() => void) | undefined;
-};
+import type { UseWorkspaceSessionResult } from "../lib/workspace/workspace.type";
+import type { AppTopbarWorkspaceContext } from "./mainview.type";
 
 export function getAppTopbarWorkspaceContext(
     activeSidebarItem: AppSidebarItem,

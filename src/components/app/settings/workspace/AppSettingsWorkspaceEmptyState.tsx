@@ -1,11 +1,7 @@
 import { ArchiveRestoreIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { AppIcon } from "../../AppIcon";
-
-type AppSettingsWorkspaceEmptyStateProps = {
-    title: string;
-    description: string;
-};
+import type { AppSettingsWorkspaceEmptyStateProps } from "./workspaceSettings.type";
 
 export function AppSettingsWorkspaceEmptyState({
     title,

@@ -1,20 +1,7 @@
 import { Delete02Icon, DeletePutBackIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import type { WorkspaceTabState } from "../../../../types/workspace/workspace";
 import { AppIcon } from "../../AppIcon";
-
-type ArchivedTabActionButtonClassNames = {
-    base: string;
-    delete: string;
-};
-
-type AppSettingsArchivedTabsListProps = {
-    archivedTabs: WorkspaceTabState[];
-    actionButtonClassNames: ArchivedTabActionButtonClassNames;
-    dateFormatter: Intl.DateTimeFormat;
-    onDeleteTab: (tabId: string) => void;
-    onRestoreTab: (tabId: string) => void;
-};
+import type { AppSettingsArchivedTabsListProps } from "./workspaceSettings.type";
 
 export function AppSettingsArchivedTabsList({
     archivedTabs,

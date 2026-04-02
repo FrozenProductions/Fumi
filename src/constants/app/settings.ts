@@ -3,7 +3,7 @@ import type {
     AppIntellisensePriority,
     AppSettingsSection,
     AppTheme,
-} from "../../types/app/settings";
+} from "../../lib/app/app.type";
 import {
     DEFAULT_PAGE_ZOOM,
     MAX_PAGE_ZOOM,

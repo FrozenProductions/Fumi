@@ -1,13 +1,5 @@
-import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
-
-type AppIconButtonProps = Omit<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    "aria-label" | "children"
-> & {
-    ariaLabel: string;
-    children: ReactNode;
-    isActive?: boolean;
-};
+import { forwardRef } from "react";
+import type { AppIconButtonProps } from "./app.type";
 
 export const AppIconButton = forwardRef<HTMLButtonElement, AppIconButtonProps>(
     function AppIconButton(

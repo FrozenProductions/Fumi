@@ -6,7 +6,7 @@ import type {
     WorkspaceSnapshot,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../../types/workspace/workspace";
+} from "../../lib/workspace/workspace.type";
 import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { WorkspaceCommandError } from "./errors";

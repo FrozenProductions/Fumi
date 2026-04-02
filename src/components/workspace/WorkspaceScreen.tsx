@@ -7,21 +7,15 @@ import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
-
-type WorkspaceScreenProps = {
-    session: UseWorkspaceSessionResult;
-    executor: UseWorkspaceExecutorResult;
-};
+import type { WorkspaceScreenProps } from "./workspace.type";
 
 export function WorkspaceScreen({
     session,

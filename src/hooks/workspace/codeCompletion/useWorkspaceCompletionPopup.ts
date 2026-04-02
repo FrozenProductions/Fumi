@@ -1,14 +1,14 @@
 import { type MutableRefObject, useCallback, useEffect, useState } from "react";
+import type { AppIntellisensePriority } from "../../../lib/app/app.type";
 import {
     getLuauCompletionQuery,
     shouldOpenLuauCompletion,
 } from "../../../lib/luau/completion";
 import { getLuauCompletionPopupPosition } from "../../../lib/luau/completionPopup";
-import type { AppIntellisensePriority } from "../../../types/app/settings";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupState,
-} from "../../../types/luau/editor";
+} from "../../../lib/luau/luau.type";
 import {
     type AceEditorInstance,
     type AceRendererInstance,

@@ -2,18 +2,7 @@ import { ArrowDown01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
 import { AppIcon } from "./AppIcon";
-
-type AppSelectOption<TValue extends string> = {
-    value: TValue;
-    label: string;
-};
-
-type AppSelectProps<TValue extends string> = {
-    value: TValue;
-    options: readonly AppSelectOption<TValue>[];
-    onChange: (value: TValue) => void;
-    className?: string;
-};
+import type { AppSelectProps } from "./app.type";
 
 const APP_SELECT_DROPDOWN_EXIT_DURATION_MS = 120;
 

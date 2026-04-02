@@ -1,4 +1,4 @@
-import type { AppUpdaterStatus } from "../../types/app/updater";
+import type { AppUpdaterStatus } from "../../lib/app/app.type";
 
 const UP_TO_DATE_PHRASES = [
     "Already current. No dramatic reveal today",
@@ -80,27 +80,37 @@ const FAILED_TO_CHECK_PHRASES = [
     "The check failed harder than our deployment",
 ] as const;
 
-function pickRandomPhrase(phrases: readonly string[]): string {
-    const randomIndex = Math.floor(Math.random() * phrases.length);
+function pickRandomPhrase(
+    phrases: readonly string[],
+    previousPhrase?: string,
+): string {
+    const availablePhrases = previousPhrase
+        ? phrases.filter((phrase) => phrase !== previousPhrase)
+        : [...phrases];
+    const phrasePool = availablePhrases.length > 0 ? availablePhrases : phrases;
+    const randomIndex = Math.floor(Math.random() * phrasePool.length);
 
-    return phrases[randomIndex] ?? phrases[0] ?? "";
+    return phrasePool[randomIndex] ?? phrasePool[0] ?? "";
 }
 
-export function getAppUpdaterPhrase(status: AppUpdaterStatus): string {
+export function getAppUpdaterPhrase(
+    status: AppUpdaterStatus,
+    previousPhrase?: string,
+): string {
     if (
         status === "available" ||
         status === "downloading" ||
         status === "installing" ||
         status === "readyToRestart"
     ) {
-        return pickRandomPhrase(UPDATE_AVAILABLE_PHRASES);
+        return pickRandomPhrase(UPDATE_AVAILABLE_PHRASES, previousPhrase);
     }
 
     if (status === "error") {
-        return pickRandomPhrase(FAILED_TO_CHECK_PHRASES);
+        return pickRandomPhrase(FAILED_TO_CHECK_PHRASES, previousPhrase);
     }
 
-    return pickRandomPhrase(UP_TO_DATE_PHRASES);
+    return pickRandomPhrase(UP_TO_DATE_PHRASES, previousPhrase);
 }
 
 export function shouldRefreshAppUpdaterPhrase(

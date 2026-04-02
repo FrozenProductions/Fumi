@@ -1,7 +1,9 @@
-import type { AppIntellisensePriority } from "../../../types/app/settings";
-import type { LuauCompletionPopupState } from "../../../types/luau/editor";
-import type { WorkspaceTab } from "../../../types/workspace/session";
-import type { WorkspaceCursorState } from "../../../types/workspace/workspace";
+import type { AppIntellisensePriority } from "../../../lib/app/app.type";
+import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
+import type {
+    WorkspaceCursorState,
+    WorkspaceTab,
+} from "../../../lib/workspace/workspace.type";
 import type { AceChangeDelta } from "./ace";
 
 export type UseWorkspaceCodeCompletionOptions = {

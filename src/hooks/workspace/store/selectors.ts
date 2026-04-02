@@ -1,6 +1,6 @@
 import { getWorkspacePersistSignature } from "../../../lib/workspace/persistence";
 import { getActiveTabIndex } from "../../../lib/workspace/session";
-import type { WorkspaceTab } from "../../../types/workspace/session";
+import type { WorkspaceTab } from "../../../lib/workspace/workspace.type";
 import { getActiveTabFromWorkspace } from "./helpers";
 import type { WorkspaceStore } from "./types";
 

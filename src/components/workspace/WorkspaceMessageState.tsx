@@ -1,19 +1,7 @@
 import type { ReactElement } from "react";
-import type { AppIconGlyph } from "../../types/app/icon";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
-
-type WorkspaceMessageStateProps = {
-    eyebrow: string;
-    title: string;
-    description: string;
-    action?: {
-        label: string;
-        onClick: () => void;
-        icon: AppIconGlyph;
-        shortcut?: string;
-    };
-};
+import type { WorkspaceMessageStateProps } from "./workspace.type";
 
 export function WorkspaceMessageState({
     eyebrow,

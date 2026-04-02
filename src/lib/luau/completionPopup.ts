@@ -1,7 +1,7 @@
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
-} from "../../types/luau/editor";
+} from "../../lib/luau/luau.type";
 
 let completionMeasurementContext: CanvasRenderingContext2D | null = null;
 

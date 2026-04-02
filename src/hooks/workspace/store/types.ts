@@ -1,6 +1,8 @@
 import type { StateCreator } from "zustand";
-import type { WorkspaceSession } from "../../../types/workspace/session";
-import type { WorkspaceCursorState } from "../../../types/workspace/workspace";
+import type {
+    WorkspaceCursorState,
+    WorkspaceSession,
+} from "../../../lib/workspace/workspace.type";
 
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;

@@ -6,24 +6,19 @@ import {
     copyScriptToClipboard,
     fetchScriptText,
 } from "../../lib/scriptLibrary/api";
-import { clampWorkspaceTabBaseName } from "../../lib/workspace/fileName";
-import type { ScriptLibraryEntry } from "../../types/scriptLibrary/scriptLibrary";
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import {
+    getScriptLibraryPermalink,
+    getWorkspaceScriptFileName,
+} from "../../lib/scriptLibrary/scriptLibrary";
+import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.type";
 import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
-
-type ScriptLibraryScreenProps = {
-    workspaceSession: UseWorkspaceSessionResult;
-};
+import type { ScriptLibraryScreenProps } from "./scriptLibrary.type";
 
 const SCRIPT_LIBRARY_SPINNER_STYLE = {
     mask: `url("${spinnerIcon}") center / contain no-repeat`,
     WebkitMask: `url("${spinnerIcon}") center / contain no-repeat`,
 } as const;
-
-function getWorkspaceScriptFileName(script: ScriptLibraryEntry): string {
-    return `${clampWorkspaceTabBaseName(script.title.trim())}.lua`;
-}
 
 export function ScriptLibraryScreen({
     workspaceSession,
@@ -59,7 +54,7 @@ export function ScriptLibraryScreen({
     } = useScriptLibrary();
 
     async function handleCopyLink(script: ScriptLibraryEntry): Promise<void> {
-        await copyTextToClipboard(`https://rscripts.net/script/${script.slug}`);
+        await copyTextToClipboard(getScriptLibraryPermalink(script));
         activateCopiedLink(script._id);
     }
 

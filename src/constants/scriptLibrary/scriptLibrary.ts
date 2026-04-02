@@ -8,7 +8,7 @@ import type {
     ScriptLibraryFilterButton,
     ScriptLibraryFilters,
     ScriptLibrarySortOption,
-} from "../../types/scriptLibrary/scriptLibrary";
+} from "../../lib/scriptLibrary/scriptLibrary.type";
 
 export const RSCRIPTS_API_BASE_URL = "https://rscripts.net/api/v2";
 export const SCRIPT_LIBRARY_PAGE_SIZE = 16;

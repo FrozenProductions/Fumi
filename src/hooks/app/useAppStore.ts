@@ -10,13 +10,11 @@ import {
 import type {
     AppCommandPaletteMode,
     AppCommandPaletteScope,
-} from "../../types/app/commandPalette";
-import type {
     AppEditorSettings,
     AppIntellisensePriority,
+    AppSidebarItem,
     AppTheme,
-} from "../../types/app/settings";
-import type { AppSidebarItem } from "../../types/app/sidebar";
+} from "../../lib/app/app.type";
 
 const APP_SIDEBAR_ITEMS = ["workspace", "script-library"] as const;
 const APP_THEMES = ["light", "dark"] as const;

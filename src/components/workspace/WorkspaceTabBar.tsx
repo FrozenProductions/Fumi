@@ -1,68 +1,19 @@
-import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
-import { PointerActivationConstraints } from "@dnd-kit/dom";
-import {
-    type DragDropEventHandlers,
-    DragDropProvider,
-    PointerSensor,
-} from "@dnd-kit/react";
+import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
 import { Add01Icon, Menu02Icon } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
-import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
-import type { WorkspaceSession } from "../../types/workspace/session";
+import {
+    reorderTabPreview,
+    TAB_BAR_MODIFIERS,
+    TAB_BAR_SENSORS,
+    TAB_BAR_SORTABLE_GROUP,
+} from "../../lib/workspace/tabBar";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceTabItem } from "./tabBar/WorkspaceTabItem";
 import { WorkspaceTabListDropdown } from "./tabBar/WorkspaceTabListDropdown";
-
-type WorkspaceTabBarProps = {
-    workspace: WorkspaceSession;
-    renameState: UseWorkspaceTabRenameResult;
-    onCreateFile: () => void;
-    onSelectTab: (tabId: string) => void;
-    onReorderTab: (draggedTabId: string, targetTabId: string) => void;
-    onArchiveTab: (tabId: string) => void;
-};
-
-const TAB_BAR_MODIFIERS = [RestrictToHorizontalAxis];
-const TAB_BAR_SENSORS = [
-    PointerSensor.configure({
-        activationConstraints: [
-            new PointerActivationConstraints.Distance({
-                value: 6,
-            }),
-        ],
-    }),
-];
-const TAB_BAR_SORTABLE_GROUP = "workspace-tabs";
-
-function reorderTabPreview(
-    tabs: WorkspaceSession["tabs"],
-    draggedTabId: string,
-    targetTabId: string,
-): WorkspaceSession["tabs"] {
-    if (draggedTabId === targetTabId) {
-        return tabs;
-    }
-
-    const draggedTabIndex = tabs.findIndex((tab) => tab.id === draggedTabId);
-    const targetTabIndex = tabs.findIndex((tab) => tab.id === targetTabId);
-
-    if (draggedTabIndex < 0 || targetTabIndex < 0) {
-        return tabs;
-    }
-
-    const nextTabs = [...tabs];
-    const [draggedTab] = nextTabs.splice(draggedTabIndex, 1);
-
-    if (!draggedTab) {
-        return tabs;
-    }
-
-    nextTabs.splice(targetTabIndex, 0, draggedTab);
-    return nextTabs;
-}
+import type { WorkspaceTabBarProps } from "./workspace.type";
 
 export function WorkspaceTabBar({
     workspace,

@@ -7,7 +7,7 @@ import {
     WORKSPACE_TAB_LIST_VISIBLE_COUNT,
 } from "../../../constants/workspace/workspace";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
-import type { WorkspaceSession } from "../../../types/workspace/session";
+import type { WorkspaceTabListDropdownProps } from "./tabBar.type";
 
 const WORKSPACE_TAB_LIST_DROPDOWN_STYLE = {
     maxHeight: `calc(${WORKSPACE_TAB_LIST_VISIBLE_COUNT} * ${WORKSPACE_TAB_LIST_ITEM_HEIGHT_REM}rem + ${
@@ -18,12 +18,6 @@ const WORKSPACE_TAB_LIST_DROPDOWN_STYLE = {
     paddingInline: `${WORKSPACE_TAB_LIST_HORIZONTAL_PADDING_REM}rem`,
     paddingTop: `${WORKSPACE_TAB_LIST_TOP_PADDING_REM}rem`,
 } satisfies CSSProperties;
-
-type WorkspaceTabListDropdownProps = {
-    workspace: WorkspaceSession;
-    onClose: () => void;
-    onSelectTab: (tabId: string) => void;
-};
 
 export function WorkspaceTabListDropdown({
     workspace,

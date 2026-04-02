@@ -6,39 +6,13 @@ import type {
     ReactElement,
 } from "react";
 import { useEffect, useState } from "react";
-import { APP_TEXT_INPUT_PROPS } from "../../lib/app/textInput";
-
-const SIZE_MIN_WIDTH_MAP = {
-    sm: "min-w-[2ch]",
-    md: "min-w-[4ch]",
-    lg: "min-w-[8ch]",
-} as const;
-
-type AppInputSize = keyof typeof SIZE_MIN_WIDTH_MAP;
-
-type AppInputProps = {
-    value: string;
-    ariaLabel: string;
-    onChange: (value: string) => void;
-    minValue?: number;
-    maxValue?: number;
-    maxLength?: number;
-    inputMode?:
-        | "text"
-        | "numeric"
-        | "decimal"
-        | "search"
-        | "email"
-        | "url"
-        | "tel";
-    suffix?: string;
-    prefix?: ReactElement;
-    placeholder?: string;
-    isReadOnly?: boolean;
-    step?: number;
-    size?: AppInputSize;
-    className?: string;
-};
+import { APP_INPUT_SIZE_MIN_WIDTH_MAP } from "../../constants/app/input";
+import {
+    APP_TEXT_INPUT_PROPS,
+    getSteppedTextInputValue,
+    resolveCommittedTextInputValue,
+} from "../../lib/app/textInput";
+import type { AppInputProps } from "./app.type";
 
 export function AppInput({
     value,
@@ -62,53 +36,17 @@ export function AppInput({
         setDraftValue(value);
     }, [value]);
 
-    const clampNumeric = (raw: string): string | null => {
-        const parsed = Number(raw);
-
-        if (Number.isNaN(parsed)) {
-            return null;
-        }
-
-        let clamped = parsed;
-
-        if (minValue !== undefined) {
-            clamped = Math.max(minValue, clamped);
-        }
-
-        if (maxValue !== undefined) {
-            clamped = Math.min(maxValue, clamped);
-        }
-
-        return String(clamped);
-    };
-
     const commitValue = (): void => {
-        const trimmedValue = draftValue.trim();
+        const { nextDraftValue, nextValue } = resolveCommittedTextInputValue({
+            draftValue,
+            value,
+            minValue,
+            maxValue,
+        });
 
-        if (trimmedValue.length === 0) {
-            setDraftValue(value);
-            return;
-        }
+        setDraftValue(nextDraftValue);
 
-        if (minValue === undefined && maxValue === undefined) {
-            if (trimmedValue !== value) {
-                onChange(trimmedValue);
-            }
-
-            setDraftValue(trimmedValue);
-            return;
-        }
-
-        const nextValue = clampNumeric(trimmedValue);
-
-        if (nextValue === null) {
-            setDraftValue(value);
-            return;
-        }
-
-        setDraftValue(nextValue);
-
-        if (nextValue !== value) {
+        if (nextValue !== null && nextValue !== value) {
             onChange(nextValue);
         }
     };
@@ -143,9 +81,13 @@ export function AppInput({
             (event.key === "ArrowUp" || event.key === "ArrowDown")
         ) {
             event.preventDefault();
-            const delta = event.key === "ArrowUp" ? step : -step;
-            const current = Number(draftValue) || 0;
-            const next = clampNumeric(String(current + delta));
+            const next = getSteppedTextInputValue({
+                draftValue,
+                minValue,
+                maxValue,
+                step,
+                direction: event.key === "ArrowUp" ? 1 : -1,
+            });
 
             if (next !== null) {
                 setDraftValue(next);
@@ -154,7 +96,7 @@ export function AppInput({
         }
     };
 
-    const sizeClass = size ? SIZE_MIN_WIDTH_MAP[size] : "min-w-[1ch]";
+    const sizeClass = size ? APP_INPUT_SIZE_MIN_WIDTH_MAP[size] : "min-w-[1ch]";
     const measuredValue = draftValue || placeholder || value || " ";
 
     return (

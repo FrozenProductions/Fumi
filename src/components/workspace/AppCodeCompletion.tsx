@@ -1,17 +1,6 @@
 import type { ReactElement } from "react";
 import { getCompactLuauCompletionDetailLabel } from "../../lib/luau/completionPopup";
-import type {
-    LuauCompletionItem,
-    LuauCompletionPopupPosition,
-} from "../../types/luau/editor";
-
-type AppCodeCompletionProps = {
-    items: LuauCompletionItem[];
-    selectedIndex: number;
-    position: LuauCompletionPopupPosition;
-    onHoverItem: (index: number) => void;
-    onSelectItem: (index: number) => void;
-};
+import type { AppCodeCompletionProps } from "./workspace.type";
 
 export function AppCodeCompletion({
     items,

@@ -4,25 +4,9 @@ import {
     APP_COMMAND_PALETTE_SCOPE_LABELS,
     APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
 } from "../../lib/app/commandPalette";
-import type {
-    AppCommandPaletteScope,
-    AppCommandPaletteMode as RequestedAppCommandPaletteMode,
-} from "../../types/app/commandPalette";
-import type { UseWorkspaceSessionResult } from "../../types/workspace/session";
+import type { AppCommandPaletteProps } from "./app.type";
 import { AppCommandPaletteInputRow } from "./commandPalette/AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./commandPalette/AppCommandPaletteResults";
-
-type AppCommandPaletteProps = {
-    isOpen: boolean;
-    requestedScope: AppCommandPaletteScope | null;
-    requestedMode: RequestedAppCommandPaletteMode | null;
-    workspaceSession: UseWorkspaceSessionResult;
-    isSidebarOpen: boolean;
-    onClose: () => void;
-    onGoToLine: (lineNumber: number) => void;
-    onToggleSidebar: () => void;
-    onOpenSettings: () => void;
-};
 
 export function AppCommandPalette({
     isOpen,

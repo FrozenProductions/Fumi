@@ -11,26 +11,22 @@ import {
     useRef,
     useState,
 } from "react";
+import {
+    ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
+    ARCHIVED_TABS_SORT_OPTIONS,
+} from "../../../constants/workspace/archive";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
-import type { UseWorkspaceSessionResult } from "../../../types/workspace/session";
+import {
+    createArchivedTabsDateFormatter,
+    filterAndSortArchivedTabs,
+} from "../../../lib/workspace/archive";
+import type { ArchivedTabsSortOption } from "../../../lib/workspace/workspace.type";
 import { AppIcon } from "../AppIcon";
 import { AppSelect } from "../AppSelect";
+import type { AppSettingsWorkspaceSectionProps } from "./settings.type";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
-
-type AppSettingsWorkspaceSectionProps = {
-    workspaceSession: UseWorkspaceSessionResult;
-};
-
-type SortOption = "dateDesc" | "dateAsc" | "nameAsc" | "nameDesc";
-
-const ARCHIVE_SORT_OPTIONS = [
-    { value: "dateDesc", label: "Date (Newest)" },
-    { value: "dateAsc", label: "Date (Oldest)" },
-    { value: "nameAsc", label: "Name (A-Z)" },
-    { value: "nameDesc", label: "Name (Z-A)" },
-] as const;
 
 export function AppSettingsWorkspaceSection({
     workspaceSession,
@@ -39,27 +35,18 @@ export function AppSettingsWorkspaceSection({
     const workspace = workspaceSession.workspace;
 
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState<SortOption>("dateDesc");
+    const [sortBy, setSortBy] = useState<ArchivedTabsSortOption>("dateDesc");
 
     const filteredAndSortedTabs = useMemo(() => {
-        if (!workspace) return [];
-        let tabs = workspace.archivedTabs;
-
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            tabs = tabs.filter((t) => t.fileName.toLowerCase().includes(query));
+        if (!workspace) {
+            return [];
         }
 
-        return [...tabs].sort((a, b) => {
-            if (sortBy.startsWith("name")) {
-                const cmp = a.fileName.localeCompare(b.fileName);
-                return sortBy === "nameAsc" ? cmp : -cmp;
-            }
-
-            const timeA = a.archivedAt ?? 0;
-            const timeB = b.archivedAt ?? 0;
-            return sortBy === "dateDesc" ? timeB - timeA : timeA - timeB;
-        });
+        return filterAndSortArchivedTabs(
+            workspace.archivedTabs,
+            searchQuery,
+            sortBy,
+        );
     }, [workspace, searchQuery, sortBy]);
 
     const sentinelRef = useRef<HTMLDivElement>(null);
@@ -96,7 +83,7 @@ export function AppSettingsWorkspaceSection({
 
     const { isPresent, isClosing } = usePresenceTransition({
         isOpen: !isMinified,
-        exitDurationMs: 150,
+        exitDurationMs: ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
     });
 
     const searchMotionClass = isClosing
@@ -145,10 +132,7 @@ export function AppSettingsWorkspaceSection({
         );
     }
 
-    const dateFormatter = new Intl.DateTimeFormat(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-    });
+    const dateFormatter = createArchivedTabsDateFormatter();
     const actionButtonClassNames = {
         base: baseActionButtonClass,
         delete: deleteButtonClass,
@@ -158,7 +142,7 @@ export function AppSettingsWorkspaceSection({
     ): void => {
         setSearchQuery(event.target.value);
     };
-    const handleSortByChange = (value: SortOption): void => {
+    const handleSortByChange = (value: ArchivedTabsSortOption): void => {
         setSortBy(value);
     };
 
@@ -212,7 +196,7 @@ export function AppSettingsWorkspaceSection({
                                     <AppSelect
                                         value={sortBy}
                                         onChange={handleSortByChange}
-                                        options={ARCHIVE_SORT_OPTIONS}
+                                        options={ARCHIVED_TABS_SORT_OPTIONS}
                                     />
                                 </div>
                             ) : null}

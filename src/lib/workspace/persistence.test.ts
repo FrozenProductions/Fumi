@@ -7,7 +7,7 @@ import {
     it,
     vi,
 } from "vite-plus/test";
-import type { WorkspaceSession } from "../../types/workspace/session";
+import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import {
     getWorkspacePersistSignature,
     persistRecentWorkspacePathsEffect,

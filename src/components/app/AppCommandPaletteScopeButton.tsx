@@ -1,16 +1,7 @@
 import type { ReactElement } from "react";
-import type { AppIconGlyph } from "../../types/app/icon";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
-
-type AppCommandPaletteScopeButtonProps = {
-    ariaLabel: string;
-    content: string;
-    shortcut: string;
-    icon: AppIconGlyph;
-    isPressed: boolean;
-    onClick: () => void;
-};
+import type { AppCommandPaletteScopeButtonProps } from "./app.type";
 
 export function AppCommandPaletteScopeButton({
     ariaLabel,

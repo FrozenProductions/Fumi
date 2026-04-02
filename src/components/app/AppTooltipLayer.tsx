@@ -1,16 +1,6 @@
-import { forwardRef, type ReactNode } from "react";
+import { forwardRef } from "react";
 import { TOOLTIP_HIDDEN_MOTION_CLASS_NAMES } from "../../constants/tooltip/tooltip";
-import type { TooltipSide } from "../../types/tooltip/tooltip";
-
-type AppTooltipLayerProps = {
-    id: string;
-    content: ReactNode;
-    shortcut?: ReactNode;
-    side: TooltipSide;
-    top: number;
-    left: number;
-    isVisible: boolean;
-};
+import type { AppTooltipLayerProps } from "./app.type";
 
 export const AppTooltipLayer = forwardRef<HTMLDivElement, AppTooltipLayerProps>(
     function AppTooltipLayer(

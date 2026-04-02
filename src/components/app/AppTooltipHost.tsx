@@ -7,7 +7,7 @@ import {
     useTooltipStore,
 } from "../../hooks/tooltip/useTooltipStore";
 import { clamp } from "../../lib/shared/math";
-import type { TooltipSide } from "../../types/tooltip/tooltip";
+import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
 
 function calculateTooltipPosition(
     triggerRect: DOMRect,
