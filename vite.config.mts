@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 import { DEV_SERVER_PORT } from "./src/constants/window/mainView";
 
 const host = process.env.TAURI_DEV_HOST;
@@ -9,6 +9,8 @@ const packageJson = JSON.parse(
 ) as { version: string };
 
 export default defineConfig({
+    fmt: {},
+    lint: { options: { typeAware: true, typeCheck: true } },
     clearScreen: false,
     base: "./",
     define: {

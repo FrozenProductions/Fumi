@@ -21,3 +21,14 @@ export function getErrorMessage(
 
     return fallbackMessage;
 }
+
+export function getUnknownCauseMessage(
+    error: unknown,
+    fallbackMessage: string,
+): string {
+    if (typeof error === "string" && error.trim().length > 0) {
+        return error;
+    }
+
+    return getErrorMessage(error, fallbackMessage);
+}

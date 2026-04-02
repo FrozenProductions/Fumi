@@ -1,12 +1,14 @@
+import { Effect } from "effect";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { confirmAction } from "../../lib/platform/dialog";
+import { confirmActionEffect } from "../../lib/platform/dialog";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
 import {
-    checkForAppUpdate,
-    downloadAndInstallAppUpdate,
-    relaunchApp,
+    checkForAppUpdateEffect,
+    downloadAndInstallAppUpdateEffect,
+    relaunchAppEffect,
 } from "../../lib/platform/updater";
 import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window";
+import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type {
     AppUpdateDownloadProgress,
@@ -50,31 +52,36 @@ export function useAppUpdater(): UseAppUpdaterResult {
             setErrorMessage(null);
             setDownloadProgress(null);
 
-            try {
-                const nextUpdate = await checkForAppUpdate();
+            await runPromise(
+                checkForAppUpdateEffect().pipe(
+                    Effect.match({
+                        onSuccess: (nextUpdate) => {
+                            if (!nextUpdate) {
+                                setAvailableUpdate(null);
+                                setStatus("upToDate");
+                                return;
+                            }
 
-                if (!nextUpdate) {
-                    setAvailableUpdate(null);
-                    setStatus("upToDate");
-                    return;
-                }
+                            setAvailableUpdate(nextUpdate);
+                            setStatus("available");
+                        },
+                        onFailure: (error) => {
+                            const nextErrorMessage = getErrorMessage(
+                                error,
+                                "Unable to check for updates right now.",
+                            );
 
-                setAvailableUpdate(nextUpdate);
-                setStatus("available");
-            } catch (error) {
-                const nextErrorMessage = getErrorMessage(
-                    error,
-                    "Unable to check for updates right now.",
-                );
+                            if (options?.isSilent) {
+                                setStatus("idle");
+                                return;
+                            }
 
-                if (options?.isSilent) {
-                    setStatus("idle");
-                    return;
-                }
-
-                setStatus("error");
-                setErrorMessage(nextErrorMessage);
-            }
+                            setStatus("error");
+                            setErrorMessage(nextErrorMessage);
+                        },
+                    }),
+                ),
+            );
         },
         [],
     );
@@ -85,42 +92,48 @@ export function useAppUpdater(): UseAppUpdaterResult {
                 return;
             }
 
-            const shouldInstall = await confirmAction(
-                `Download and install Fumi v${availableUpdate.version} now?`,
-            );
+            await runPromise(
+                Effect.gen(function* () {
+                    const shouldInstall = yield* confirmActionEffect(
+                        `Download and install Fumi v${availableUpdate.version} now?`,
+                    );
 
-            if (!shouldInstall) {
-                return;
-            }
+                    if (!shouldInstall) {
+                        return;
+                    }
 
-            setStatus("downloading");
-            setErrorMessage(null);
-            setDownloadProgress(null);
+                    setStatus("downloading");
+                    setErrorMessage(null);
+                    setDownloadProgress(null);
 
-            try {
-                await downloadAndInstallAppUpdate(
-                    availableUpdate,
-                    (nextProgress) => {
-                        setDownloadProgress(nextProgress);
-                        setStatus(
-                            nextProgress.phase === "finished"
-                                ? "installing"
-                                : "downloading",
-                        );
-                    },
-                );
+                    yield* downloadAndInstallAppUpdateEffect(
+                        availableUpdate,
+                        (nextProgress) => {
+                            setDownloadProgress(nextProgress);
+                            setStatus(
+                                nextProgress.phase === "finished"
+                                    ? "installing"
+                                    : "downloading",
+                            );
+                        },
+                    );
 
-                setDownloadProgress(null);
-                setStatus("readyToRestart");
-            } catch (error) {
-                setStatus("error");
-                setErrorMessage(
-                    getErrorMessage(
-                        error,
-                        `Unable to install Fumi v${availableUpdate.version}.`,
+                    setDownloadProgress(null);
+                    setStatus("readyToRestart");
+                }).pipe(
+                    Effect.catchAll((error) =>
+                        Effect.sync(() => {
+                            setStatus("error");
+                            setErrorMessage(
+                                getErrorMessage(
+                                    error,
+                                    `Unable to install Fumi v${availableUpdate.version}.`,
+                                ),
+                            );
+                        }),
                     ),
-                );
-            }
+                ),
+            );
         }, [availableUpdate]);
 
     const handleRelaunchToApplyUpdate = useCallback(async (): Promise<void> => {
@@ -128,15 +141,19 @@ export function useAppUpdater(): UseAppUpdaterResult {
             return;
         }
 
-        const shouldRelaunch = await confirmAction(
-            `Restart Fumi now to finish applying v${availableUpdate.version}?`,
+        await runPromise(
+            Effect.gen(function* () {
+                const shouldRelaunch = yield* confirmActionEffect(
+                    `Restart Fumi now to finish applying v${availableUpdate.version}?`,
+                );
+
+                if (!shouldRelaunch) {
+                    return;
+                }
+
+                yield* relaunchAppEffect();
+            }),
         );
-
-        if (!shouldRelaunch) {
-            return;
-        }
-
-        await relaunchApp();
     }, [availableUpdate]);
 
     useEffect(() => {
