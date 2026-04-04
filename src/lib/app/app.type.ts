@@ -30,7 +30,7 @@ export type AppEditorSettings = {
     intellisensePriority: AppIntellisensePriority;
 };
 
-export type AppSidebarItem = "workspace" | "script-library";
+export type AppSidebarItem = "workspace" | "script-library" | "settings";
 
 export type AppSidebarNavigationItem = {
     id: AppSidebarItem;

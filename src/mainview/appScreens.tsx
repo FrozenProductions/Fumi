@@ -1,6 +1,8 @@
 import type { ReactElement } from "react";
+import { AppSettingsScreen } from "../components/app/AppSettingsScreen";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
+import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater";
 import type { UseWorkspaceExecutorResult } from "../hooks/workspace/useWorkspaceExecutor";
 import type { AppSidebarItem } from "../lib/app/app.type";
 import { showsWorkspaceContext } from "../lib/app/sidebar";
@@ -32,6 +34,7 @@ export function renderActiveAppScreen(
     activeSidebarItem: AppSidebarItem,
     workspaceSession: UseWorkspaceSessionResult,
     workspaceExecutor: UseWorkspaceExecutorResult,
+    updater: UseAppUpdaterResult,
 ): ReactElement {
     switch (activeSidebarItem) {
         case "workspace":
@@ -43,5 +46,12 @@ export function renderActiveAppScreen(
             );
         case "script-library":
             return <ScriptLibraryScreen workspaceSession={workspaceSession} />;
+        case "settings":
+            return (
+                <AppSettingsScreen
+                    updater={updater}
+                    workspaceSession={workspaceSession}
+                />
+            );
     }
 }

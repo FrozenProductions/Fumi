@@ -67,7 +67,7 @@ function CloseGlyph(): ReactElement {
 
 function MinimizeGlyph(): ReactElement {
     return (
-        <span className="pointer-events-none block h-[1.2px] w-[6px] rounded-full bg-black/50 opacity-0 transition-all duration-75 group-hover:opacity-100 group-focus-visible:opacity-100" />
+        <span className="pointer-events-none block h-[1.2px] w-[6px] rounded-full bg-black/50 opacity-0 transition-opacity duration-75 group-hover:opacity-100 group-focus-visible:opacity-100" />
     );
 }
 
@@ -76,7 +76,7 @@ function MaximizeGlyph({
 }: MaximizeGlyphProps): ReactElement {
     if (isWindowMaximized) {
         return (
-            <span className="pointer-events-none block size-[5px] rounded-[1px] border-[1.2px] border-black/50 opacity-0 transition-all duration-75 group-hover:opacity-100 group-focus-visible:opacity-100" />
+            <span className="pointer-events-none block size-[5px] rounded-[1px] border-[1.2px] border-black/50 opacity-0 transition-opacity duration-75 group-hover:opacity-100 group-focus-visible:opacity-100" />
         );
     }
 

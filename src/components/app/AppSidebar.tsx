@@ -10,13 +10,13 @@ import type { AppSidebarProps } from "./app.type";
 export function AppSidebar({
     isOpen,
     activeItem,
-    isSettingsOpen,
     onSelectItem,
-    onToggleSettings,
 }: AppSidebarProps): ReactElement {
     const activeIndex = APP_SIDEBAR_ITEMS.findIndex(
         (item) => item.id === activeItem,
     );
+    const activeIndicatorOffset = Math.max(0, activeIndex) * 48;
+    const isNavigationItemActive = activeIndex !== -1;
     const settingsIcon = APP_SETTINGS_SIDEBAR_ITEM.icon;
 
     return (
@@ -36,15 +36,21 @@ export function AppSidebar({
                     }`}
                 >
                     <div
-                        className="absolute left-0 top-0 h-10 w-10 rounded-[0.65rem] bg-fumi-50 shadow-sm ring-1 ring-fumi-200 transition-transform duration-300 ease-in-out"
+                        className={`absolute left-0 top-0 h-10 w-10 rounded-[0.65rem] bg-fumi-50 shadow-sm ring-1 ring-fumi-200 transition-[transform,opacity] duration-300 ease-in-out ${
+                            isNavigationItemActive ? "opacity-100" : "opacity-0"
+                        }`}
                         style={{
-                            transform: `translateY(${activeIndex * 48}px)`,
+                            transform: `translateY(${activeIndicatorOffset}px) scale(${
+                                isNavigationItemActive ? 1 : 0.95
+                            })`,
                         }}
                     />
                     <div
-                        className="absolute left-0 top-0 h-5 w-1 rounded-r-full bg-fumi-600 transition-transform duration-300 ease-in-out"
+                        className={`absolute left-0 top-0 h-5 w-1 rounded-r-full bg-fumi-600 transition-[transform,opacity] duration-300 ease-in-out ${
+                            isNavigationItemActive ? "opacity-100" : "opacity-0"
+                        }`}
                         style={{
-                            transform: `translateY(${activeIndex * 48 + 10}px)`,
+                            transform: `translateY(${activeIndicatorOffset + 10}px)`,
                         }}
                     />
 
@@ -98,10 +104,10 @@ export function AppSidebar({
                         <button
                             type="button"
                             aria-label={APP_SETTINGS_SIDEBAR_ITEM.label}
-                            aria-pressed={isSettingsOpen}
-                            onClick={onToggleSettings}
+                            aria-pressed={activeItem === "settings"}
+                            onClick={() => onSelectItem("settings")}
                             className={`group relative z-10 flex size-10 items-center justify-center rounded-[0.65rem] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
-                                isSettingsOpen
+                                activeItem === "settings"
                                     ? "bg-fumi-50 text-fumi-600 shadow-sm ring-1 ring-fumi-200"
                                     : "bg-transparent text-fumi-400 hover:bg-fumi-200 hover:text-fumi-600"
                             }`}
@@ -110,7 +116,9 @@ export function AppSidebar({
                                 aria-hidden="true"
                                 icon={settingsIcon}
                                 className="block size-[1.2rem] [-webkit-user-drag:none]"
-                                strokeWidth={isSettingsOpen ? 2.5 : 2}
+                                strokeWidth={
+                                    activeItem === "settings" ? 2.5 : 2
+                                }
                             />
                         </button>
                     </AppTooltip>

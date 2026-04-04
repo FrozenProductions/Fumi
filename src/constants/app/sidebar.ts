@@ -5,9 +5,16 @@ import {
 } from "@hugeicons/core-free-icons";
 import type {
     AppSidebarActionItem,
+    AppSidebarItem,
     AppSidebarNavigationItem,
 } from "../../lib/app/app.type";
 import { APP_HOTKEYS } from "./hotkeys";
+
+export const APP_SIDEBAR_ITEM_IDS = [
+    "workspace",
+    "script-library",
+    "settings",
+] as const satisfies AppSidebarItem[];
 
 export const APP_SIDEBAR_ITEMS = [
     {

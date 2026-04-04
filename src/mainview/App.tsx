@@ -1,6 +1,5 @@
 import { type ReactElement, useEffect } from "react";
 import { AppCommandPalette } from "../components/app/AppCommandPalette";
-import { AppSettingsWindow } from "../components/app/AppSettingsWindow";
 import { AppSidebar } from "../components/app/AppSidebar";
 import { AppTopbar } from "../components/app/AppTopbar";
 import { APP_TITLE } from "../constants/app/app";
@@ -34,16 +33,12 @@ export function App(): ReactElement {
         (state) => state.commandPaletteScope,
     );
     const commandPaletteMode = useAppStore((state) => state.commandPaletteMode);
-    const isSettingsOpen = useAppStore((state) => state.isSettingsOpen);
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
     const closeCommandPalette = useAppStore(
         (state) => state.closeCommandPalette,
     );
     const requestGoToLine = useAppStore((state) => state.requestGoToLine);
     const toggleSidebar = useAppStore((state) => state.toggleSidebar);
-    const toggleSettings = useAppStore((state) => state.toggleSettings);
-    const closeSettings = useAppStore((state) => state.closeSettings);
-    const openSettings = useAppStore((state) => state.openSettings);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
     const updater = useAppUpdater();
     const workspaceSession = useWorkspaceSession();
@@ -75,15 +70,15 @@ export function App(): ReactElement {
 
     useEffect(() => {
         return subscribeToOpenSettings(() => {
-            openSettings();
+            selectSidebarItem("settings");
         });
-    }, [openSettings]);
+    }, [selectSidebarItem]);
 
     useEffect(() => {
         return subscribeToCheckForUpdatesRequested(() => {
-            openSettings();
+            selectSidebarItem("settings");
         });
-    }, [openSettings]);
+    }, [selectSidebarItem]);
 
     return (
         <AppHotkeysProvider workspaceSession={workspaceSession}>
@@ -105,9 +100,7 @@ export function App(): ReactElement {
                     <AppSidebar
                         isOpen={isSidebarOpen}
                         activeItem={activeSidebarItem}
-                        isSettingsOpen={isSettingsOpen}
                         onSelectItem={selectSidebarItem}
-                        onToggleSettings={toggleSettings}
                     />
                     <main className="min-w-0 flex-1 bg-fumi-50">
                         <div
@@ -118,6 +111,7 @@ export function App(): ReactElement {
                                 activeSidebarItem,
                                 workspaceSession,
                                 workspaceExecutor,
+                                updater,
                             )}
                         </div>
                     </main>
@@ -131,13 +125,7 @@ export function App(): ReactElement {
                     onClose={closeCommandPalette}
                     onGoToLine={requestGoToLine}
                     onToggleSidebar={toggleSidebar}
-                    onOpenSettings={openSettings}
-                />
-                <AppSettingsWindow
-                    isOpen={isSettingsOpen}
-                    onClose={closeSettings}
-                    updater={updater}
-                    workspaceSession={workspaceSession}
+                    onOpenSettings={() => selectSidebarItem("settings")}
                 />
             </div>
         </AppHotkeysProvider>

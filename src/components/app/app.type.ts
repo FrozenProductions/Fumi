@@ -8,7 +8,6 @@ import type {
     Ref,
 } from "react";
 import type { AppInputSize } from "../../constants/app/input";
-import type { UseAppUpdaterResult } from "../../hooks/app/useAppUpdater";
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
 import type {
     AppCommandPaletteScope,
@@ -107,19 +106,10 @@ export type AppSettingsToggleProps = {
     children?: ReactNode;
 };
 
-export type AppSettingsWindowProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    updater: UseAppUpdaterResult;
-    workspaceSession: UseWorkspaceSessionResult;
-};
-
 export type AppSidebarProps = {
     isOpen: boolean;
     activeItem: AppSidebarItem;
-    isSettingsOpen: boolean;
     onSelectItem: (item: AppSidebarItem) => void;
-    onToggleSettings: () => void;
 };
 
 export type AppTooltipProps = {

@@ -7,6 +7,7 @@ import {
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_THEME,
 } from "../../constants/app/settings";
+import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
 import type {
     AppCommandPaletteMode,
     AppCommandPaletteScope,
@@ -16,12 +17,10 @@ import type {
     AppTheme,
 } from "../../lib/app/app.type";
 
-const APP_SIDEBAR_ITEMS = ["workspace", "script-library"] as const;
 const APP_THEMES = ["light", "dark"] as const;
 
 type AppStoreState = {
     isSidebarOpen: boolean;
-    isSettingsOpen: boolean;
     isCommandPaletteOpen: boolean;
     commandPaletteScope: AppCommandPaletteScope | null;
     commandPaletteMode: AppCommandPaletteMode | null;
@@ -40,9 +39,6 @@ type AppStoreActions = {
     openSidebar: () => void;
     closeSidebar: () => void;
     toggleSidebar: () => void;
-    openSettings: () => void;
-    closeSettings: () => void;
-    toggleSettings: () => void;
     openCommandPalette: (scope?: AppCommandPaletteScope | null) => void;
     closeCommandPalette: () => void;
     toggleCommandPalette: () => void;
@@ -71,7 +67,7 @@ function clampZoomPercent(zoomPercent: number): number {
 function isAppSidebarItem(value: unknown): value is AppSidebarItem {
     return (
         typeof value === "string" &&
-        APP_SIDEBAR_ITEMS.includes(value as AppSidebarItem)
+        APP_SIDEBAR_ITEM_IDS.includes(value as AppSidebarItem)
     );
 }
 
@@ -83,7 +79,6 @@ export const useAppStore = create<AppStore>()(
     persist(
         (set) => ({
             isSidebarOpen: true,
-            isSettingsOpen: false,
             isCommandPaletteOpen: false,
             commandPaletteScope: null,
             commandPaletteMode: null,
@@ -101,15 +96,6 @@ export const useAppStore = create<AppStore>()(
             },
             toggleSidebar: () => {
                 set((state) => ({ isSidebarOpen: !state.isSidebarOpen }));
-            },
-            openSettings: () => {
-                set({ isSettingsOpen: true });
-            },
-            closeSettings: () => {
-                set({ isSettingsOpen: false });
-            },
-            toggleSettings: () => {
-                set((state) => ({ isSettingsOpen: !state.isSettingsOpen }));
             },
             openCommandPalette: (scope) => {
                 set((state) => ({

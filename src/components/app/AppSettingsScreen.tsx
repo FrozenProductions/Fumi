@@ -1,36 +1,21 @@
-import { type MouseEvent, type ReactElement, useEffect, useState } from "react";
+import { type ReactElement, useState } from "react";
 import {
     APP_SETTINGS_SECTIONS,
     DEFAULT_APP_SETTINGS_SECTION,
 } from "../../constants/app/settings";
-import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
 import type { AppSettingsSection } from "../../lib/app/app.type";
-import type { AppSettingsWindowProps } from "./app.type";
 import { AppSettingsEditorSection } from "./settings/AppSettingsEditorSection";
 import { AppSettingsGeneralSection } from "./settings/AppSettingsGeneralSection";
 import { AppSettingsWorkspaceSection } from "./settings/AppSettingsWorkspaceSection";
+import type { AppSettingsScreenProps } from "./settings/settings.type";
 
-const SETTINGS_WINDOW_EXIT_DURATION_MS = 220;
-
-export function AppSettingsWindow({
-    isOpen,
-    onClose,
+export function AppSettingsScreen({
     updater,
     workspaceSession,
-}: AppSettingsWindowProps): ReactElement | null {
+}: AppSettingsScreenProps): ReactElement {
     const [activeSection, setActiveSection] = useState<AppSettingsSection>(
         DEFAULT_APP_SETTINGS_SECTION,
     );
-    const { isPresent, isClosing } = usePresenceTransition({
-        isOpen,
-        exitDurationMs: SETTINGS_WINDOW_EXIT_DURATION_MS,
-    });
-
-    useEffect(() => {
-        if (isOpen) {
-            setActiveSection(DEFAULT_APP_SETTINGS_SECTION);
-        }
-    }, [isOpen]);
 
     const renderSectionContent = (): ReactElement => {
         if (activeSection === "general") {
@@ -52,46 +37,10 @@ export function AppSettingsWindow({
         return <AppSettingsGeneralSection updater={updater} />;
     };
 
-    const handlePanelClick = (event: MouseEvent<HTMLElement>): void => {
-        event.stopPropagation();
-    };
-
-    if (!isPresent) {
-        return null;
-    }
-
-    const backdropMotionClassName = isClosing
-        ? "motion-safe:motion-opacity-out-0 motion-safe:motion-duration-140 motion-safe:motion-ease-out-cubic"
-        : "motion-safe:motion-opacity-in-0 motion-safe:motion-duration-100 motion-safe:motion-ease-out-cubic";
-    const panelMotionClassName = isClosing
-        ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[93%] motion-safe:motion-duration-190 motion-safe:motion-ease-in-quart"
-        : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:motion-duration-170 motion-safe:motion-ease-spring-smooth";
-
     return (
-        <div
-            className={[
-                "absolute inset-0 z-50 flex items-center justify-center p-6",
-                isClosing ? "pointer-events-none" : "",
-                backdropMotionClassName,
-            ].join(" ")}
-        >
-            <button
-                type="button"
-                aria-label="Close settings"
-                onClick={onClose}
-                className="absolute inset-0"
-            />
-            <section
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="app-settings-title"
-                onClick={handlePanelClick}
-                className={[
-                    "relative z-10 flex h-[min(36rem,calc(100%-3rem))] w-full max-w-3xl overflow-hidden rounded-[1.45rem] border border-fumi-200 bg-fumi-50 ring-1 ring-fumi-200 shadow-[var(--shadow-app-card)] motion-reduce:animate-none motion-reduce:transform-none",
-                    panelMotionClassName,
-                ].join(" ")}
-            >
-                <div className="flex w-48 shrink-0 flex-col border-r border-fumi-200 bg-fumi-100/80 p-4">
+        <div className="flex h-full w-full flex-col overflow-hidden bg-fumi-50">
+            <div className="flex flex-1 overflow-hidden">
+                <div className="flex w-64 shrink-0 flex-col border-r border-fumi-200 bg-fumi-100/80 p-4">
                     <div className="px-2 pb-4 pt-2">
                         <h2
                             id="app-settings-title"
@@ -126,11 +75,11 @@ export function AppSettingsWindow({
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col overflow-auto bg-fumi-50 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex flex-1 flex-col px-6 py-6">
+                    <div className="flex max-w-4xl flex-1 flex-col px-10 py-10">
                         {renderSectionContent()}
                     </div>
                 </div>
-            </section>
+            </div>
         </div>
     );
 }

@@ -17,7 +17,6 @@ export function AppHotkeysProvider({
     const isCommandPaletteOpen = useAppStore(
         (state) => state.isCommandPaletteOpen,
     );
-    const isSettingsOpen = useAppStore((state) => state.isSettingsOpen);
     const closeCommandPalette = useAppStore(
         (state) => state.closeCommandPalette,
     );
@@ -28,12 +27,10 @@ export function AppHotkeysProvider({
         (state) => state.toggleGoToLineCommandPalette,
     );
     const toggleSidebar = useAppStore((state) => state.toggleSidebar);
-    const closeSettings = useAppStore((state) => state.closeSettings);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
     const toggleCommandPalette = useAppStore(
         (state) => state.toggleCommandPalette,
     );
-    const toggleSettings = useAppStore((state) => state.toggleSettings);
 
     useEffect(() => {
         const handleGlobalAppKeydown = (event: KeyboardEvent): void => {
@@ -46,7 +43,11 @@ export function AppHotkeysProvider({
             if (event.code === "Comma" && !isCommandPaletteOpen) {
                 event.preventDefault();
                 event.stopPropagation();
-                toggleSettings();
+                if (activeSidebarItem === "settings") {
+                    selectSidebarItem("workspace");
+                } else {
+                    selectSidebarItem("settings");
+                }
                 return;
             }
 
@@ -96,7 +97,8 @@ export function AppHotkeysProvider({
         toggleCommandPalette,
         toggleCommandPaletteScope,
         toggleGoToLineCommandPalette,
-        toggleSettings,
+        activeSidebarItem,
+        selectSidebarItem,
     ]);
 
     useHotkey(
@@ -147,12 +149,12 @@ export function AppHotkeysProvider({
                 return;
             }
 
-            if (isSettingsOpen) {
-                closeSettings();
+            if (activeSidebarItem === "settings") {
+                selectSidebarItem("workspace");
             }
         },
         {
-            enabled: isCommandPaletteOpen || isSettingsOpen,
+            enabled: isCommandPaletteOpen || activeSidebarItem === "settings",
         },
     );
 
