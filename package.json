@@ -1,7 +1,7 @@
 {
     "name": "fumi",
     "private": true,
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Elegant and soft UI wrapper for MacSploit.",
     "packageManager": "bun@1.3.10",
     "engines": {
