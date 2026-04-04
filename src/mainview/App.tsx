@@ -41,6 +41,8 @@ export function App(): ReactElement {
     const toggleSidebar = useAppStore((state) => state.toggleSidebar);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
     const updater = useAppUpdater();
+    const showsSettingsUpdateIndicator =
+        import.meta.env.DEV || updater.availableUpdate !== null;
     const workspaceSession = useWorkspaceSession();
     const workspaceExecutor = useWorkspaceExecutor({
         activeTabContent: workspaceSession.activeTab?.content ?? null,
@@ -100,6 +102,9 @@ export function App(): ReactElement {
                     <AppSidebar
                         isOpen={isSidebarOpen}
                         activeItem={activeSidebarItem}
+                        showsSettingsUpdateIndicator={
+                            showsSettingsUpdateIndicator
+                        }
                         onSelectItem={selectSidebarItem}
                     />
                     <main className="min-w-0 flex-1 bg-fumi-50">

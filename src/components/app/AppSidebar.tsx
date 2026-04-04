@@ -10,6 +10,7 @@ import type { AppSidebarProps } from "./app.type";
 export function AppSidebar({
     isOpen,
     activeItem,
+    showsSettingsUpdateIndicator,
     onSelectItem,
 }: AppSidebarProps): ReactElement {
     const activeIndex = APP_SIDEBAR_ITEMS.findIndex(
@@ -120,6 +121,9 @@ export function AppSidebar({
                                     activeItem === "settings" ? 2.5 : 2
                                 }
                             />
+                            {showsSettingsUpdateIndicator ? (
+                                <span className="pointer-events-none absolute right-[0.42rem] top-[0.42rem] size-1.5 rounded-full bg-fumi-600" />
+                            ) : null}
                         </button>
                     </AppTooltip>
                 </div>

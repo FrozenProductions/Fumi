@@ -109,6 +109,7 @@ export type AppSettingsToggleProps = {
 export type AppSidebarProps = {
     isOpen: boolean;
     activeItem: AppSidebarItem;
+    showsSettingsUpdateIndicator: boolean;
     onSelectItem: (item: AppSidebarItem) => void;
 };
 
