@@ -206,11 +206,11 @@ export function ScriptLibraryScreen({
                             type="button"
                             disabled={page === 1}
                             onClick={goToPreviousPage}
-                            className="inline-flex h-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-50"
+                            className="app-select-none inline-flex h-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-50"
                         >
                             Previous
                         </button>
-                        <span className="text-xs font-semibold text-fumi-400">
+                        <span className="app-select-none text-xs font-semibold text-fumi-400">
                             Page {page}
                             {maxPages !== null ? ` of ${maxPages}` : ""}
                         </span>
@@ -218,7 +218,7 @@ export function ScriptLibraryScreen({
                             type="button"
                             disabled={!canGoNext}
                             onClick={goToNextPage}
-                            className="inline-flex h-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-50"
+                            className="app-select-none inline-flex h-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-50"
                         >
                             Next
                         </button>

@@ -43,7 +43,7 @@ export function ScriptLibraryToolbar({
                     value={query}
                     onChange={handleQueryChange}
                     {...APP_TEXT_INPUT_PROPS}
-                    className="h-10 w-full rounded-[0.8rem] border border-fumi-200 bg-fumi-50 pl-10 pr-4 text-sm font-medium text-fumi-900 transition-[border-color,box-shadow] placeholder:text-fumi-400 focus-visible:border-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
+                    className="script-library-search-input h-10 w-full rounded-[0.8rem] border border-fumi-200 bg-fumi-50 pl-10 pr-4 text-sm font-medium text-fumi-900 transition-[border-color,box-shadow] placeholder:text-fumi-400 focus-visible:border-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
                 />
             </div>
 
@@ -55,7 +55,7 @@ export function ScriptLibraryToolbar({
                                 key={key}
                                 type="button"
                                 onClick={() => onToggleFilter(key)}
-                                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold tracking-wide transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                className={`app-select-none inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold tracking-wide transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     filters[key]
                                         ? "border-transparent bg-fumi-600 text-white"
                                         : "border-fumi-200 bg-fumi-50 text-fumi-500 hover:bg-fumi-200 hover:text-fumi-600"
@@ -86,7 +86,7 @@ export function ScriptLibraryToolbar({
                             type="button"
                             aria-label="Grid view"
                             onClick={() => onViewFormatChange("grid")}
-                            className={`flex size-6 items-center justify-center rounded-[0.4rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                            className={`app-select-none flex size-6 items-center justify-center rounded-[0.4rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                 viewFormat === "grid"
                                     ? "bg-fumi-50 text-fumi-800 shadow-sm"
                                     : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800"
@@ -104,7 +104,7 @@ export function ScriptLibraryToolbar({
                             type="button"
                             aria-label="List view"
                             onClick={() => onViewFormatChange("list")}
-                            className={`flex size-6 items-center justify-center rounded-[0.4rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                            className={`app-select-none flex size-6 items-center justify-center rounded-[0.4rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                 viewFormat === "list"
                                     ? "bg-fumi-50 text-fumi-800 shadow-sm"
                                     : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800"

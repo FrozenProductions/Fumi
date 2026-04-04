@@ -99,7 +99,7 @@ export function WorkspaceTabItem({
                         role="tab"
                         aria-selected={isActive}
                         className={[
-                            "flex max-w-[15rem] cursor-grab items-center py-1.5 pl-3 pr-3 text-left text-[0.8125rem] font-semibold tracking-[0.01em] transition-[color,padding] duration-150 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100",
+                            "app-select-none flex max-w-[15rem] cursor-grab items-center py-1.5 pl-3 pr-3 text-left text-[0.8125rem] font-semibold tracking-[0.01em] transition-[color,padding] duration-150 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100",
                             isTabDragActive
                                 ? ""
                                 : "group-hover:pr-7 group-focus-within:pr-7",
@@ -139,7 +139,7 @@ export function WorkspaceTabItem({
                                 event.stopPropagation();
                             }}
                             className={[
-                                "pointer-events-none absolute right-0.5 top-1/2 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+                                "app-select-none pointer-events-none absolute right-0.5 top-1/2 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
                                 isTabDragActive
                                     ? ""
                                     : "hover:bg-fumi-200 hover:text-fumi-600",

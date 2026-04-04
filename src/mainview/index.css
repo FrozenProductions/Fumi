@@ -86,6 +86,16 @@
 }
 
 @layer components {
+    .app-select-none {
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .script-library-search-input::placeholder {
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
     .workspace-ace-editor.workspace-ace-editor.ace-github-light-default,
     .workspace-ace-editor.workspace-ace-editor.ace-github-dark {
         background-color: rgb(var(--color-editor-background) / 1);

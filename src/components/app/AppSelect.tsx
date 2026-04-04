@@ -53,7 +53,7 @@ export function AppSelect<TValue extends string>({
                 onClick={() => setIsOpen((currentValue) => !currentValue)}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                className={`flex h-8 items-center justify-between gap-1.5 whitespace-nowrap rounded-[0.65rem] border bg-fumi-50 px-2.5 text-xs font-semibold transition-[color,background-color,border-color,box-shadow] hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                className={`app-select-none flex h-8 items-center justify-between gap-1.5 whitespace-nowrap rounded-[0.65rem] border bg-fumi-50 px-2.5 text-xs font-semibold transition-[color,background-color,border-color,box-shadow] hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                     isOpen
                         ? "border-fumi-300 text-fumi-800 shadow-sm ring-1 ring-fumi-200"
                         : "border-fumi-200 text-fumi-500 hover:border-fumi-300 hover:text-fumi-600"
@@ -89,7 +89,7 @@ export function AppSelect<TValue extends string>({
                                 onChange(option.value);
                                 setIsOpen(false);
                             }}
-                            className={`flex w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 py-2 text-left text-[11px] font-semibold tracking-wide transition-colors ${
+                            className={`app-select-none flex w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 py-2 text-left text-[11px] font-semibold tracking-wide transition-colors ${
                                 value === option.value
                                     ? "bg-fumi-100 text-fumi-800"
                                     : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800"

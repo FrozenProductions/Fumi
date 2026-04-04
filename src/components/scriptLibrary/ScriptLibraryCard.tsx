@@ -109,7 +109,7 @@ export function ScriptLibraryCard({
                 }`}
             >
                 <div
-                    className={`flex flex-wrap text-[11px] font-semibold text-fumi-400 ${
+                    className={`app-select-none flex flex-wrap text-[11px] font-semibold text-fumi-400 ${
                         viewFormat === "grid" ? "gap-x-4 gap-y-2" : "gap-4"
                     }`}
                 >
@@ -145,7 +145,7 @@ export function ScriptLibraryCard({
                             type="button"
                             disabled={!hasWorkspace || isAddingToWorkspace}
                             onClick={onAddToWorkspace}
-                            className="inline-flex size-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 text-fumi-600 transition-colors hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-50"
+                            className="app-select-none inline-flex size-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 text-fumi-600 transition-colors hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-50"
                             aria-label={
                                 hasWorkspace
                                     ? "Add script to workspace"
@@ -177,7 +177,7 @@ export function ScriptLibraryCard({
                         <button
                             type="button"
                             onClick={onCopyLink}
-                            className="inline-flex size-8 items-center justify-center rounded-[0.65rem] bg-fumi-50 text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-70"
+                            className="app-select-none inline-flex size-8 items-center justify-center rounded-[0.65rem] bg-fumi-50 text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:pointer-events-none disabled:opacity-70"
                             aria-label="Copy link"
                         >
                             {isCopiedLink ? (
@@ -200,7 +200,7 @@ export function ScriptLibraryCard({
                             type="button"
                             disabled={isCopyingScript}
                             onClick={onCopyScript}
-                            className="inline-flex size-8 items-center justify-center rounded-[0.65rem] bg-fumi-600 text-white transition-[background-color,transform] hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:opacity-70"
+                            className="app-select-none inline-flex size-8 items-center justify-center rounded-[0.65rem] bg-fumi-600 text-white transition-[background-color,transform] hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:opacity-70"
                             aria-label="Copy script"
                         >
                             {isCopyingScript ? (

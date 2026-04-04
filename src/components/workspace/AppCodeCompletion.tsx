@@ -48,7 +48,7 @@ export function AppCodeCompletion({
                                 event.preventDefault();
                                 onSelectItem(index);
                             }}
-                            className={`flex h-7 w-full items-center gap-2 rounded-[0.65rem] px-2 text-left ${
+                            className={`app-select-none flex h-7 w-full items-center gap-2 rounded-[0.65rem] px-2 text-left ${
                                 isSelected
                                     ? "bg-fumi-100 text-fumi-900"
                                     : "text-fumi-600 hover:bg-fumi-50 hover:text-fumi-900"

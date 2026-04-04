@@ -117,11 +117,11 @@ export function AppSettingsWorkspaceSection({
 
     const deleteButtonClass =
         theme === "dark"
-            ? "inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-rose-500/50 bg-rose-950/70 px-2.5 text-[11px] font-semibold text-rose-100 transition-[background-color,border-color,color] hover:border-rose-400 hover:bg-rose-900/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-            : "inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-rose-200 bg-rose-50 px-2.5 text-[11px] font-semibold text-rose-700 transition-[background-color,border-color,color] hover:border-rose-300 hover:bg-rose-100 hover:text-rose-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500";
+            ? "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-rose-500/50 bg-rose-950/70 px-2.5 text-[11px] font-semibold text-rose-100 transition-[background-color,border-color,color] hover:border-rose-400 hover:bg-rose-900/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+            : "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-rose-200 bg-rose-50 px-2.5 text-[11px] font-semibold text-rose-700 transition-[background-color,border-color,color] hover:border-rose-300 hover:bg-rose-100 hover:text-rose-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500";
 
     const baseActionButtonClass =
-        "inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-100 px-2.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600";
+        "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-100 px-2.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600";
 
     if (workspace.archivedTabs.length === 0) {
         return (
@@ -208,7 +208,7 @@ export function AppSettingsWorkspaceSection({
                             isMinified ? "py-2.5" : "py-2"
                         }`}
                     >
-                        <p className="text-xs font-semibold text-fumi-500">
+                        <p className="app-select-none text-xs font-semibold text-fumi-500">
                             {filteredAndSortedTabs.length} tab
                             {filteredAndSortedTabs.length !== 1 ? "s" : ""}
                         </p>

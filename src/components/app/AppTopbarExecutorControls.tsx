@@ -58,7 +58,7 @@ export function AppTopbarExecutorControls({
                         }}
                         disabled={isBusy}
                         data-topbar-interactive="true"
-                        className={`inline-flex h-full items-center justify-center gap-1.5 rounded-l-md px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
+                        className={`app-select-none inline-flex h-full items-center justify-center gap-1.5 rounded-l-md px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
                             didRecentAttachFail
                                 ? "bg-amber-50 text-amber-800 hover:bg-amber-100"
                                 : "text-fumi-700 hover:bg-fumi-200"
@@ -96,7 +96,7 @@ export function AppTopbarExecutorControls({
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         disabled={isBusy || isAttached}
                         data-topbar-interactive="true"
-                        className={`inline-flex h-full w-6 shrink-0 items-center justify-center rounded-r-md text-fumi-700 transition-[background-color,border-color] duration-150 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
+                        className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-r-md text-fumi-700 transition-[background-color,border-color] duration-150 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
                             isAttached ? "cursor-not-allowed opacity-50" : ""
                         }`}
                     >
@@ -113,7 +113,7 @@ export function AppTopbarExecutorControls({
 
             {isDropdownOpen ? (
                 <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-36 origin-top-right overflow-y-auto rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] animate-fade-in max-h-64 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="mb-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-fumi-400">
+                    <div className="app-select-none mb-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-fumi-400">
                         Select Port
                     </div>
                     <div className="flex flex-col gap-0.5">
@@ -127,7 +127,7 @@ export function AppTopbarExecutorControls({
                                         updatePort(p);
                                         setIsDropdownOpen(false);
                                     }}
-                                    className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition-colors ${
+                                    className={`app-select-none flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition-colors ${
                                         isSelected
                                             ? "bg-fumi-100 font-semibold text-fumi-800"
                                             : "font-medium text-fumi-500 hover:bg-fumi-100 hover:text-fumi-800"

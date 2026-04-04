@@ -35,7 +35,7 @@ export function AppCommandPaletteResults({
                             onClick={() => onCommitSelection(item)}
                             onMouseEnter={() => onHoverItem(index)}
                             className={[
-                                "flex w-full items-center gap-2 rounded-[0.75rem] border px-2 text-left transition-[background-color,border-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50",
+                                "app-select-none flex w-full items-center gap-2 rounded-[0.75rem] border px-2 text-left transition-[background-color,border-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50",
                                 item.description ? "py-1.5" : "py-2",
                                 item.isDisabled
                                     ? "cursor-default opacity-60"

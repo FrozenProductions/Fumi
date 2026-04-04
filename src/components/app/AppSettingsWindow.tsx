@@ -112,7 +112,7 @@ export function AppSettingsWindow({
                                     key={id}
                                     type="button"
                                     onClick={() => setActiveSection(id)}
-                                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-[background-color,color,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
+                                    className={`app-select-none flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-[background-color,color,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
                                         isActive
                                             ? "bg-fumi-50 text-fumi-900 shadow-sm ring-1 ring-fumi-200"
                                             : "text-fumi-500 hover:bg-fumi-200 hover:text-fumi-800"

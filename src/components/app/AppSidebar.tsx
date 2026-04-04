@@ -21,7 +21,7 @@ export function AppSidebar({
 
     return (
         <aside
-            className={`relative z-40 shrink-0 overflow-hidden bg-fumi-100 transition-[width,border-color] duration-300 ease-in-out ${
+            className={`app-select-none relative z-40 shrink-0 overflow-hidden bg-fumi-100 transition-[width,border-color] duration-300 ease-in-out ${
                 isOpen
                     ? "w-14 border-r border-fumi-200"
                     : "w-0 border-r border-transparent"

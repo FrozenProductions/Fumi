@@ -217,7 +217,7 @@ export function WorkspaceTabBar({
                         aria-expanded={isTabListOpen}
                         aria-haspopup="menu"
                         className={[
-                            "inline-flex size-7 items-center justify-center rounded-md border text-fumi-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+                            "app-select-none inline-flex size-7 items-center justify-center rounded-md border text-fumi-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
                             isTabListOpen
                                 ? "border-fumi-300 bg-fumi-50 text-fumi-600"
                                 : "border-fumi-200 bg-fumi-50 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600",
@@ -249,7 +249,7 @@ export function WorkspaceTabBar({
                     <button
                         type="button"
                         onClick={onCreateFile}
-                        className="inline-flex size-7 items-center justify-center rounded-md border border-fumi-200 bg-fumi-50 text-fumi-500 transition-colors hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100"
+                        className="app-select-none inline-flex size-7 items-center justify-center rounded-md border border-fumi-200 bg-fumi-50 text-fumi-500 transition-colors hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100"
                     >
                         <AppIcon icon={Add01Icon} size={14} strokeWidth={2.5} />
                     </button>

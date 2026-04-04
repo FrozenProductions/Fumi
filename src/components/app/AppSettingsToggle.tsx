@@ -24,7 +24,7 @@ export function AppSettingsToggle({
                     role="switch"
                     aria-checked={isEnabled}
                     onClick={onChange}
-                    className={`relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full border transition-[background-color,border-color,transform] duration-[340ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 motion-reduce:transition-none ${
+                    className={`app-select-none relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full border transition-[background-color,border-color,transform] duration-[340ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 motion-reduce:transition-none ${
                         isEnabled
                             ? "border-fumi-600 bg-fumi-600"
                             : "border-fumi-200 bg-fumi-100 hover:border-fumi-300"

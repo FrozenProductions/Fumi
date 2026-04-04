@@ -194,7 +194,7 @@ export function WorkspaceScreen({
                                         void executor.executeActiveTab();
                                     }}
                                     disabled={executor.isBusy}
-                                    className={`${executeButtonClassName} ${
+                                    className={`app-select-none ${executeButtonClassName} ${
                                         executor.isBusy
                                             ? "cursor-wait opacity-70"
                                             : ""

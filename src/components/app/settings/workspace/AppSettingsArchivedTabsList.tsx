@@ -30,7 +30,7 @@ export function AppSettingsArchivedTabsList({
                     key={tab.id}
                     className="flex items-center justify-between gap-3 rounded-[0.85rem] border border-fumi-200 bg-fumi-50 px-3 py-2.5"
                 >
-                    <div className="min-w-0 flex flex-col gap-0.5">
+                    <div className="app-select-none min-w-0 flex flex-col gap-0.5">
                         <p className="truncate text-[0.8125rem] font-semibold text-fumi-900">
                             {tab.fileName}
                         </p>

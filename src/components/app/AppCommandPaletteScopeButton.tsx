@@ -19,7 +19,7 @@ export function AppCommandPaletteScopeButton({
                 aria-pressed={isPressed}
                 onClick={onClick}
                 className={[
-                    "inline-flex size-9 items-center justify-center rounded-full border shadow-[var(--shadow-app-floating)] transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50",
+                    "app-select-none inline-flex size-9 items-center justify-center rounded-full border shadow-[var(--shadow-app-floating)] transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50",
                     isPressed
                         ? "border-fumi-300 bg-fumi-600 text-fumi-50"
                         : "border-fumi-200 bg-fumi-50 text-fumi-500 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-700",

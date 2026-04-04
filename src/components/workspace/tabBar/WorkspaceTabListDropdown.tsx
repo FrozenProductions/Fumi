@@ -43,7 +43,7 @@ export function WorkspaceTabListDropdown({
                             onClose();
                         }}
                         className={[
-                            "flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide transition-colors",
+                            "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide transition-colors",
                             isActive
                                 ? "bg-fumi-100 text-fumi-800"
                                 : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800",
