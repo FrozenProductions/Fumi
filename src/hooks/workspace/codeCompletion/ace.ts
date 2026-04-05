@@ -37,8 +37,21 @@ export function isLuauEditorSession(
     );
 }
 
-export function bindWorkspaceEditorShortcuts(editor: AceEditorInstance): void {
+export function bindWorkspaceEditorShortcuts(
+    editor: AceEditorInstance,
+    onOpenSearch: () => void,
+): void {
     editor.commands.removeCommand("showSettingsMenu");
+    editor.commands.removeCommand("find");
+    editor.commands.addCommand({
+        name: "find",
+        bindKey: {
+            win: "Ctrl-F",
+            mac: "Command-F",
+        },
+        exec: onOpenSearch,
+        readOnly: true,
+    });
     editor.commands.bindKey(
         {
             win: "Ctrl-A",

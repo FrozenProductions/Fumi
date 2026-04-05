@@ -11,6 +11,7 @@ import type {
     UseWorkspaceCodeCompletionResult,
 } from "./codeCompletion/types";
 import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
+import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
 
 export type { UseWorkspaceCodeCompletionResult } from "./codeCompletion/types";
 
@@ -40,12 +41,12 @@ export function useWorkspaceCodeCompletion({
     tabsByIdRef.current = new Map(tabs.map((tab) => [tab.id, tab] as const));
 
     const getActiveEditor = useCallback((): AceEditorInstance | null => {
-        if (!activeTabId) {
+        if (!activeTabIdRef.current) {
             return null;
         }
 
-        return editorByTabIdRef.current.get(activeTabId) ?? null;
-    }, [activeTabId]);
+        return editorByTabIdRef.current.get(activeTabIdRef.current) ?? null;
+    }, []);
 
     const {
         acceptCompletion,
@@ -59,6 +60,12 @@ export function useWorkspaceCodeCompletion({
         isIntellisenseEnabled,
         intellisensePriority,
         suppressNextPassiveCompletionRef,
+    });
+    const { openSearch, searchPanel } = useWorkspaceEditorSearch({
+        activeTabId,
+        tabs,
+        getActiveEditor,
+        closeCompletionPopup,
     });
 
     const goToLine = useCallback(
@@ -149,7 +156,7 @@ export function useWorkspaceCodeCompletion({
         (tabId: string) =>
             (editor: unknown): void => {
                 const aceEditor = editor as AceEditorInstance;
-                bindWorkspaceEditorShortcuts(aceEditor);
+                bindWorkspaceEditorShortcuts(aceEditor, openSearch);
                 editorByTabIdRef.current.set(tabId, aceEditor);
 
                 const tab = tabsByIdRef.current.get(tabId);
@@ -170,7 +177,7 @@ export function useWorkspaceCodeCompletion({
                     }
                 });
             },
-        [closeCompletionPopup],
+        [closeCompletionPopup, openSearch],
     );
 
     const createHandleEditorChange = useCallback(
@@ -277,6 +284,7 @@ export function useWorkspaceCodeCompletion({
 
     return {
         completionPopup,
+        searchPanel,
         handleCompletionHover,
         createHandleCursorChange,
         createHandleEditorChange,

@@ -1,5 +1,6 @@
 import type { AppIntellisensePriority } from "../../../lib/app/app.type";
 import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
+import type { WorkspaceEditorSearchController } from "../../../lib/workspace/editorSearch.type";
 import type {
     WorkspaceCursorState,
     WorkspaceTab,
@@ -20,6 +21,7 @@ export type UseWorkspaceCodeCompletionOptions = {
 
 export type UseWorkspaceCodeCompletionResult = {
     completionPopup: LuauCompletionPopupState | null;
+    searchPanel: WorkspaceEditorSearchController;
     handleCompletionHover: (index: number) => void;
     createHandleCursorChange: (tabId: string) => (selection: unknown) => void;
     createHandleEditorChange: (

@@ -57,6 +57,7 @@ export function WorkspaceScreen({
         createHandleEditorLoad,
         createHandleScroll,
         handleCompletionHover,
+        searchPanel,
     } = useWorkspaceCodeCompletion({
         activeEditorMode,
         activeTabId: activeTab?.id ?? null,
@@ -179,6 +180,7 @@ export function WorkspaceScreen({
                             appTheme={appTheme}
                             editorFontSize={editorSettings.fontSize}
                             tabs={workspace.tabs}
+                            searchPanel={searchPanel}
                             acceptCompletion={acceptCompletion}
                             completionPopup={completionPopup}
                             createHandleCursorChange={createHandleCursorChange}

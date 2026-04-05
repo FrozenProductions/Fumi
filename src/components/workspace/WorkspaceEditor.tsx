@@ -10,6 +10,7 @@ import {
     WORKSPACE_EDITOR_STYLE,
 } from "../../lib/workspace/editor";
 import { AppCodeCompletion } from "./AppCodeCompletion";
+import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
 import type { WorkspaceEditorProps } from "./workspace.type";
 
 export function WorkspaceEditor({
@@ -17,6 +18,7 @@ export function WorkspaceEditor({
     appTheme,
     editorFontSize,
     tabs,
+    searchPanel,
     acceptCompletion,
     completionPopup,
     createHandleCursorChange,
@@ -114,6 +116,9 @@ export function WorkspaceEditor({
                         onSelectItem={acceptCompletion}
                     />
                 ) : null}
+                <div className="pointer-events-none absolute right-4 top-4 z-20">
+                    <WorkspaceEditorSearchPanel searchPanel={searchPanel} />
+                </div>
             </div>
         </div>
     );

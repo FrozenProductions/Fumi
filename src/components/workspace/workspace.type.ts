@@ -6,6 +6,7 @@ import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
 } from "../../lib/luau/luau.type";
+import type { WorkspaceEditorSearchController } from "../../lib/workspace/editorSearch.type";
 import type {
     UseWorkspaceSessionResult,
     WorkspaceSession,
@@ -25,6 +26,7 @@ export type WorkspaceEditorProps = {
     appTheme: AppTheme;
     editorFontSize: number;
     tabs: WorkspaceTab[];
+    searchPanel: WorkspaceEditorSearchController;
 } & Pick<
     UseWorkspaceCodeCompletionResult,
     | "acceptCompletion"
@@ -35,6 +37,10 @@ export type WorkspaceEditorProps = {
     | "createHandleScroll"
     | "handleCompletionHover"
 >;
+
+export type WorkspaceEditorSearchPanelProps = {
+    searchPanel: WorkspaceEditorSearchController;
+};
 
 export type WorkspaceErrorBannerProps = {
     errorMessage: string;
