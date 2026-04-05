@@ -110,3 +110,54 @@ pub fn resolve_exit_guard_sync(
 ) {
     state.resolve_exit_guard_sync(sync_id, should_guard_exit);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn exit_lifecycle_tracks_guard_sync_and_frontend_readiness() {
+        let state = AppRuntimeState::default();
+
+        assert_eq!(state.next_exit_guard_sync_request_id(), 1);
+        assert_eq!(state.next_exit_guard_sync_request_id(), 2);
+        assert!(!state.has_completed_exit_guard_sync(1));
+
+        state.set_workspace_unsaved_changes(true);
+        assert!(state.should_guard_exit());
+
+        state.resolve_exit_guard_sync(3, true);
+        assert!(state.has_completed_exit_guard_sync(1));
+        assert!(state.has_completed_exit_guard_sync(3));
+        assert!(!state.has_completed_exit_guard_sync(4));
+
+        state.begin_exit();
+        assert!(!state.should_guard_exit());
+        assert!(!state.is_frontend_ready_for_exit());
+
+        state.mark_frontend_ready_for_exit();
+        assert!(state.is_frontend_ready_for_exit());
+
+        state.cancel_exit();
+        assert!(!state.is_frontend_ready_for_exit());
+        assert!(state.should_guard_exit());
+
+        state.resolve_exit_guard_sync(4, false);
+        assert!(!state.should_guard_exit());
+    }
+
+    #[test]
+    fn close_and_exit_allowances_are_single_use() {
+        let state = AppRuntimeState::default();
+
+        assert!(!state.consume_next_close_request_allowance());
+        state.allow_next_close_request();
+        assert!(state.consume_next_close_request_allowance());
+        assert!(!state.consume_next_close_request_allowance());
+
+        assert!(!state.consume_next_exit_request_allowance());
+        state.allow_next_exit_request();
+        assert!(state.consume_next_exit_request_allowance());
+        assert!(!state.consume_next_exit_request_allowance());
+    }
+}
