@@ -72,7 +72,9 @@ export function AppSettingsGeneralSection({
             ? theme === "dark"
                 ? "app-select-none pointer-events-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-300 bg-fumi-700 px-3 text-[11px] font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-400 hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:pointer-events-none disabled:opacity-50"
                 : "app-select-none pointer-events-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-200 bg-fumi-600 px-3 text-[11px] font-semibold tracking-wide text-white shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-700 hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:pointer-events-none disabled:opacity-50"
-            : `${updaterButtonBaseClassName} border border-fumi-200 bg-fumi-100 text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900`;
+            : theme === "dark"
+              ? `${updaterButtonBaseClassName} border border-fumi-300 bg-fumi-100 text-fumi-800 shadow-[0_1px_2px_rgb(0_0_0_/_0.18)] hover:border-fumi-400 hover:bg-fumi-200 hover:text-fumi-900`
+              : `${updaterButtonBaseClassName} border border-fumi-200 bg-fumi-100 text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900`;
     const restartButtonClassName = `${updaterButtonBaseClassName} border border-fumi-700 bg-fumi-900 text-fumi-50 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08),0_1px_2px_rgb(15_23_42_/_0.12)] hover:border-fumi-800 hover:bg-fumi-800`;
 
     const handleZoomPercentChange = (value: string): void => {

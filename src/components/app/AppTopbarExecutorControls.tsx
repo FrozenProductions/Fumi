@@ -4,6 +4,7 @@ import {
     MAX_EXECUTOR_PORT,
     MIN_EXECUTOR_PORT,
 } from "../../constants/workspace/executor";
+import { useAppStore } from "../../hooks/app/useAppStore";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./app.type";
@@ -16,6 +17,7 @@ export function AppTopbarExecutorControls({
     updatePort,
     toggleConnection,
 }: AppTopbarExecutorControlsProps): ReactElement {
+    const theme = useAppStore((state) => state.theme);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,9 @@ export function AppTopbarExecutorControls({
                         data-topbar-interactive="true"
                         className={`app-select-none inline-flex h-full items-center justify-center gap-1.5 rounded-l-md px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
                             didRecentAttachFail
-                                ? "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                                ? theme === "dark"
+                                    ? "bg-amber-950/70 text-amber-100 hover:bg-amber-900/80"
+                                    : "bg-amber-50 text-amber-800 hover:bg-amber-100"
                                 : "text-fumi-700 hover:bg-fumi-200"
                         } ${isBusy ? "cursor-wait opacity-70" : ""}`}
                     >

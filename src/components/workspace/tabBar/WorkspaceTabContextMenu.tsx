@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactElement } from "react";
 import { useEffect, useRef } from "react";
+import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
 import type { WorkspaceTabContextMenuProps } from "./tabBar.type";
 
@@ -13,6 +14,7 @@ export function WorkspaceTabContextMenu({
     onDelete,
     onRename,
 }: WorkspaceTabContextMenuProps): ReactElement | null {
+    const theme = useAppStore((state) => state.theme);
     const menuRef = useRef<HTMLDivElement | null>(null);
     const lastPositionRef = useRef(position);
     const { isPresent, isClosing } = usePresenceTransition({
@@ -70,6 +72,10 @@ export function WorkspaceTabContextMenu({
     const dropdownMotionClassName = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[96%] motion-safe:-motion-translate-y-out-[4%] motion-safe:motion-duration-120 motion-safe:motion-ease-in-quad"
         : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:-motion-translate-y-in-[6%] motion-safe:motion-duration-150 motion-safe:motion-ease-spring-snappy";
+    const deleteButtonClassName =
+        theme === "dark"
+            ? "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-200 transition-colors hover:bg-rose-950/70 hover:text-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+            : "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
 
     return (
         <div
@@ -113,7 +119,7 @@ export function WorkspaceTabContextMenu({
                     onDelete();
                     onClose();
                 }}
-                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                className={deleteButtonClassName}
             >
                 Delete
             </button>
