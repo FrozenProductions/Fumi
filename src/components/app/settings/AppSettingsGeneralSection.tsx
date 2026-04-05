@@ -259,7 +259,7 @@ export function AppSettingsGeneralSection({
             </div>
             <AppSettingsToggle
                 label="Auto-update"
-                description="Download new app updates automatically and show a native restart prompt when they are ready."
+                description="Auto-download updates and prompt before restart."
                 isEnabled={isAutoUpdateEnabled}
                 onChange={handleAutoUpdateToggle}
             />
