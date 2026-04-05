@@ -1,3 +1,4 @@
+mod dialog;
 mod events;
 mod executor;
 mod menu;
@@ -13,7 +14,7 @@ use crate::{
     state::AppRuntimeState,
 };
 
-const APP_TITLE: &str = "Fumi";
+pub(crate) const APP_TITLE: &str = "Fumi";
 const QUIT_CONFIRM_MESSAGE: &str = "Are you sure you want to quit, you have unsaved changes";
 const FRONTEND_EXIT_GUARD_SYNC_TIMEOUT_MS: u64 = 250;
 const FRONTEND_EXIT_PREPARATION_TIMEOUT_MS: u64 = 1_500;
@@ -42,15 +43,28 @@ impl MainWindowTermination {
 }
 
 fn confirm_exit<R: tauri::Runtime>(app: &tauri::AppHandle<R>, confirm_label: &str) -> bool {
-    app.dialog()
-        .message(QUIT_CONFIRM_MESSAGE)
-        .title(APP_TITLE)
-        .kind(MessageDialogKind::Warning)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            confirm_label.to_string(),
-            "Cancel".to_string(),
-        ))
-        .blocking_show()
+    dialog::show_warning_confirmation_dialog(
+        app,
+        dialog::ConfirmDialogOptions {
+            title: APP_TITLE,
+            message: QUIT_CONFIRM_MESSAGE,
+            confirm_label,
+            cancel_label: "Cancel",
+        },
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to show native exit confirmation dialog: {error}");
+
+        app.dialog()
+            .message(QUIT_CONFIRM_MESSAGE)
+            .title(APP_TITLE)
+            .kind(MessageDialogKind::Warning)
+            .buttons(MessageDialogButtons::OkCancelCustom(
+                confirm_label.to_string(),
+                "Cancel".to_string(),
+            ))
+            .blocking_show()
+    })
 }
 
 fn prepare_for_exit<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
@@ -287,6 +301,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             workspace::commands::archive::delete_archived_workspace_tab,
             workspace::commands::archive::delete_all_archived_workspace_tabs,
             workspace::commands::set_workspace_unsaved_changes,
+            dialog::show_confirmation_dialog,
             state::complete_exit_preparation,
             state::resolve_exit_guard_sync,
         ])

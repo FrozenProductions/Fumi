@@ -1,9 +1,10 @@
-import { confirm, open } from "@tauri-apps/plugin-dialog";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import { Effect } from "effect";
-import { APP_TITLE } from "../../constants/app/app";
 import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { PlatformOperationError } from "./errors";
+import { isTauriEnvironment } from "./runtime";
 
 export async function confirmAction(message: string): Promise<boolean> {
     return runPromise(confirmActionEffect(message));
@@ -19,11 +20,13 @@ export function confirmActionEffect(
     message: string,
 ): Effect.Effect<boolean, PlatformOperationError> {
     return Effect.tryPromise({
-        try: () =>
-            confirm(message, {
-                title: APP_TITLE,
-                kind: "warning",
-            }),
+        try: () => {
+            if (!isTauriEnvironment()) {
+                return Promise.resolve(window.confirm(message));
+            }
+
+            return invoke<boolean>("show_confirmation_dialog", { message });
+        },
         catch: (error) =>
             new PlatformOperationError({
                 operation: "confirmAction",
