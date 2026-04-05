@@ -1,6 +1,12 @@
 import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
 import { Add01Icon, Menu02Icon } from "@hugeicons/core-free-icons";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import {
+    type ReactElement,
+    type MouseEvent as ReactMouseEvent,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
 import {
@@ -11,9 +17,16 @@ import {
 } from "../../lib/workspace/tabBar";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
+import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
 import { WorkspaceTabItem } from "./tabBar/WorkspaceTabItem";
 import { WorkspaceTabListDropdown } from "./tabBar/WorkspaceTabListDropdown";
 import type { WorkspaceTabBarProps } from "./workspace.type";
+
+type WorkspaceTabContextMenuState = {
+    tabId: string;
+    x: number;
+    y: number;
+};
 
 export function WorkspaceTabBar({
     workspace,
@@ -22,13 +35,17 @@ export function WorkspaceTabBar({
     onSelectTab,
     onReorderTab,
     onArchiveTab,
+    onDeleteTab,
 }: WorkspaceTabBarProps): ReactElement {
+    const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabListContainerRef = useRef<HTMLDivElement | null>(null);
     const tabListDropdownRef = useRef<HTMLDivElement | null>(null);
     const lastDropTargetTabIdRef = useRef<string | null>(null);
     const lastPreviewTargetTabIdRef = useRef<string | null>(null);
     const [isTabDragActive, setIsTabDragActive] = useState(false);
     const [previewTabs, setPreviewTabs] = useState(workspace.tabs);
+    const [contextMenuState, setContextMenuState] =
+        useState<WorkspaceTabContextMenuState | null>(null);
     const isTabListOpen = useWorkspaceUiStore((state) => state.isTabListOpen);
     const closeTabList = useWorkspaceUiStore((state) => state.closeTabList);
     const toggleTabList = useWorkspaceUiStore((state) => state.toggleTabList);
@@ -67,6 +84,22 @@ export function WorkspaceTabBar({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [closeTabList, isTabListOpen]);
+
+    useEffect(() => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        const handleWindowBlur = (): void => {
+            setContextMenuState(null);
+        };
+
+        window.addEventListener("blur", handleWindowBlur);
+
+        return () => {
+            window.removeEventListener("blur", handleWindowBlur);
+        };
+    }, [contextMenuState]);
 
     useEffect(() => {
         if (!activeTabId) {
@@ -129,6 +162,7 @@ export function WorkspaceTabBar({
 
     const handleDragStart: DragDropEventHandlers["onDragStart"] = (): void => {
         setIsTabDragActive(true);
+        setContextMenuState(null);
         lastDropTargetTabIdRef.current = null;
         lastPreviewTargetTabIdRef.current = null;
         setPreviewTabs(workspace.tabs);
@@ -168,8 +202,65 @@ export function WorkspaceTabBar({
         onReorderTab(draggedTabId, targetTabId);
     };
 
+    const handleOpenContextMenu = (
+        tabId: string,
+        event: ReactMouseEvent<HTMLDivElement>,
+    ): void => {
+        event.preventDefault();
+        const tabRect = event.currentTarget.getBoundingClientRect();
+        const tabBarRect = tabBarRef.current?.getBoundingClientRect();
+        const offsetLeft = tabBarRect?.left ?? 0;
+        const offsetTop = tabBarRect?.top ?? 0;
+
+        closeTabList();
+        setContextMenuState({
+            tabId,
+            x: tabRect.left - offsetLeft - 2,
+            y: tabRect.bottom - offsetTop + 2,
+        });
+    };
+
+    const closeContextMenu = (): void => {
+        setContextMenuState(null);
+    };
+
+    const handleRenameFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        const targetTab = workspace.tabs.find(
+            (tab) => tab.id === contextMenuState.tabId,
+        );
+
+        if (!targetTab) {
+            return;
+        }
+
+        handleStartRename(targetTab.id, targetTab.fileName);
+    };
+
+    const handleDeleteFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onDeleteTab(contextMenuState.tabId);
+    };
+
+    const handleArchiveFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onArchiveTab(contextMenuState.tabId);
+    };
+
     return (
-        <div className="shrink-0 flex items-center gap-2 border-b border-fumi-200 bg-fumi-100 px-2 py-1.5">
+        <div
+            ref={tabBarRef}
+            className="relative shrink-0 flex items-center gap-2 border-b border-fumi-200 bg-fumi-100 px-2 py-1.5"
+        >
             <DragDropProvider
                 modifiers={TAB_BAR_MODIFIERS}
                 sensors={TAB_BAR_SENSORS}
@@ -191,6 +282,7 @@ export function WorkspaceTabBar({
                             tab={tab}
                             isActive={tab.id === workspace.activeTabId}
                             isTabDragActive={isTabDragActive}
+                            onOpenContextMenu={handleOpenContextMenu}
                             onArchiveTab={onArchiveTab}
                             onSelectTab={onSelectTab}
                             handleRenameInputBlur={handleRenameInputBlur}
@@ -206,6 +298,17 @@ export function WorkspaceTabBar({
                     ))}
                 </div>
             </DragDropProvider>
+            <WorkspaceTabContextMenu
+                isOpen={contextMenuState !== null}
+                position={{
+                    x: contextMenuState?.x ?? 0,
+                    y: contextMenuState?.y ?? 0,
+                }}
+                onArchive={handleArchiveFromContextMenu}
+                onClose={closeContextMenu}
+                onDelete={handleDeleteFromContextMenu}
+                onRename={handleRenameFromContextMenu}
+            />
             <div
                 ref={tabListDropdownRef}
                 className="relative ml-auto flex shrink-0 items-center gap-1"
@@ -213,7 +316,10 @@ export function WorkspaceTabBar({
                 <AppTooltip content="Tab list" side="bottom">
                     <button
                         type="button"
-                        onClick={toggleTabList}
+                        onClick={() => {
+                            closeContextMenu();
+                            toggleTabList();
+                        }}
                         aria-expanded={isTabListOpen}
                         aria-haspopup="menu"
                         className={[

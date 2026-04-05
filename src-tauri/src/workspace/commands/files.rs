@@ -14,7 +14,7 @@ use super::super::{
     },
     WorkspaceCursorState, WorkspaceMetadata, WorkspaceTabSnapshot, WorkspaceTabState,
 };
-use super::{run_command, CommandResponse};
+use super::{delete_workspace_tab_by_id, run_command, CommandResponse};
 
 #[command]
 pub fn create_workspace_file(
@@ -270,4 +270,15 @@ pub fn rename_workspace_file(
 
         Ok(next_tab)
     })
+}
+
+#[command]
+pub fn delete_workspace_file(
+    app: AppHandle,
+    workspace_path: String,
+    tab_id: String,
+) -> CommandResponse<()> {
+    let workspace_path = PathBuf::from(workspace_path);
+
+    run_command(|| delete_workspace_tab_by_id(&app, &workspace_path, &tab_id))
 }

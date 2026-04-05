@@ -24,6 +24,7 @@ export type WorkspaceStoreActions = {
         content: string,
     ) => Promise<boolean>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
+    deleteWorkspaceTab: (tabId: string) => Promise<void>;
     restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;
     restoreAllArchivedWorkspaceTabs: () => Promise<void>;
     deleteArchivedWorkspaceTab: (tabId: string) => Promise<void>;
@@ -62,6 +63,7 @@ export type WorkspaceTabSlice = Pick<
     | "createWorkspaceFile"
     | "addWorkspaceScriptTab"
     | "archiveWorkspaceTab"
+    | "deleteWorkspaceTab"
     | "restoreArchivedWorkspaceTab"
     | "restoreAllArchivedWorkspaceTabs"
     | "deleteArchivedWorkspaceTab"

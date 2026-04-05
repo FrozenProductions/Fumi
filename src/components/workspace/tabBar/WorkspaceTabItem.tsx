@@ -15,6 +15,7 @@ export function WorkspaceTabItem({
     tab,
     isActive,
     isTabDragActive,
+    onOpenContextMenu,
     onArchiveTab,
     onSelectTab,
     handleRenameInputBlur,
@@ -42,6 +43,16 @@ export function WorkspaceTabItem({
         <div
             ref={ref}
             data-tab-id={tab.id}
+            onMouseDownCapture={(event) => {
+                if (event.button !== 2) {
+                    return;
+                }
+
+                event.preventDefault();
+            }}
+            onContextMenu={(event) => {
+                onOpenContextMenu(tab.id, event);
+            }}
             onDoubleClick={() => handleStartRename(tab.id, tab.fileName)}
             className={[
                 "group relative flex shrink-0 items-center overflow-hidden rounded-[0.75rem] border transition-[background-color,border-color,box-shadow,transform] duration-150",

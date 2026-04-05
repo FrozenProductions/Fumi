@@ -27,6 +27,7 @@ function createWorkspaceSession(
         createWorkspaceFile: vi.fn().mockResolvedValue(undefined),
         addWorkspaceScriptTab: vi.fn().mockResolvedValue(false),
         archiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+        deleteWorkspaceTab: vi.fn().mockResolvedValue(undefined),
         restoreArchivedWorkspaceTab: vi.fn().mockResolvedValue(undefined),
         restoreAllArchivedWorkspaceTabs: vi.fn().mockResolvedValue(undefined),
         deleteArchivedWorkspaceTab: vi.fn().mockResolvedValue(undefined),

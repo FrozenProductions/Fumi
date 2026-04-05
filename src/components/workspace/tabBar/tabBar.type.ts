@@ -1,3 +1,4 @@
+import type { MouseEvent as ReactMouseEvent } from "react";
 import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename";
 import type {
     WorkspaceSession,
@@ -10,6 +11,10 @@ export type WorkspaceTabItemProps = {
     tab: WorkspaceTab;
     isActive: boolean;
     isTabDragActive: boolean;
+    onOpenContextMenu: (
+        tabId: string,
+        event: ReactMouseEvent<HTMLDivElement>,
+    ) => void;
     onArchiveTab: (tabId: string) => void;
     onSelectTab: (tabId: string) => void;
 } & Pick<
@@ -29,4 +34,16 @@ export type WorkspaceTabListDropdownProps = {
     workspace: WorkspaceSession;
     onClose: () => void;
     onSelectTab: (tabId: string) => void;
+};
+
+export type WorkspaceTabContextMenuProps = {
+    isOpen: boolean;
+    position: {
+        x: number;
+        y: number;
+    };
+    onArchive: () => void;
+    onClose: () => void;
+    onDelete: () => void;
+    onRename: () => void;
 };

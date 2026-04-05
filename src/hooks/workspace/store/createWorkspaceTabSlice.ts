@@ -4,6 +4,7 @@ import {
     createWorkspaceFile as createWorkspaceFileCommand,
     deleteAllArchivedWorkspaceTabs as deleteAllArchivedWorkspaceTabsCommand,
     deleteArchivedWorkspaceTab as deleteArchivedWorkspaceTabCommand,
+    deleteWorkspaceFile as deleteWorkspaceFileCommand,
     renameWorkspaceFile as renameWorkspaceFileCommand,
     restoreAllArchivedWorkspaceTabs as restoreAllArchivedWorkspaceTabsCommand,
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
@@ -223,6 +224,82 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                     errorMessage: getErrorMessage(
                         error,
                         "Could not archive the selected tab.",
+                    ),
+                });
+            }
+        },
+        deleteWorkspaceTab: async (tabId: string): Promise<void> => {
+            const { workspace } = get();
+
+            if (!workspace) {
+                return;
+            }
+
+            const tabIndex = workspace.tabs.findIndex(
+                (tab) => tab.id === tabId,
+            );
+
+            if (tabIndex < 0) {
+                return;
+            }
+
+            const tabToDelete = workspace.tabs[tabIndex];
+            const shouldDelete =
+                tabToDelete.content === tabToDelete.savedContent
+                    ? await confirmAction(
+                          `Delete ${tabToDelete.fileName}? This permanently removes the file from the workspace.`,
+                      )
+                    : await confirmAction(
+                          `Delete ${tabToDelete.fileName}? Unsaved changes will be discarded and the file will be permanently removed from the workspace.`,
+                      );
+
+            if (!shouldDelete) {
+                return;
+            }
+
+            try {
+                await deleteWorkspaceFileCommand({
+                    workspacePath: workspace.workspacePath,
+                    tabId,
+                });
+
+                const nextWorkspace = updateWorkspaceForPath(
+                    workspace.workspacePath,
+                    (currentWorkspace) => {
+                        const currentDeletedTabIndex =
+                            currentWorkspace.tabs.findIndex(
+                                (tab) => tab.id === tabId,
+                            );
+
+                        if (currentDeletedTabIndex < 0) {
+                            return currentWorkspace;
+                        }
+
+                        const nextTabs = currentWorkspace.tabs.filter(
+                            (tab) => tab.id !== tabId,
+                        );
+
+                        return {
+                            ...currentWorkspace,
+                            activeTabId:
+                                currentWorkspace.activeTabId === tabId
+                                    ? getNextActiveTabId(
+                                          nextTabs,
+                                          currentDeletedTabIndex,
+                                      )
+                                    : currentWorkspace.activeTabId,
+                            tabs: nextTabs,
+                        };
+                    },
+                );
+
+                markNextWorkspaceAsPersisted(nextWorkspace);
+            } catch (error) {
+                console.error("Failed to delete workspace tab.", error);
+                set({
+                    errorMessage: getErrorMessage(
+                        error,
+                        "Could not delete the selected tab.",
                     ),
                 });
             }

@@ -7,13 +7,13 @@ use super::super::{
     models::StoredWorkspaceMetadata,
     storage::{
         delete_workspace_file_from_disk, ensure_workspace_exists,
-        normalize_new_workspace_file_name, normalize_workspace_metadata,
-        persist_workspace_launch_state, read_workspace_metadata,
-        resolve_workspace_file_delete_path, write_workspace_metadata,
+        normalize_workspace_metadata, persist_workspace_launch_state,
+        read_workspace_metadata, resolve_workspace_file_delete_path,
+        write_workspace_metadata,
     },
     WorkspaceMetadata, WorkspaceTabSnapshot, WorkspaceTabState,
 };
-use super::{run_command, CommandResponse};
+use super::{delete_workspace_tab_by_id, run_command, CommandResponse};
 
 #[command]
 pub fn restore_archived_workspace_tab(
@@ -85,53 +85,7 @@ pub fn delete_archived_workspace_tab(
 ) -> CommandResponse<()> {
     let workspace_path = PathBuf::from(workspace_path);
 
-    run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
-        let archived_tab = metadata
-            .archived_tabs
-            .iter()
-            .find(|item| item.id == tab_id)
-            .cloned()
-            .ok_or_else(|| anyhow!("Archived workspace tab not found: {tab_id}"))?;
-        let normalized_file_name = normalize_new_workspace_file_name(&archived_tab.file_name);
-        let file_path =
-            resolve_workspace_file_delete_path(&workspace_path, &archived_tab.file_name)?;
-        delete_workspace_file_from_disk(&file_path)?;
-
-        let next_metadata = WorkspaceMetadata {
-            version: 2,
-            active_tab_id: if metadata.active_tab_id.as_deref() == Some(tab_id.as_str())
-                || metadata
-                    .tabs
-                    .iter()
-                    .any(|item| item.id == tab_id || item.file_name == normalized_file_name)
-            {
-                None
-            } else {
-                metadata.active_tab_id
-            },
-            tabs: metadata
-                .tabs
-                .into_iter()
-                .filter(|item| item.id != tab_id && item.file_name != normalized_file_name)
-                .collect(),
-            archived_tabs: metadata
-                .archived_tabs
-                .into_iter()
-                .filter(|item| item.id != tab_id && item.file_name != normalized_file_name)
-                .collect(),
-        };
-
-        let normalized_metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
-            version: next_metadata.version,
-            active_tab_id: next_metadata.active_tab_id,
-            tabs: Some(next_metadata.tabs),
-            archived_tabs: Some(next_metadata.archived_tabs),
-        }));
-        write_workspace_metadata(&workspace_path, &normalized_metadata)?;
-        persist_workspace_launch_state(&app, &workspace_path)
-    })
+    run_command(|| delete_workspace_tab_by_id(&app, &workspace_path, &tab_id))
 }
 
 #[command]

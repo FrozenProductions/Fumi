@@ -1,0 +1,122 @@
+import type { CSSProperties, ReactElement } from "react";
+import { useEffect, useRef } from "react";
+import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
+import type { WorkspaceTabContextMenuProps } from "./tabBar.type";
+
+const WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS = 120;
+
+export function WorkspaceTabContextMenu({
+    isOpen,
+    position,
+    onArchive,
+    onClose,
+    onDelete,
+    onRename,
+}: WorkspaceTabContextMenuProps): ReactElement | null {
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    const lastPositionRef = useRef(position);
+    const { isPresent, isClosing } = usePresenceTransition({
+        isOpen,
+        exitDurationMs: WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS,
+    });
+
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        lastPositionRef.current = position;
+    }, [isOpen, position]);
+
+    useEffect(() => {
+        if (!isPresent) {
+            return;
+        }
+
+        const handlePointerDown = (event: MouseEvent): void => {
+            if (menuRef.current?.contains(event.target as Node) ?? false) {
+                return;
+            }
+
+            onClose();
+        };
+
+        const handleKeyDown = (event: KeyboardEvent): void => {
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            onClose();
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isPresent, onClose]);
+
+    if (!isPresent) {
+        return null;
+    }
+
+    const renderedPosition = isOpen ? position : lastPositionRef.current;
+    const style = {
+        left: Math.max(0, renderedPosition.x),
+        top: Math.max(0, renderedPosition.y),
+    } satisfies CSSProperties;
+    const dropdownMotionClassName = isClosing
+        ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[96%] motion-safe:-motion-translate-y-out-[4%] motion-safe:motion-duration-120 motion-safe:motion-ease-in-quad"
+        : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:-motion-translate-y-in-[6%] motion-safe:motion-duration-150 motion-safe:motion-ease-spring-snappy";
+
+    return (
+        <div
+            ref={menuRef}
+            style={style}
+            className={[
+                "absolute z-50 min-w-[132px] origin-top-left overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
+                isClosing ? "pointer-events-none" : "",
+                dropdownMotionClassName,
+            ].join(" ")}
+            data-tab-context-menu
+            role="menu"
+            aria-label="Tab actions"
+        >
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onRename();
+                    onClose();
+                }}
+                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+            >
+                Rename
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onArchive();
+                    onClose();
+                }}
+                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+            >
+                Archive
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onDelete();
+                    onClose();
+                }}
+                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+            >
+                Delete
+            </button>
+        </div>
+    );
+}

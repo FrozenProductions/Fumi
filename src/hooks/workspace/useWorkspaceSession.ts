@@ -28,6 +28,9 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const archiveWorkspaceTab = useWorkspaceStore(
         (state) => state.archiveWorkspaceTab,
     );
+    const deleteWorkspaceTab = useWorkspaceStore(
+        (state) => state.deleteWorkspaceTab,
+    );
     const restoreArchivedWorkspaceTab = useWorkspaceStore(
         (state) => state.restoreArchivedWorkspaceTab,
     );
@@ -80,6 +83,7 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
         createWorkspaceFile,
         addWorkspaceScriptTab,
         archiveWorkspaceTab,
+        deleteWorkspaceTab,
         restoreArchivedWorkspaceTab,
         restoreAllArchivedWorkspaceTabs,
         deleteArchivedWorkspaceTab,

@@ -64,4 +64,5 @@ export type WorkspaceTabBarProps = {
     onSelectTab: (tabId: string) => void;
     onReorderTab: (draggedTabId: string, targetTabId: string) => void;
     onArchiveTab: (tabId: string) => void;
+    onDeleteTab: (tabId: string) => void;
 };

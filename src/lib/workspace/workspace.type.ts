@@ -86,6 +86,7 @@ export type UseWorkspaceSessionResult = {
         content: string,
     ) => Promise<boolean>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
+    deleteWorkspaceTab: (tabId: string) => Promise<void>;
     restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;
     restoreAllArchivedWorkspaceTabs: () => Promise<void>;
     deleteArchivedWorkspaceTab: (tabId: string) => Promise<void>;

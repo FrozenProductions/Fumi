@@ -32,6 +32,7 @@ export function WorkspaceScreen({
         openWorkspaceDirectory,
         createWorkspaceFile,
         archiveWorkspaceTab,
+        deleteWorkspaceTab,
         renameWorkspaceTab,
         selectWorkspaceTab,
         reorderWorkspaceTab,
@@ -79,6 +80,11 @@ export function WorkspaceScreen({
     const handleArchiveWorkspaceTab = (tabId: string): void => {
         void archiveWorkspaceTab(tabId);
     };
+
+    const handleDeleteWorkspaceTab = (tabId: string): void => {
+        void deleteWorkspaceTab(tabId);
+    };
+
     const executeButtonClassName =
         appTheme === "dark"
             ? "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-300 bg-fumi-700 px-3.5 text-xs font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-400 hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
@@ -137,6 +143,7 @@ export function WorkspaceScreen({
                     onSelectTab={selectWorkspaceTab}
                     onReorderTab={reorderWorkspaceTab}
                     onArchiveTab={handleArchiveWorkspaceTab}
+                    onDeleteTab={handleDeleteWorkspaceTab}
                 />
             ) : null}
 

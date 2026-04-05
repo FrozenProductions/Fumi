@@ -217,6 +217,33 @@ export function renameWorkspaceFileEffect(options: {
     );
 }
 
+export function deleteWorkspaceFile(options: {
+    workspacePath: string;
+    tabId: string;
+}): Promise<void> {
+    return runPromise(deleteWorkspaceFileEffect(options));
+}
+
+export function deleteWorkspaceFileEffect(options: {
+    workspacePath: string;
+    tabId: string;
+}): Effect.Effect<void, WorkspaceCommandError> {
+    if (!isTauriEnvironment()) {
+        return Effect.fail(
+            new WorkspaceCommandError({
+                operation: "deleteWorkspaceFile",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeWorkspaceVoidCommandEffect(
+        "delete_workspace_file",
+        "deleteWorkspaceFile",
+        options,
+    );
+}
+
 export function persistWorkspaceState(options: {
     workspacePath: string;
     activeTabId: string | null;
