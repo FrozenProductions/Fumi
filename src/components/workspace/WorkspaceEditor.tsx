@@ -1,13 +1,15 @@
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
+import {
+    WORKSPACE_EDITOR_OPTIONS,
+    WORKSPACE_EDITOR_PROPS,
+    WORKSPACE_EDITOR_STYLE,
+} from "../../constants/workspace/editor";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import {
     type AceEditorComponent,
     getReactAceComponent,
-    WORKSPACE_EDITOR_OPTIONS,
-    WORKSPACE_EDITOR_PROPS,
-    WORKSPACE_EDITOR_STYLE,
 } from "../../lib/workspace/editor";
 import { AppCodeCompletion } from "./AppCodeCompletion";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";

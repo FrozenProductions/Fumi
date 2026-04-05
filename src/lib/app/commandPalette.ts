@@ -4,14 +4,9 @@ import {
     FolderOpenIcon,
 } from "@hugeicons/core-free-icons";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
-import type {
-    AppCommandPaletteItem,
-    AppCommandPaletteScope,
-} from "../../lib/app/app.type";
-import type {
-    UseWorkspaceSessionResult,
-    WorkspaceTab,
-} from "../../lib/workspace/workspace.type";
+import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
+import type { AppCommandPaletteItem } from "../../lib/app/app.type";
+import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
 import { splitWorkspaceFileName } from "../workspace/fileName";
 
 type GetCommandPaletteCommandItemsOptions = {
@@ -27,18 +22,6 @@ type GetGoToLineCommandPaletteItemsOptions = {
     goToLineNumber: number | null;
     onGoToLine: (lineNumber: number) => void;
 };
-
-export const APP_COMMAND_PALETTE_SCOPE_LABELS = {
-    tabs: "Tabs",
-    commands: "Commands",
-    workspaces: "Workspaces",
-} as const satisfies Record<AppCommandPaletteScope, string>;
-
-export const APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS = {
-    tabs: "Search tabs",
-    commands: "Search commands",
-    workspaces: "Search workspaces",
-} as const satisfies Record<AppCommandPaletteScope, string>;
 
 export function normalizeAppCommandPaletteSearchValue(value: string): string {
     return value.trim().toLowerCase();

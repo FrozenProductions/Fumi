@@ -1,10 +1,3 @@
-export const APP_TEXT_INPUT_PROPS = {
-    autoCapitalize: "off",
-    autoComplete: "off",
-    autoCorrect: "off",
-    spellCheck: false,
-} as const;
-
 export function disableTextInputCorrections(
     element: HTMLInputElement | HTMLTextAreaElement,
 ): void {

@@ -1,10 +1,10 @@
+import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
     ScriptLibraryEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
     ScriptLibraryViewFormat,
 } from "../../lib/scriptLibrary/scriptLibrary.type";
-import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
 
 export type ScriptLibraryCardActions = {
     hasWorkspace: boolean;

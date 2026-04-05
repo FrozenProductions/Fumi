@@ -4,10 +4,10 @@ import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibrarySc
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
 import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater";
 import type { UseWorkspaceExecutorResult } from "../hooks/workspace/useWorkspaceExecutor";
+import type { UseWorkspaceSessionResult } from "../hooks/workspace/useWorkspaceSession.type";
 import type { AppSidebarItem } from "../lib/app/app.type";
 import { showsWorkspaceContext } from "../lib/app/sidebar";
-import type { UseWorkspaceSessionResult } from "../lib/workspace/workspace.type";
-import type { AppTopbarWorkspaceContext } from "./mainview.type";
+import type { AppTopbarWorkspaceContext } from "./appScreens.type";
 
 export function getAppTopbarWorkspaceContext(
     activeSidebarItem: AppSidebarItem,

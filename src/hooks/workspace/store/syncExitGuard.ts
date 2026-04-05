@@ -1,6 +1,6 @@
 import { setWorkspaceUnsavedChanges } from "../../../lib/platform/workspace";
 import { selectWorkspaceShouldGuardExit } from "./selectors";
-import type { WorkspaceStore } from "./types";
+import type { WorkspaceStore } from "./workspaceStore.type";
 
 let lastRequestedWorkspaceExitGuard: boolean | null = null;
 let latestWorkspaceExitGuardRequestId = 0;

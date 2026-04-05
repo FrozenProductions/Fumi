@@ -1,5 +1,6 @@
 import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
+import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename";
 import type { AppIconGlyph, AppTheme } from "../../lib/app/app.type";
 import type {
@@ -8,7 +9,6 @@ import type {
 } from "../../lib/luau/luau.type";
 import type { WorkspaceEditorSearchController } from "../../lib/workspace/editorSearch.type";
 import type {
-    UseWorkspaceSessionResult,
     WorkspaceSession,
     WorkspaceTab,
 } from "../../lib/workspace/workspace.type";

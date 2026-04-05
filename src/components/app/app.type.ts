@@ -9,6 +9,7 @@ import type {
 } from "react";
 import type { AppInputSize } from "../../constants/app/input";
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor";
+import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
     AppCommandPaletteScope,
     AppIconGlyph,
@@ -16,7 +17,6 @@ import type {
     AppCommandPaletteMode as RequestedAppCommandPaletteMode,
 } from "../../lib/app/app.type";
 import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
-import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
 
 export type AppAnimatedTextProps = {
     text: string;

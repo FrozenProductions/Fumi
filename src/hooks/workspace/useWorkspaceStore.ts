@@ -4,7 +4,7 @@ import { createWorkspaceEditorSlice } from "./store/createWorkspaceEditorSlice";
 import { createWorkspaceLifecycleSlice } from "./store/createWorkspaceLifecycleSlice";
 import { createWorkspaceTabSlice } from "./store/createWorkspaceTabSlice";
 import { syncWorkspaceExitGuard } from "./store/syncExitGuard";
-import type { WorkspaceStore } from "./store/types";
+import type { WorkspaceStore } from "./store/workspaceStore.type";
 
 export {
     selectWorkspaceActiveTab,

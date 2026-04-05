@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
-import { useAppCommandPalette } from "../../hooks/app/useAppCommandPalette";
 import {
     APP_COMMAND_PALETTE_SCOPE_LABELS,
     APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
-} from "../../lib/app/commandPalette";
+} from "../../constants/app/commandPalette";
+import { useAppCommandPalette } from "../../hooks/app/useAppCommandPalette";
 import type { AppCommandPaletteProps } from "./app.type";
 import { AppCommandPaletteInputRow } from "./commandPalette/AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./commandPalette/AppCommandPaletteResults";

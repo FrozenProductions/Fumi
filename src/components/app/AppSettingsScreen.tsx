@@ -7,7 +7,7 @@ import type { AppSettingsSection } from "../../lib/app/app.type";
 import { AppSettingsEditorSection } from "./settings/AppSettingsEditorSection";
 import { AppSettingsGeneralSection } from "./settings/AppSettingsGeneralSection";
 import { AppSettingsWorkspaceSection } from "./settings/AppSettingsWorkspaceSection";
-import type { AppSettingsScreenProps } from "./settings/settings.type";
+import type { AppSettingsScreenProps } from "./settings/appSettings.type";
 
 export function AppSettingsScreen({
     updater,

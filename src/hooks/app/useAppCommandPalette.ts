@@ -29,8 +29,8 @@ import {
     normalizeAppCommandPaletteSearchValue,
     parseGoToLineQuery,
 } from "../../lib/app/commandPalette";
-import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
+import type { UseWorkspaceSessionResult } from "../workspace/useWorkspaceSession.type";
 
 type UseAppCommandPaletteOptions = {
     isOpen: boolean;

@@ -2,7 +2,7 @@ import type { CSSProperties, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
-import type { WorkspaceTabContextMenuProps } from "./tabBar.type";
+import type { WorkspaceTabContextMenuProps } from "./workspaceTabBar.type";
 
 const WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS = 120;
 

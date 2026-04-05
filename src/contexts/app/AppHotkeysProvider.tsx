@@ -2,7 +2,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { type ReactElement, type ReactNode, useEffect } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
-import type { UseWorkspaceSessionResult } from "../../lib/workspace/workspace.type";
+import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 
 type AppHotkeysProviderProps = {
     workspaceSession: UseWorkspaceSessionResult;

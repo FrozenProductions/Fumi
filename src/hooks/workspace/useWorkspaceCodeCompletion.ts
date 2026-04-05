@@ -6,14 +6,14 @@ import {
     bindWorkspaceEditorShortcuts,
     isPassiveCompletionTrigger,
 } from "./codeCompletion/ace";
+import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
 import type {
     UseWorkspaceCodeCompletionOptions,
     UseWorkspaceCodeCompletionResult,
-} from "./codeCompletion/types";
-import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
+} from "./codeCompletion/workspaceCodeCompletion.type";
 import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
 
-export type { UseWorkspaceCodeCompletionResult } from "./codeCompletion/types";
+export type { UseWorkspaceCodeCompletionResult } from "./codeCompletion/workspaceCodeCompletion.type";
 
 export function useWorkspaceCodeCompletion({
     activeEditorMode,

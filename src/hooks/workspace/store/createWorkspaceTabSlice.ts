@@ -33,7 +33,7 @@ import type {
     WorkspaceStoreSliceCreator,
     WorkspaceStoreUpdater,
     WorkspaceTabSlice,
-} from "./types";
+} from "./workspaceStore.type";
 
 export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
     WorkspaceTabSlice

@@ -7,7 +7,7 @@ import {
     WORKSPACE_TAB_LIST_VISIBLE_COUNT,
 } from "../../../constants/workspace/workspace";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
-import type { WorkspaceTabListDropdownProps } from "./tabBar.type";
+import type { WorkspaceTabListDropdownProps } from "./workspaceTabBar.type";
 
 const WORKSPACE_TAB_LIST_DROPDOWN_STYLE = {
     maxHeight: `calc(${WORKSPACE_TAB_LIST_VISIBLE_COUNT} * ${WORKSPACE_TAB_LIST_ITEM_HEIGHT_REM}rem + ${

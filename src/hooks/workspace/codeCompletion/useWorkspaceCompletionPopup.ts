@@ -22,7 +22,7 @@ import {
     isManualCompletionShortcut,
     isNavigationKey,
 } from "./keyboard";
-import type { UpdateWorkspaceCompletionPopupOptions } from "./types";
+import type { UpdateWorkspaceCompletionPopupOptions } from "./workspaceCodeCompletion.type";
 
 type UseWorkspaceCompletionPopupOptions = {
     activeEditorMode: string;

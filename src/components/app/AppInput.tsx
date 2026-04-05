@@ -6,9 +6,11 @@ import type {
     ReactElement,
 } from "react";
 import { useEffect, useState } from "react";
-import { APP_INPUT_SIZE_MIN_WIDTH_MAP } from "../../constants/app/input";
 import {
+    APP_INPUT_SIZE_MIN_WIDTH_MAP,
     APP_TEXT_INPUT_PROPS,
+} from "../../constants/app/input";
+import {
     getSteppedTextInputValue,
     resolveCommittedTextInputValue,
 } from "../../lib/app/textInput";

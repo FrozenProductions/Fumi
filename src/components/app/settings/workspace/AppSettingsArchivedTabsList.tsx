@@ -1,7 +1,7 @@
 import { Delete02Icon, DeletePutBackIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { AppIcon } from "../../AppIcon";
-import type { AppSettingsArchivedTabsListProps } from "./workspaceSettings.type";
+import type { AppSettingsArchivedTabsListProps } from "./appSettingsWorkspace.type";
 
 export function AppSettingsArchivedTabsList({
     archivedTabs,

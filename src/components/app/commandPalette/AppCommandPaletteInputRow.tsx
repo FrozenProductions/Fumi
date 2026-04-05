@@ -1,9 +1,9 @@
 import { CommandIcon, FolderOpenIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
-import { APP_TEXT_INPUT_PROPS } from "../../../lib/app/textInput";
+import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { AppCommandPaletteScopeButton } from "../AppCommandPaletteScopeButton";
-import type { AppCommandPaletteInputRowProps } from "./commandPalette.type";
+import type { AppCommandPaletteInputRowProps } from "./appCommandPalette.type";
 
 export function AppCommandPaletteInputRow({
     inputRef,

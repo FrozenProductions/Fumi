@@ -28,7 +28,7 @@ import {
 import type {
     WorkspaceLifecycleSlice,
     WorkspaceStoreSliceCreator,
-} from "./types";
+} from "./workspaceStore.type";
 
 let hasBootstrappedWorkspaceSession = false;
 let bootstrapWorkspacePromise: Promise<void> | null = null;

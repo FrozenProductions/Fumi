@@ -4,11 +4,11 @@ import {
     Search01Icon,
 } from "@hugeicons/core-free-icons";
 import type { ChangeEvent, ReactElement } from "react";
+import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import {
     SCRIPT_LIBRARY_FILTER_BUTTONS,
     SCRIPT_LIBRARY_SORT_OPTIONS,
 } from "../../constants/scriptLibrary/scriptLibrary";
-import { APP_TEXT_INPUT_PROPS } from "../../lib/app/textInput";
 import { AppIcon } from "../app/AppIcon";
 import { AppSelect } from "../app/AppSelect";
 import { AppTooltip } from "../app/AppTooltip";

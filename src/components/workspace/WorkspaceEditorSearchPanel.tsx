@@ -11,8 +11,8 @@ import type {
     MouseEvent as ReactMouseEvent,
 } from "react";
 import { useEffect, useRef, useState } from "react";
+import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
-import { APP_TEXT_INPUT_PROPS } from "../../lib/app/textInput";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceEditorSearchPanelProps } from "./workspace.type";

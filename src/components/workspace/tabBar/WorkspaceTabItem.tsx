@@ -2,12 +2,12 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
+import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
-import { APP_TEXT_INPUT_PROPS } from "../../../lib/app/textInput";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
 import { AppIcon } from "../../app/AppIcon";
 import { AppTooltip } from "../../app/AppTooltip";
-import type { WorkspaceTabItemProps } from "./tabBar.type";
+import type { WorkspaceTabItemProps } from "./workspaceTabBar.type";
 
 export function WorkspaceTabItem({
     index,

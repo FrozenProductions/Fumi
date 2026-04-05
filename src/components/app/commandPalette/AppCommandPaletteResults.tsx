@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { AppIcon } from "../AppIcon";
-import type { AppCommandPaletteResultsProps } from "./commandPalette.type";
+import type { AppCommandPaletteResultsProps } from "./appCommandPalette.type";
 
 export function AppCommandPaletteResults({
     activeResultIndex,

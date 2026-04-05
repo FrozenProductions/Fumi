@@ -24,7 +24,7 @@ import {
 import type { ArchivedTabsSortOption } from "../../../lib/workspace/workspace.type";
 import { AppIcon } from "../AppIcon";
 import { AppSelect } from "../AppSelect";
-import type { AppSettingsWorkspaceSectionProps } from "./settings.type";
+import type { AppSettingsWorkspaceSectionProps } from "./appSettings.type";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 

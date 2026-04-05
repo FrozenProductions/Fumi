@@ -26,7 +26,7 @@ import { AppAnimatedText } from "../AppAnimatedText";
 import { AppIcon } from "../AppIcon";
 import { AppInput } from "../AppInput";
 import { AppSelect } from "../AppSelect";
-import type { AppSettingsGeneralSectionProps } from "./settings.type";
+import type { AppSettingsGeneralSectionProps } from "./appSettings.type";
 
 export function AppSettingsGeneralSection({
     updater,

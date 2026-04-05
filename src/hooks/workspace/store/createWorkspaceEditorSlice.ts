@@ -14,7 +14,10 @@ import type {
     WorkspaceSession,
 } from "../../../lib/workspace/workspace.type";
 import { getActiveTabFromWorkspace, isMatchingWorkspacePath } from "./helpers";
-import type { WorkspaceEditorSlice, WorkspaceStoreSliceCreator } from "./types";
+import type {
+    WorkspaceEditorSlice,
+    WorkspaceStoreSliceCreator,
+} from "./workspaceStore.type";
 
 export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
     WorkspaceEditorSlice
