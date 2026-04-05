@@ -8,6 +8,9 @@ repository = ""
 edition = "2021"
 rust-version = "1.88.0"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
+
 [lib]
 name = "fumi_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
