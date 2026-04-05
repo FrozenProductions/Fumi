@@ -21,6 +21,14 @@ export function getCompactLuauCompletionDetailLabel(detail: string): string {
         return "unc";
     }
 
+    if (detail.startsWith("actors")) {
+        return "actors";
+    }
+
+    if (detail.startsWith("ranket")) {
+        return "ranket";
+    }
+
     return detail;
 }
 

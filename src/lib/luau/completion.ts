@@ -1,9 +1,16 @@
+import { ACTORS_TOP_LEVEL_COMPLETIONS } from "../../constants/luau/actorsCompletions";
 import {
     LUAU_NAMESPACE_COMPLETIONS,
     LUAU_TOP_LEVEL_COMPLETIONS,
+} from "../../constants/luau/luauCompletions";
+import {
+    RAKNET_NAMESPACE_COMPLETIONS,
+    RAKNET_TOP_LEVEL_COMPLETIONS,
+} from "../../constants/luau/raknetCompletions";
+import {
     ROBLOX_NAMESPACE_COMPLETIONS,
     ROBLOX_TOP_LEVEL_COMPLETIONS,
-} from "../../constants/luau/completions";
+} from "../../constants/luau/robloxCompletions";
 import {
     SUNC_NAMESPACE_COMPLETIONS,
     SUNC_TOP_LEVEL_COMPLETIONS,
@@ -95,6 +102,7 @@ function createNamespaceIndex(): Map<string, LuauCompletionItem[]> {
         ...ROBLOX_NAMESPACE_COMPLETIONS,
         ...SUNC_NAMESPACE_COMPLETIONS,
         ...UNC_NAMESPACE_COMPLETIONS,
+        ...RAKNET_NAMESPACE_COMPLETIONS,
     ]) {
         const existingItems = namespaceIndex.get(group.namespace) ?? [];
         const mergedItems = dedupeCompletionItems(
@@ -150,6 +158,8 @@ const LUAU_ROOT_COMPLETIONS: LuauCompletionItem[] = dedupeCompletionItems([
     ...ROBLOX_TOP_LEVEL_COMPLETIONS,
     ...SUNC_TOP_LEVEL_COMPLETIONS,
     ...UNC_TOP_LEVEL_COMPLETIONS,
+    ...ACTORS_TOP_LEVEL_COMPLETIONS,
+    ...RAKNET_TOP_LEVEL_COMPLETIONS,
 ]);
 
 function compareCompletionItems(

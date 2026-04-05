@@ -1,3 +1,8 @@
+import { ACTORS_GLOBAL_FUNCTION_NAMES } from "../../constants/luau/actorsCompletions";
+import {
+    RAKNET_NAMESPACE_FUNCTION_NAMES,
+    RAKNET_NAMESPACE_NAMES,
+} from "../../constants/luau/raknetCompletions";
 import {
     SUNC_GLOBAL_FUNCTION_NAMES,
     SUNC_NAMESPACE_FUNCTION_NAMES,
@@ -72,6 +77,8 @@ function defineLuauMode(ace: AceEditorRuntime): void {
         ...SUNC_GLOBAL_FUNCTION_NAMES,
         ...SUNC_NAMESPACE_FUNCTION_NAMES,
         ...UNC_GLOBAL_FUNCTION_NAMES,
+        ...ACTORS_GLOBAL_FUNCTION_NAMES,
+        ...RAKNET_NAMESPACE_FUNCTION_NAMES,
         "game",
         "plugin",
         "script",
@@ -83,6 +90,7 @@ function defineLuauMode(ace: AceEditorRuntime): void {
         ...LUAU_ROBLOX_NAMESPACE_NAMES,
         ...SUNC_NAMESPACE_NAMES,
         ...UNC_NAMESPACE_NAMES,
+        ...RAKNET_NAMESPACE_NAMES,
     ]);
 
     ace.define(
