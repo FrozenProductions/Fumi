@@ -1,6 +1,6 @@
 [package]
 name = "fumi"
-version = "1.0.1"
+version = "1.0.2"
 description = "Elegant and soft UI wrapper for MacSploit."
 authors = ["FrozenProductions"]
 license = ""
