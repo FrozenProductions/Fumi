@@ -1,9 +1,10 @@
-import { type ReactElement, useEffect } from "react";
+import type { ReactElement } from "react";
 import { AppCommandPalette } from "../components/app/AppCommandPalette";
 import { AppSidebar } from "../components/app/AppSidebar";
 import { AppTopbar } from "../components/app/AppTopbar";
 import { APP_TITLE } from "../constants/app/app";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
+import { useAppShellLifecycle } from "../hooks/app/useAppShellLifecycle";
 import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
 import { useAppUpdater } from "../hooks/app/useAppUpdater";
@@ -11,11 +12,6 @@ import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
 import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
-import {
-    isPreparingToExit,
-    subscribeToCheckForUpdatesRequested,
-    subscribeToOpenSettings,
-} from "../lib/platform/window";
 import {
     getAppTopbarWorkspaceContext,
     renderActiveAppScreen,
@@ -48,39 +44,18 @@ export function App(): ReactElement {
         activeTabContent: workspaceSession.activeTab?.content ?? null,
     });
     const { hasUnsavedChanges } = workspaceSession;
+    const handleOpenSettings = (): void => {
+        selectSidebarItem("settings");
+    };
     const topbarWorkspaceContext = getAppTopbarWorkspaceContext(
         activeSidebarItem,
         workspaceSession,
     );
 
-    useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
-            if (!hasUnsavedChanges || isPreparingToExit()) {
-                return;
-            }
-
-            event.preventDefault();
-            event.returnValue = "";
-        };
-
-        window.addEventListener("beforeunload", handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-        };
-    }, [hasUnsavedChanges]);
-
-    useEffect(() => {
-        return subscribeToOpenSettings(() => {
-            selectSidebarItem("settings");
-        });
-    }, [selectSidebarItem]);
-
-    useEffect(() => {
-        return subscribeToCheckForUpdatesRequested(() => {
-            selectSidebarItem("settings");
-        });
-    }, [selectSidebarItem]);
+    useAppShellLifecycle({
+        hasUnsavedChanges,
+        onOpenSettings: handleOpenSettings,
+    });
 
     return (
         <AppHotkeysProvider workspaceSession={workspaceSession}>
@@ -130,7 +105,7 @@ export function App(): ReactElement {
                     onClose={closeCommandPalette}
                     onGoToLine={requestGoToLine}
                     onToggleSidebar={toggleSidebar}
-                    onOpenSettings={() => selectSidebarItem("settings")}
+                    onOpenSettings={handleOpenSettings}
                 />
             </div>
         </AppHotkeysProvider>

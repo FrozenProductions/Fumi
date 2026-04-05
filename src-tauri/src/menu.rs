@@ -8,7 +8,7 @@ use crate::{
         emit_check_for_updates, emit_open_settings, emit_zoom_in, emit_zoom_out,
         emit_zoom_reset,
     },
-    request_app_exit,
+    lifecycle::request_app_exit,
 };
 
 const APP_OPEN_SETTINGS_ID: &str = "app-open-settings";
