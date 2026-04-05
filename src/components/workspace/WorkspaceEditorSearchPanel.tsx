@@ -38,13 +38,29 @@ export function WorkspaceEditorSearchPanel({
     });
 
     useEffect(() => {
-        if (!searchPanel.state.isOpen || focusRequestKey < 0) {
+        if (!searchPanel.state.isOpen || !isPresent || focusRequestKey < 0) {
             return;
         }
 
-        queryInputRef.current?.focus();
-        queryInputRef.current?.select();
-    }, [focusRequestKey, searchPanel.state.isOpen]);
+        const focusQueryInput = (): void => {
+            queryInputRef.current?.focus();
+            queryInputRef.current?.select();
+        };
+
+        const animationFrameId = window.requestAnimationFrame(() => {
+            focusQueryInput();
+        });
+        const timeoutId = window.setTimeout(() => {
+            if (document.activeElement !== queryInputRef.current) {
+                focusQueryInput();
+            }
+        }, 0);
+
+        return () => {
+            window.cancelAnimationFrame(animationFrameId);
+            window.clearTimeout(timeoutId);
+        };
+    }, [focusRequestKey, isPresent, searchPanel.state.isOpen]);
 
     useEffect(() => {
         if (!isReplaceDropdownOpen) {
