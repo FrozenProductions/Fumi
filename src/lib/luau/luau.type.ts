@@ -16,7 +16,7 @@ export type LuauDocEntry = {
     signature?: string;
 };
 
-export type LuauCompletionSourceGroup = "language" | "executor";
+export type LuauCompletionSourceGroup = "file" | "language" | "executor";
 
 export type LuauCompletionItem = {
     label: string;
@@ -32,6 +32,24 @@ export type LuauCompletionItem = {
 export type LuauNamespaceCompletionGroup = {
     namespace: string;
     items: LuauCompletionItem[];
+};
+
+export type LuauFileSymbol = {
+    label: string;
+    kind: LuauSymbolKind;
+    detail: string;
+    declarationStart: number;
+    declarationEnd: number;
+    isLexical: boolean;
+    ownerFunctionEnd: number | null;
+    ownerFunctionStart: number | null;
+    scopeStart: number;
+    scopeEnd: number;
+    visibleStart: number;
+    visibleEnd: number;
+    doc: LuauDocEntry;
+    insertText?: string;
+    score?: number;
 };
 
 export type LuauCompletionPopupPosition = {

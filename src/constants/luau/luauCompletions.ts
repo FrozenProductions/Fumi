@@ -159,14 +159,6 @@ export const LUAU_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
         { signature: "rawset(table: table, key: any, value: any) -> table" },
     ),
     createItem(
-        "require",
-        "function",
-        "global function",
-        "Load and return another module.",
-        LUAU_DOC_SOURCE,
-        { signature: "require(module: any) -> any" },
-    ),
-    createItem(
         "select",
         "function",
         "global function",

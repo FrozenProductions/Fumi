@@ -114,12 +114,12 @@ export function useWorkspaceCompletionPopup({
             }
 
             const cursor = editor.getCursorPosition();
-            const line = editor.session.getLine(cursor.row);
-            const query = getLuauCompletionQuery(
-                line,
-                cursor.column,
-                intellisensePriority,
-            );
+            const query = getLuauCompletionQuery({
+                content: editor.getValue(),
+                row: cursor.row,
+                column: cursor.column,
+                priority: intellisensePriority,
+            });
             const forceOpen = options?.forceOpen ?? isCompletionExplicit;
 
             if (!shouldOpenLuauCompletion(query, forceOpen)) {

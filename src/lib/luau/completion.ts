@@ -25,7 +25,11 @@ import {
     UNC_TOP_LEVEL_COMPLETIONS,
 } from "../../constants/luau/uncCompletions";
 import type { AppIntellisensePriority } from "../../lib/app/app.type";
-import type { LuauCompletionItem } from "../../lib/luau/luau.type";
+import type {
+    LuauCompletionItem,
+    LuauFileSymbol,
+} from "../../lib/luau/luau.type";
+import { scanLuauFileAnalysis } from "../../lib/luau/symbolScanner";
 
 const MAX_LUAU_COMPLETION_ITEMS = 6;
 
@@ -41,7 +45,6 @@ const LUAU_KEYWORD_DOCS: Record<string, string> = {
     as: "Assert that an expression should be treated as a specific type.",
     continue:
         "Skip the rest of the current loop iteration and continue with the next one.",
-    export: "Export a type alias from a module.",
     function: "Define a function body.",
     local: "Declare a local variable or function.",
     type: "Declare a Luau type alias.",
@@ -65,6 +68,98 @@ const LUAU_TYPE_DOCS: Record<string, string> = {
 };
 
 export const LUAU_MODE_IDENTIFIER = "ace/mode/luau";
+
+function getLineAtRow(content: string, row: number): string {
+    let currentRow = 0;
+    let lineStart = 0;
+
+    for (let index = 0; index < content.length; index += 1) {
+        if (currentRow === row && content[index] === "\n") {
+            return content.slice(lineStart, index);
+        }
+
+        if (content[index] === "\n") {
+            currentRow += 1;
+            lineStart = index + 1;
+        }
+    }
+
+    return currentRow === row ? content.slice(lineStart) : "";
+}
+
+function getAbsoluteIndexForPosition(
+    content: string,
+    row: number,
+    column: number,
+): number {
+    let currentRow = 0;
+    let index = 0;
+
+    while (index < content.length && currentRow < row) {
+        if (content[index] === "\n") {
+            currentRow += 1;
+        }
+
+        index += 1;
+    }
+
+    return Math.min(index + column, content.length);
+}
+
+function createCompletionItemFromFileSymbol(
+    symbol: LuauFileSymbol,
+): LuauCompletionItem {
+    return {
+        label: symbol.label,
+        kind: symbol.kind,
+        detail: symbol.detail,
+        doc: symbol.doc,
+        insertText: symbol.insertText,
+        score: symbol.score,
+        sourceGroup: "file",
+    };
+}
+
+function getInnermostFunctionOwner(
+    functionScopes: ReadonlyArray<{
+        end: number;
+        start: number;
+    }>,
+    cursorIndex: number,
+): number | null {
+    let innermostStart: number | null = null;
+    let innermostWidth = Number.POSITIVE_INFINITY;
+
+    for (const scope of functionScopes) {
+        if (scope.start > cursorIndex || cursorIndex > scope.end) {
+            continue;
+        }
+
+        const width = scope.end - scope.start;
+        if (width < innermostWidth) {
+            innermostStart = scope.start;
+            innermostWidth = width;
+        }
+    }
+
+    return innermostStart;
+}
+
+function shouldIncludeFileSymbol(
+    symbol: LuauFileSymbol,
+    cursorIndex: number,
+    currentFunctionOwner: number | null,
+): boolean {
+    if (symbol.visibleStart > cursorIndex || cursorIndex > symbol.visibleEnd) {
+        return false;
+    }
+
+    if (!symbol.isLexical) {
+        return true;
+    }
+
+    return symbol.ownerFunctionStart === currentFunctionOwner;
+}
 
 function getCompletionKey(
     item: LuauCompletionItem,
@@ -117,9 +212,12 @@ function createNamespaceIndex(): Map<string, LuauCompletionItem[]> {
 }
 
 const LUAU_NAMESPACE_INDEX = createNamespaceIndex();
+const LUAU_COMPLETION_ROOT_KEYWORDS = LUAU_COMPLETION_KEYWORDS.filter(
+    (keyword) => keyword !== "export",
+);
 
 const LUAU_ROOT_COMPLETIONS: LuauCompletionItem[] = dedupeCompletionItems([
-    ...LUAU_COMPLETION_KEYWORDS.map((keyword) => ({
+    ...LUAU_COMPLETION_ROOT_KEYWORDS.map((keyword) => ({
         label: keyword,
         kind: "keyword" as const,
         detail: "keyword",
@@ -186,15 +284,19 @@ function getPriorityWeight(
     sourceGroup: LuauCompletionItem["sourceGroup"],
     priority: AppIntellisensePriority,
 ): number {
+    if (sourceGroup === "file") {
+        return 3;
+    }
+
     if (priority === "language") {
-        return sourceGroup === "language" ? 1 : 0;
+        return sourceGroup === "language" ? 2 : 1;
     }
 
     if (priority === "executor") {
-        return sourceGroup === "executor" ? 1 : 0;
+        return sourceGroup === "executor" ? 2 : 1;
     }
 
-    return 0;
+    return 1;
 }
 
 function filterCompletions(
@@ -214,11 +316,31 @@ function filterCompletions(
         .sort((left, right) => compareCompletionItems(left, right, priority));
 }
 
-export function getLuauCompletionQuery(
-    line: string,
-    column: number,
-    priority: AppIntellisensePriority,
-): LuauCompletionQuery {
+function getVisibleFileCompletionItems(
+    content: string,
+    cursorIndex: number,
+): LuauCompletionItem[] {
+    const analysis = scanLuauFileAnalysis(content);
+    const currentFunctionOwner = getInnermostFunctionOwner(
+        analysis.functionScopes,
+        cursorIndex,
+    );
+
+    return analysis.symbols
+        .filter((symbol) =>
+            shouldIncludeFileSymbol(symbol, cursorIndex, currentFunctionOwner),
+        )
+        .map(createCompletionItemFromFileSymbol);
+}
+
+export function getLuauCompletionQuery(options: {
+    column: number;
+    content: string;
+    priority: AppIntellisensePriority;
+    row: number;
+}): LuauCompletionQuery {
+    const { column, content, priority, row } = options;
+    const line = getLineAtRow(content, row);
     const beforeCursor = line.slice(0, column);
     const namespacedMatch = beforeCursor.match(
         /([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\.([A-Za-z0-9_]*)$/,
@@ -242,9 +364,18 @@ export function getLuauCompletionQuery(
 
     const rootPrefixMatch = beforeCursor.match(/([A-Za-z_][A-Za-z0-9_]*)$/);
     const prefix = rootPrefixMatch?.[1] ?? "";
+    const cursorIndex = getAbsoluteIndexForPosition(content, row, column);
+    const visibleFileItems = getVisibleFileCompletionItems(
+        content,
+        cursorIndex,
+    );
+    const rootItems = dedupeCompletionItems([
+        ...visibleFileItems,
+        ...LUAU_ROOT_COMPLETIONS,
+    ]);
 
     return {
-        items: filterCompletions(LUAU_ROOT_COMPLETIONS, prefix, priority).slice(
+        items: filterCompletions(rootItems, prefix, priority).slice(
             0,
             MAX_LUAU_COMPLETION_ITEMS,
         ),

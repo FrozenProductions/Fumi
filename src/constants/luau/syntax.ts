@@ -64,7 +64,6 @@ export const LUAU_GLOBAL_FUNCTION_NAMES = [
     "rawget",
     "rawlen",
     "rawset",
-    "require",
     "select",
     "setmetatable",
     "tonumber",
