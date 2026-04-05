@@ -32,6 +32,10 @@ export type AppEditorSettings = {
     intellisenseWidth: AppIntellisenseWidth;
 };
 
+export type AppUpdaterSettings = {
+    isAutoUpdateEnabled: boolean;
+};
+
 export type AppSidebarItem = "workspace" | "script-library" | "settings";
 
 export type AppSidebarNavigationItem = {

@@ -4,6 +4,7 @@ import type {
     AppIntellisenseWidth,
     AppSettingsSection,
     AppTheme,
+    AppUpdaterSettings,
 } from "../../lib/app/app.type";
 import {
     DEFAULT_PAGE_ZOOM,
@@ -66,6 +67,10 @@ export const DEFAULT_APP_EDITOR_SETTINGS = {
     intellisensePriority: "balanced",
     intellisenseWidth: "large",
 } as const satisfies AppEditorSettings;
+
+export const DEFAULT_APP_UPDATER_SETTINGS = {
+    isAutoUpdateEnabled: true,
+} as const satisfies AppUpdaterSettings;
 
 export const APP_EDITOR_FONT_SIZE_MIN = 10;
 export const APP_EDITOR_FONT_SIZE_MAX = 25;

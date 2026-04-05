@@ -6,6 +6,7 @@ import {
     APP_ZOOM_MIN,
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_THEME,
+    DEFAULT_APP_UPDATER_SETTINGS,
 } from "../../constants/app/settings";
 import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
 import type {
@@ -16,6 +17,7 @@ import type {
     AppIntellisenseWidth,
     AppSidebarItem,
     AppTheme,
+    AppUpdaterSettings,
 } from "../../lib/app/app.type";
 
 const APP_THEMES = ["light", "dark"] as const;
@@ -35,6 +37,7 @@ type AppStoreState = {
     zoomPercent: number;
     theme: AppTheme;
     editorSettings: AppEditorSettings;
+    updaterSettings: AppUpdaterSettings;
 };
 
 type AppStoreActions = {
@@ -51,6 +54,7 @@ type AppStoreActions = {
     selectSidebarItem: (item: AppSidebarItem) => void;
     setZoomPercent: (zoomPercent: number) => void;
     setTheme: (theme: AppTheme) => void;
+    setAutoUpdateEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
@@ -114,6 +118,7 @@ export const useAppStore = create<AppStore>()(
             zoomPercent: APP_ZOOM_DEFAULT,
             theme: DEFAULT_APP_THEME,
             editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
+            updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
             openSidebar: () => {
                 set({ isSidebarOpen: true });
             },
@@ -212,6 +217,14 @@ export const useAppStore = create<AppStore>()(
             setTheme: (theme) => {
                 set({ theme });
             },
+            setAutoUpdateEnabled: (isEnabled) => {
+                set((state) => ({
+                    updaterSettings: {
+                        ...state.updaterSettings,
+                        isAutoUpdateEnabled: isEnabled,
+                    },
+                }));
+            },
             setEditorFontSize: (fontSize) => {
                 set((state) => ({
                     editorSettings: {
@@ -274,6 +287,10 @@ export const useAppStore = create<AppStore>()(
                     activeSidebarItem,
                     zoomPercent,
                     theme,
+                    updaterSettings: {
+                        ...currentState.updaterSettings,
+                        ...persistedAppState.updaterSettings,
+                    },
                     editorSettings: {
                         ...currentState.editorSettings,
                         ...persistedAppState.editorSettings,
@@ -286,6 +303,7 @@ export const useAppStore = create<AppStore>()(
                 activeSidebarItem: state.activeSidebarItem,
                 zoomPercent: state.zoomPercent,
                 theme: state.theme,
+                updaterSettings: state.updaterSettings,
                 editorSettings: state.editorSettings,
             }),
         },

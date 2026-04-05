@@ -26,6 +26,7 @@ import { AppAnimatedText } from "../AppAnimatedText";
 import { AppIcon } from "../AppIcon";
 import { AppInput } from "../AppInput";
 import { AppSelect } from "../AppSelect";
+import { AppSettingsToggle } from "../AppSettingsToggle";
 import type { AppSettingsGeneralSectionProps } from "./appSettings.type";
 
 export function AppSettingsGeneralSection({
@@ -34,6 +35,12 @@ export function AppSettingsGeneralSection({
     const { zoomPercent, setZoomPercent } = useAppZoom();
     const theme = useAppStore((state) => state.theme);
     const setTheme = useAppStore((state) => state.setTheme);
+    const isAutoUpdateEnabled = useAppStore(
+        (state) => state.updaterSettings.isAutoUpdateEnabled,
+    );
+    const setAutoUpdateEnabled = useAppStore(
+        (state) => state.setAutoUpdateEnabled,
+    );
     const {
         status: updaterStatus,
         availableUpdate,
@@ -99,6 +106,10 @@ export function AppSettingsGeneralSection({
         }
 
         void checkForUpdates();
+    };
+
+    const handleAutoUpdateToggle = (): void => {
+        setAutoUpdateEnabled(!isAutoUpdateEnabled);
     };
 
     useEffect(() => {
@@ -246,6 +257,12 @@ export function AppSettingsGeneralSection({
                     className="shrink-0"
                 />
             </div>
+            <AppSettingsToggle
+                label="Auto-update"
+                description="Download new app updates automatically and show a native restart prompt when they are ready."
+                isEnabled={isAutoUpdateEnabled}
+                onChange={handleAutoUpdateToggle}
+            />
             <div className="flex items-center justify-between gap-6 py-4">
                 <div className="min-w-0">
                     <p className="text-xs font-semibold text-fumi-900">
