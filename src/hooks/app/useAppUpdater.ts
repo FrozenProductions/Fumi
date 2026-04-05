@@ -16,6 +16,8 @@ import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window";
 import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 
+const STARTUP_UPDATE_CHECK_RETRY_DELAY_MS = 5_000;
+
 export type UseAppUpdaterResult = {
     status: AppUpdaterStatus;
     availableUpdate: AppUpdateMetadata | null;
@@ -28,6 +30,7 @@ export type UseAppUpdaterResult = {
 
 type CheckForUpdatesOptions = {
     isSilent?: boolean;
+    shouldRetryOnFailure?: boolean;
 };
 
 export function useAppUpdater(): UseAppUpdaterResult {
@@ -40,6 +43,31 @@ export function useAppUpdater(): UseAppUpdaterResult {
         useState<AppUpdateDownloadProgress | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const hasCompletedStartupCheckRef = useRef(false);
+    const hasScheduledStartupRetryRef = useRef(false);
+    const startupRetryTimeoutRef = useRef<number | null>(null);
+    const runUpdateCheckRef = useRef<
+        ((options?: CheckForUpdatesOptions) => Promise<void>) | null
+    >(null);
+
+    const clearStartupRetry = useCallback((): void => {
+        if (startupRetryTimeoutRef.current !== null) {
+            window.clearTimeout(startupRetryTimeoutRef.current);
+            startupRetryTimeoutRef.current = null;
+        }
+    }, []);
+
+    const scheduleStartupRetry = useCallback((): void => {
+        if (hasScheduledStartupRetryRef.current) {
+            return;
+        }
+
+        hasScheduledStartupRetryRef.current = true;
+        clearStartupRetry();
+        startupRetryTimeoutRef.current = window.setTimeout(() => {
+            startupRetryTimeoutRef.current = null;
+            void runUpdateCheckRef.current?.({ isSilent: true });
+        }, STARTUP_UPDATE_CHECK_RETRY_DELAY_MS);
+    }, [clearStartupRetry]);
 
     const runUpdateCheck = useCallback(
         async (options?: CheckForUpdatesOptions): Promise<void> => {
@@ -48,6 +76,7 @@ export function useAppUpdater(): UseAppUpdaterResult {
                 return;
             }
 
+            clearStartupRetry();
             setStatus("checking");
             setErrorMessage(null);
             setDownloadProgress(null);
@@ -56,6 +85,8 @@ export function useAppUpdater(): UseAppUpdaterResult {
                 checkForAppUpdateEffect().pipe(
                     Effect.match({
                         onSuccess: (nextUpdate) => {
+                            hasScheduledStartupRetryRef.current = false;
+
                             if (!nextUpdate) {
                                 setAvailableUpdate(null);
                                 setStatus("upToDate");
@@ -73,6 +104,11 @@ export function useAppUpdater(): UseAppUpdaterResult {
 
                             if (options?.isSilent) {
                                 setStatus("idle");
+
+                                if (options.shouldRetryOnFailure) {
+                                    scheduleStartupRetry();
+                                }
+
                                 return;
                             }
 
@@ -83,8 +119,10 @@ export function useAppUpdater(): UseAppUpdaterResult {
                 ),
             );
         },
-        [],
+        [clearStartupRetry, scheduleStartupRetry],
     );
+
+    runUpdateCheckRef.current = runUpdateCheck;
 
     const handleDownloadAndInstallUpdate =
         useCallback(async (): Promise<void> => {
@@ -162,8 +200,17 @@ export function useAppUpdater(): UseAppUpdaterResult {
         }
 
         hasCompletedStartupCheckRef.current = true;
-        void runUpdateCheck({ isSilent: true });
+        void runUpdateCheck({
+            isSilent: true,
+            shouldRetryOnFailure: true,
+        });
     }, [runUpdateCheck]);
+
+    useEffect(() => {
+        return () => {
+            clearStartupRetry();
+        };
+    }, [clearStartupRetry]);
 
     useEffect(() => {
         return subscribeToCheckForUpdatesRequested(() => {
