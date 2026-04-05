@@ -1,5 +1,8 @@
 import { type MutableRefObject, useCallback, useEffect, useState } from "react";
-import type { AppIntellisensePriority } from "../../../lib/app/app.type";
+import type {
+    AppIntellisensePriority,
+    AppIntellisenseWidth,
+} from "../../../lib/app/app.type";
 import {
     getLuauCompletionQuery,
     shouldOpenLuauCompletion,
@@ -26,6 +29,7 @@ type UseWorkspaceCompletionPopupOptions = {
     getActiveEditor: () => AceEditorInstance | null;
     isIntellisenseEnabled: boolean;
     intellisensePriority: AppIntellisensePriority;
+    intellisenseWidth: AppIntellisenseWidth;
     suppressNextPassiveCompletionRef: MutableRefObject<boolean>;
 };
 
@@ -90,6 +94,7 @@ export function useWorkspaceCompletionPopup({
     getActiveEditor,
     isIntellisenseEnabled,
     intellisensePriority,
+    intellisenseWidth,
     suppressNextPassiveCompletionRef,
 }: UseWorkspaceCompletionPopupOptions): UseWorkspaceCompletionPopupResult {
     const [completionPopup, setCompletionPopup] =
@@ -131,13 +136,15 @@ export function useWorkspaceCompletionPopup({
             const caret = renderer.$cursorLayer.getPixelPosition(cursor, true);
             const editorBounds = editor.container.getBoundingClientRect();
             setCompletionPopup((currentPopup) => ({
-                explicit: forceOpen,
-                items: query.items,
                 position: getLuauCompletionPopupPosition(
                     editorBounds.left + caret.left,
                     editorBounds.top + caret.top,
                     query.items,
+                    intellisenseWidth,
+                    currentPopup?.position.verticalPlacement,
                 ),
+                explicit: forceOpen,
+                items: query.items,
                 replaceStartColumn: query.replaceStartColumn,
                 replaceEndColumn: query.replaceEndColumn,
                 row: cursor.row,
@@ -152,6 +159,7 @@ export function useWorkspaceCompletionPopup({
             activeEditorMode,
             getActiveEditor,
             intellisensePriority,
+            intellisenseWidth,
             isCompletionExplicit,
             isIntellisenseEnabled,
         ],

@@ -23,11 +23,13 @@ export type AppSettingsSection = "general" | "workspace" | "editor";
 export type AppTheme = "light" | "dark";
 
 export type AppIntellisensePriority = "balanced" | "language" | "executor";
+export type AppIntellisenseWidth = "small" | "normal" | "large";
 
 export type AppEditorSettings = {
     fontSize: number;
     isIntellisenseEnabled: boolean;
     intellisensePriority: AppIntellisensePriority;
+    intellisenseWidth: AppIntellisenseWidth;
 };
 
 export type AppSidebarItem = "workspace" | "script-library" | "settings";

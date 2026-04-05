@@ -13,11 +13,13 @@ import type {
     AppCommandPaletteScope,
     AppEditorSettings,
     AppIntellisensePriority,
+    AppIntellisenseWidth,
     AppSidebarItem,
     AppTheme,
 } from "../../lib/app/app.type";
 
 const APP_THEMES = ["light", "dark"] as const;
+const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
 
 type AppStoreState = {
     isSidebarOpen: boolean;
@@ -52,6 +54,7 @@ type AppStoreActions = {
     setEditorFontSize: (fontSize: number) => void;
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
+    setEditorIntellisenseWidth: (width: AppIntellisenseWidth) => void;
 };
 
 type AppStore = AppStoreState & AppStoreActions;
@@ -73,6 +76,29 @@ function isAppSidebarItem(value: unknown): value is AppSidebarItem {
 
 function isAppTheme(value: unknown): value is AppTheme {
     return typeof value === "string" && APP_THEMES.includes(value as AppTheme);
+}
+
+function normalizeAppIntellisenseWidth(value: unknown): AppIntellisenseWidth {
+    if (value === "current") {
+        return "large";
+    }
+
+    if (value === "smallest") {
+        return "small";
+    }
+
+    if (value === "small") {
+        return "normal";
+    }
+
+    if (value === "normal") {
+        return "large";
+    }
+
+    return typeof value === "string" &&
+        APP_INTELLISENSE_WIDTHS.includes(value as AppIntellisenseWidth)
+        ? (value as AppIntellisenseWidth)
+        : DEFAULT_APP_EDITOR_SETTINGS.intellisenseWidth;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -210,6 +236,14 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setEditorIntellisenseWidth: (width) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        intellisenseWidth: width,
+                    },
+                }));
+            },
         }),
         {
             name: "fumi-app-store",
@@ -230,6 +264,9 @@ export const useAppStore = create<AppStore>()(
                 const theme = isAppTheme(persistedAppState.theme)
                     ? persistedAppState.theme
                     : currentState.theme;
+                const intellisenseWidth = normalizeAppIntellisenseWidth(
+                    persistedAppState.editorSettings?.intellisenseWidth,
+                );
 
                 return {
                     ...currentState,
@@ -240,6 +277,7 @@ export const useAppStore = create<AppStore>()(
                     editorSettings: {
                         ...currentState.editorSettings,
                         ...persistedAppState.editorSettings,
+                        intellisenseWidth,
                     },
                 };
             },

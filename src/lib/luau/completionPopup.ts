@@ -2,11 +2,15 @@ import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
 } from "../../lib/luau/luau.type";
+import type { AppIntellisenseWidth } from "../app/app.type";
 
 let completionMeasurementContext: CanvasRenderingContext2D | null = null;
 
 const COMPLETION_POPUP_VIEWPORT_PADDING = 16;
 const COMPLETION_POPUP_MIN_WIDTH = 188;
+const COMPLETION_POPUP_SMALL_WIDTH = 188;
+const COMPLETION_POPUP_NORMAL_WIDTH = 220;
+const COMPLETION_POPUP_LARGE_MIN_WIDTH = 260;
 const COMPLETION_POPUP_LABEL_FONT =
     '600 10px "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif';
 const COMPLETION_POPUP_DETAIL_FONT =
@@ -51,8 +55,20 @@ function measureTextWidth(text: string, font: string): number {
     return completionMeasurementContext.measureText(text).width;
 }
 
-function getCompletionPopupWidth(items: readonly LuauCompletionItem[]): number {
+function getCompletionPopupWidth(
+    items: readonly LuauCompletionItem[],
+    intellisenseWidth: AppIntellisenseWidth,
+): number {
     const maxWidth = window.innerWidth - COMPLETION_POPUP_VIEWPORT_PADDING * 2;
+
+    if (intellisenseWidth === "small") {
+        return Math.min(maxWidth, COMPLETION_POPUP_SMALL_WIDTH);
+    }
+
+    if (intellisenseWidth === "normal") {
+        return Math.min(maxWidth, COMPLETION_POPUP_NORMAL_WIDTH);
+    }
+
     const rowGap = 8;
     const rowHorizontalPadding = 16;
     const badgeHorizontalPadding = 12;
@@ -85,18 +101,29 @@ function getCompletionPopupWidth(items: readonly LuauCompletionItem[]): number {
         widestContentWidth = Math.max(widestContentWidth, rowWidth);
     }
 
-    return Math.min(
+    const dynamicWidth = Math.min(
         maxWidth,
         Math.max(COMPLETION_POPUP_MIN_WIDTH, Math.ceil(widestContentWidth)),
     );
+
+    if (intellisenseWidth === "large") {
+        return Math.min(
+            maxWidth,
+            Math.max(COMPLETION_POPUP_LARGE_MIN_WIDTH, dynamicWidth),
+        );
+    }
+
+    return dynamicWidth;
 }
 
 export function getLuauCompletionPopupPosition(
     caretLeft: number,
     caretTop: number,
     items: readonly LuauCompletionItem[],
+    intellisenseWidth: AppIntellisenseWidth,
+    preferredVerticalPlacement?: LuauCompletionPopupPosition["verticalPlacement"],
 ): LuauCompletionPopupPosition {
-    const width = getCompletionPopupWidth(items);
+    const width = getCompletionPopupWidth(items, intellisenseWidth);
     const visibleRowCount = Math.min(items.length, 6);
     const rowHeight = 28;
     const rowGap = 4;
@@ -111,13 +138,25 @@ export function getLuauCompletionPopupPosition(
     const spaceBelow =
         window.innerHeight - belowTop - COMPLETION_POPUP_VIEWPORT_PADDING;
     const spaceAbove = caretTop - COMPLETION_POPUP_VIEWPORT_PADDING;
-    const renderAbove = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+    const canRenderAbove = spaceAbove >= 28;
+    const canRenderBelow = spaceBelow >= 28;
+    const shouldUsePreferredPlacement =
+        preferredVerticalPlacement === "above"
+            ? canRenderAbove
+            : preferredVerticalPlacement === "below"
+              ? canRenderBelow
+              : false;
+    const renderAbove = shouldUsePreferredPlacement
+        ? preferredVerticalPlacement === "above"
+        : spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+    const verticalPlacement = renderAbove ? "above" : "below";
     const maxHeight = Math.max(
         28,
         Math.min(estimatedHeight, renderAbove ? spaceAbove - 2 : spaceBelow),
     );
 
     return {
+        verticalPlacement,
         left: Math.max(
             COMPLETION_POPUP_VIEWPORT_PADDING,
             Math.min(

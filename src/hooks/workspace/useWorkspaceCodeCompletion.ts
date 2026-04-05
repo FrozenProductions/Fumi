@@ -21,6 +21,7 @@ export function useWorkspaceCodeCompletion({
     tabs,
     isIntellisenseEnabled,
     intellisensePriority,
+    intellisenseWidth,
     saveActiveWorkspaceTab,
     updateActiveTabContent,
     updateActiveTabCursor,
@@ -59,6 +60,7 @@ export function useWorkspaceCodeCompletion({
         getActiveEditor,
         isIntellisenseEnabled,
         intellisensePriority,
+        intellisenseWidth,
         suppressNextPassiveCompletionRef,
     });
     const { openSearch, searchPanel } = useWorkspaceEditorSearch({

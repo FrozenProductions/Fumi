@@ -3,6 +3,7 @@ import {
     APP_EDITOR_FONT_SIZE_MAX,
     APP_EDITOR_FONT_SIZE_MIN,
     APP_INTELLISENSE_PRIORITY_OPTIONS,
+    APP_INTELLISENSE_WIDTH_OPTIONS,
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { AppInput } from "../AppInput";
@@ -18,6 +19,9 @@ export function AppSettingsEditorSection(): ReactElement {
     const setEditorIntellisensePriority = useAppStore(
         (state) => state.setEditorIntellisensePriority,
     );
+    const setEditorIntellisenseWidth = useAppStore(
+        (state) => state.setEditorIntellisenseWidth,
+    );
 
     const handleFontSizeChange = (value: string): void => {
         setEditorFontSize(Number(value));
@@ -31,6 +35,12 @@ export function AppSettingsEditorSection(): ReactElement {
         value: (typeof APP_INTELLISENSE_PRIORITY_OPTIONS)[number]["value"],
     ): void => {
         setEditorIntellisensePriority(value);
+    };
+
+    const handleIntellisenseWidthChange = (
+        value: (typeof APP_INTELLISENSE_WIDTH_OPTIONS)[number]["value"],
+    ): void => {
+        setEditorIntellisenseWidth(value);
     };
 
     return (
@@ -79,6 +89,26 @@ export function AppSettingsEditorSection(): ReactElement {
                         value={editorSettings.intellisensePriority}
                         options={APP_INTELLISENSE_PRIORITY_OPTIONS}
                         onChange={handleIntellisensePriorityChange}
+                        className="mt-0.5 shrink-0"
+                    />
+                </div>
+                <div className="mt-3 flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 px-3.5 py-3.5">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                            <span className="mt-px size-1.5 shrink-0 rounded-full bg-fumi-500" />
+                            <p className="text-[11px] font-semibold tracking-[0.01em] text-fumi-800">
+                                Suggestion Width
+                            </p>
+                        </div>
+                        <p className="mt-1.5 text-xs leading-[1.55] text-fumi-400">
+                            Choose a small, normal, or large popup width for
+                            completion suggestions.
+                        </p>
+                    </div>
+                    <AppSelect
+                        value={editorSettings.intellisenseWidth}
+                        options={APP_INTELLISENSE_WIDTH_OPTIONS}
+                        onChange={handleIntellisenseWidthChange}
                         className="mt-0.5 shrink-0"
                     />
                 </div>

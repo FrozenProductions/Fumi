@@ -1,6 +1,7 @@
 import type {
     AppEditorSettings,
     AppIntellisensePriority,
+    AppIntellisenseWidth,
     AppSettingsSection,
     AppTheme,
 } from "../../lib/app/app.type";
@@ -26,6 +27,11 @@ type AppIntellisensePriorityOption = {
     label: string;
 };
 
+type AppIntellisenseWidthOption = {
+    value: AppIntellisenseWidth;
+    label: string;
+};
+
 export const APP_SETTINGS_SECTIONS = [
     { id: "general", label: "General" },
     { id: "editor", label: "Editor" },
@@ -46,12 +52,19 @@ export const APP_INTELLISENSE_PRIORITY_OPTIONS = [
     { value: "executor", label: "Executor-first" },
 ] as const satisfies AppIntellisensePriorityOption[];
 
+export const APP_INTELLISENSE_WIDTH_OPTIONS = [
+    { value: "small", label: "Small" },
+    { value: "normal", label: "Normal" },
+    { value: "large", label: "Large" },
+] as const satisfies AppIntellisenseWidthOption[];
+
 export const DEFAULT_APP_THEME = "light" satisfies AppTheme;
 
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,
     isIntellisenseEnabled: true,
     intellisensePriority: "balanced",
+    intellisenseWidth: "large",
 } as const satisfies AppEditorSettings;
 
 export const APP_EDITOR_FONT_SIZE_MIN = 10;

@@ -53,6 +53,7 @@ export type LuauFileSymbol = {
 };
 
 export type LuauCompletionPopupPosition = {
+    verticalPlacement: "above" | "below";
     left: number;
     top: number;
     width: number;

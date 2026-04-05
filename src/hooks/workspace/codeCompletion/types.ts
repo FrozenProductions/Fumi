@@ -1,4 +1,7 @@
-import type { AppIntellisensePriority } from "../../../lib/app/app.type";
+import type {
+    AppIntellisensePriority,
+    AppIntellisenseWidth,
+} from "../../../lib/app/app.type";
 import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
 import type { WorkspaceEditorSearchController } from "../../../lib/workspace/editorSearch.type";
 import type {
@@ -13,6 +16,7 @@ export type UseWorkspaceCodeCompletionOptions = {
     tabs: WorkspaceTab[];
     isIntellisenseEnabled: boolean;
     intellisensePriority: AppIntellisensePriority;
+    intellisenseWidth: AppIntellisenseWidth;
     saveActiveWorkspaceTab: () => Promise<void>;
     updateActiveTabContent: (content: string) => void;
     updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;

@@ -64,6 +64,7 @@ export function WorkspaceScreen({
         tabs: workspace?.tabs ?? [],
         isIntellisenseEnabled: editorSettings.isIntellisenseEnabled,
         intellisensePriority: editorSettings.intellisensePriority,
+        intellisenseWidth: editorSettings.intellisenseWidth,
         saveActiveWorkspaceTab,
         updateActiveTabContent,
         updateActiveTabCursor,
