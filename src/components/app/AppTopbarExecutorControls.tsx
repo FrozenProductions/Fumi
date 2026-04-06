@@ -7,7 +7,7 @@ import {
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
-import type { AppTopbarExecutorControlsProps } from "./app.type";
+import type { AppTopbarExecutorControlsProps } from "./appShell.type";
 
 export function AppTopbarExecutorControls({
     port,

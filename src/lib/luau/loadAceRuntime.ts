@@ -5,41 +5,14 @@ import themeGithubDarkScriptUrl from "ace-builds/src-noconflict/theme-github_dar
 import themeGithubLightDefaultScriptUrl from "ace-builds/src-noconflict/theme-github_light_default.js?url";
 import type { AppTheme } from "../../lib/app/app.type";
 import { getEditorModeForFileName } from "./fileType";
+import type {
+    AceModeInstance,
+    AceModeModule,
+    AceRuntime,
+    LoadedAceRuntime,
+    WindowWithAce,
+} from "./loadAceRuntime.type";
 import { configureLuauAce } from "./registerAceLuau";
-
-type AceModeInstance = {
-    $id?: string;
-    getTokenizer: () => unknown;
-};
-
-type AceModeModule = {
-    Mode: new () => AceModeInstance;
-};
-
-type AceRuntime = {
-    config: {
-        loadModule: (
-            moduleName: string,
-            onLoad: (module: unknown) => void,
-        ) => void;
-        setModuleUrl: (moduleName: string, url: string) => void;
-    };
-    define: (
-        name: string,
-        deps: string[],
-        factory: (...args: any[]) => void,
-    ) => void;
-    require: (name: string) => unknown;
-};
-
-type WindowWithAce = Window & {
-    ace?: AceRuntime;
-};
-
-export type LoadedAceRuntime = {
-    getMode: (fileName: string) => AceModeInstance;
-    getTheme: (appTheme: AppTheme) => "github_dark" | "github_light_default";
-};
 
 let aceRuntimePromise: Promise<LoadedAceRuntime> | null = null;
 

@@ -4,7 +4,7 @@ import {
     APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
 } from "../../constants/app/commandPalette";
 import { useAppCommandPalette } from "../../hooks/app/useAppCommandPalette";
-import type { AppCommandPaletteProps } from "./app.type";
+import type { AppCommandPaletteProps } from "./appShell.type";
 import { AppCommandPaletteInputRow } from "./commandPalette/AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./commandPalette/AppCommandPaletteResults";
 

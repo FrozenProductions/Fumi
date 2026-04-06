@@ -1,6 +1,4 @@
-import type { ComponentType } from "react";
-
-export type AceEditorComponent = ComponentType<Record<string, unknown>>;
+import type { AceEditorComponent } from "./editor.type";
 
 export function getReactAceComponent(
     reactAceModule: typeof import("react-ace"),

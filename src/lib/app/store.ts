@@ -1,0 +1,59 @@
+import {
+    APP_ZOOM_DEFAULT,
+    APP_ZOOM_MAX,
+    APP_ZOOM_MIN,
+    DEFAULT_APP_EDITOR_SETTINGS,
+} from "../../constants/app/settings";
+import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
+import type {
+    AppIntellisenseWidth,
+    AppSidebarItem,
+    AppTheme,
+} from "./app.type";
+
+const APP_THEMES = ["light", "dark"] as const;
+const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
+
+export function clampAppZoomPercent(zoomPercent: number): number {
+    if (!Number.isFinite(zoomPercent)) {
+        return APP_ZOOM_DEFAULT;
+    }
+
+    return Math.min(APP_ZOOM_MAX, Math.max(APP_ZOOM_MIN, zoomPercent));
+}
+
+export function isAppSidebarItem(value: unknown): value is AppSidebarItem {
+    return (
+        typeof value === "string" &&
+        APP_SIDEBAR_ITEM_IDS.includes(value as AppSidebarItem)
+    );
+}
+
+export function isAppTheme(value: unknown): value is AppTheme {
+    return typeof value === "string" && APP_THEMES.includes(value as AppTheme);
+}
+
+export function normalizeAppIntellisenseWidth(
+    value: unknown,
+): AppIntellisenseWidth {
+    if (value === "current") {
+        return "large";
+    }
+
+    if (value === "smallest") {
+        return "small";
+    }
+
+    if (value === "small") {
+        return "normal";
+    }
+
+    if (value === "normal") {
+        return "large";
+    }
+
+    return typeof value === "string" &&
+        APP_INTELLISENSE_WIDTHS.includes(value as AppIntellisenseWidth)
+        ? (value as AppIntellisenseWidth)
+        : DEFAULT_APP_EDITOR_SETTINGS.intellisenseWidth;
+}

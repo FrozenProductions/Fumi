@@ -1,46 +1,11 @@
+import {
+    createLuauLanguageCompletionItem as createItem,
+    createLuauNamespaceCompletionGroup as createNamespaceGroup,
+} from "../../lib/luau/completionBuilder";
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
 } from "../../lib/luau/luau.type";
-
-function createItem(
-    label: string,
-    kind: LuauCompletionItem["kind"],
-    detail: string,
-    summary: string,
-    source: string,
-    options?: {
-        insertText?: string;
-        namespace?: string;
-        score?: number;
-        signature?: string;
-    },
-): LuauCompletionItem {
-    return {
-        label,
-        kind,
-        detail,
-        doc: {
-            summary,
-            source,
-            signature: options?.signature,
-        },
-        insertText: options?.insertText,
-        namespace: options?.namespace,
-        score: options?.score,
-        sourceGroup: "language",
-    };
-}
-
-function createNamespaceGroup(
-    namespace: string,
-    items: LuauCompletionItem[],
-): LuauNamespaceCompletionGroup {
-    return {
-        namespace,
-        items,
-    };
-}
 
 const LUAU_DOC_SOURCE = "Official Luau syntax/type/standard library docs";
 const ROBLOX_DOC_SOURCE = "Official Roblox Creator and Engine API docs";

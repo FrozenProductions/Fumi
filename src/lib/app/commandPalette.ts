@@ -6,22 +6,11 @@ import {
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { AppCommandPaletteItem } from "../../lib/app/app.type";
-import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
 import { splitWorkspaceFileName } from "../workspace/fileName";
-
-type GetCommandPaletteCommandItemsOptions = {
-    workspaceSession: UseWorkspaceSessionResult;
-    isSidebarOpen: boolean;
-    onActivateGoToLineMode: () => void;
-    onOpenSettings: () => void;
-    onToggleSidebar: () => void;
-};
-
-type GetGoToLineCommandPaletteItemsOptions = {
-    activeTab: WorkspaceTab | null;
-    goToLineNumber: number | null;
-    onGoToLine: (lineNumber: number) => void;
-};
+import type {
+    GetCommandPaletteCommandItemsOptions,
+    GetGoToLineCommandPaletteItemsOptions,
+} from "./commandPalette.type";
 
 export function normalizeAppCommandPaletteSearchValue(value: string): string {
     return value.trim().toLowerCase();

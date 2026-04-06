@@ -22,7 +22,7 @@ import {
     scheduleTooltipCooldown,
     shouldSkipTooltipDelay,
 } from "../../lib/tooltip/tooltip";
-import type { AppTooltipProps } from "./app.type";
+import type { AppTooltipProps } from "./appTooltip.type";
 
 export function AppTooltip({
     children,

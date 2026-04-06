@@ -22,25 +22,10 @@ import {
     UNC_NAMESPACE_NAMES,
 } from "../../constants/luau/uncCompletions";
 import { LUAU_MODE_IDENTIFIER } from "./completion";
-
-type AceEditorRuntime = {
-    define: (
-        name: string,
-        deps: string[],
-        factory: (...args: any[]) => void,
-    ) => void;
-    require: (name: string) => any;
-};
-
-type LuauModePrototype = {
-    $id: string;
-    lineCommentStart: string;
-    blockComment: {
-        start: string;
-        end: string;
-    };
-    createWorker: () => null;
-};
+import type {
+    AceEditorRuntime,
+    LuauModePrototype,
+} from "./registerAceLuau.type";
 
 function escapeRegex(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

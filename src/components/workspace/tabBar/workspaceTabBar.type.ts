@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
-import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename";
+import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename.type";
 import type {
     WorkspaceSession,
     WorkspaceTab,

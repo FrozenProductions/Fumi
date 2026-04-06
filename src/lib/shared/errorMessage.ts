@@ -1,6 +1,4 @@
-type ErrorMessageOptions = {
-    useFallbackForAbort?: boolean;
-};
+import type { ErrorMessageOptions } from "./errorMessage.type";
 
 export function getErrorMessage(
     error: unknown,

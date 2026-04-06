@@ -1,3 +1,9 @@
+import type {
+    GetSteppedTextInputValueOptions,
+    ResolveCommittedTextInputValueOptions,
+    ResolveCommittedTextInputValueResult,
+} from "./textInput.type";
+
 export function disableTextInputCorrections(
     element: HTMLInputElement | HTMLTextAreaElement,
 ): void {
@@ -7,26 +13,6 @@ export function disableTextInputCorrections(
     element.setAttribute("spellcheck", "false");
     element.spellcheck = false;
 }
-
-type ResolveCommittedTextInputValueOptions = {
-    draftValue: string;
-    value: string;
-    minValue?: number;
-    maxValue?: number;
-};
-
-type ResolveCommittedTextInputValueResult = {
-    nextDraftValue: string;
-    nextValue: string | null;
-};
-
-type GetSteppedTextInputValueOptions = {
-    draftValue: string;
-    minValue?: number;
-    maxValue?: number;
-    step: number;
-    direction: 1 | -1;
-};
 
 export function clampNumericTextInputValue(
     rawValue: string,

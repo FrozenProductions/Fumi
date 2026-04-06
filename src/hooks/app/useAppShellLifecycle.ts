@@ -4,11 +4,7 @@ import {
     subscribeToCheckForUpdatesRequested,
     subscribeToOpenSettings,
 } from "../../lib/platform/window";
-
-type UseAppShellLifecycleOptions = {
-    hasUnsavedChanges: boolean;
-    onOpenSettings: () => void;
-};
+import type { UseAppShellLifecycleOptions } from "./useAppShellLifecycle.type";
 
 export function useAppShellLifecycle({
     hasUnsavedChanges,

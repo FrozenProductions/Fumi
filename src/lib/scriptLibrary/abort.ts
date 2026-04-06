@@ -1,4 +1,4 @@
-type AbortSignalSource = AbortSignal | null | undefined;
+import type { AbortSignalSource } from "./abort.type";
 
 export function combineAbortSignals(...signals: AbortSignalSource[]): {
     signal: AbortSignal;

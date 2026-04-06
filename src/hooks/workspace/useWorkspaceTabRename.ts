@@ -1,37 +1,11 @@
-import type {
-    ChangeEvent,
-    KeyboardEvent as ReactKeyboardEvent,
-    RefObject,
-} from "react";
+import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { splitWorkspaceFileName } from "../../lib/workspace/fileName";
-import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
+import type {
+    UseWorkspaceTabRenameOptions,
+    UseWorkspaceTabRenameResult,
+} from "./useWorkspaceTabRename.type";
 import { useWorkspaceUiStore } from "./useWorkspaceUiStore";
-
-type UseWorkspaceTabRenameOptions = {
-    workspace: WorkspaceSession | null;
-    renameWorkspaceTab: (
-        tabId: string,
-        nextBaseName: string,
-    ) => Promise<boolean>;
-    selectWorkspaceTab: (tabId: string) => void;
-};
-
-export type UseWorkspaceTabRenameResult = {
-    hasRenameError: boolean;
-    isRenameSubmitting: boolean;
-    renameInputRef: RefObject<HTMLInputElement | null>;
-    renameValue: string;
-    renamingTabId: string | null;
-    cancelTabRename: () => void;
-    commitTabRename: () => Promise<void>;
-    handleRenameInputBlur: () => void;
-    handleRenameInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    handleRenameInputKeyDown: (
-        event: ReactKeyboardEvent<HTMLInputElement>,
-    ) => void;
-    handleStartRename: (tabId: string, fileName: string) => void;
-};
 
 export function useWorkspaceTabRename({
     workspace,

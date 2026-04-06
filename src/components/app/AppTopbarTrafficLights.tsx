@@ -12,7 +12,7 @@ import type {
     MaximizeGlyphProps,
     TrafficLightButtonProps,
     TrafficLightTone,
-} from "./app.type";
+} from "./appVisual.type";
 
 const TRAFFIC_LIGHT_STYLE_MAP: Record<TrafficLightTone, CSSProperties> = {
     close: {

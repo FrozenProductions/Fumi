@@ -1,10 +1,9 @@
 import { ArrowDown01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect, useRef, useState } from "react";
+import { APP_SELECT_DROPDOWN_EXIT_DURATION_MS } from "../../constants/app/input";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
 import { AppIcon } from "./AppIcon";
-import type { AppSelectProps } from "./app.type";
-
-const APP_SELECT_DROPDOWN_EXIT_DURATION_MS = 120;
+import type { AppSelectProps } from "./appForm.type";
 
 export function AppSelect<TValue extends string>({
     value,

@@ -5,7 +5,7 @@ import {
 } from "../../constants/app/sidebar";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
-import type { AppSidebarProps } from "./app.type";
+import type { AppSidebarProps } from "./appShell.type";
 
 export function AppSidebar({
     isOpen,

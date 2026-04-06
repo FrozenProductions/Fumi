@@ -1,4 +1,4 @@
-import type { UseAppUpdaterResult } from "../../../hooks/app/useAppUpdater";
+import type { UseAppUpdaterResult } from "../../../hooks/app/useAppUpdater.type";
 import type { UseWorkspaceSessionResult } from "../../../hooks/workspace/useWorkspaceSession.type";
 
 export type AppSettingsScreenProps = {

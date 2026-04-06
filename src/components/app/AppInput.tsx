@@ -14,7 +14,7 @@ import {
     getSteppedTextInputValue,
     resolveCommittedTextInputValue,
 } from "../../lib/app/textInput";
-import type { AppInputProps } from "./app.type";
+import type { AppInputProps } from "./appForm.type";
 
 export function AppInput({
     value,

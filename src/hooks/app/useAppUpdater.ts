@@ -16,24 +16,12 @@ import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window";
 import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { useAppStore } from "./useAppStore";
+import type {
+    CheckForUpdatesOptions,
+    UseAppUpdaterResult,
+} from "./useAppUpdater.type";
 
 const STARTUP_UPDATE_CHECK_RETRY_DELAY_MS = 5_000;
-
-export type UseAppUpdaterResult = {
-    status: AppUpdaterStatus;
-    availableUpdate: AppUpdateMetadata | null;
-    downloadProgress: AppUpdateDownloadProgress | null;
-    errorMessage: string | null;
-    checkForUpdates: () => Promise<void>;
-    downloadAndInstallUpdate: () => Promise<void>;
-    relaunchToApplyUpdate: () => Promise<void>;
-};
-
-type CheckForUpdatesOptions = {
-    isSilent?: boolean;
-    shouldRetryOnFailure?: boolean;
-    shouldAutoUpdate?: boolean;
-};
 
 export function useAppUpdater(): UseAppUpdaterResult {
     const isAutoUpdateEnabled = useAppStore(

@@ -15,18 +15,8 @@ import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { decodeUnknownWithSchema } from "../shared/schema";
 import { combineAbortSignals } from "./abort";
+import type { ScriptLibraryCachedSession, ScriptLibraryPage } from "./api.type";
 import { ScriptLibraryError } from "./errors";
-
-type ScriptLibraryPage = {
-    scripts: ScriptLibraryEntry[];
-    currentPage: number;
-    maxPages: number;
-};
-
-export type ScriptLibraryCachedSession = {
-    pages: Map<number, ScriptLibraryPage>;
-    maxPages: number | null;
-};
 
 const RscriptsUserSchema = Schema.Struct({
     _id: Schema.optional(Schema.String),

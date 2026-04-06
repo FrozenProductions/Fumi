@@ -18,7 +18,7 @@ import { AppIconButton } from "./AppIconButton";
 import { AppTooltip } from "./AppTooltip";
 import { AppTopbarExecutorControls } from "./AppTopbarExecutorControls";
 import { AppTopbarTrafficLights } from "./AppTopbarTrafficLights";
-import type { AppTopbarProps } from "./app.type";
+import type { AppTopbarProps } from "./appShell.type";
 
 export function AppTopbar({
     title,

@@ -1,14 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-
-type UsePresenceTransitionOptions = {
-    isOpen: boolean;
-    exitDurationMs: number;
-};
-
-type UsePresenceTransitionResult = {
-    isPresent: boolean;
-    isClosing: boolean;
-};
+import type {
+    UsePresenceTransitionOptions,
+    UsePresenceTransitionResult,
+} from "./usePresenceTransition.type";
 
 export function usePresenceTransition({
     isOpen,

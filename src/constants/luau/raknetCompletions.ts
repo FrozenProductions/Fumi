@@ -1,69 +1,18 @@
+import {
+    createLuauCompletionItem,
+    createLuauNamespaceCompletionGroup,
+    normalizeLuauMarkdownSummary,
+} from "../../lib/luau/completionBuilder";
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
 } from "../../lib/luau/luau.type";
+import type {
+    NamespaceDataEntry,
+    TopLevelDataEntry,
+} from "./raknetCompletions.type";
 
 const RAKNET_DOC_SOURCE = "Actors Documentation";
-
-type TopLevelDataEntry = readonly [
-    label: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-type NamespaceDataEntry = readonly [
-    namespace: string,
-    memberName: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-function normalizeSummary(summary: string): string {
-    return summary
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-        .replace(/\*\*/g, "")
-        .replace(/`/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function createItem(
-    label: string,
-    summary: string,
-    signature: string,
-    _sourceLink: string,
-    options?: {
-        kind?: LuauCompletionItem["kind"];
-        namespace?: string;
-        score?: number;
-    },
-): LuauCompletionItem {
-    return {
-        label,
-        kind: options?.kind ?? "function",
-        detail: "ranket",
-        doc: {
-            summary: normalizeSummary(summary),
-            source: RAKNET_DOC_SOURCE,
-            signature,
-        },
-        namespace: options?.namespace,
-        score: options?.score,
-        sourceGroup: "executor",
-    };
-}
-
-function createNamespaceGroup(
-    namespace: string,
-    items: LuauCompletionItem[],
-): LuauNamespaceCompletionGroup {
-    return {
-        namespace,
-        items,
-    };
-}
 
 const RAKNET_TOP_LEVEL_DATA = [
     [
@@ -106,22 +55,34 @@ export const RAKNET_NAMESPACE_FUNCTION_NAMES = RAKNET_NAMESPACE_DATA.map(
 
 export const RAKNET_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
     ...RAKNET_TOP_LEVEL_DATA.map(([label, summary, signature, link]) =>
-        createItem(label, summary, signature, link, {
+        createLuauCompletionItem(label, summary, {
+            detail: "ranket",
             kind: "namespace",
             score: 1160,
+            signature,
+            source: RAKNET_DOC_SOURCE,
+            sourceGroup: "executor",
+            sourceLink: link,
+            summaryNormalizer: normalizeLuauMarkdownSummary,
         }),
     ),
 ];
 
 export const RAKNET_NAMESPACE_COMPLETIONS: LuauNamespaceCompletionGroup[] = [
-    createNamespaceGroup(
+    createLuauNamespaceCompletionGroup(
         "raknet",
         RAKNET_NAMESPACE_DATA.map(
             ([namespace, memberName, summary, signature, link]) =>
-                createItem(memberName, summary, signature, link, {
+                createLuauCompletionItem(memberName, summary, {
+                    detail: "ranket",
                     kind: "function",
                     namespace,
                     score: 1150,
+                    signature,
+                    source: RAKNET_DOC_SOURCE,
+                    sourceGroup: "executor",
+                    sourceLink: link,
+                    summaryNormalizer: normalizeLuauMarkdownSummary,
                 }),
         ),
     ),

@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { getCompactLuauCompletionDetailLabel } from "../../lib/luau/completionPopup";
-import type { AppCodeCompletionProps } from "./workspace.type";
+import type { AppCodeCompletionProps } from "./workspaceEditor.type";
 
 export function AppCodeCompletion({
     items,

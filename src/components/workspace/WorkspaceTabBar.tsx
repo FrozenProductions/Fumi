@@ -20,13 +20,8 @@ import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
 import { WorkspaceTabItem } from "./tabBar/WorkspaceTabItem";
 import { WorkspaceTabListDropdown } from "./tabBar/WorkspaceTabListDropdown";
-import type { WorkspaceTabBarProps } from "./workspace.type";
-
-type WorkspaceTabContextMenuState = {
-    tabId: string;
-    x: number;
-    y: number;
-};
+import type { WorkspaceTabBarProps } from "./workspaceScreen.type";
+import type { WorkspaceTabContextMenuState } from "./workspaceTabBar.type";
 
 export function WorkspaceTabBar({
     workspace,

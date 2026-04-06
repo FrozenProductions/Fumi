@@ -2,7 +2,6 @@ import {
     type ChangeEvent,
     type KeyboardEvent,
     type MouseEvent,
-    type RefObject,
     startTransition,
     useCallback,
     useDeferredValue,
@@ -30,39 +29,10 @@ import {
     parseGoToLineQuery,
 } from "../../lib/app/commandPalette";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
-import type { UseWorkspaceSessionResult } from "../workspace/useWorkspaceSession.type";
-
-type UseAppCommandPaletteOptions = {
-    isOpen: boolean;
-    requestedScope: AppCommandPaletteScope | null;
-    requestedMode: RequestedAppCommandPaletteMode | null;
-    workspaceSession: UseWorkspaceSessionResult;
-    isSidebarOpen: boolean;
-    onClose: () => void;
-    onGoToLine: (lineNumber: number) => void;
-    onToggleSidebar: () => void;
-    onOpenSettings: () => void;
-};
-
-type UseAppCommandPaletteResult = {
-    panelRef: RefObject<HTMLDivElement | null>;
-    inputRef: RefObject<HTMLInputElement | null>;
-    isPresent: boolean;
-    isClosing: boolean;
-    mode: AppCommandPaletteViewMode;
-    query: string;
-    scope: AppCommandPaletteScope;
-    activeResultIndex: number;
-    results: AppCommandPaletteItem[];
-    commitSelection: (item: AppCommandPaletteItem) => void;
-    handleBackdropMouseDown: (event: MouseEvent<HTMLDivElement>) => void;
-    handleHoverItem: (index: number) => void;
-    handleInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    handleInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
-    handleScopeSelect: (
-        nextScope: Exclude<AppCommandPaletteScope, "tabs">,
-    ) => void;
-};
+import type {
+    UseAppCommandPaletteOptions,
+    UseAppCommandPaletteResult,
+} from "./useAppCommandPalette.type";
 
 export function useAppCommandPalette({
     isOpen,

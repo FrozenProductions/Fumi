@@ -1,7 +1,5 @@
 import type {
     AppEditorSettings,
-    AppIntellisensePriority,
-    AppIntellisenseWidth,
     AppSettingsSection,
     AppTheme,
     AppUpdaterSettings,
@@ -12,26 +10,12 @@ import {
     MIN_PAGE_ZOOM,
     PAGE_ZOOM_STEP,
 } from "../window/window";
-
-type AppSettingsSectionOption = {
-    id: AppSettingsSection;
-    label: string;
-};
-
-type AppThemeOption = {
-    value: AppTheme;
-    label: string;
-};
-
-type AppIntellisensePriorityOption = {
-    value: AppIntellisensePriority;
-    label: string;
-};
-
-type AppIntellisenseWidthOption = {
-    value: AppIntellisenseWidth;
-    label: string;
-};
+import type {
+    AppIntellisensePriorityOption,
+    AppIntellisenseWidthOption,
+    AppSettingsSectionOption,
+    AppThemeOption,
+} from "./settings.type";
 
 export const APP_SETTINGS_SECTIONS = [
     { id: "general", label: "General" },

@@ -15,7 +15,7 @@ import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
-import type { WorkspaceScreenProps } from "./workspace.type";
+import type { WorkspaceScreenProps } from "./workspaceScreen.type";
 
 export function WorkspaceScreen({
     session,

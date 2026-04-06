@@ -11,4 +11,4 @@ export const APP_TEXT_INPUT_PROPS = {
     spellCheck: false,
 } as const;
 
-export type AppInputSize = keyof typeof APP_INPUT_SIZE_MIN_WIDTH_MAP;
+export const APP_SELECT_DROPDOWN_EXIT_DURATION_MS = 120;

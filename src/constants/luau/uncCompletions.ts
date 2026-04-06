@@ -1,104 +1,20 @@
+import {
+    createLuauCompletionAliasItem,
+    createLuauCompletionItem,
+    createLuauNamespaceCompletionGroup,
+    normalizeLuauWhitespaceSummary,
+} from "../../lib/luau/completionBuilder";
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
 } from "../../lib/luau/luau.type";
+import type {
+    AliasDataEntry,
+    NamespaceDataEntry,
+    TopLevelDataEntry,
+} from "./uncCompletions.type";
 
 const UNC_DOC_SOURCE = "UNC Naming Standard";
-
-type NamespaceDataEntry = readonly [
-    namespace: string,
-    memberName: string,
-    category: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-type TopLevelDataEntry = readonly [
-    label: string,
-    category: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-type AliasDataEntry = readonly [
-    alias: string,
-    canonicalName: string,
-    category: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-function normalizeSummary(summary: string): string {
-    return summary.replace(/\s+/g, " ").trim();
-}
-
-function createItem(
-    label: string,
-    detail: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-    options?: {
-        insertText?: string;
-        kind?: LuauCompletionItem["kind"];
-        namespace?: string;
-        score?: number;
-    },
-): LuauCompletionItem {
-    return {
-        label,
-        kind: options?.kind ?? "function",
-        detail,
-        doc: {
-            summary: `${normalizeSummary(summary)} Link: ${sourceLink}`,
-            source: UNC_DOC_SOURCE,
-            signature,
-        },
-        insertText: options?.insertText,
-        namespace: options?.namespace,
-        score: options?.score,
-        sourceGroup: "executor",
-    };
-}
-
-function createAliasItem(
-    alias: string,
-    canonicalName: string,
-    detail: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-    options?: {
-        namespace?: string;
-        score?: number;
-    },
-): LuauCompletionItem {
-    return createItem(
-        alias,
-        detail,
-        `Alias of ${canonicalName}. ${summary}`,
-        signature,
-        sourceLink,
-        {
-            kind: "function",
-            namespace: options?.namespace,
-            score: options?.score,
-        },
-    );
-}
-
-function createNamespaceGroup(
-    namespace: string,
-    items: LuauCompletionItem[],
-): LuauNamespaceCompletionGroup {
-    return {
-        namespace,
-        items,
-    };
-}
 
 const UNC_NAMESPACE_SUMMARIES = [
     [
@@ -1173,35 +1089,51 @@ export const UNC_NAMESPACE_NAMES = Array.from(
 export const UNC_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
     ...UNC_NAMESPACE_SUMMARIES.map(
         ([label, category, summary, signature, link]) =>
-            createItem(label, `unc ${category}`, summary, signature, link, {
+            createLuauCompletionItem(label, summary, {
+                detail: `unc ${category}`,
                 kind: "namespace",
                 score: 1140,
+                signature,
+                source: UNC_DOC_SOURCE,
+                sourceGroup: "executor",
+                sourceLink: link,
+                includeSourceLinkInSummary: true,
+                summaryNormalizer: normalizeLuauWhitespaceSummary,
             }),
     ),
     ...UNC_TOP_LEVEL_DATA.map(([label, category, summary, signature, link]) =>
-        createItem(label, `unc ${category}`, summary, signature, link, {
+        createLuauCompletionItem(label, summary, {
+            detail: `unc ${category}`,
             kind: "function",
             score: 1130,
+            signature,
+            source: UNC_DOC_SOURCE,
+            sourceGroup: "executor",
+            sourceLink: link,
+            includeSourceLinkInSummary: true,
+            summaryNormalizer: normalizeLuauWhitespaceSummary,
         }),
     ),
     ...UNC_ALIAS_DATA.map(
         ([alias, canonicalName, category, summary, signature, link]) =>
-            createAliasItem(
-                alias,
-                canonicalName,
-                `unc alias (${category})`,
-                summary,
+            createLuauCompletionAliasItem(alias, canonicalName, summary, {
+                detail: `unc alias (${category})`,
+                kind: "function",
+                score: 1110,
                 signature,
-                link,
-                { score: 1110 },
-            ),
+                source: UNC_DOC_SOURCE,
+                sourceGroup: "executor",
+                sourceLink: link,
+                includeSourceLinkInSummary: true,
+                summaryNormalizer: normalizeLuauWhitespaceSummary,
+            }),
     ),
 ];
 
 export const UNC_NAMESPACE_COMPLETIONS: LuauNamespaceCompletionGroup[] =
     Array.from(new Set(UNC_NAMESPACE_DATA.map(([namespace]) => namespace))).map(
         (namespace) =>
-            createNamespaceGroup(
+            createLuauNamespaceCompletionGroup(
                 namespace,
                 UNC_NAMESPACE_DATA.filter(
                     ([candidateNamespace]) => candidateNamespace === namespace,
@@ -1214,24 +1146,24 @@ export const UNC_NAMESPACE_COMPLETIONS: LuauNamespaceCompletionGroup[] =
                         signature,
                         link,
                     ]) =>
-                        createItem(
-                            memberName,
-                            `unc ${category}`,
-                            summary,
+                        createLuauCompletionItem(memberName, summary, {
+                            detail: `unc ${category}`,
+                            kind: signature.startsWith("namespace ")
+                                ? "namespace"
+                                : memberName === "Fonts"
+                                  ? "constant"
+                                  : "function",
+                            namespace: candidateNamespace,
+                            score: signature.startsWith("namespace ")
+                                ? 1140
+                                : 1130,
                             signature,
-                            link,
-                            {
-                                kind: signature.startsWith("namespace ")
-                                    ? "namespace"
-                                    : memberName === "Fonts"
-                                      ? "constant"
-                                      : "function",
-                                namespace: candidateNamespace,
-                                score: signature.startsWith("namespace ")
-                                    ? 1140
-                                    : 1130,
-                            },
-                        ),
+                            source: UNC_DOC_SOURCE,
+                            sourceGroup: "executor",
+                            sourceLink: link,
+                            includeSourceLinkInSummary: true,
+                            summaryNormalizer: normalizeLuauWhitespaceSummary,
+                        }),
                 ),
             ),
     );

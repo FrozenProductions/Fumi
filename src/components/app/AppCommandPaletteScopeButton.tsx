@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
-import type { AppCommandPaletteScopeButtonProps } from "./app.type";
+import type { AppCommandPaletteScopeButtonProps } from "./appShell.type";
 
 export function AppCommandPaletteScopeButton({
     ariaLabel,

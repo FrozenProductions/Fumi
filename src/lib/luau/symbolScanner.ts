@@ -1,38 +1,11 @@
 import type { LuauFileSymbol, LuauSymbolKind } from "./luau.type";
-
-type LuauToken = {
-    end: number;
-    start: number;
-    type: "identifier" | "newline" | "number" | "symbol";
-    value: string;
-};
-
-type ScopeFrame = {
-    end: number;
-    start: number;
-};
-
-type LuauFileAnalysis = {
-    functionScopes: ScopeFrame[];
-    symbols: LuauFileSymbol[];
-};
-
-type PendingLuauFileSymbol = Omit<
-    LuauFileSymbol,
-    | "ownerFunctionEnd"
-    | "ownerFunctionStart"
-    | "scopeEnd"
-    | "scopeStart"
-    | "visibleEnd"
-> & {
-    ownerFunction: ScopeFrame | null;
-    scope: ScopeFrame;
-};
-
-type TokenBoundary = {
-    end: number;
-    start: number;
-};
+import type {
+    LuauFileAnalysis,
+    LuauToken,
+    PendingLuauFileSymbol,
+    ScopeFrame,
+    TokenBoundary,
+} from "./symbolScanner.type";
 
 const CURRENT_FILE_DOC_SOURCE = "Current File";
 

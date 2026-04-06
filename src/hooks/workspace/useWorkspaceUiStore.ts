@@ -1,26 +1,8 @@
 import { create } from "zustand";
-
-type WorkspaceUiStoreState = {
-    isTabListOpen: boolean;
-    renamingTabId: string | null;
-    renameValue: string;
-    isRenameSubmitting: boolean;
-    hasRenameError: boolean;
-};
-
-type WorkspaceUiStoreActions = {
-    openTabList: () => void;
-    closeTabList: () => void;
-    toggleTabList: () => void;
-    startTabRename: (tabId: string, renameValue: string) => void;
-    setRenameValue: (renameValue: string) => void;
-    setRenameSubmitting: (isRenameSubmitting: boolean) => void;
-    setRenameError: (hasRenameError: boolean) => void;
-    resetRenameState: () => void;
-    resetWorkspaceUiState: () => void;
-};
-
-type WorkspaceUiStore = WorkspaceUiStoreState & WorkspaceUiStoreActions;
+import type {
+    WorkspaceUiStore,
+    WorkspaceUiStoreState,
+} from "./useWorkspaceUiStore.type";
 
 const INITIAL_WORKSPACE_UI_STATE = {
     isTabListOpen: false,

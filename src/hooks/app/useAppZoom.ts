@@ -1,13 +1,6 @@
-import {
-    APP_ZOOM_DEFAULT,
-    APP_ZOOM_MAX,
-    APP_ZOOM_MIN,
-} from "../../constants/app/settings";
+import { APP_ZOOM_DEFAULT } from "../../constants/app/settings";
+import { clampAppZoomPercent } from "../../lib/app/store";
 import { useAppStore } from "./useAppStore";
-
-function clampZoomPercent(zoomPercent: number): number {
-    return Math.min(APP_ZOOM_MAX, Math.max(APP_ZOOM_MIN, zoomPercent));
-}
 
 export function useAppZoom(): {
     zoomPercent: number;
@@ -17,7 +10,7 @@ export function useAppZoom(): {
     const setStoredZoomPercent = useAppStore((state) => state.setZoomPercent);
 
     const setZoomPercent = (nextZoomPercent: number): void => {
-        const normalizedZoomPercent = clampZoomPercent(nextZoomPercent);
+        const normalizedZoomPercent = clampAppZoomPercent(nextZoomPercent);
         setStoredZoomPercent(
             Number.isFinite(normalizedZoomPercent)
                 ? normalizedZoomPercent

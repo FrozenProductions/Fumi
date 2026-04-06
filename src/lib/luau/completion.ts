@@ -30,16 +30,9 @@ import type {
     LuauFileSymbol,
 } from "../../lib/luau/luau.type";
 import { scanLuauFileAnalysis } from "../../lib/luau/symbolScanner";
+import type { LuauCompletionQuery } from "./completion.type";
 
 const MAX_LUAU_COMPLETION_ITEMS = 6;
-
-type LuauCompletionQuery = {
-    items: LuauCompletionItem[];
-    namespacePath: string | null;
-    prefix: string;
-    replaceStartColumn: number;
-    replaceEndColumn: number;
-};
 
 const LUAU_KEYWORD_DOCS: Record<string, string> = {
     as: "Assert that an expression should be treated as a specific type.",

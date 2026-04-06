@@ -1,9 +1,4 @@
-import type { ArchivedTabsSortOption } from "../../lib/workspace/workspace.type";
-
-type ArchivedTabsSortOptionConfig = {
-    value: ArchivedTabsSortOption;
-    label: string;
-};
+import type { ArchivedTabsSortOptionConfig } from "./archive.type";
 
 export const ARCHIVED_TABS_SORT_OPTIONS = [
     { value: "dateDesc", label: "Date (Newest)" },

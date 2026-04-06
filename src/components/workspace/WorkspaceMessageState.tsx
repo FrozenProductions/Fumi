@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
-import type { WorkspaceMessageStateProps } from "./workspace.type";
+import type { WorkspaceMessageStateProps } from "./workspaceFeedback.type";
 
 export function WorkspaceMessageState({
     eyebrow,

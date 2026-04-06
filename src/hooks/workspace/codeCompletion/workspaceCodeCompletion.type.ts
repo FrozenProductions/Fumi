@@ -8,7 +8,7 @@ import type {
     WorkspaceCursorState,
     WorkspaceTab,
 } from "../../../lib/workspace/workspace.type";
-import type { AceChangeDelta } from "./ace";
+import type { AceChangeDelta } from "./ace.type";
 
 export type UseWorkspaceCodeCompletionOptions = {
     activeEditorMode: string;

@@ -8,57 +8,12 @@ import {
     fetchScriptsPageEffect,
     getScriptLibrarySessionKey,
     hasActiveScriptLibraryFilters,
-    type ScriptLibraryCachedSession,
 } from "../../lib/scriptLibrary/api";
-import type {
-    ScriptLibraryEntry,
-    ScriptLibraryFilters,
-    ScriptLibrarySort,
-    ScriptLibraryViewFormat,
-} from "../../lib/scriptLibrary/scriptLibrary.type";
+import type { ScriptLibraryCachedSession } from "../../lib/scriptLibrary/api.type";
+import type { ScriptLibrarySort } from "../../lib/scriptLibrary/scriptLibrary.type";
 import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
-
-type ScriptLibraryStoreState = {
-    query: string;
-    page: number;
-    filters: ScriptLibraryFilters;
-    orderBy: ScriptLibrarySort;
-    viewFormat: ScriptLibraryViewFormat;
-    scripts: ScriptLibraryEntry[];
-    isLoading: boolean;
-    errorMessage: string | null;
-    canGoNext: boolean;
-    maxPages: number | null;
-    copyingScriptFor: string | null;
-    addingScriptFor: string | null;
-    copiedLinkId: string | null;
-    copiedScriptId: string | null;
-    addedScriptId: string | null;
-};
-
-type ScriptLibraryStoreActions = {
-    setQuery: (query: string) => void;
-    toggleFilter: (filterKey: keyof ScriptLibraryFilters) => void;
-    setOrderBy: (orderBy: ScriptLibrarySort) => void;
-    setViewFormat: (viewFormat: ScriptLibraryViewFormat) => void;
-    goToPreviousPage: () => void;
-    goToNextPage: () => void;
-    setCopyingScriptFor: (scriptId: string | null) => void;
-    setAddingScriptFor: (scriptId: string | null) => void;
-    activateCopiedLink: (scriptId: string) => void;
-    activateCopiedScript: (scriptId: string) => void;
-    activateAddedScript: (scriptId: string) => void;
-    loadScripts: (options: {
-        query: string;
-        page: number;
-        filters: ScriptLibraryFilters;
-        orderBy: ScriptLibrarySort;
-        signal: AbortSignal;
-    }) => Promise<void>;
-};
-
-type ScriptLibraryStore = ScriptLibraryStoreState & ScriptLibraryStoreActions;
+import type { ScriptLibraryStore } from "./useScriptLibraryStore.type";
 
 const ACTION_FEEDBACK_DURATION_MS = 2000;
 

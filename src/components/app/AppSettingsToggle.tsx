@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { AppSettingsToggleProps } from "./app.type";
+import type { AppSettingsToggleProps } from "./appForm.type";
 
 export function AppSettingsToggle({
     label,

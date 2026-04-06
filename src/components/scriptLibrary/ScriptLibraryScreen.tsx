@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import spinnerIcon from "../../assets/spinner.svg";
+import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import { useScriptLibrary } from "../../hooks/scriptLibrary/useScriptLibrary";
 import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import {
@@ -14,11 +14,6 @@ import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.t
 import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
 import type { ScriptLibraryScreenProps } from "./scriptLibrary.type";
-
-const SCRIPT_LIBRARY_SPINNER_STYLE = {
-    mask: `url("${spinnerIcon}") center / contain no-repeat`,
-    WebkitMask: `url("${spinnerIcon}") center / contain no-repeat`,
-} as const;
 
 export function ScriptLibraryScreen({
     workspaceSession,
@@ -120,7 +115,7 @@ export function ScriptLibraryScreen({
                         <div className="flex flex-col items-center gap-3">
                             <div
                                 className="size-8 animate-spin bg-fumi-500"
-                                style={SCRIPT_LIBRARY_SPINNER_STYLE}
+                                style={SCRIPT_LIBRARY_SPINNER_MASK_STYLE}
                             />
                             <h3 className="animate-pulse text-sm font-semibold text-fumi-500">
                                 Loading scripts...

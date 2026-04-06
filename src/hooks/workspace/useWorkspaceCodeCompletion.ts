@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "../app/useAppStore";
 import {
-    type AceChangeDelta,
-    type AceEditorInstance,
     bindWorkspaceEditorShortcuts,
     isPassiveCompletionTrigger,
 } from "./codeCompletion/ace";
+import type {
+    AceChangeDelta,
+    AceEditorInstance,
+} from "./codeCompletion/ace.type";
 import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
 import type {
     UseWorkspaceCodeCompletionOptions,
     UseWorkspaceCodeCompletionResult,
 } from "./codeCompletion/workspaceCodeCompletion.type";
 import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
-
-export type { UseWorkspaceCodeCompletionResult } from "./codeCompletion/workspaceCodeCompletion.type";
 
 export function useWorkspaceCodeCompletion({
     activeEditorMode,

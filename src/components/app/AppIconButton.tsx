@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import type { AppIconButtonProps } from "./app.type";
+import type { AppIconButtonProps } from "./appVisual.type";
 
 export const AppIconButton = forwardRef<HTMLButtonElement, AppIconButtonProps>(
     function AppIconButton(

@@ -1,8 +1,4 @@
-import { type MutableRefObject, useCallback, useEffect, useState } from "react";
-import type {
-    AppIntellisensePriority,
-    AppIntellisenseWidth,
-} from "../../../lib/app/app.type";
+import { useCallback, useEffect, useState } from "react";
 import {
     getLuauCompletionQuery,
     shouldOpenLuauCompletion,
@@ -12,36 +8,18 @@ import type {
     LuauCompletionItem,
     LuauCompletionPopupState,
 } from "../../../lib/luau/luau.type";
-import {
-    type AceEditorInstance,
-    type AceRendererInstance,
-    isLuauEditorSession,
-} from "./ace";
+import { isLuauEditorSession } from "./ace";
+import type { AceRendererInstance } from "./ace.type";
 import {
     isDeletionKey,
     isManualCompletionShortcut,
     isNavigationKey,
 } from "./keyboard";
+import type {
+    UseWorkspaceCompletionPopupOptions,
+    UseWorkspaceCompletionPopupResult,
+} from "./useWorkspaceCompletionPopup.type";
 import type { UpdateWorkspaceCompletionPopupOptions } from "./workspaceCodeCompletion.type";
-
-type UseWorkspaceCompletionPopupOptions = {
-    activeEditorMode: string;
-    getActiveEditor: () => AceEditorInstance | null;
-    isIntellisenseEnabled: boolean;
-    intellisensePriority: AppIntellisensePriority;
-    intellisenseWidth: AppIntellisenseWidth;
-    suppressNextPassiveCompletionRef: MutableRefObject<boolean>;
-};
-
-type UseWorkspaceCompletionPopupResult = {
-    completionPopup: LuauCompletionPopupState | null;
-    closeCompletionPopup: () => void;
-    updateCompletionPopup: (
-        options?: UpdateWorkspaceCompletionPopupOptions,
-    ) => void;
-    acceptCompletion: (completionIndex: number) => void;
-    handleCompletionHover: (index: number) => void;
-};
 
 function isCompletionPopupInteractionTarget(
     target: EventTarget | null,

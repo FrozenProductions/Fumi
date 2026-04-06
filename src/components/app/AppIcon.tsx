@@ -1,6 +1,6 @@
 import { HugeiconsIcon, type HugeiconsProps } from "@hugeicons/react";
 import type { ReactElement } from "react";
-import type { AppIconProps } from "./app.type";
+import type { AppIconProps } from "./appVisual.type";
 
 function normalizeStrokeWidth(
     size: HugeiconsProps["size"],

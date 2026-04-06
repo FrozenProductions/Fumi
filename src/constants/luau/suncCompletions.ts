@@ -1,57 +1,14 @@
+import {
+    createLuauCompletionItem,
+    createLuauNamespaceCompletionGroup,
+    normalizeLuauMarkdownSummary,
+} from "../../lib/luau/completionBuilder";
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
 } from "../../lib/luau/luau.type";
 
 const SUNC_DOC_SOURCE = "sUNC Documentation";
-
-function normalizeSummary(summary: string): string {
-    return summary
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-        .replace(/\*\*/g, "")
-        .replace(/`/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function createItem(
-    label: string,
-    detail: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-    options?: {
-        insertText?: string;
-        kind?: LuauCompletionItem["kind"];
-        namespace?: string;
-        score?: number;
-    },
-): LuauCompletionItem {
-    return {
-        label,
-        kind: options?.kind ?? "function",
-        detail,
-        doc: {
-            summary: `${normalizeSummary(summary)} Link: ${sourceLink}`,
-            source: SUNC_DOC_SOURCE,
-            signature,
-        },
-        insertText: options?.insertText,
-        namespace: options?.namespace,
-        score: options?.score,
-        sourceGroup: "executor",
-    };
-}
-
-function createNamespaceGroup(
-    namespace: string,
-    items: LuauCompletionItem[],
-): LuauNamespaceCompletionGroup {
-    return {
-        namespace,
-        items,
-    };
-}
 
 const SUNC_GLOBAL_DATA = [
     [
@@ -606,33 +563,51 @@ export const SUNC_NAMESPACE_FUNCTION_NAMES = SUNC_DEBUG_DATA.map(
 );
 
 export const SUNC_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
-    createItem(
+    createLuauCompletionItem(
         "debug",
-        "sunc Debug",
         "sUNC debug inspection and mutation helpers.",
-        "namespace debug",
-        "https://docs.sunc.su/Debug",
         {
+            detail: "sunc Debug",
             kind: "namespace",
             score: 1180,
+            signature: "namespace debug",
+            source: SUNC_DOC_SOURCE,
+            sourceGroup: "executor",
+            sourceLink: "https://docs.sunc.su/Debug",
+            includeSourceLinkInSummary: true,
+            summaryNormalizer: normalizeLuauMarkdownSummary,
         },
     ),
     ...SUNC_GLOBAL_DATA.map(([name, category, summary, signature, link]) =>
-        createItem(name, `sunc ${category}`, summary, signature, link, {
+        createLuauCompletionItem(name, summary, {
+            detail: `sunc ${category}`,
             kind: "function",
             score: 1170,
+            signature,
+            source: SUNC_DOC_SOURCE,
+            sourceGroup: "executor",
+            sourceLink: link,
+            includeSourceLinkInSummary: true,
+            summaryNormalizer: normalizeLuauMarkdownSummary,
         }),
     ),
 ];
 
 export const SUNC_NAMESPACE_COMPLETIONS: LuauNamespaceCompletionGroup[] = [
-    createNamespaceGroup(
+    createLuauNamespaceCompletionGroup(
         "debug",
         SUNC_DEBUG_DATA.map(([memberName, summary, signature, link]) =>
-            createItem(memberName, "sunc Debug", summary, signature, link, {
+            createLuauCompletionItem(memberName, summary, {
+                detail: "sunc Debug",
                 kind: "function",
                 namespace: "debug",
                 score: 1170,
+                signature,
+                source: SUNC_DOC_SOURCE,
+                sourceGroup: "executor",
+                sourceLink: link,
+                includeSourceLinkInSummary: true,
+                summaryNormalizer: normalizeLuauMarkdownSummary,
             }),
         ),
     ),

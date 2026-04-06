@@ -1,24 +1,16 @@
-import type { Hotkey } from "@tanstack/hotkeys";
-import { formatForDisplay } from "@tanstack/react-hotkeys";
-
-function createHotkey<T extends Hotkey | (string & {})>(binding: T) {
-    return {
-        binding,
-        label: formatForDisplay(binding),
-    } as const;
-}
+import { createAppHotkey } from "../../lib/app/hotkeys";
 
 export const APP_HOTKEYS = {
-    QUIT_APP: createHotkey("Mod+Q"),
-    OPEN_COMMAND_PALETTE: createHotkey("Mod+P"),
-    ACTIVATE_GOTO_LINE_COMMAND: createHotkey("Mod+Shift+\\"),
-    OPEN_WORKSPACE_DIRECTORY: createHotkey("Mod+O"),
-    TOGGLE_COMMAND_PALETTE_COMMANDS: createHotkey("Mod+1"),
-    TOGGLE_COMMAND_PALETTE_WORKSPACES: createHotkey("Mod+2"),
-    TOGGLE_SIDEBAR: createHotkey("Mod+B"),
-    OPEN_SETTINGS: createHotkey("Mod+,"),
-    ARCHIVE_WORKSPACE_TAB: createHotkey("Mod+W"),
-    CREATE_WORKSPACE_FILE: createHotkey("Mod+T"),
-    OPEN_WORKSPACE_SCREEN: createHotkey("Mod+Shift+W"),
-    OPEN_SCRIPT_LIBRARY: createHotkey("Mod+Shift+S"),
+    QUIT_APP: createAppHotkey("Mod+Q"),
+    OPEN_COMMAND_PALETTE: createAppHotkey("Mod+P"),
+    ACTIVATE_GOTO_LINE_COMMAND: createAppHotkey("Mod+Shift+\\"),
+    OPEN_WORKSPACE_DIRECTORY: createAppHotkey("Mod+O"),
+    TOGGLE_COMMAND_PALETTE_COMMANDS: createAppHotkey("Mod+1"),
+    TOGGLE_COMMAND_PALETTE_WORKSPACES: createAppHotkey("Mod+2"),
+    TOGGLE_SIDEBAR: createAppHotkey("Mod+B"),
+    OPEN_SETTINGS: createAppHotkey("Mod+,"),
+    ARCHIVE_WORKSPACE_TAB: createAppHotkey("Mod+W"),
+    CREATE_WORKSPACE_FILE: createAppHotkey("Mod+T"),
+    OPEN_WORKSPACE_SCREEN: createAppHotkey("Mod+Shift+W"),
+    OPEN_SCRIPT_LIBRARY: createAppHotkey("Mod+Shift+S"),
 } as const;

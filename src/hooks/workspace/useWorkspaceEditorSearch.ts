@@ -6,19 +6,13 @@ import {
     createWorkspaceEditorSearchState,
     getWorkspaceEditorSearchValidationError,
 } from "../../lib/workspace/editorSearch";
+import type { WorkspaceEditorSearchState } from "../../lib/workspace/editorSearch.type";
+import type { AceEditorInstance } from "./codeCompletion/ace.type";
 import type {
-    WorkspaceEditorSearchController,
-    WorkspaceEditorSearchState,
-} from "../../lib/workspace/editorSearch.type";
-import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
-import type { AceEditorInstance } from "./codeCompletion/ace";
-
-type UseWorkspaceEditorSearchOptions = {
-    activeTabId: string | null;
-    tabs: WorkspaceTab[];
-    getActiveEditor: () => AceEditorInstance | null;
-    closeCompletionPopup: () => void;
-};
+    SearchStateByTabId,
+    UseWorkspaceEditorSearchOptions,
+    UseWorkspaceEditorSearchResult,
+} from "./useWorkspaceEditorSearch.type";
 
 function getSearchSeed(editor: AceEditorInstance | null): string {
     if (!editor) {
@@ -39,9 +33,9 @@ function getSearchSeed(editor: AceEditorInstance | null): string {
 }
 
 function pruneSearchStateByOpenTabs(
-    searchStateByTabId: Map<string, WorkspaceEditorSearchState>,
+    searchStateByTabId: SearchStateByTabId,
     openTabIds: Set<string>,
-): Map<string, WorkspaceEditorSearchState> {
+): SearchStateByTabId {
     let hasRemovedClosedTab = false;
     const nextSearchStateByTabId = new Map<
         string,
@@ -65,10 +59,7 @@ export function useWorkspaceEditorSearch({
     tabs,
     getActiveEditor,
     closeCompletionPopup,
-}: UseWorkspaceEditorSearchOptions): {
-    openSearch: () => void;
-    searchPanel: WorkspaceEditorSearchController;
-} {
+}: UseWorkspaceEditorSearchOptions): UseWorkspaceEditorSearchResult {
     const [searchStateByTabId, setSearchStateByTabId] = useState(
         () => new Map<string, WorkspaceEditorSearchState>(),
     );

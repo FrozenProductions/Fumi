@@ -1,76 +1,15 @@
+import {
+    createLuauCompletionAliasItem,
+    createLuauCompletionItem,
+    normalizeLuauMarkdownSummary,
+} from "../../lib/luau/completionBuilder";
 import type { LuauCompletionItem } from "../../lib/luau/luau.type";
+import type {
+    AliasDataEntry,
+    TopLevelDataEntry,
+} from "./actorsCompletions.type";
 
 const ACTORS_DOC_SOURCE = "Actors Documentation";
-
-type TopLevelDataEntry = readonly [
-    label: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-type AliasDataEntry = readonly [
-    alias: string,
-    canonicalName: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-];
-
-function normalizeSummary(summary: string): string {
-    return summary
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-        .replace(/\*\*/g, "")
-        .replace(/`/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function createItem(
-    label: string,
-    summary: string,
-    signature: string,
-    _sourceLink: string,
-    options?: {
-        kind?: LuauCompletionItem["kind"];
-        score?: number;
-    },
-): LuauCompletionItem {
-    return {
-        label,
-        kind: options?.kind ?? "function",
-        detail: "actors",
-        doc: {
-            summary: normalizeSummary(summary),
-            source: ACTORS_DOC_SOURCE,
-            signature,
-        },
-        score: options?.score,
-        sourceGroup: "executor",
-    };
-}
-
-function createAliasItem(
-    alias: string,
-    canonicalName: string,
-    summary: string,
-    signature: string,
-    sourceLink: string,
-    options?: {
-        score?: number;
-    },
-): LuauCompletionItem {
-    return createItem(
-        alias,
-        `Alias of ${canonicalName}. ${summary}`,
-        signature,
-        sourceLink,
-        {
-            kind: "function",
-            score: options?.score,
-        },
-    );
-}
 
 const ACTORS_TOP_LEVEL_DATA = [
     [
@@ -162,7 +101,8 @@ export const ACTORS_GLOBAL_FUNCTION_NAMES = [
 
 export const ACTORS_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
     ...ACTORS_TOP_LEVEL_DATA.map(([label, summary, signature, link]) =>
-        createItem(label, summary, signature, link, {
+        createLuauCompletionItem(label, summary, {
+            detail: "actors",
             kind:
                 label === "on_actor_added" || label === "on_actor_state_created"
                     ? "constant"
@@ -171,12 +111,24 @@ export const ACTORS_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
                 label === "on_actor_added" || label === "on_actor_state_created"
                     ? 1155
                     : 1150,
+            signature,
+            source: ACTORS_DOC_SOURCE,
+            sourceGroup: "executor",
+            sourceLink: link,
+            summaryNormalizer: normalizeLuauMarkdownSummary,
         }),
     ),
     ...ACTORS_ALIAS_DATA.map(
         ([alias, canonicalName, summary, signature, link]) =>
-            createAliasItem(alias, canonicalName, summary, signature, link, {
+            createLuauCompletionAliasItem(alias, canonicalName, summary, {
+                detail: "actors",
+                kind: "function",
                 score: 1140,
+                signature,
+                source: ACTORS_DOC_SOURCE,
+                sourceGroup: "executor",
+                sourceLink: link,
+                summaryNormalizer: normalizeLuauMarkdownSummary,
             }),
     ),
 ];

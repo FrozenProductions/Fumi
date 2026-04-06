@@ -5,15 +5,13 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
-import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
-import {
-    type AceEditorComponent,
-    getReactAceComponent,
-} from "../../lib/workspace/editor";
+import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
+import { getReactAceComponent } from "../../lib/workspace/editor";
+import type { AceEditorComponent } from "../../lib/workspace/editor.type";
 import { AppCodeCompletion } from "./AppCodeCompletion";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
-import type { WorkspaceEditorProps } from "./workspace.type";
+import type { WorkspaceEditorProps } from "./workspaceEditor.type";
 
 export function WorkspaceEditor({
     activeTabId,

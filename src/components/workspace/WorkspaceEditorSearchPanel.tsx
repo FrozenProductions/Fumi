@@ -12,12 +12,11 @@ import type {
 } from "react";
 import { useEffect, useRef, useState } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
+import { WORKSPACE_EDITOR_SEARCH_PANEL_EXIT_DURATION_MS } from "../../constants/workspace/editor";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
-import type { WorkspaceEditorSearchPanelProps } from "./workspace.type";
-
-const SEARCH_PANEL_EXIT_DURATION_MS = 150;
+import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditor.type";
 
 function preventInputBlur(event: ReactMouseEvent<HTMLButtonElement>): void {
     event.preventDefault();
@@ -34,7 +33,7 @@ export function WorkspaceEditorSearchPanel({
 
     const { isPresent, isClosing } = usePresenceTransition({
         isOpen: searchPanel.state.isOpen,
-        exitDurationMs: SEARCH_PANEL_EXIT_DURATION_MS,
+        exitDurationMs: WORKSPACE_EDITOR_SEARCH_PANEL_EXIT_DURATION_MS,
     });
 
     useEffect(() => {

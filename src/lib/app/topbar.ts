@@ -1,3 +1,5 @@
+import type { AnimatedTitleCharacter } from "./topbar.type";
+
 const TOPBAR_INTERACTIVE_SELECTOR = [
     "button",
     "input",
@@ -8,12 +10,6 @@ const TOPBAR_INTERACTIVE_SELECTOR = [
     "[contenteditable='true']",
     "[data-topbar-interactive='true']",
 ].join(", ");
-
-export type AnimatedTitleCharacter = {
-    char: string;
-    key: string;
-    offsetX: number;
-};
 
 export function formatWorkspaceTooltipPath(
     workspacePath: string | null | undefined,
