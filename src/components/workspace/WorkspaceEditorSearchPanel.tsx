@@ -85,6 +85,33 @@ export function WorkspaceEditorSearchPanel({
         };
     }, [isReplaceDropdownOpen]);
 
+    useEffect(() => {
+        if (!searchPanel.state.isOpen) {
+            return;
+        }
+
+        const handleToggleShortcut = (
+            event: globalThis.KeyboardEvent,
+        ): void => {
+            const isToggleShortcut =
+                (event.metaKey || event.ctrlKey) &&
+                event.key.toLowerCase() === "f";
+
+            if (!isToggleShortcut) {
+                return;
+            }
+
+            event.preventDefault();
+            searchPanel.onToggle();
+        };
+
+        window.addEventListener("keydown", handleToggleShortcut);
+
+        return () => {
+            window.removeEventListener("keydown", handleToggleShortcut);
+        };
+    }, [searchPanel.onToggle, searchPanel.state.isOpen]);
+
     const handleToggleReplaceMode = (): void => {
         setIsReplaceExpanded((current) => !current);
     };

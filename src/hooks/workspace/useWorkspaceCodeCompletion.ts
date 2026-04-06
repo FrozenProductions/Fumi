@@ -63,7 +63,7 @@ export function useWorkspaceCodeCompletion({
         intellisenseWidth,
         suppressNextPassiveCompletionRef,
     });
-    const { openSearch, searchPanel } = useWorkspaceEditorSearch({
+    const { toggleSearch, searchPanel } = useWorkspaceEditorSearch({
         activeTabId,
         tabs,
         getActiveEditor,
@@ -158,7 +158,7 @@ export function useWorkspaceCodeCompletion({
         (tabId: string) =>
             (editor: unknown): void => {
                 const aceEditor = editor as AceEditorInstance;
-                bindWorkspaceEditorShortcuts(aceEditor, openSearch);
+                bindWorkspaceEditorShortcuts(aceEditor, toggleSearch);
                 editorByTabIdRef.current.set(tabId, aceEditor);
 
                 const tab = tabsByIdRef.current.get(tabId);
@@ -179,7 +179,7 @@ export function useWorkspaceCodeCompletion({
                     }
                 });
             },
-        [closeCompletionPopup, openSearch],
+        [closeCompletionPopup, toggleSearch],
     );
 
     const createHandleEditorChange = useCallback(

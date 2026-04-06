@@ -20,6 +20,7 @@ export type WorkspaceEditorSearchController = {
     canSearch: boolean;
     validationError: string | null;
     focusRequestKey: number;
+    onToggle: () => void;
     onQueryChange: (value: string) => void;
     onReplaceValueChange: (value: string) => void;
     onToggleCaseSensitive: () => void;

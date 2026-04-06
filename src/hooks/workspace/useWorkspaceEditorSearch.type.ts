@@ -13,7 +13,7 @@ export type UseWorkspaceEditorSearchOptions = {
 };
 
 export type UseWorkspaceEditorSearchResult = {
-    openSearch: () => void;
+    toggleSearch: () => void;
     searchPanel: WorkspaceEditorSearchController;
 };
 

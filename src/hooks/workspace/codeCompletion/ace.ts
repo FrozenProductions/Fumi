@@ -15,7 +15,7 @@ export function isLuauEditorSession(
 
 export function bindWorkspaceEditorShortcuts(
     editor: AceEditorInstance,
-    onOpenSearch: () => void,
+    onToggleSearch: () => void,
 ): void {
     editor.commands.removeCommand("showSettingsMenu");
     editor.commands.removeCommand("find");
@@ -25,7 +25,7 @@ export function bindWorkspaceEditorShortcuts(
             win: "Ctrl-F",
             mac: "Command-F",
         },
-        exec: onOpenSearch,
+        exec: onToggleSearch,
         readOnly: true,
     });
     editor.commands.bindKey(

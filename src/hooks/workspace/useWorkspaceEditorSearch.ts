@@ -65,10 +65,12 @@ export function useWorkspaceEditorSearch({
     );
     const [focusRequestKey, setFocusRequestKey] = useState(0);
     const activeTabIdRef = useRef(activeTabId);
+    const searchStateByTabIdRef = useRef(searchStateByTabId);
     const getActiveEditorRef = useRef(getActiveEditor);
     const closeCompletionPopupRef = useRef(closeCompletionPopup);
 
     activeTabIdRef.current = activeTabId;
+    searchStateByTabIdRef.current = searchStateByTabId;
     getActiveEditorRef.current = getActiveEditor;
     closeCompletionPopupRef.current = closeCompletionPopup;
 
@@ -136,7 +138,7 @@ export function useWorkspaceEditorSearch({
         [],
     );
 
-    const openSearch = useCallback((): void => {
+    const toggleSearch = useCallback((): void => {
         const currentActiveTabId = activeTabIdRef.current;
 
         if (!currentActiveTabId) {
@@ -146,25 +148,42 @@ export function useWorkspaceEditorSearch({
         closeCompletionPopupRef.current();
 
         const editor = getActiveEditorRef.current();
+        const currentSearchState =
+            searchStateByTabIdRef.current.get(currentActiveTabId) ??
+            createWorkspaceEditorSearchState();
         const seededQuery = getSearchSeed(editor);
 
         setSearchStateByTabId((currentSearchStateByTabId) => {
             const nextSearchStateByTabId = new Map(currentSearchStateByTabId);
-            const currentSearchState =
+            const nextSearchState =
                 currentSearchStateByTabId.get(currentActiveTabId) ??
                 createWorkspaceEditorSearchState();
 
+            if (nextSearchState.isOpen) {
+                nextSearchStateByTabId.set(currentActiveTabId, {
+                    ...nextSearchState,
+                    isOpen: false,
+                });
+                return nextSearchStateByTabId;
+            }
+
             nextSearchStateByTabId.set(currentActiveTabId, {
-                ...currentSearchState,
+                ...nextSearchState,
                 isOpen: true,
                 query:
-                    currentSearchState.query.length > 0
-                        ? currentSearchState.query
+                    nextSearchState.query.length > 0
+                        ? nextSearchState.query
                         : seededQuery,
             });
 
             return nextSearchStateByTabId;
         });
+
+        if (currentSearchState.isOpen) {
+            getActiveEditorRef.current()?.focus();
+            return;
+        }
+
         setFocusRequestKey(
             (currentFocusRequestKey) => currentFocusRequestKey + 1,
         );
@@ -270,12 +289,13 @@ export function useWorkspaceEditorSearch({
     }, [activeSearchState.replaceValue, buildSearchOptions]);
 
     return {
-        openSearch,
+        toggleSearch,
         searchPanel: {
             state: activeSearchState,
             canSearch,
             validationError,
             focusRequestKey,
+            onToggle: toggleSearch,
             onQueryChange: handleQueryChange,
             onReplaceValueChange: handleReplaceValueChange,
             onToggleCaseSensitive: () => {
