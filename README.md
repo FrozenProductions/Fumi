@@ -58,14 +58,14 @@ Primary stack information comes from [package.json](./package.json) and [src-tau
 
 Fumi is split into a React frontend and a Rust/Tauri backend:
 
-- The frontend under [`src/`](./src) is organized around [`src/mainview`](./src/mainview), reusable UI in [`src/components`](./src/components), hooks in [`src/hooks`](./src/hooks), and domain helpers in [`src/lib`](./src/lib).
+- The frontend under [`src/`](./src) is organized around [`src/view`](./src/view), reusable UI in [`src/components`](./src/components), hooks in [`src/hooks`](./src/hooks), and domain helpers in [`src/lib`](./src/lib).
 - Frontend access to native capabilities is funneled through wrappers in [`src/lib/platform`](./src/lib/platform) instead of calling raw Tauri APIs throughout the component tree.
 - The Rust backend in [`src-tauri/src`](./src-tauri/src) registers Tauri commands, menu events, lifecycle hooks, workspace persistence, updater/plugin setup, and MacSploit executor behavior.
 - The script library is fetched by the frontend, while local workspace operations and executor actions go through the native backend.
 
 ```mermaid
 flowchart LR
-    UI["React UI<br/>src/mainview + src/components"] --> Platform["Platform Wrappers<br/>src/lib/platform"]
+    UI["React UI<br/>src/view + src/components"] --> Platform["Platform Wrappers<br/>src/lib/platform"]
     UI --> Library["Rscripts.net API"]
     Platform --> Tauri["Tauri Commands & Events"]
     Tauri --> Backend["Rust Backend<br/>src-tauri/src"]
@@ -76,8 +76,8 @@ flowchart LR
 
 ### Main Runtime Areas
 
-- [`src/mainview/App.tsx`](./src/mainview/App.tsx) composes the app shell, sidebar, topbar, settings window, updater flow, and command palette.
-- [`src/mainview/appScreens.tsx`](./src/mainview/appScreens.tsx) switches between the workspace and script-library screens.
+- [`src/view/App.tsx`](./src/view/App.tsx) composes the app shell, sidebar, topbar, settings window, updater flow, and command palette.
+- [`src/view/appScreens.tsx`](./src/view/appScreens.tsx) switches between the workspace and script-library screens.
 - [`src-tauri/src/lib.rs`](./src-tauri/src/lib.rs) wires commands, plugins, menu handling, guarded app/window shutdown, and quit preparation.
 - [`src-tauri/src/workspace`](./src-tauri/src/workspace) owns workspace metadata, file operations, archive/restore flows, and session restore behavior.
 - [`src-tauri/src/executor`](./src-tauri/src/executor) manages the MacSploit socket protocol, attach/detach flow, and execution messages.
@@ -172,7 +172,7 @@ Requires the Tauri desktop shell:
 |   |-- contexts/          # React providers
 |   |-- hooks/             # Reusable hooks by domain
 |   |-- lib/               # Helpers, shared domain types, and platform wrappers
-|   |-- mainview/          # Frontend entrypoint and top-level app composition
+|   |-- view/              # Frontend entrypoint and top-level app composition
 |-- src-tauri/
 |   |-- capabilities/      # Tauri capability permissions
 |   |-- gen/               # Generated Tauri schemas

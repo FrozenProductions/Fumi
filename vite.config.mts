@@ -21,7 +21,7 @@ export default defineConfig({
         __APP_VERSION__: JSON.stringify(packageJson.version),
     },
     plugins: [react()],
-    root: "src/mainview",
+    root: "src/view",
     build: {
         outDir: "../../dist",
         emptyOutDir: true,
