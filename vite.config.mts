@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite-plus";
-import { DEV_SERVER_PORT } from "./src/constants/window/mainView";
+import { DEV_SERVER_PORT } from "./src/constants/window/view";
 
 const host = process.env.TAURI_DEV_HOST;
 const packageJson = JSON.parse(
