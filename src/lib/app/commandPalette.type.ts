@@ -16,6 +16,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     onActivateGoToLineMode: () => void;
     onOpenWorkspaceScreen: () => void;
     onOpenScriptLibrary: () => void;
+    onOpenAccounts: () => void;
     onOpenSettings: () => void;
     onToggleSidebar: () => void;
     onSetTheme: (theme: AppTheme) => void;

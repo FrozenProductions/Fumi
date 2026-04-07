@@ -79,6 +79,7 @@ function createCommandPaletteOptions(
         onActivateGoToLineMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
         onOpenScriptLibrary: vi.fn(),
+        onOpenAccounts: vi.fn(),
         onOpenSettings: vi.fn(),
         onToggleSidebar: vi.fn(),
         onSetTheme: vi.fn(),
@@ -214,6 +215,7 @@ describe("getCommandCommandPaletteItems", () => {
         expect(noWorkspaceItems.map((item) => item.id)).toEqual([
             "command-open-workspace-screen",
             "command-open-script-library",
+            "command-open-accounts",
             "command-settings",
             "command-open-workspace-folder",
             "command-sidebar",
@@ -228,7 +230,7 @@ describe("getCommandCommandPaletteItems", () => {
             isDisabled: true,
             meta: "Current",
         });
-        expect(noWorkspaceItems[8]).toMatchObject({
+        expect(noWorkspaceItems[9]).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
@@ -240,6 +242,7 @@ describe("getCommandCommandPaletteItems", () => {
         const onActivateGoToLineMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
         const onOpenScriptLibrary = vi.fn();
+        const onOpenAccounts = vi.fn();
         const onOpenSettings = vi.fn();
         const onToggleSidebar = vi.fn();
         const onSetTheme = vi.fn();
@@ -288,6 +291,7 @@ describe("getCommandCommandPaletteItems", () => {
                 onActivateGoToLineMode,
                 onOpenWorkspaceScreen,
                 onOpenScriptLibrary,
+                onOpenAccounts,
                 onOpenSettings,
                 onToggleSidebar,
                 onSetTheme,
@@ -301,6 +305,7 @@ describe("getCommandCommandPaletteItems", () => {
         expect(items.map((item) => item.id)).toEqual([
             "command-open-workspace-screen",
             "command-open-script-library",
+            "command-open-accounts",
             "command-settings",
             "command-open-workspace-folder",
             "command-sidebar",
@@ -320,18 +325,21 @@ describe("getCommandCommandPaletteItems", () => {
 
         items[0]?.onSelect();
         items[2]?.onSelect();
+        items[3]?.onSelect();
         items[4]?.onSelect();
         items[5]?.onSelect();
         items[6]?.onSelect();
         items[7]?.onSelect();
         items[8]?.onSelect();
-        items[11]?.onSelect();
+        items[9]?.onSelect();
         items[12]?.onSelect();
-        items[14]?.onSelect();
-        items[16]?.onSelect();
+        items[13]?.onSelect();
+        items[15]?.onSelect();
+        items[17]?.onSelect();
 
         expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(2);
         expect(onOpenScriptLibrary).not.toHaveBeenCalled();
+        expect(onOpenAccounts).toHaveBeenCalledOnce();
         expect(onOpenSettings).toHaveBeenCalledOnce();
         expect(onToggleSidebar).toHaveBeenCalledOnce();
         expect(onZoomIn).toHaveBeenCalledOnce();
@@ -342,14 +350,14 @@ describe("getCommandCommandPaletteItems", () => {
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
         expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
-        expect(items[12]).toMatchObject({
+        expect(items[13]).toMatchObject({
             closeOnSelect: false,
         });
         expect(items[1]).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
-        expect(items[9]).toMatchObject({
+        expect(items[10]).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });

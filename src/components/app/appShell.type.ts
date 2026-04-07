@@ -21,6 +21,7 @@ export type AppCommandPaletteProps = {
     onGoToLine: (lineNumber: number) => void;
     onOpenWorkspaceScreen: () => void;
     onOpenScriptLibrary: () => void;
+    onOpenAccounts: () => void;
     onToggleSidebar: () => void;
     onOpenSettings: () => void;
     onSetTheme: (theme: AppTheme) => void;

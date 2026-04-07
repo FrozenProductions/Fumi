@@ -61,6 +61,9 @@ export function App(): ReactElement {
     const handleOpenScriptLibrary = (): void => {
         selectSidebarItem("script-library");
     };
+    const handleOpenAccounts = (): void => {
+        selectSidebarItem("accounts");
+    };
     const handleZoomIn = (): void => {
         setZoomPercent(zoomPercent + APP_ZOOM_STEP);
     };
@@ -132,6 +135,7 @@ export function App(): ReactElement {
                     onGoToLine={requestGoToLine}
                     onOpenWorkspaceScreen={handleOpenWorkspaceScreen}
                     onOpenScriptLibrary={handleOpenScriptLibrary}
+                    onOpenAccounts={handleOpenAccounts}
                     onToggleSidebar={toggleSidebar}
                     onOpenSettings={handleOpenSettings}
                     onSetTheme={setTheme}

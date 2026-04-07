@@ -97,6 +97,7 @@ export function getCommandCommandPaletteItems({
     onActivateGoToLineMode,
     onOpenWorkspaceScreen,
     onOpenScriptLibrary,
+    onOpenAccounts,
     onOpenSettings,
     onToggleSidebar,
     onSetTheme,
@@ -132,6 +133,19 @@ export function getCommandCommandPaletteItems({
             keywords: "script library browse import rscripts",
             isDisabled: activeSidebarItem === "script-library",
             onSelect: onOpenScriptLibrary,
+        },
+        {
+            id: "command-open-accounts",
+            label: "Open Accounts",
+            description: "Manage saved Roblox accounts and launch them.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(
+                activeSidebarItem === "accounts",
+                APP_HOTKEYS.OPEN_ACCOUNTS.label,
+            ),
+            keywords: "accounts roblox cookies launch manager",
+            isDisabled: activeSidebarItem === "accounts",
+            onSelect: onOpenAccounts,
         },
         {
             id: "command-settings",
