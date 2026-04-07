@@ -13,4 +13,5 @@ export const APP_HOTKEYS = {
     CREATE_WORKSPACE_FILE: createAppHotkey("Mod+T"),
     OPEN_WORKSPACE_SCREEN: createAppHotkey("Mod+Shift+W"),
     OPEN_SCRIPT_LIBRARY: createAppHotkey("Mod+Shift+S"),
+    OPEN_ACCOUNTS: createAppHotkey("Mod+Shift+A"),
 } as const;

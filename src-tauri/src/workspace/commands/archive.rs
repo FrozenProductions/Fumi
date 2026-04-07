@@ -6,10 +6,9 @@ use tauri::{command, AppHandle};
 use super::super::{
     models::StoredWorkspaceMetadata,
     storage::{
-        delete_workspace_file_from_disk, ensure_workspace_exists,
-        normalize_workspace_metadata, persist_workspace_launch_state,
-        read_workspace_metadata, resolve_workspace_file_delete_path,
-        write_workspace_metadata,
+        delete_workspace_file_from_disk, ensure_workspace_exists, normalize_workspace_metadata,
+        persist_workspace_launch_state, read_workspace_metadata,
+        resolve_workspace_file_delete_path, write_workspace_metadata,
     },
     WorkspaceMetadata, WorkspaceTabSnapshot, WorkspaceTabState,
 };

@@ -2,6 +2,7 @@ import {
     BookCopyIcon,
     FolderCodeIcon,
     Settings01Icon,
+    UserMultiple02Icon,
 } from "@hugeicons/core-free-icons";
 import type {
     AppSidebarActionItem,
@@ -13,6 +14,7 @@ import { APP_HOTKEYS } from "./hotkeys";
 export const APP_SIDEBAR_ITEM_IDS = [
     "workspace",
     "script-library",
+    "accounts",
     "settings",
 ] as const satisfies AppSidebarItem[];
 
@@ -28,6 +30,12 @@ export const APP_SIDEBAR_ITEMS = [
         label: "Script Library",
         icon: BookCopyIcon,
         shortcutLabel: APP_HOTKEYS.OPEN_SCRIPT_LIBRARY.label,
+    },
+    {
+        id: "accounts",
+        label: "Accounts",
+        icon: UserMultiple02Icon,
+        shortcutLabel: APP_HOTKEYS.OPEN_ACCOUNTS.label,
     },
 ] satisfies AppSidebarNavigationItem[];
 

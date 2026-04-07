@@ -8,8 +8,7 @@ use crate::{
     APP_TITLE,
 };
 
-const QUIT_CONFIRM_MESSAGE: &str =
-    "Are you sure you want to quit, you have unsaved changes";
+const QUIT_CONFIRM_MESSAGE: &str = "Are you sure you want to quit, you have unsaved changes";
 const FRONTEND_EXIT_GUARD_SYNC_TIMEOUT_MS: u64 = 250;
 const FRONTEND_EXIT_PREPARATION_TIMEOUT_MS: u64 = 1_500;
 const FRONTEND_POLL_INTERVAL_MS: u64 = 25;

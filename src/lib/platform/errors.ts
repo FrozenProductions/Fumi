@@ -32,6 +32,14 @@ export class ExecutorCommandError extends Schema.TaggedError<ExecutorCommandErro
     },
 ) {}
 
+export class AccountsCommandError extends Schema.TaggedError<AccountsCommandError>()(
+    "AccountsCommandError",
+    {
+        operation: Schema.String,
+        message: Schema.String,
+    },
+) {}
+
 export class UpdaterError extends Schema.TaggedError<UpdaterError>()(
     "UpdaterError",
     {

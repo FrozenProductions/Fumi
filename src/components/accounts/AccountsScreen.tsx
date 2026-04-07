@@ -1,0 +1,271 @@
+import {
+    Add01Icon,
+    Delete02Icon,
+    PlayIcon,
+    UserCircleIcon,
+} from "@hugeicons/core-free-icons";
+import type { ReactElement } from "react";
+import { useAccounts } from "../../hooks/accounts/useAccounts";
+import type { AccountSummary } from "../../lib/accounts/accounts.type";
+import { confirmAction } from "../../lib/platform/dialog";
+import { AppIcon } from "../app/AppIcon";
+
+function getAccountStatusTone(status: AccountSummary["status"]): string {
+    return status === "active"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+        : "border-fumi-200 bg-fumi-100 text-fumi-500";
+}
+
+function getAccountStatusLabel(status: AccountSummary["status"]): string {
+    return status === "active" ? "Active" : "Offline";
+}
+
+export function AccountsScreen(): ReactElement {
+    const {
+        accounts,
+        isLoading,
+        errorMessage,
+        isAddModalOpen,
+        draftCookie,
+        isSubmittingAdd,
+        launchingAccountId,
+        deletingAccountId,
+        openAddModal,
+        closeAddModal,
+        setDraftCookie,
+        submitAddAccount,
+        launchAccount,
+        deleteAccount,
+        clearErrorMessage,
+    } = useAccounts();
+
+    async function handleDeleteAccount(account: AccountSummary): Promise<void> {
+        const shouldDelete = await confirmAction(
+            `Delete ${account.displayName} from Fumi? This will also clear the active Roblox cookie if this account is currently active.`,
+        );
+
+        if (!shouldDelete) {
+            return;
+        }
+
+        await deleteAccount(account.id);
+    }
+
+    return (
+        <section className="relative flex h-full min-h-0 flex-col bg-fumi-50">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-fumi-50/30 p-4 pb-24 [&::-webkit-scrollbar-thumb:hover]:bg-[rgb(var(--color-scrollbar-thumb-hover)/1)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-[rgb(var(--color-scrollbar-thumb)/1)] [&::-webkit-scrollbar-thumb]:bg-clip-padding [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[6px]">
+                <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4">
+                    {errorMessage ? (
+                        <div className="rounded-[1rem] border border-red-200 bg-red-50 px-4 py-3 shadow-[var(--shadow-app-card)]">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-red-500">
+                                        Accounts Error
+                                    </p>
+                                    <p className="mt-2 text-sm leading-6 text-red-600">
+                                        {errorMessage}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={clearErrorMessage}
+                                    className="text-xs font-semibold text-red-500 transition-colors hover:text-red-700"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {isLoading ? (
+                        <div className="flex flex-1 items-center justify-center rounded-[1.35rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-card)]">
+                            <div className="py-10 text-center">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
+                                    Loading
+                                </p>
+                                <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-fumi-900">
+                                    Loading saved accounts
+                                </h3>
+                            </div>
+                        </div>
+                    ) : accounts.length === 0 ? (
+                        <div className="flex flex-1 items-center justify-center rounded-[1.35rem] border border-dashed border-fumi-300 bg-fumi-50/80 px-8 py-14 shadow-[var(--shadow-app-card)]">
+                            <div className="max-w-md text-center">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
+                                    No Accounts
+                                </p>
+                                <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-fumi-900">
+                                    Save Roblox accounts for one-click launch
+                                </h3>
+                                <p className="mt-3 text-sm leading-6 text-fumi-400">
+                                    Add a{" "}
+                                    <span className="font-semibold text-fumi-600">
+                                        .ROBLOSECURITY
+                                    </span>{" "}
+                                    cookie to store it in Fumi and launch Roblox
+                                    with that account later.
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        accounts.map((account) => {
+                            const isLaunching =
+                                launchingAccountId === account.id;
+                            const isDeleting = deletingAccountId === account.id;
+
+                            return (
+                                <div
+                                    key={account.id}
+                                    className="flex flex-col justify-between gap-4 rounded-[1.35rem] border border-fumi-200 bg-fumi-50 p-4 shadow-[var(--shadow-app-card)] transition-colors hover:border-fumi-300 sm:flex-row sm:items-center"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-fumi-200 bg-fumi-100">
+                                            {account.avatarUrl ? (
+                                                <img
+                                                    src={account.avatarUrl}
+                                                    alt={`${account.displayName} avatar`}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <AppIcon
+                                                    icon={UserCircleIcon}
+                                                    className="size-6 text-fumi-400"
+                                                    strokeWidth={2}
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="truncate text-sm font-semibold tracking-[-0.01em] text-fumi-900">
+                                                    {account.displayName}
+                                                </h3>
+                                                <span
+                                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${getAccountStatusTone(account.status)}`}
+                                                >
+                                                    {getAccountStatusLabel(
+                                                        account.status,
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-fumi-500">
+                                                @{account.username}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                void launchAccount(account.id);
+                                            }}
+                                            disabled={isLaunching || isDeleting}
+                                            className="app-select-none flex h-8 items-center gap-2 rounded-[0.65rem] bg-fumi-100 px-3 text-xs font-semibold text-fumi-600 transition-colors hover:bg-fumi-200 disabled:pointer-events-none disabled:opacity-50"
+                                        >
+                                            <AppIcon
+                                                icon={PlayIcon}
+                                                className="size-[1.1rem]"
+                                                strokeWidth={2}
+                                            />
+                                            {isLaunching
+                                                ? "Launching..."
+                                                : "Launch"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                void handleDeleteAccount(
+                                                    account,
+                                                );
+                                            }}
+                                            disabled={isLaunching || isDeleting}
+                                            className="app-select-none flex size-8 items-center justify-center rounded-[0.65rem] text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-50"
+                                            title="Delete Account"
+                                        >
+                                            <AppIcon
+                                                icon={Delete02Icon}
+                                                className="size-[1.1rem]"
+                                                strokeWidth={2}
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+
+            <div className="pointer-events-none absolute bottom-5 right-5 z-10">
+                <button
+                    type="button"
+                    onClick={openAddModal}
+                    className="app-select-none pointer-events-auto flex h-10 items-center gap-2 rounded-[0.85rem] bg-fumi-600 px-4 text-xs font-semibold text-fumi-50 shadow-[var(--shadow-app-card)] transition-colors hover:bg-fumi-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+                >
+                    <AppIcon
+                        icon={Add01Icon}
+                        className="size-[1.1rem]"
+                        strokeWidth={2}
+                    />
+                    Add Account
+                </button>
+            </div>
+
+            {isAddModalOpen ? (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-fumi-900/20 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-lg rounded-[1.6rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-card)]">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
+                            Add Account
+                        </p>
+                        <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-fumi-900">
+                            Save a Roblox cookie locally
+                        </h2>
+                        <p className="mt-3 text-sm leading-6 text-fumi-400">
+                            Paste a{" "}
+                            <span className="font-semibold text-fumi-600">
+                                .ROBLOSECURITY
+                            </span>{" "}
+                            cookie. Fumi will validate it, resolve the Roblox
+                            profile, and store it in the app data folder.
+                        </p>
+
+                        <label className="mt-5 block">
+                            <span className="mb-2 block text-xs font-semibold text-fumi-600">
+                                Roblox Cookie
+                            </span>
+                            <textarea
+                                value={draftCookie}
+                                onChange={(event) => {
+                                    setDraftCookie(event.target.value);
+                                }}
+                                rows={6}
+                                placeholder="Paste your .ROBLOSECURITY cookie"
+                                className="min-h-32 w-full resize-y rounded-[1rem] border border-fumi-200 bg-fumi-50 px-4 py-3 text-sm text-fumi-800 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-300 focus:ring-2 focus:ring-fumi-200"
+                            />
+                        </label>
+
+                        <div className="mt-5 flex items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={closeAddModal}
+                                disabled={isSubmittingAdd}
+                                className="app-select-none inline-flex h-9 items-center justify-center rounded-[0.75rem] border border-fumi-200 bg-fumi-50 px-4 text-xs font-semibold text-fumi-600 transition-colors hover:bg-fumi-100 disabled:pointer-events-none disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    void submitAddAccount();
+                                }}
+                                disabled={isSubmittingAdd}
+                                className="app-select-none inline-flex h-9 items-center justify-center rounded-[0.75rem] bg-fumi-600 px-4 text-xs font-semibold text-fumi-50 transition-colors hover:bg-fumi-500 disabled:pointer-events-none disabled:opacity-50"
+                            >
+                                {isSubmittingAdd ? "Saving..." : "Save Account"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+        </section>
+    );
+}

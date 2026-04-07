@@ -137,6 +137,16 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
+        APP_HOTKEYS.OPEN_ACCOUNTS.binding,
+        () => {
+            selectSidebarItem("accounts");
+        },
+        {
+            enabled: !isCommandPaletteOpen,
+        },
+    );
+
+    useHotkey(
         "Escape",
         () => {
             if (isCommandPaletteOpen) {

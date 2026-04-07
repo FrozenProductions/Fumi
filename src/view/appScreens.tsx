@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { AccountsScreen } from "../components/accounts/AccountsScreen";
 import { AppSettingsScreen } from "../components/app/AppSettingsScreen";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
@@ -46,6 +47,8 @@ export function renderActiveAppScreen(
             );
         case "script-library":
             return <ScriptLibraryScreen workspaceSession={workspaceSession} />;
+        case "accounts":
+            return <AccountsScreen />;
         case "settings":
             return (
                 <AppSettingsScreen

@@ -5,8 +5,7 @@ use tauri::{
 
 use crate::{
     events::{
-        emit_check_for_updates, emit_open_settings, emit_zoom_in, emit_zoom_out,
-        emit_zoom_reset,
+        emit_check_for_updates, emit_open_settings, emit_zoom_in, emit_zoom_out, emit_zoom_reset,
     },
     lifecycle::request_app_exit,
 };
@@ -30,21 +29,17 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
     let open_settings = MenuItemBuilder::with_id(APP_OPEN_SETTINGS_ID, "Open Settings")
         .accelerator("CmdOrCtrl+,")
         .build(app)?;
-    let check_for_updates = MenuItemBuilder::with_id(
-        APP_CHECK_FOR_UPDATES_ID,
-        "Check for Updates…",
-    )
-    .build(app)?;
+    let check_for_updates =
+        MenuItemBuilder::with_id(APP_CHECK_FOR_UPDATES_ID, "Check for Updates…").build(app)?;
     let quit = MenuItemBuilder::with_id(APP_QUIT_ID, format!("Quit {}", package_info.name))
         .accelerator("CmdOrCtrl+Q")
         .build(app)?;
     let zoom_reset = MenuItemBuilder::with_id(VIEW_ZOOM_RESET_ID, "Actual Size")
         .accelerator("CmdOrCtrl+0")
         .build(app)?;
-    let open_devtools =
-        MenuItemBuilder::with_id(VIEW_OPEN_DEVTOOLS_ID, "Developer Tools")
-            .accelerator("CmdOrCtrl+Alt+I")
-            .build(app)?;
+    let open_devtools = MenuItemBuilder::with_id(VIEW_OPEN_DEVTOOLS_ID, "Developer Tools")
+        .accelerator("CmdOrCtrl+Alt+I")
+        .build(app)?;
     let zoom_in = MenuItemBuilder::with_id(VIEW_ZOOM_IN_ID, "Zoom In")
         .accelerator("CmdOrCtrl+=")
         .build(app)?;
@@ -96,7 +91,13 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
                 app,
                 "View",
                 true,
-                &[&zoom_reset, &zoom_in, &zoom_out, &PredefinedMenuItem::separator(app)?, &open_devtools],
+                &[
+                    &zoom_reset,
+                    &zoom_in,
+                    &zoom_out,
+                    &PredefinedMenuItem::separator(app)?,
+                    &open_devtools,
+                ],
             )?,
             &Submenu::with_items(
                 app,

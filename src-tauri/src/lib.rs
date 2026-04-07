@@ -1,3 +1,5 @@
+mod accounts;
+pub(crate) mod binarycookies;
 mod dialog;
 mod events;
 mod executor;
@@ -28,6 +30,10 @@ fn build_app() -> tauri::Result<tauri::App> {
         .on_menu_event(menu::handle_menu_event)
         .on_window_event(lifecycle::handle_window_event)
         .invoke_handler(tauri::generate_handler![
+            accounts::commands::list_accounts,
+            accounts::commands::add_account,
+            accounts::commands::launch_account,
+            accounts::commands::delete_account,
             executor::commands::get_executor_status,
             executor::commands::attach_executor,
             executor::commands::detach_executor,

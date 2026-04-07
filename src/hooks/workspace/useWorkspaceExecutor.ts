@@ -138,10 +138,7 @@ export function useWorkspaceExecutor({
                                     "[MacSploit Error]",
                                     payload.message,
                                 );
-                                return;
                             }
-
-                            console.log("[MacSploit Debug]", payload.message);
                         }),
                         (unsubscribe) => Effect.sync(() => unsubscribe()),
                     ).pipe(Effect.flatMap(() => Effect.never)),

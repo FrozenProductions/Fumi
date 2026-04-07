@@ -48,9 +48,8 @@ fn get_next_active_tab_id_after_delete(
                 .or_else(|| next_tabs.first())
                 .map(|tab| tab.id.clone())
         }
-        None => active_tab_id.filter(|active_tab_id| {
-            next_tabs.iter().any(|tab| tab.id == *active_tab_id)
-        }),
+        None => active_tab_id
+            .filter(|active_tab_id| next_tabs.iter().any(|tab| tab.id == *active_tab_id)),
     }
 }
 
@@ -86,8 +85,7 @@ pub(super) fn delete_workspace_tab_by_id(
     };
     let matches_deleted_tab = |item: &WorkspaceTabState| {
         item.id == tab_id
-            || (!normalized_file_name.is_empty()
-                && item.file_name == normalized_file_name)
+            || (!normalized_file_name.is_empty() && item.file_name == normalized_file_name)
     };
     let next_tabs = tabs
         .unwrap_or_default()

@@ -50,7 +50,11 @@ export type AppWorkspaceSettings = {
     middleClickTabAction: AppMiddleClickTabAction;
 };
 
-export type AppSidebarItem = "workspace" | "script-library" | "settings";
+export type AppSidebarItem =
+    | "workspace"
+    | "script-library"
+    | "accounts"
+    | "settings";
 
 export type AppSidebarNavigationItem = {
     id: AppSidebarItem;
