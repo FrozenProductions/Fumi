@@ -392,13 +392,13 @@ export function shouldOpenLuauCompletion(
     }
 
     const normalizedPrefix = query.prefix.toLowerCase();
-    const hasExactMatch =
+    const hasExactOnlyMatches =
         normalizedPrefix.length > 0 &&
-        query.items.some(
+        query.items.every(
             (item) => item.label.toLowerCase() === normalizedPrefix,
         );
 
-    if (hasExactMatch) {
+    if (hasExactOnlyMatches) {
         return false;
     }
 
