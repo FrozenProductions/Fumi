@@ -3,7 +3,7 @@ import {
     FolderOpenIcon,
     PlayIcon,
 } from "@hugeicons/core-free-icons";
-import type { ReactElement } from "react";
+import { type ReactElement, useEffect } from "react";
 import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
@@ -25,6 +25,12 @@ export function WorkspaceScreen({
     const editorSettings = useAppStore((state) => state.editorSettings);
     const middleClickTabAction = useAppStore(
         (state) => state.workspaceSettings.middleClickTabAction,
+    );
+    const renameCurrentTabRequest = useAppStore(
+        (state) => state.renameCurrentTabRequest,
+    );
+    const clearRenameCurrentTabRequest = useAppStore(
+        (state) => state.clearRenameCurrentTabRequest,
     );
     const {
         isBootstrapping,
@@ -52,6 +58,7 @@ export function WorkspaceScreen({
         renameWorkspaceTab,
         selectWorkspaceTab,
     });
+    const { handleStartRename } = renameState;
     const {
         acceptCompletion,
         completionPopup,
@@ -89,6 +96,20 @@ export function WorkspaceScreen({
     const handleDeleteWorkspaceTab = (tabId: string): void => {
         void deleteWorkspaceTab(tabId);
     };
+
+    useEffect(() => {
+        if (!renameCurrentTabRequest || !activeTab) {
+            return;
+        }
+
+        handleStartRename(activeTab.id, activeTab.fileName);
+        clearRenameCurrentTabRequest();
+    }, [
+        activeTab,
+        clearRenameCurrentTabRequest,
+        handleStartRename,
+        renameCurrentTabRequest,
+    ]);
 
     const executeButtonClassName =
         appTheme === "dark"

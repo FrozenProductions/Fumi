@@ -39,11 +39,21 @@ export function useAppCommandPalette({
     requestedScope,
     requestedMode,
     workspaceSession,
+    workspaceExecutor,
     isSidebarOpen,
+    activeSidebarItem,
+    theme,
     onClose,
     onGoToLine,
+    onOpenWorkspaceScreen,
+    onOpenScriptLibrary,
     onToggleSidebar,
     onOpenSettings,
+    onSetTheme,
+    onZoomIn,
+    onZoomOut,
+    onZoomReset,
+    onRequestRenameCurrentTab,
 }: UseAppCommandPaletteOptions): UseAppCommandPaletteResult {
     const [query, setQuery] = useState("");
     const [scope, setScope] = useState<AppCommandPaletteScope>("tabs");
@@ -108,10 +118,20 @@ export function useAppCommandPalette({
     const tabItems = getTabCommandPaletteItems(workspaceSession);
     const commandItems = getCommandCommandPaletteItems({
         workspaceSession,
+        workspaceExecutor,
         isSidebarOpen,
+        activeSidebarItem,
+        theme,
         onActivateGoToLineMode: activateGoToLineMode,
+        onOpenWorkspaceScreen,
+        onOpenScriptLibrary,
         onOpenSettings,
         onToggleSidebar,
+        onSetTheme,
+        onZoomIn,
+        onZoomOut,
+        onZoomReset,
+        onRequestRenameCurrentTab,
     });
     const workspaceItems = getWorkspaceCommandPaletteItems(workspaceSession);
     const goToLineItems = getGoToLineCommandPaletteItems({

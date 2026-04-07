@@ -5,6 +5,7 @@ import type {
     AppCommandPaletteScope,
     AppIconGlyph,
     AppSidebarItem,
+    AppTheme,
 } from "../../lib/app/app.type";
 
 export type AppCommandPaletteProps = {
@@ -12,11 +13,21 @@ export type AppCommandPaletteProps = {
     requestedScope: AppCommandPaletteScope | null;
     requestedMode: AppCommandPaletteMode | null;
     workspaceSession: UseWorkspaceSessionResult;
+    workspaceExecutor: UseWorkspaceExecutorResult;
     isSidebarOpen: boolean;
+    activeSidebarItem: AppSidebarItem;
+    theme: AppTheme;
     onClose: () => void;
     onGoToLine: (lineNumber: number) => void;
+    onOpenWorkspaceScreen: () => void;
+    onOpenScriptLibrary: () => void;
     onToggleSidebar: () => void;
     onOpenSettings: () => void;
+    onSetTheme: (theme: AppTheme) => void;
+    onZoomIn: () => void;
+    onZoomOut: () => void;
+    onZoomReset: () => void;
+    onRequestRenameCurrentTab: () => void;
 };
 
 export type AppCommandPaletteScopeButtonProps = {

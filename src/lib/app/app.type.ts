@@ -18,6 +18,15 @@ export type AppCommandPaletteItem = {
     onSelect: () => void;
 };
 
+export type AppGoToLineRequest = {
+    lineNumber: number;
+    requestId: number;
+};
+
+export type AppRenameCurrentTabRequest = {
+    requestId: number;
+};
+
 export type AppSettingsSection = "general" | "workspace" | "editor";
 
 export type AppTheme = "light" | "dark";

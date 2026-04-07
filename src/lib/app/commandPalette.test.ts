@@ -1,7 +1,12 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { describe, expect, it, vi } from "vite-plus/test";
+import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
-import type { AppCommandPaletteItem } from "../../lib/app/app.type";
+import type {
+    AppCommandPaletteItem,
+    AppSidebarItem,
+    AppTheme,
+} from "../../lib/app/app.type";
 import {
     getCommandCommandPaletteItems,
     getTabCommandPaletteItems,
@@ -39,6 +44,48 @@ function createWorkspaceSession(
         updateActiveTabContent: vi.fn(),
         updateActiveTabCursor: vi.fn(),
         updateActiveTabScrollTop: vi.fn(),
+        ...overrides,
+    };
+}
+
+function createWorkspaceExecutor(
+    overrides: Partial<UseWorkspaceExecutorResult> = {},
+): UseWorkspaceExecutorResult {
+    return {
+        port: "5553",
+        isAttached: false,
+        didRecentAttachFail: false,
+        isBusy: false,
+        errorMessage: null,
+        updatePort: vi.fn(),
+        clearErrorMessage: vi.fn(),
+        toggleConnection: vi.fn().mockResolvedValue(undefined),
+        executeActiveTab: vi.fn().mockResolvedValue(undefined),
+        ...overrides,
+    };
+}
+
+function createCommandPaletteOptions(
+    overrides: Partial<
+        Parameters<typeof getCommandCommandPaletteItems>[0]
+    > = {},
+): Parameters<typeof getCommandCommandPaletteItems>[0] {
+    return {
+        workspaceSession: createWorkspaceSession(),
+        workspaceExecutor: createWorkspaceExecutor(),
+        isSidebarOpen: false,
+        activeSidebarItem: "workspace" satisfies AppSidebarItem,
+        theme: "light" satisfies AppTheme,
+        onActivateGoToLineMode: vi.fn(),
+        onOpenWorkspaceScreen: vi.fn(),
+        onOpenScriptLibrary: vi.fn(),
+        onOpenSettings: vi.fn(),
+        onToggleSidebar: vi.fn(),
+        onSetTheme: vi.fn(),
+        onZoomIn: vi.fn(),
+        onZoomOut: vi.fn(),
+        onZoomReset: vi.fn(),
+        onRequestRenameCurrentTab: vi.fn(),
         ...overrides,
     };
 }
@@ -155,23 +202,51 @@ describe("getTabCommandPaletteItems", () => {
 });
 
 describe("getCommandCommandPaletteItems", () => {
-    it("only includes workspace and active-tab commands when their prerequisites exist", () => {
-        const onActivateGoToLineMode = vi.fn();
-        const onOpenSettings = vi.fn();
-        const onToggleSidebar = vi.fn();
-        const noWorkspaceItems = getCommandCommandPaletteItems({
-            workspaceSession: createWorkspaceSession(),
-            isSidebarOpen: false,
-            onActivateGoToLineMode,
-            onOpenSettings,
-            onToggleSidebar,
-        });
+    it("includes navigation, zoom, theme, and workspace commands without an active tab", () => {
+        const noWorkspaceItems = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession(),
+                activeSidebarItem: "workspace",
+                theme: "light",
+            }),
+        );
 
         expect(noWorkspaceItems.map((item) => item.id)).toEqual([
-            "command-sidebar",
+            "command-open-workspace-screen",
+            "command-open-script-library",
             "command-settings",
-            "command-open-workspace",
+            "command-open-workspace-folder",
+            "command-sidebar",
+            "command-zoom-in",
+            "command-zoom-out",
+            "command-zoom-reset",
+            "command-theme-light",
+            "command-theme-dark",
         ]);
+
+        expect(noWorkspaceItems[0]).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
+        });
+        expect(noWorkspaceItems[8]).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
+        });
+    });
+
+    it("dispatches the new navigation, theme, zoom, and active-tab commands", () => {
+        const executeActiveTab = vi.fn().mockResolvedValue(undefined);
+        const deleteWorkspaceTab = vi.fn().mockResolvedValue(undefined);
+        const onActivateGoToLineMode = vi.fn();
+        const onOpenWorkspaceScreen = vi.fn();
+        const onOpenScriptLibrary = vi.fn();
+        const onOpenSettings = vi.fn();
+        const onToggleSidebar = vi.fn();
+        const onSetTheme = vi.fn();
+        const onZoomIn = vi.fn();
+        const onZoomOut = vi.fn();
+        const onZoomReset = vi.fn();
+        const onRequestRenameCurrentTab = vi.fn();
 
         const workspaceSession = createWorkspaceSession({
             workspace: {
@@ -199,34 +274,84 @@ describe("getCommandCommandPaletteItems", () => {
                 cursor: { line: 0, column: 0, scrollTop: 0 },
             },
             activeTabIndex: 0,
+            deleteWorkspaceTab,
         });
-        const items = getCommandCommandPaletteItems({
-            workspaceSession,
-            isSidebarOpen: true,
-            onActivateGoToLineMode,
-            onOpenSettings,
-            onToggleSidebar,
-        });
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession,
+                workspaceExecutor: createWorkspaceExecutor({
+                    executeActiveTab,
+                }),
+                isSidebarOpen: true,
+                activeSidebarItem: "script-library",
+                theme: "dark",
+                onActivateGoToLineMode,
+                onOpenWorkspaceScreen,
+                onOpenScriptLibrary,
+                onOpenSettings,
+                onToggleSidebar,
+                onSetTheme,
+                onZoomIn,
+                onZoomOut,
+                onZoomReset,
+                onRequestRenameCurrentTab,
+            }),
+        );
 
         expect(items.map((item) => item.id)).toEqual([
-            "command-sidebar",
+            "command-open-workspace-screen",
+            "command-open-script-library",
             "command-settings",
-            "command-open-workspace",
+            "command-open-workspace-folder",
+            "command-sidebar",
+            "command-zoom-in",
+            "command-zoom-out",
+            "command-zoom-reset",
+            "command-theme-light",
+            "command-theme-dark",
             "command-create-file",
+            "command-execute-tab",
             "command-goto-line",
             "command-save-tab",
+            "command-rename-tab",
             "command-archive-tab",
+            "command-delete-tab",
         ]);
 
         items[0]?.onSelect();
-        items[1]?.onSelect();
+        items[2]?.onSelect();
         items[4]?.onSelect();
+        items[5]?.onSelect();
+        items[6]?.onSelect();
+        items[7]?.onSelect();
+        items[8]?.onSelect();
+        items[11]?.onSelect();
+        items[12]?.onSelect();
+        items[14]?.onSelect();
+        items[16]?.onSelect();
 
-        expect(onToggleSidebar).toHaveBeenCalledOnce();
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(2);
+        expect(onOpenScriptLibrary).not.toHaveBeenCalled();
         expect(onOpenSettings).toHaveBeenCalledOnce();
+        expect(onToggleSidebar).toHaveBeenCalledOnce();
+        expect(onZoomIn).toHaveBeenCalledOnce();
+        expect(onZoomOut).toHaveBeenCalledOnce();
+        expect(onZoomReset).toHaveBeenCalledOnce();
+        expect(onSetTheme).toHaveBeenCalledWith("light");
+        expect(executeActiveTab).toHaveBeenCalledOnce();
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
-        expect(items[4]).toMatchObject({
+        expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
+        expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
+        expect(items[12]).toMatchObject({
             closeOnSelect: false,
+        });
+        expect(items[1]).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
+        });
+        expect(items[9]).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
         });
     });
 });

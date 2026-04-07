@@ -26,6 +26,8 @@ export const useAppStore = create<AppStore>()(
             activeSidebarItem: "workspace",
             goToLineRequest: null,
             nextGoToLineRequestId: 0,
+            renameCurrentTabRequest: null,
+            nextRenameCurrentTabRequestId: 0,
             zoomPercent: APP_ZOOM_DEFAULT,
             theme: DEFAULT_APP_THEME,
             editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
@@ -119,6 +121,22 @@ export const useAppStore = create<AppStore>()(
             },
             clearGoToLineRequest: () => {
                 set({ goToLineRequest: null });
+            },
+            requestRenameCurrentTab: () => {
+                set((state) => {
+                    const nextRenameCurrentTabRequestId =
+                        state.nextRenameCurrentTabRequestId + 1;
+
+                    return {
+                        renameCurrentTabRequest: {
+                            requestId: nextRenameCurrentTabRequestId,
+                        },
+                        nextRenameCurrentTabRequestId,
+                    };
+                });
+            },
+            clearRenameCurrentTabRequest: () => {
+                set({ renameCurrentTabRequest: null });
             },
             selectSidebarItem: (item) => {
                 set({ activeSidebarItem: item });

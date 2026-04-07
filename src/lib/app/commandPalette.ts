@@ -90,13 +90,75 @@ export function getTabCommandPaletteItems(
 
 export function getCommandCommandPaletteItems({
     workspaceSession,
+    workspaceExecutor,
     isSidebarOpen,
+    activeSidebarItem,
+    theme,
     onActivateGoToLineMode,
+    onOpenWorkspaceScreen,
+    onOpenScriptLibrary,
     onOpenSettings,
     onToggleSidebar,
+    onSetTheme,
+    onZoomIn,
+    onZoomOut,
+    onZoomReset,
+    onRequestRenameCurrentTab,
 }: GetCommandPaletteCommandItemsOptions): AppCommandPaletteItem[] {
     const { activeTab, workspace } = workspaceSession;
     const commandItems: AppCommandPaletteItem[] = [
+        {
+            id: "command-open-workspace-screen",
+            label: "Open Workspace",
+            description: "Show your tabs and editor.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(
+                activeSidebarItem === "workspace",
+                APP_HOTKEYS.OPEN_WORKSPACE_SCREEN.label,
+            ),
+            keywords: "workspace editor tabs files screen",
+            isDisabled: activeSidebarItem === "workspace",
+            onSelect: onOpenWorkspaceScreen,
+        },
+        {
+            id: "command-open-script-library",
+            label: "Open Script Library",
+            description: "Browse and import scripts from Rscripts.net.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(
+                activeSidebarItem === "script-library",
+                APP_HOTKEYS.OPEN_SCRIPT_LIBRARY.label,
+            ),
+            keywords: "script library browse import rscripts",
+            isDisabled: activeSidebarItem === "script-library",
+            onSelect: onOpenScriptLibrary,
+        },
+        {
+            id: "command-settings",
+            label: "Open settings",
+            description: "Adjust editor, theme, and app preferences.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(
+                activeSidebarItem === "settings",
+                APP_HOTKEYS.OPEN_SETTINGS.label,
+            ),
+            keywords: "settings preferences configuration",
+            isDisabled: activeSidebarItem === "settings",
+            onSelect: onOpenSettings,
+        },
+        {
+            id: "command-open-workspace-folder",
+            label: workspace ? "Switch workspace folder" : "Choose workspace",
+            description: workspace
+                ? "Pick a different folder for your scripts."
+                : "Pick a folder to start editing scripts.",
+            icon: CommandIcon,
+            meta: APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.label,
+            keywords: "workspace folder open choose switch",
+            onSelect: () => {
+                void workspaceSession.openWorkspaceDirectory();
+            },
+        },
         {
             id: "command-sidebar",
             label: isSidebarOpen ? "Close sidebar" : "Open sidebar",
@@ -107,25 +169,51 @@ export function getCommandCommandPaletteItems({
             onSelect: onToggleSidebar,
         },
         {
-            id: "command-settings",
-            label: "Open settings",
-            description: "Adjust editor, theme, and app preferences.",
+            id: "command-zoom-in",
+            label: "Zoom in",
+            description: "Increase the app scale for this window.",
             icon: CommandIcon,
-            meta: APP_HOTKEYS.OPEN_SETTINGS.label,
-            keywords: "settings preferences configuration",
-            onSelect: onOpenSettings,
+            keywords: "zoom in increase scale",
+            onSelect: onZoomIn,
         },
         {
-            id: "command-open-workspace",
-            label: workspace ? "Switch workspace folder" : "Choose workspace",
-            description: workspace
-                ? "Pick a different folder for your scripts."
-                : "Pick a folder to start editing scripts.",
+            id: "command-zoom-out",
+            label: "Zoom out",
+            description: "Decrease the app scale for this window.",
             icon: CommandIcon,
-            meta: APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.label,
-            keywords: "workspace folder open choose switch",
+            keywords: "zoom out decrease scale",
+            onSelect: onZoomOut,
+        },
+        {
+            id: "command-zoom-reset",
+            label: "Reset zoom",
+            description: "Return the app scale to the default size.",
+            icon: CommandIcon,
+            keywords: "zoom reset actual size default scale",
+            onSelect: onZoomReset,
+        },
+        {
+            id: "command-theme-light",
+            label: "Set theme: Light",
+            description: "Switch the app to the light theme.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(theme === "light"),
+            keywords: "theme appearance light",
+            isDisabled: theme === "light",
             onSelect: () => {
-                void workspaceSession.openWorkspaceDirectory();
+                onSetTheme("light");
+            },
+        },
+        {
+            id: "command-theme-dark",
+            label: "Set theme: Dark",
+            description: "Switch the app to the dark theme.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(theme === "dark"),
+            keywords: "theme appearance dark",
+            isDisabled: theme === "dark",
+            onSelect: () => {
+                onSetTheme("dark");
             },
         },
     ];
@@ -150,6 +238,16 @@ export function getCommandCommandPaletteItems({
 
     commandItems.push(
         {
+            id: "command-execute-tab",
+            label: "Execute active tab",
+            description: `Run ${activeTab.fileName} through the executor.`,
+            icon: CommandIcon,
+            keywords: `execute run script ${activeTab.fileName}`,
+            onSelect: () => {
+                void workspaceExecutor.executeActiveTab();
+            },
+        },
+        {
             id: "command-goto-line",
             label: "Go to line",
             description: `Jump to a specific line in ${activeTab.fileName}.`,
@@ -170,6 +268,17 @@ export function getCommandCommandPaletteItems({
             },
         },
         {
+            id: "command-rename-tab",
+            label: "Rename current tab",
+            description: `Rename ${activeTab.fileName} in the tab bar.`,
+            icon: CommandIcon,
+            keywords: `rename edit file name ${activeTab.fileName}`,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                onRequestRenameCurrentTab();
+            },
+        },
+        {
             id: "command-archive-tab",
             label: "Archive current tab",
             description: `Archive ${activeTab.fileName} from the tab bar.`,
@@ -178,6 +287,16 @@ export function getCommandCommandPaletteItems({
             keywords: `archive close remove ${activeTab.fileName}`,
             onSelect: () => {
                 void workspaceSession.archiveWorkspaceTab(activeTab.id);
+            },
+        },
+        {
+            id: "command-delete-tab",
+            label: "Delete current tab",
+            description: `Permanently remove ${activeTab.fileName} from the workspace.`,
+            icon: CommandIcon,
+            keywords: `delete remove file ${activeTab.fileName}`,
+            onSelect: () => {
+                void workspaceSession.deleteWorkspaceTab(activeTab.id);
             },
         },
     );
@@ -283,4 +402,15 @@ function createWorkspaceCountLabel(
     archivedTabCount: number,
 ): string {
     return `${tabCount} tab${tabCount === 1 ? "" : "s"} • ${archivedTabCount} archived`;
+}
+
+function getCurrentStateMeta(
+    isCurrent: boolean,
+    fallbackMeta?: string,
+): string | undefined {
+    if (isCurrent) {
+        return "Current";
+    }
+
+    return fallbackMeta;
 }

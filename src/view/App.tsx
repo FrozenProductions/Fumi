@@ -3,6 +3,7 @@ import { AppCommandPalette } from "../components/app/AppCommandPalette";
 import { AppSidebar } from "../components/app/AppSidebar";
 import { AppTopbar } from "../components/app/AppTopbar";
 import { APP_TITLE } from "../constants/app/app";
+import { APP_ZOOM_DEFAULT, APP_ZOOM_STEP } from "../constants/app/settings";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
 import { useAppShellLifecycle } from "../hooks/app/useAppShellLifecycle";
 import { useAppStore } from "../hooks/app/useAppStore";
@@ -30,12 +31,19 @@ export function App(): ReactElement {
     );
     const commandPaletteMode = useAppStore((state) => state.commandPaletteMode);
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
+    const theme = useAppStore((state) => state.theme);
+    const zoomPercent = useAppStore((state) => state.zoomPercent);
     const closeCommandPalette = useAppStore(
         (state) => state.closeCommandPalette,
     );
     const requestGoToLine = useAppStore((state) => state.requestGoToLine);
+    const requestRenameCurrentTab = useAppStore(
+        (state) => state.requestRenameCurrentTab,
+    );
     const toggleSidebar = useAppStore((state) => state.toggleSidebar);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
+    const setTheme = useAppStore((state) => state.setTheme);
+    const setZoomPercent = useAppStore((state) => state.setZoomPercent);
     const updater = useAppUpdater();
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
@@ -46,6 +54,21 @@ export function App(): ReactElement {
     const { hasUnsavedChanges } = workspaceSession;
     const handleOpenSettings = (): void => {
         selectSidebarItem("settings");
+    };
+    const handleOpenWorkspaceScreen = (): void => {
+        selectSidebarItem("workspace");
+    };
+    const handleOpenScriptLibrary = (): void => {
+        selectSidebarItem("script-library");
+    };
+    const handleZoomIn = (): void => {
+        setZoomPercent(zoomPercent + APP_ZOOM_STEP);
+    };
+    const handleZoomOut = (): void => {
+        setZoomPercent(zoomPercent - APP_ZOOM_STEP);
+    };
+    const handleZoomReset = (): void => {
+        setZoomPercent(APP_ZOOM_DEFAULT);
     };
     const topbarWorkspaceContext = getAppTopbarWorkspaceContext(
         activeSidebarItem,
@@ -101,11 +124,21 @@ export function App(): ReactElement {
                     requestedScope={commandPaletteScope}
                     requestedMode={commandPaletteMode}
                     workspaceSession={workspaceSession}
+                    workspaceExecutor={workspaceExecutor}
                     isSidebarOpen={isSidebarOpen}
+                    activeSidebarItem={activeSidebarItem}
+                    theme={theme}
                     onClose={closeCommandPalette}
                     onGoToLine={requestGoToLine}
+                    onOpenWorkspaceScreen={handleOpenWorkspaceScreen}
+                    onOpenScriptLibrary={handleOpenScriptLibrary}
                     onToggleSidebar={toggleSidebar}
                     onOpenSettings={handleOpenSettings}
+                    onSetTheme={setTheme}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onZoomReset={handleZoomReset}
+                    onRequestRenameCurrentTab={requestRenameCurrentTab}
                 />
             </div>
         </AppHotkeysProvider>

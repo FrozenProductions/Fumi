@@ -2,9 +2,11 @@ import type {
     AppCommandPaletteMode,
     AppCommandPaletteScope,
     AppEditorSettings,
+    AppGoToLineRequest,
     AppIntellisensePriority,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
+    AppRenameCurrentTabRequest,
     AppSidebarItem,
     AppTheme,
     AppUpdaterSettings,
@@ -17,11 +19,10 @@ export type AppStoreState = {
     commandPaletteScope: AppCommandPaletteScope | null;
     commandPaletteMode: AppCommandPaletteMode | null;
     activeSidebarItem: AppSidebarItem;
-    goToLineRequest: {
-        lineNumber: number;
-        requestId: number;
-    } | null;
+    goToLineRequest: AppGoToLineRequest | null;
     nextGoToLineRequestId: number;
+    renameCurrentTabRequest: AppRenameCurrentTabRequest | null;
+    nextRenameCurrentTabRequestId: number;
     zoomPercent: number;
     theme: AppTheme;
     editorSettings: AppEditorSettings;
@@ -40,6 +41,8 @@ export type AppStoreActions = {
     toggleGoToLineCommandPalette: () => void;
     requestGoToLine: (lineNumber: number) => void;
     clearGoToLineRequest: () => void;
+    requestRenameCurrentTab: () => void;
+    clearRenameCurrentTabRequest: () => void;
     selectSidebarItem: (item: AppSidebarItem) => void;
     setZoomPercent: (zoomPercent: number) => void;
     setTheme: (theme: AppTheme) => void;
