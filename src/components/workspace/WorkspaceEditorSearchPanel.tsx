@@ -4,12 +4,7 @@ import {
     ArrowUp01Icon,
     Cancel01Icon,
 } from "@hugeicons/core-free-icons";
-import type {
-    ChangeEvent,
-    KeyboardEvent,
-    ReactElement,
-    MouseEvent as ReactMouseEvent,
-} from "react";
+import type { ChangeEvent, KeyboardEvent, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import { WORKSPACE_EDITOR_SEARCH_PANEL_EXIT_DURATION_MS } from "../../constants/workspace/editor";
@@ -17,10 +12,6 @@ import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition"
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditor.type";
-
-function preventInputBlur(event: ReactMouseEvent<HTMLButtonElement>): void {
-    event.preventDefault();
-}
 
 export function WorkspaceEditorSearchPanel({
     searchPanel,
@@ -182,6 +173,13 @@ export function WorkspaceEditorSearchPanel({
     const panelMotionClassName = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[96%] motion-safe:-motion-translate-y-out-[8%] motion-safe:motion-duration-150 motion-safe:motion-ease-in-quad pointer-events-none"
         : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:-motion-translate-y-in-[10%] motion-safe:motion-duration-150 motion-safe:motion-ease-spring-snappy";
+    const searchResultsLabel =
+        searchPanel.state.query.length > 0 && !searchPanel.validationError
+            ? `${searchPanel.state.activeMatchOrdinal}/${searchPanel.state.matchCount}`
+            : null;
+    const queryInputClassName = `h-7 w-full rounded-[0.5rem] border border-fumi-200 bg-fumi-50 px-2 text-[11px] font-medium leading-none text-fumi-900 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-600 focus:ring-1 focus:ring-fumi-600 ${
+        searchResultsLabel ? "pr-9" : ""
+    }`;
 
     return (
         <div
@@ -193,7 +191,9 @@ export function WorkspaceEditorSearchPanel({
                     <button
                         type="button"
                         onClick={handleToggleReplaceMode}
-                        onMouseDown={preventInputBlur}
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                        }}
                         aria-label="Toggle replace mode"
                         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.5rem] text-fumi-400 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
                     >
@@ -218,14 +218,23 @@ export function WorkspaceEditorSearchPanel({
                         onChange={handleQueryChange}
                         onKeyDown={handleQueryKeyDown}
                         {...APP_TEXT_INPUT_PROPS}
-                        className="h-7 w-full rounded-[0.5rem] border border-fumi-200 bg-fumi-50 px-2 text-[11px] font-medium text-fumi-900 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-600 focus:ring-1 focus:ring-fumi-600"
+                        className={queryInputClassName}
                     />
+                    {searchResultsLabel ? (
+                        <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center">
+                            <div className="text-[10px] font-semibold leading-none tabular-nums text-fumi-400">
+                                {searchResultsLabel}
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
                 <AppTooltip content="Close (Esc)">
                     <button
                         type="button"
                         aria-label="Close"
-                        onMouseDown={preventInputBlur}
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                        }}
                         onClick={searchPanel.onClose}
                         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.5rem] text-fumi-400 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
                     >
@@ -268,7 +277,9 @@ export function WorkspaceEditorSearchPanel({
                             <AppTooltip content="Replace selected">
                                 <button
                                     type="button"
-                                    onMouseDown={preventInputBlur}
+                                    onMouseDown={(event) => {
+                                        event.preventDefault();
+                                    }}
                                     onClick={searchPanel.onReplaceNext}
                                     disabled={!searchPanel.canSearch}
                                     className={`app-select-none inline-flex items-center justify-center rounded-l-[0.5rem] px-2 text-[10px] font-semibold transition-[background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 disabled:cursor-not-allowed ${
@@ -316,7 +327,9 @@ export function WorkspaceEditorSearchPanel({
                                     onClick={() => {
                                         handleReplaceAll();
                                     }}
-                                    onMouseDown={preventInputBlur}
+                                    onMouseDown={(event) => {
+                                        event.preventDefault();
+                                    }}
                                     className="flex w-full items-center justify-center whitespace-nowrap rounded-[0.35rem] px-2 py-1 text-[10px] font-semibold text-fumi-700 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-900 focus-visible:outline-none focus-visible:bg-fumi-100 focus-visible:text-fumi-900"
                                 >
                                     Replace All
@@ -334,7 +347,9 @@ export function WorkspaceEditorSearchPanel({
                         <button
                             type="button"
                             aria-pressed={searchPanel.state.isCaseSensitive}
-                            onMouseDown={preventInputBlur}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                            }}
                             onClick={searchPanel.onToggleCaseSensitive}
                             className={`inline-flex h-6 items-center rounded-[0.4rem] px-1.5 text-[9px] font-bold tracking-[0.06em] transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                 searchPanel.state.isCaseSensitive
@@ -349,7 +364,9 @@ export function WorkspaceEditorSearchPanel({
                         <button
                             type="button"
                             aria-pressed={searchPanel.state.isWholeWord}
-                            onMouseDown={preventInputBlur}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                            }}
                             onClick={searchPanel.onToggleWholeWord}
                             className={`inline-flex h-6 items-center rounded-[0.4rem] px-1.5 text-[9px] font-bold tracking-[0.06em] transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                 searchPanel.state.isWholeWord
@@ -364,7 +381,9 @@ export function WorkspaceEditorSearchPanel({
                         <button
                             type="button"
                             aria-pressed={searchPanel.state.isRegex}
-                            onMouseDown={preventInputBlur}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                            }}
                             onClick={searchPanel.onToggleRegex}
                             className={`inline-flex h-6 items-center rounded-[0.4rem] px-1.5 text-[9px] font-bold tracking-[0.06em] transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                 searchPanel.state.isRegex
@@ -381,7 +400,9 @@ export function WorkspaceEditorSearchPanel({
                     <AppTooltip content="Previous match (Shift+Enter)">
                         <button
                             type="button"
-                            onMouseDown={preventInputBlur}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                            }}
                             onClick={searchPanel.onFindPrevious}
                             disabled={!searchPanel.canSearch}
                             aria-label="Previous match"
@@ -397,7 +418,9 @@ export function WorkspaceEditorSearchPanel({
                     <AppTooltip content="Next match (Enter)">
                         <button
                             type="button"
-                            onMouseDown={preventInputBlur}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                            }}
                             onClick={searchPanel.onFindNext}
                             disabled={!searchPanel.canSearch}
                             aria-label="Next match"

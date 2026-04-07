@@ -1,3 +1,5 @@
+import type { Ace } from "ace-builds";
+
 export type WorkspaceEditorSearchState = {
     isOpen: boolean;
     query: string;
@@ -5,6 +7,22 @@ export type WorkspaceEditorSearchState = {
     isCaseSensitive: boolean;
     isWholeWord: boolean;
     isRegex: boolean;
+    matchCount: number;
+    activeMatchOrdinal: number;
+};
+
+export type WorkspaceEditorSearchMatchState = Pick<
+    WorkspaceEditorSearchState,
+    "activeMatchOrdinal" | "matchCount"
+>;
+
+export type AceEditorSearchInstance = {
+    set: (options: Partial<Ace.SearchOptions>) => AceEditorSearchInstance;
+    findAll: (session: Ace.EditSession) => Ace.Range[];
+};
+
+export type AceEditorWithSearch = Ace.Editor & {
+    $search?: AceEditorSearchInstance;
 };
 
 export type WorkspaceEditorSearchOptions = {

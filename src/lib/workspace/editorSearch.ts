@@ -1,17 +1,8 @@
+import { DEFAULT_WORKSPACE_EDITOR_SEARCH_STATE } from "../../constants/workspace/editorSearch";
 import type {
     WorkspaceEditorSearchOptions,
     WorkspaceEditorSearchState,
 } from "./editorSearch.type";
-
-export const DEFAULT_WORKSPACE_EDITOR_SEARCH_STATE: WorkspaceEditorSearchState =
-    {
-        isOpen: false,
-        query: "",
-        replaceValue: "",
-        isCaseSensitive: false,
-        isWholeWord: false,
-        isRegex: false,
-    };
 
 export function createWorkspaceEditorSearchState(
     overrides: Partial<WorkspaceEditorSearchState> = {},
