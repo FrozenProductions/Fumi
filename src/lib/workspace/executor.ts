@@ -1,9 +1,7 @@
-import {
-    MAX_EXECUTOR_PORT,
-    MIN_EXECUTOR_PORT,
-} from "../../constants/workspace/executor";
-
-export function parseExecutorPort(port: string): number | null {
+export function parseExecutorPort(
+    port: string,
+    availablePorts: readonly number[],
+): number | null {
     const trimmedPort = port.trim();
 
     if (trimmedPort.length === 0) {
@@ -12,17 +10,36 @@ export function parseExecutorPort(port: string): number | null {
 
     const parsedPort = Number.parseInt(trimmedPort, 10);
 
-    if (
-        !Number.isInteger(parsedPort) ||
-        parsedPort < MIN_EXECUTOR_PORT ||
-        parsedPort > MAX_EXECUTOR_PORT
-    ) {
+    if (!Number.isInteger(parsedPort) || !availablePorts.includes(parsedPort)) {
         return null;
     }
 
     return parsedPort;
 }
 
-export function getExecutorPortRangeErrorMessage(): string {
-    return `Port must be between ${MIN_EXECUTOR_PORT} and ${MAX_EXECUTOR_PORT}.`;
+export function normalizeExecutorPort(
+    port: string,
+    availablePorts: readonly number[],
+): string {
+    if (availablePorts.length === 0) {
+        return "";
+    }
+
+    const parsedPort = parseExecutorPort(port, availablePorts);
+
+    return String(parsedPort ?? availablePorts[0]);
+}
+
+export function getExecutorPortRangeErrorMessage(
+    availablePorts: readonly number[],
+): string {
+    if (availablePorts.length === 0) {
+        return "No executor ports are available.";
+    }
+
+    if (availablePorts.length === 1) {
+        return `Port must be ${availablePorts[0]}.`;
+    }
+
+    return `Port must be one of ${availablePorts.join(", ")}.`;
 }

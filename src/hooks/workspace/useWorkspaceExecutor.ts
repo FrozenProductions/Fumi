@@ -1,6 +1,10 @@
 import { Effect } from "effect";
-import { useEffect, useRef, useState } from "react";
-import { DEFAULT_EXECUTOR_PORT } from "../../constants/workspace/executor";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import {
+    DEFAULT_EXECUTOR_KIND,
+    DEFAULT_EXECUTOR_PORT,
+    getExecutorPorts,
+} from "../../constants/workspace/executor";
 import {
     attachExecutorEffect,
     detachExecutorEffect,
@@ -17,6 +21,7 @@ import {
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import {
     getExecutorPortRangeErrorMessage,
+    normalizeExecutorPort,
     parseExecutorPort,
 } from "../../lib/workspace/executor";
 import type { ExecutorStatusPayload } from "../../lib/workspace/workspace.type";
@@ -28,12 +33,32 @@ import type {
 export function useWorkspaceExecutor({
     activeTabContent,
 }: UseWorkspaceExecutorOptions): UseWorkspaceExecutorResult {
+    const [executorKind, setExecutorKind] = useState(DEFAULT_EXECUTOR_KIND);
+    const [availablePorts, setAvailablePorts] = useState<readonly number[]>([
+        ...getExecutorPorts(DEFAULT_EXECUTOR_KIND),
+    ]);
     const [port, setPort] = useState(String(DEFAULT_EXECUTOR_PORT));
     const [isAttached, setIsAttached] = useState(false);
     const [didRecentAttachFail, setDidRecentAttachFail] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const wasAttachedRef = useRef(false);
+
+    const applyExecutorStatus = useEffectEvent(
+        (status: ExecutorStatusPayload): void => {
+            setExecutorKind(status.executorKind);
+            setAvailablePorts(status.availablePorts);
+            setPort(
+                normalizeExecutorPort(
+                    String(status.port),
+                    status.availablePorts,
+                ),
+            );
+            setIsAttached(status.isAttached);
+            setDidRecentAttachFail(false);
+            wasAttachedRef.current = status.isAttached;
+        },
+    );
 
     useEffect(() => {
         if (!didRecentAttachFail) {
@@ -54,10 +79,7 @@ export function useWorkspaceExecutor({
             getExecutorStatusEffect().pipe(
                 Effect.match({
                     onSuccess: (status) => {
-                        setPort(String(status.port));
-                        setIsAttached(status.isAttached);
-                        setDidRecentAttachFail(false);
-                        wasAttachedRef.current = status.isAttached;
+                        applyExecutorStatus(status);
                     },
                     onFailure: (error) => {
                         setErrorMessage(
@@ -83,15 +105,12 @@ export function useWorkspaceExecutor({
                     Effect.acquireRelease(
                         subscribeToExecutorStatusChangedEffect(
                             (status: ExecutorStatusPayload) => {
-                                setPort(String(status.port));
-                                setIsAttached(status.isAttached);
+                                const wasAttached = wasAttachedRef.current;
+                                applyExecutorStatus(status);
 
-                                if (
-                                    wasAttachedRef.current &&
-                                    !status.isAttached
-                                ) {
+                                if (wasAttached && !status.isAttached) {
                                     setErrorMessage(
-                                        "MacSploit connection closed.",
+                                        "Executor connection closed.",
                                     );
                                 } else if (status.isAttached) {
                                     setErrorMessage(null);
@@ -100,8 +119,6 @@ export function useWorkspaceExecutor({
                                 if (status.isAttached) {
                                     setDidRecentAttachFail(false);
                                 }
-
-                                wasAttachedRef.current = status.isAttached;
                             },
                         ),
                         (unsubscribe) => Effect.sync(() => unsubscribe()),
@@ -135,7 +152,7 @@ export function useWorkspaceExecutor({
                         subscribeToExecutorMessagesEffect((payload) => {
                             if (payload.messageType === "error") {
                                 console.error(
-                                    "[MacSploit Error]",
+                                    "[Executor Error]",
                                     payload.message,
                                 );
                             }
@@ -164,7 +181,7 @@ export function useWorkspaceExecutor({
     }, []);
 
     const updatePort = (value: string): void => {
-        setPort(value);
+        setPort(normalizeExecutorPort(value, availablePorts));
         setDidRecentAttachFail(false);
         setErrorMessage(null);
     };
@@ -179,11 +196,13 @@ export function useWorkspaceExecutor({
         }
 
         if (!isAttached) {
-            const parsedPort = parseExecutorPort(port);
+            const parsedPort = parseExecutorPort(port, availablePorts);
 
             if (parsedPort === null) {
                 setDidRecentAttachFail(false);
-                setErrorMessage(getExecutorPortRangeErrorMessage());
+                setErrorMessage(
+                    getExecutorPortRangeErrorMessage(availablePorts),
+                );
                 return;
             }
 
@@ -195,17 +214,14 @@ export function useWorkspaceExecutor({
                 attachExecutorEffect(parsedPort).pipe(
                     Effect.match({
                         onSuccess: (status) => {
-                            setPort(String(status.port));
-                            setIsAttached(status.isAttached);
-                            setDidRecentAttachFail(false);
+                            applyExecutorStatus(status);
                             setErrorMessage(null);
-                            wasAttachedRef.current = status.isAttached;
                         },
                         onFailure: (error) => {
                             console.error(
                                 getErrorMessage(
                                     error,
-                                    "Could not attach to MacSploit.",
+                                    "Could not attach to the executor.",
                                 ),
                             );
                             setDidRecentAttachFail(true);
@@ -229,17 +245,14 @@ export function useWorkspaceExecutor({
             detachExecutorEffect().pipe(
                 Effect.match({
                     onSuccess: (status) => {
-                        setPort(String(status.port));
-                        setIsAttached(status.isAttached);
-                        setDidRecentAttachFail(false);
+                        applyExecutorStatus(status);
                         setErrorMessage(null);
-                        wasAttachedRef.current = status.isAttached;
                     },
                     onFailure: (error) => {
                         setErrorMessage(
                             getErrorMessage(
                                 error,
-                                "Could not detach from MacSploit.",
+                                "Could not detach from the executor.",
                             ),
                         );
                     },
@@ -264,7 +277,7 @@ export function useWorkspaceExecutor({
         }
 
         if (!isAttached) {
-            setErrorMessage("Attach to a MacSploit port before executing.");
+            setErrorMessage("Attach to an executor port before executing.");
             return;
         }
 
@@ -295,6 +308,8 @@ export function useWorkspaceExecutor({
     };
 
     return {
+        executorKind,
+        availablePorts,
         port,
         isAttached,
         didRecentAttachFail,

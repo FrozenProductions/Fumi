@@ -6,12 +6,16 @@ export type ArchivedTabsSortOption =
 
 export type ExecutorMessageType = "print" | "error";
 
+export type ExecutorKind = "macsploit" | "opiumware" | "unsupported";
+
 export type ExecutorMessagePayload = {
     message: string;
     messageType: ExecutorMessageType;
 };
 
 export type ExecutorStatusPayload = {
+    executorKind: ExecutorKind;
+    availablePorts: readonly number[];
     port: number;
     isAttached: boolean;
 };

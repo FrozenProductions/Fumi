@@ -1,7 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Effect, Schema } from "effect";
-import { DEFAULT_EXECUTOR_PORT } from "../../constants/workspace/executor";
+import {
+    DEFAULT_EXECUTOR_KIND,
+    DEFAULT_EXECUTOR_PORT,
+    getExecutorPorts,
+} from "../../constants/workspace/executor";
 import type {
     ExecutorMessagePayload,
     ExecutorStatusPayload,
@@ -16,6 +20,8 @@ const EXECUTOR_MESSAGE_EVENT = "executor://message";
 const EXECUTOR_STATUS_CHANGED_EVENT = "executor://status-changed";
 
 const DEFAULT_EXECUTOR_STATUS: ExecutorStatusPayload = {
+    executorKind: DEFAULT_EXECUTOR_KIND,
+    availablePorts: [...getExecutorPorts(DEFAULT_EXECUTOR_KIND)],
     port: DEFAULT_EXECUTOR_PORT,
     isAttached: false,
 };
@@ -23,7 +29,14 @@ const DEFAULT_EXECUTOR_STATUS: ExecutorStatusPayload = {
 const DESKTOP_SHELL_REQUIRED_ERROR =
     "Executor commands require the Tauri desktop shell.";
 
+const ExecutorKindSchema = Schema.Literal(
+    "macsploit",
+    "opiumware",
+    "unsupported",
+);
 const ExecutorStatusPayloadSchema = Schema.Struct({
+    executorKind: ExecutorKindSchema,
+    availablePorts: Schema.Array(Schema.Number),
     port: Schema.Number,
     isAttached: Schema.Boolean,
 });

@@ -219,8 +219,8 @@ export function WorkspaceScreen({
                             <AppTooltip
                                 content={
                                     executor.isAttached
-                                        ? "Execute the current tab in MacSploit"
-                                        : "Attach to a MacSploit port before executing"
+                                        ? "Execute the current tab through the executor"
+                                        : "Attach to an executor port before executing"
                                 }
                             >
                                 <button

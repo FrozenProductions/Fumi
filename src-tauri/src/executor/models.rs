@@ -2,6 +2,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+pub enum ExecutorKind {
+    Macsploit,
+    Opiumware,
+    Unsupported,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
 pub enum ExecutorMessageType {
     Print,
     Error,
@@ -29,6 +37,8 @@ pub struct ExecutorMessagePayload {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutorStatusPayload {
+    pub executor_kind: ExecutorKind,
+    pub available_ports: Vec<u16>,
     pub port: u16,
     pub is_attached: bool,
 }

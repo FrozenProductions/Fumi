@@ -1,15 +1,12 @@
 import { ArrowDown01Icon, ConnectIcon } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect, useRef, useState } from "react";
-import {
-    MAX_EXECUTOR_PORT,
-    MIN_EXECUTOR_PORT,
-} from "../../constants/workspace/executor";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./appShell.type";
 
 export function AppTopbarExecutorControls({
+    availablePorts,
     port,
     isAttached,
     didRecentAttachFail,
@@ -20,11 +17,6 @@ export function AppTopbarExecutorControls({
     const theme = useAppStore((state) => state.theme);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    const availablePorts = Array.from(
-        { length: MAX_EXECUTOR_PORT - MIN_EXECUTOR_PORT + 1 },
-        (_, i) => String(MIN_EXECUTOR_PORT + i),
-    );
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -46,10 +38,10 @@ export function AppTopbarExecutorControls({
                 <AppTooltip
                     content={
                         didRecentAttachFail
-                            ? `Could not connect to MacSploit port ${port}`
+                            ? `Could not connect to executor port ${port}`
                             : isAttached
-                              ? "Disconnect from the active MacSploit port"
-                              : `Connect to MacSploit port ${port}`
+                              ? "Disconnect from the active executor port"
+                              : `Connect to executor port ${port}`
                     }
                     side="bottom"
                 >
@@ -94,7 +86,7 @@ export function AppTopbarExecutorControls({
 
                 <div className="h-4 w-px bg-fumi-200" />
 
-                <AppTooltip content="Select port" side="bottom">
+                <AppTooltip content="Select executor port" side="bottom">
                     <button
                         type="button"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -121,14 +113,15 @@ export function AppTopbarExecutorControls({
                         Select Port
                     </div>
                     <div className="flex flex-col gap-0.5">
-                        {availablePorts.map((p) => {
-                            const isSelected = port === p;
+                        {availablePorts.map((availablePort) => {
+                            const portValue = String(availablePort);
+                            const isSelected = port === portValue;
                             return (
                                 <button
-                                    key={p}
+                                    key={availablePort}
                                     type="button"
                                     onClick={() => {
-                                        updatePort(p);
+                                        updatePort(portValue);
                                         setIsDropdownOpen(false);
                                     }}
                                     className={`app-select-none flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition-colors ${
@@ -137,7 +130,7 @@ export function AppTopbarExecutorControls({
                                             : "font-medium text-fumi-500 hover:bg-fumi-100 hover:text-fumi-800"
                                     }`}
                                 >
-                                    <span>{p}</span>
+                                    <span>{availablePort}</span>
                                     {isSelected && (
                                         <span className="size-1.5 rounded-full bg-fumi-600" />
                                     )}

@@ -5,25 +5,38 @@ pub(crate) mod commands;
 use std::{
     io::{ErrorKind, Read, Write},
     net::{Ipv4Addr, Shutdown, SocketAddrV4, TcpStream},
+    path::Path,
     sync::{Arc, Mutex, MutexGuard},
     thread::{self, JoinHandle},
     time::Duration,
 };
 
 use anyhow::{anyhow, Context, Result};
+use flate2::{write::ZlibEncoder, Compression};
 use tauri::{AppHandle, Runtime};
 
 use crate::events::{emit_executor_message, emit_executor_status_changed};
 
-pub use self::models::{ExecutorMessagePayload, ExecutorMessageType, ExecutorStatusPayload};
+pub use self::models::{
+    ExecutorKind, ExecutorMessagePayload, ExecutorMessageType, ExecutorStatusPayload,
+};
 
-const DEFAULT_EXECUTOR_PORT: u16 = 5553;
 const LOCALHOST: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
 const HEADER_LENGTH: usize = 16;
 const FRAME_TERMINATOR_LENGTH: usize = 1;
 const SOCKET_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
 const MAX_MESSAGE_LENGTH_BYTES: usize = 8 * 1024 * 1024;
 const POST_RECONNECT_SETTLE_DURATION: Duration = Duration::from_millis(75);
+const MACSPLOIT_DETECTION_PATH: &str =
+    "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
+const OPIUMWARE_DETECTION_PATH: &str =
+    "/Applications/Roblox.app/Contents/Resources/libOpiumware.dylib";
+const MACSPLOIT_AVAILABLE_PORTS: [u16; 10] =
+    [5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562];
+const OPIUMWARE_AVAILABLE_PORTS: [u16; 6] =
+    [8392, 8393, 8394, 8395, 8396, 8397];
+const UNSUPPORTED_EXECUTOR_PORTS: [u16; 0] = [];
+const OPIUMWARE_SCRIPT_PREFIX: &str = "OpiumwareScript ";
 
 fn log_executor_debug(message: impl AsRef<str>) {
     eprintln!("[executor] {}", message.as_ref());
@@ -35,10 +48,12 @@ pub struct ExecutorRuntimeState {
 }
 
 struct ExecutorState {
+    executor_kind: ExecutorKind,
     port: u16,
     next_connection_id: u64,
     suppressed_disconnect_connection_id: Option<u64>,
     connection: Option<ExecutorConnection>,
+    is_opiumware_attached: bool,
 }
 
 struct ExecutorConnection {
@@ -56,12 +71,15 @@ enum ExecutorIpcType {
 
 impl Default for ExecutorRuntimeState {
     fn default() -> Self {
+        let executor_kind = detect_executor_kind();
         Self {
             inner: Arc::new(Mutex::new(ExecutorState {
-                port: DEFAULT_EXECUTOR_PORT,
+                executor_kind,
+                port: default_executor_port(executor_kind),
                 next_connection_id: 0,
                 suppressed_disconnect_connection_id: None,
                 connection: None,
+                is_opiumware_attached: false,
             })),
         }
     }
@@ -74,12 +92,7 @@ impl ExecutorRuntimeState {
 
     #[must_use]
     pub fn status(&self) -> ExecutorStatusPayload {
-        let state = self.lock();
-
-        ExecutorStatusPayload {
-            port: state.port,
-            is_attached: state.connection.is_some(),
-        }
+        self.sync_detected_executor_kind()
     }
 
     pub fn attach<R: Runtime>(
@@ -87,53 +100,100 @@ impl ExecutorRuntimeState {
         app: &AppHandle<R>,
         port: u16,
     ) -> Result<ExecutorStatusPayload> {
+        let current_status = self.sync_detected_executor_kind();
         log_executor_debug(format!("attach requested for port {port}"));
 
-        {
-            let state = self.lock();
-
-            if state.connection.is_some() {
-                log_executor_debug("attach rejected because a connection already exists");
-                return Err(anyhow!(
-                    "AlreadyInjectedError: Socket is already connected."
-                ));
-            }
+        if current_status.executor_kind == ExecutorKind::Unsupported {
+            return Err(anyhow!(
+                "UnsupportedExecutorError: No supported executor was detected."
+            ));
         }
 
-        let address = SocketAddrV4::new(LOCALHOST, port);
-        let writer = TcpStream::connect_timeout(&address.into(), SOCKET_CONNECT_TIMEOUT)
-            .map_err(format_attach_error)?;
-        writer
-            .set_nodelay(true)
-            .context("failed to configure the MacSploit socket")?;
-        let reader = writer
-            .try_clone()
-            .context("failed to clone the MacSploit socket")?;
+        if !current_status.available_ports.contains(&port) {
+            return Err(anyhow!(
+                "ConnectionError: Port {port} is not available for the active executor."
+            ));
+        }
 
-        let connection_id = {
-            let mut state = self.lock();
-            state.port = port;
-            state.next_connection_id += 1;
-            state.next_connection_id
-        };
+        match current_status.executor_kind {
+            ExecutorKind::Macsploit => {
+                {
+                    let state = self.lock();
 
-        log_executor_debug(format!(
-            "attach succeeded for port {port} with connection id {connection_id}"
-        ));
+                    if state.connection.is_some() || state.is_opiumware_attached {
+                        log_executor_debug(
+                            "attach rejected because a connection already exists",
+                        );
+                        return Err(anyhow!(
+                            "AlreadyInjectedError: Socket is already connected."
+                        ));
+                    }
+                }
 
-        let app_handle = app.clone();
-        let state_handle = Arc::clone(&self.inner);
-        let reader_thread = thread::spawn(move || {
-            run_reader_loop(app_handle, state_handle, connection_id, reader);
-        });
+                let address = SocketAddrV4::new(LOCALHOST, port);
+                let writer = TcpStream::connect_timeout(&address.into(), SOCKET_CONNECT_TIMEOUT)
+                    .map_err(format_attach_error)?;
+                writer
+                    .set_nodelay(true)
+                    .context("failed to configure the MacSploit socket")?;
+                let reader = writer
+                    .try_clone()
+                    .context("failed to clone the MacSploit socket")?;
 
-        {
-            let mut state = self.lock();
-            state.connection = Some(ExecutorConnection {
-                id: connection_id,
-                writer,
-                reader_thread,
-            });
+                let connection_id = {
+                    let mut state = self.lock();
+                    state.port = port;
+                    state.next_connection_id += 1;
+                    state.next_connection_id
+                };
+
+                log_executor_debug(format!(
+                    "attach succeeded for port {port} with connection id {connection_id}"
+                ));
+
+                let app_handle = app.clone();
+                let state_handle = Arc::clone(&self.inner);
+                let reader_thread = thread::spawn(move || {
+                    run_reader_loop(app_handle, state_handle, connection_id, reader);
+                });
+
+                {
+                    let mut state = self.lock();
+                    state.connection = Some(ExecutorConnection {
+                        id: connection_id,
+                        writer,
+                        reader_thread,
+                    });
+                    state.is_opiumware_attached = false;
+                }
+            }
+            ExecutorKind::Opiumware => {
+                {
+                    let state = self.lock();
+
+                    if state.connection.is_some() || state.is_opiumware_attached {
+                        log_executor_debug(
+                            "attach rejected because a connection already exists",
+                        );
+                        return Err(anyhow!(
+                            "AlreadyInjectedError: Socket is already connected."
+                        ));
+                    }
+                }
+
+                let socket = connect_to_executor_port(port)?;
+                drop(socket);
+
+                let mut state = self.lock();
+                state.port = port;
+                state.is_opiumware_attached = true;
+                state.connection = None;
+            }
+            ExecutorKind::Unsupported => {
+                return Err(anyhow!(
+                    "UnsupportedExecutorError: No supported executor was detected."
+                ));
+            }
         }
 
         let status = self.status();
@@ -142,54 +202,122 @@ impl ExecutorRuntimeState {
     }
 
     pub fn reattach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
-        let port = self.status().port;
+        let status = self.status();
+        let port = status.port;
         log_executor_debug(format!("reattach requested for port {port}"));
+
+        match status.executor_kind {
+            ExecutorKind::Macsploit => {
+                if status.is_attached {
+                    self.reset_connection(app, false);
+                }
+            }
+            ExecutorKind::Opiumware => {
+                if status.is_attached {
+                    let mut state = self.lock();
+                    state.is_opiumware_attached = false;
+                }
+            }
+            ExecutorKind::Unsupported => {
+                return Err(anyhow!(
+                    "UnsupportedExecutorError: No supported executor was detected."
+                ));
+            }
+        }
+
         self.attach(app, port)
     }
 
     pub fn detach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
+        let status = self.status();
         log_executor_debug("detach requested");
-        let connection = {
-            let mut state = self.lock();
-            state
-                .connection
-                .take()
-                .ok_or_else(|| anyhow!("NotInjectedError: Socket is already closed."))?
+
+        let next_status = match status.executor_kind {
+            ExecutorKind::Macsploit => {
+                let connection = {
+                    let mut state = self.lock();
+                    state.connection.take().ok_or_else(|| {
+                        anyhow!("NotInjectedError: Socket is already closed.")
+                    })?
+                };
+
+                log_executor_debug(format!(
+                    "detaching connection id {} on port {}",
+                    connection.id, status.port
+                ));
+                let _ = connection.writer.shutdown(Shutdown::Both);
+                let _ = connection.reader_thread.join();
+                self.status()
+            }
+            ExecutorKind::Opiumware => {
+                let mut state = self.lock();
+                if !state.is_opiumware_attached {
+                    return Err(anyhow!("NotInjectedError: Socket is already closed."));
+                }
+
+                state.is_opiumware_attached = false;
+                build_status_payload(&state)
+            }
+            ExecutorKind::Unsupported => {
+                return Err(anyhow!(
+                    "UnsupportedExecutorError: No supported executor was detected."
+                ));
+            }
         };
 
         log_executor_debug(format!(
-            "detaching connection id {} on port {}",
-            connection.id,
-            self.status().port
-        ));
-        let _ = connection.writer.shutdown(Shutdown::Both);
-        let _ = connection.reader_thread.join();
-
-        let status = self.status();
-        log_executor_debug(format!(
             "detach completed; attached={}, port={}",
-            status.is_attached, status.port
+            next_status.is_attached, next_status.port
         ));
-        let _ = emit_executor_status_changed(app, &status);
-        Ok(status)
+        let _ = emit_executor_status_changed(app, &next_status);
+        Ok(next_status)
     }
 
     pub fn execute_script<R: Runtime>(&self, app: &AppHandle<R>, script: &str) -> Result<()> {
+        let status = self.status();
         log_executor_debug(format!(
             "execute requested; script_bytes={}, attached={}",
             script.len(),
-            self.status().is_attached
-        ));
-        let port = self
-            .connected_port()
-            .ok_or_else(|| anyhow!("NotInjectedError: Please attach before executing scripts."))?;
-
-        log_executor_debug(format!(
-            "execute will reset the active connection and reconnect on port {port}"
+            status.is_attached
         ));
 
-        self.reconnect_on_port(app, port)?;
-        self.write_frame_with_reconnect(app, ExecutorIpcType::Execute, script.as_bytes())
+        if !status.is_attached {
+            return Err(anyhow!(
+                "NotInjectedError: Please attach before executing scripts."
+            ));
+        }
+
+        match status.executor_kind {
+            ExecutorKind::Macsploit => {
+                let port = self.connected_port().ok_or_else(|| {
+                    anyhow!("NotInjectedError: Please attach before executing scripts.")
+                })?;
+
+                log_executor_debug(format!(
+                    "execute will reset the active connection and reconnect on port {port}"
+                ));
+
+                self.reconnect_on_port(app, port)?;
+                self.write_frame_with_reconnect(
+                    app,
+                    ExecutorIpcType::Execute,
+                    script.as_bytes(),
+                )
+            }
+            ExecutorKind::Opiumware => {
+                let port = status.port;
+                let payload = build_opiumware_payload(script)?;
+                let mut socket = connect_to_executor_port(port)?;
+                socket
+                    .write_all(&payload)
+                    .context("failed to write to the Opiumware socket")?;
+                let _ = socket.shutdown(Shutdown::Both);
+                Ok(())
+            }
+            ExecutorKind::Unsupported => Err(anyhow!(
+                "UnsupportedExecutorError: No supported executor was detected."
+            )),
+        }
     }
 
     pub fn update_setting<R: Runtime>(
@@ -198,9 +326,23 @@ impl ExecutorRuntimeState {
         key: &str,
         value: bool,
     ) -> Result<()> {
+        let status = self.status();
         log_executor_debug(format!(
             "update setting requested; key={key}, value={value}"
         ));
+        match status.executor_kind {
+            ExecutorKind::Macsploit => {}
+            ExecutorKind::Opiumware => {
+                return Err(anyhow!(
+                    "SettingsError: Opiumware settings are not supported."
+                ));
+            }
+            ExecutorKind::Unsupported => {
+                return Err(anyhow!(
+                    "UnsupportedExecutorError: No supported executor was detected."
+                ));
+            }
+        }
         let payload = format!("{key} {}", if value { "true" } else { "false" });
         self.write_frame_with_reconnect(app, ExecutorIpcType::Setting, payload.as_bytes())
     }
@@ -324,6 +466,37 @@ impl ExecutorRuntimeState {
             log_executor_debug("connection reset completed");
         }
     }
+
+    fn sync_detected_executor_kind(&self) -> ExecutorStatusPayload {
+        let detected_kind = detect_executor_kind();
+        let stale_connection = {
+            let mut state = self.lock();
+            let did_kind_change = state.executor_kind != detected_kind;
+
+            let stale_connection = if did_kind_change {
+                state.connection.take()
+            } else {
+                None
+            };
+
+            if did_kind_change {
+                state.executor_kind = detected_kind;
+                state.is_opiumware_attached = false;
+                state.suppressed_disconnect_connection_id = None;
+            }
+
+            state.port = normalize_executor_port(detected_kind, state.port);
+
+            (build_status_payload(&state), stale_connection)
+        };
+
+        if let Some(connection) = stale_connection.1 {
+            let _ = connection.writer.shutdown(Shutdown::Both);
+            let _ = connection.reader_thread.join();
+        }
+
+        stale_connection.0
+    }
 }
 
 fn format_attach_error(error: std::io::Error) -> anyhow::Error {
@@ -333,6 +506,77 @@ fn format_attach_error(error: std::io::Error) -> anyhow::Error {
         }
         _ => anyhow!("ConnectionError: {error}"),
     }
+}
+
+fn detect_executor_kind() -> ExecutorKind {
+    detect_executor_kind_at(
+        Path::new(MACSPLOIT_DETECTION_PATH),
+        Path::new(OPIUMWARE_DETECTION_PATH),
+    )
+}
+
+fn detect_executor_kind_at(
+    macsploit_dylib_path: &Path,
+    opiumware_dylib_path: &Path,
+) -> ExecutorKind {
+    if macsploit_dylib_path.exists() {
+        ExecutorKind::Macsploit
+    } else if opiumware_dylib_path.exists() {
+        ExecutorKind::Opiumware
+    } else {
+        ExecutorKind::Unsupported
+    }
+}
+
+fn available_ports_for_executor(executor_kind: ExecutorKind) -> &'static [u16] {
+    match executor_kind {
+        ExecutorKind::Macsploit => &MACSPLOIT_AVAILABLE_PORTS,
+        ExecutorKind::Opiumware => &OPIUMWARE_AVAILABLE_PORTS,
+        ExecutorKind::Unsupported => &UNSUPPORTED_EXECUTOR_PORTS,
+    }
+}
+
+fn default_executor_port(executor_kind: ExecutorKind) -> u16 {
+    available_ports_for_executor(executor_kind)
+        .first()
+        .copied()
+        .unwrap_or(0)
+}
+
+fn is_supported_port(executor_kind: ExecutorKind, port: u16) -> bool {
+    available_ports_for_executor(executor_kind).contains(&port)
+}
+
+fn normalize_executor_port(executor_kind: ExecutorKind, port: u16) -> u16 {
+    if is_supported_port(executor_kind, port) {
+        port
+    } else {
+        default_executor_port(executor_kind)
+    }
+}
+
+fn build_status_payload(state: &ExecutorState) -> ExecutorStatusPayload {
+    ExecutorStatusPayload {
+        executor_kind: state.executor_kind,
+        available_ports: available_ports_for_executor(state.executor_kind).to_vec(),
+        port: state.port,
+        is_attached: state.connection.is_some() || state.is_opiumware_attached,
+    }
+}
+
+fn connect_to_executor_port(port: u16) -> Result<TcpStream> {
+    let address = SocketAddrV4::new(LOCALHOST, port);
+    TcpStream::connect_timeout(&address.into(), SOCKET_CONNECT_TIMEOUT).map_err(format_attach_error)
+}
+
+fn build_opiumware_payload(script: &str) -> Result<Vec<u8>> {
+    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+    encoder
+        .write_all(format!("{OPIUMWARE_SCRIPT_PREFIX}{script}").as_bytes())
+        .context("failed to compress the Opiumware payload")?;
+    encoder
+        .finish()
+        .context("failed to finalize the Opiumware payload")
 }
 
 fn build_frame(ipc_type: ExecutorIpcType, payload: &[u8]) -> Result<Vec<u8>> {
@@ -460,10 +704,7 @@ fn run_reader_loop<R: Runtime>(
         }
 
         (
-            ExecutorStatusPayload {
-                port: state.port,
-                is_attached: state.connection.is_some(),
-            },
+            build_status_payload(&state),
             should_suppress_disconnect_event,
         )
     };
@@ -536,6 +777,12 @@ fn extract_complete_messages(pending: &mut Vec<u8>) -> Result<Vec<ExecutorMessag
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{
+        fs,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use flate2::read::ZlibDecoder;
 
     fn build_incoming_message(
         message_type: ExecutorMessageType,
@@ -552,6 +799,15 @@ mod tests {
         frame[HEADER_LENGTH..HEADER_LENGTH + payload.len()].copy_from_slice(payload.as_bytes());
 
         frame
+    }
+
+    fn create_temp_path(prefix: &str) -> std::path::PathBuf {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock should be valid")
+            .as_nanos();
+
+        std::env::temp_dir().join(format!("fumi-{prefix}-{timestamp}"))
     }
 
     #[test]
@@ -602,5 +858,127 @@ mod tests {
         let validation_error = anyhow!("not a socket issue");
 
         assert!(!should_retry_after_write_error(&validation_error));
+    }
+
+    #[test]
+    fn detect_executor_kind_prefers_macsploit_when_the_dylib_exists() {
+        let dylib_path = create_temp_path("macsploit-dylib");
+        let opiumware_path = create_temp_path("opiumware-dylib");
+        fs::write(&dylib_path, "present").expect("temp dylib should be created");
+
+        assert_eq!(
+            detect_executor_kind_at(&dylib_path, &opiumware_path),
+            ExecutorKind::Macsploit
+        );
+
+        fs::remove_file(dylib_path).expect("temp dylib should be removed");
+    }
+
+    #[test]
+    fn detect_executor_kind_detects_opiumware_when_only_its_dylib_exists() {
+        let dylib_path = create_temp_path("missing-macsploit-dylib");
+        let opiumware_path = create_temp_path("opiumware-dylib");
+        fs::write(&opiumware_path, "present")
+            .expect("temp Opiumware dylib should be created");
+
+        assert_eq!(
+            detect_executor_kind_at(&dylib_path, &opiumware_path),
+            ExecutorKind::Opiumware
+        );
+
+        fs::remove_file(opiumware_path).expect("temp Opiumware dylib should be removed");
+    }
+
+    #[test]
+    fn detect_executor_kind_returns_unsupported_when_no_dylib_exists() {
+        let dylib_path = create_temp_path("missing-macsploit-dylib");
+        let opiumware_path = create_temp_path("missing-opiumware-dylib");
+
+        assert_eq!(
+            detect_executor_kind_at(&dylib_path, &opiumware_path),
+            ExecutorKind::Unsupported
+        );
+    }
+
+    #[test]
+    fn normalize_executor_port_uses_the_first_valid_port_per_executor() {
+        assert_eq!(normalize_executor_port(ExecutorKind::Macsploit, 9999), 5553);
+        assert_eq!(normalize_executor_port(ExecutorKind::Opiumware, 5553), 8392);
+        assert_eq!(normalize_executor_port(ExecutorKind::Opiumware, 8395), 8395);
+    }
+
+    #[test]
+    fn build_opiumware_payload_prepends_the_required_script_prefix() {
+        let compressed =
+            build_opiumware_payload("print('hello')").expect("payload should compress");
+        let mut decoder = ZlibDecoder::new(compressed.as_slice());
+        let mut decoded = String::new();
+
+        decoder
+            .read_to_string(&mut decoded)
+            .expect("payload should decompress");
+
+        assert_eq!(decoded, "OpiumwareScript print('hello')");
+    }
+
+    #[test]
+    fn build_status_payload_marks_opiumware_as_attached_without_a_persistent_socket() {
+        let state = ExecutorState {
+            executor_kind: ExecutorKind::Opiumware,
+            port: 8394,
+            next_connection_id: 0,
+            suppressed_disconnect_connection_id: None,
+            connection: None,
+            is_opiumware_attached: true,
+        };
+
+        let status = build_status_payload(&state);
+
+        assert_eq!(status.executor_kind, ExecutorKind::Opiumware);
+        assert_eq!(status.available_ports, OPIUMWARE_AVAILABLE_PORTS);
+        assert_eq!(status.port, 8394);
+        assert!(status.is_attached);
+    }
+
+    #[test]
+    fn build_status_payload_exposes_executor_specific_ports() {
+        let macsploit_state = ExecutorState {
+            executor_kind: ExecutorKind::Macsploit,
+            port: 5553,
+            next_connection_id: 0,
+            suppressed_disconnect_connection_id: None,
+            connection: None,
+            is_opiumware_attached: false,
+        };
+
+        let opiumware_state = ExecutorState {
+            executor_kind: ExecutorKind::Opiumware,
+            port: 8392,
+            next_connection_id: 0,
+            suppressed_disconnect_connection_id: None,
+            connection: None,
+            is_opiumware_attached: false,
+        };
+        let unsupported_state = ExecutorState {
+            executor_kind: ExecutorKind::Unsupported,
+            port: 0,
+            next_connection_id: 0,
+            suppressed_disconnect_connection_id: None,
+            connection: None,
+            is_opiumware_attached: false,
+        };
+
+        assert_eq!(
+            build_status_payload(&macsploit_state).available_ports,
+            MACSPLOIT_AVAILABLE_PORTS
+        );
+        assert_eq!(
+            build_status_payload(&opiumware_state).available_ports,
+            OPIUMWARE_AVAILABLE_PORTS
+        );
+        assert_eq!(
+            build_status_payload(&unsupported_state).available_ports,
+            UNSUPPORTED_EXECUTOR_PORTS
+        );
     }
 }

@@ -52,6 +52,10 @@ function createWorkspaceExecutor(
     overrides: Partial<UseWorkspaceExecutorResult> = {},
 ): UseWorkspaceExecutorResult {
     return {
+        executorKind: "macsploit",
+        availablePorts: [
+            5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
+        ],
         port: "5553",
         isAttached: false,
         didRecentAttachFail: false,

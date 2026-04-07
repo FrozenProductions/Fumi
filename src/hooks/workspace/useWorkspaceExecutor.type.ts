@@ -1,8 +1,12 @@
+import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+
 export type UseWorkspaceExecutorOptions = {
     activeTabContent: string | null;
 };
 
 export type UseWorkspaceExecutorResult = {
+    executorKind: ExecutorKind;
+    availablePorts: readonly number[];
     port: string;
     isAttached: boolean;
     didRecentAttachFail: boolean;
