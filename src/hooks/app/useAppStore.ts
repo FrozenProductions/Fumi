@@ -5,12 +5,14 @@ import {
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_THEME,
     DEFAULT_APP_UPDATER_SETTINGS,
+    DEFAULT_APP_WORKSPACE_SETTINGS,
 } from "../../constants/app/settings";
 import {
     clampAppZoomPercent,
     isAppSidebarItem,
     isAppTheme,
     normalizeAppIntellisenseWidth,
+    normalizeAppMiddleClickTabAction,
 } from "../../lib/app/store";
 import type { AppStore, AppStoreState } from "./appStore.type";
 
@@ -28,6 +30,7 @@ export const useAppStore = create<AppStore>()(
             theme: DEFAULT_APP_THEME,
             editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
             updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
+            workspaceSettings: DEFAULT_APP_WORKSPACE_SETTINGS,
             openSidebar: () => {
                 set({ isSidebarOpen: true });
             },
@@ -166,6 +169,14 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setMiddleClickTabAction: (action) => {
+                set((state) => ({
+                    workspaceSettings: {
+                        ...state.workspaceSettings,
+                        middleClickTabAction: action,
+                    },
+                }));
+            },
         }),
         {
             name: "fumi-app-store",
@@ -189,6 +200,9 @@ export const useAppStore = create<AppStore>()(
                 const intellisenseWidth = normalizeAppIntellisenseWidth(
                     persistedAppState.editorSettings?.intellisenseWidth,
                 );
+                const middleClickTabAction = normalizeAppMiddleClickTabAction(
+                    persistedAppState.workspaceSettings?.middleClickTabAction,
+                );
 
                 return {
                     ...currentState,
@@ -205,6 +219,11 @@ export const useAppStore = create<AppStore>()(
                         ...persistedAppState.editorSettings,
                         intellisenseWidth,
                     },
+                    workspaceSettings: {
+                        ...currentState.workspaceSettings,
+                        ...persistedAppState.workspaceSettings,
+                        middleClickTabAction,
+                    },
                 };
             },
             partialize: (state) => ({
@@ -214,6 +233,7 @@ export const useAppStore = create<AppStore>()(
                 theme: state.theme,
                 updaterSettings: state.updaterSettings,
                 editorSettings: state.editorSettings,
+                workspaceSettings: state.workspaceSettings,
             }),
         },
     ),

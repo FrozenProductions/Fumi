@@ -1,8 +1,10 @@
 import type {
     AppEditorSettings,
+    AppMiddleClickTabAction,
     AppSettingsSection,
     AppTheme,
     AppUpdaterSettings,
+    AppWorkspaceSettings,
 } from "../../lib/app/app.type";
 import {
     DEFAULT_PAGE_ZOOM,
@@ -13,6 +15,7 @@ import {
 import type {
     AppIntellisensePriorityOption,
     AppIntellisenseWidthOption,
+    AppMiddleClickTabActionOption,
     AppSettingsSectionOption,
     AppThemeOption,
 } from "./settings.type";
@@ -20,7 +23,7 @@ import type {
 export const APP_SETTINGS_SECTIONS = [
     { id: "general", label: "General" },
     { id: "editor", label: "Editor" },
-    { id: "workspace", label: "Archived Tabs" },
+    { id: "workspace", label: "Workspace" },
 ] as const satisfies AppSettingsSectionOption[];
 
 export const DEFAULT_APP_SETTINGS_SECTION =
@@ -43,7 +46,14 @@ export const APP_INTELLISENSE_WIDTH_OPTIONS = [
     { value: "large", label: "Large" },
 ] as const satisfies AppIntellisenseWidthOption[];
 
+export const APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS = [
+    { value: "archive", label: "Archive" },
+    { value: "delete", label: "Delete" },
+] as const satisfies AppMiddleClickTabActionOption[];
+
 export const DEFAULT_APP_THEME = "light" satisfies AppTheme;
+export const DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION =
+    "archive" satisfies AppMiddleClickTabAction;
 
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,
@@ -55,6 +65,10 @@ export const DEFAULT_APP_EDITOR_SETTINGS = {
 export const DEFAULT_APP_UPDATER_SETTINGS = {
     isAutoUpdateEnabled: true,
 } as const satisfies AppUpdaterSettings;
+
+export const DEFAULT_APP_WORKSPACE_SETTINGS = {
+    middleClickTabAction: DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
+} as const satisfies AppWorkspaceSettings;
 
 export const APP_EDITOR_FONT_SIZE_MIN = 10;
 export const APP_EDITOR_FONT_SIZE_MAX = 25;

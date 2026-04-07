@@ -21,6 +21,7 @@ export type AppCommandPaletteItem = {
 export type AppSettingsSection = "general" | "workspace" | "editor";
 
 export type AppTheme = "light" | "dark";
+export type AppMiddleClickTabAction = "archive" | "delete";
 
 export type AppIntellisensePriority = "balanced" | "language" | "executor";
 export type AppIntellisenseWidth = "small" | "normal" | "large";
@@ -34,6 +35,10 @@ export type AppEditorSettings = {
 
 export type AppUpdaterSettings = {
     isAutoUpdateEnabled: boolean;
+};
+
+export type AppWorkspaceSettings = {
+    middleClickTabAction: AppMiddleClickTabAction;
 };
 
 export type AppSidebarItem = "workspace" | "script-library" | "settings";

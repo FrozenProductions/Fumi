@@ -4,8 +4,10 @@ import {
     APP_EDITOR_FONT_SIZE_MIN,
     APP_INTELLISENSE_PRIORITY_OPTIONS,
     APP_INTELLISENSE_WIDTH_OPTIONS,
+    APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS,
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
+import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import { AppInput } from "../AppInput";
 import { AppSelect } from "../AppSelect";
 import { AppSettingsToggle } from "../AppSettingsToggle";
@@ -21,6 +23,12 @@ export function AppSettingsEditorSection(): ReactElement {
     );
     const setEditorIntellisenseWidth = useAppStore(
         (state) => state.setEditorIntellisenseWidth,
+    );
+    const middleClickTabAction = useAppStore(
+        (state) => state.workspaceSettings.middleClickTabAction,
+    );
+    const setMiddleClickTabAction = useAppStore(
+        (state) => state.setMiddleClickTabAction,
     );
 
     const handleFontSizeChange = (value: string): void => {
@@ -43,6 +51,12 @@ export function AppSettingsEditorSection(): ReactElement {
         setEditorIntellisenseWidth(value);
     };
 
+    const handleMiddleClickTabActionChange = (
+        value: AppMiddleClickTabAction,
+    ): void => {
+        setMiddleClickTabAction(value);
+    };
+
     return (
         <div className="flex w-full flex-col divide-y divide-fumi-200/80">
             <div className="flex items-center justify-between gap-6 py-4">
@@ -63,6 +77,23 @@ export function AppSettingsEditorSection(): ReactElement {
                     maxLength={2}
                     inputMode="numeric"
                     suffix="px"
+                    className="shrink-0"
+                />
+            </div>
+            <div className="flex items-center justify-between gap-6 py-4">
+                <div className="min-w-0">
+                    <p className="text-xs font-semibold text-fumi-900">
+                        Middle-click tab action
+                    </p>
+                    <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
+                        Choose whether middle-clicking a workspace tab archives
+                        it or permanently deletes it.
+                    </p>
+                </div>
+                <AppSelect
+                    value={middleClickTabAction}
+                    options={APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS}
+                    onChange={handleMiddleClickTabActionChange}
                     className="shrink-0"
                 />
             </div>

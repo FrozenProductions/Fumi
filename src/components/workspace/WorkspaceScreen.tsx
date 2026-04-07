@@ -23,6 +23,9 @@ export function WorkspaceScreen({
 }: WorkspaceScreenProps): ReactElement {
     const appTheme = useAppStore((state) => state.theme);
     const editorSettings = useAppStore((state) => state.editorSettings);
+    const middleClickTabAction = useAppStore(
+        (state) => state.workspaceSettings.middleClickTabAction,
+    );
     const {
         isBootstrapping,
         workspace,
@@ -146,6 +149,7 @@ export function WorkspaceScreen({
                     onReorderTab={reorderWorkspaceTab}
                     onArchiveTab={handleArchiveWorkspaceTab}
                     onDeleteTab={handleDeleteWorkspaceTab}
+                    middleClickTabAction={middleClickTabAction}
                 />
             ) : null}
 

@@ -1,6 +1,7 @@
 import type {
     AppIntellisensePriority,
     AppIntellisenseWidth,
+    AppMiddleClickTabAction,
     AppSettingsSection,
     AppTheme,
 } from "../../lib/app/app.type";
@@ -22,5 +23,10 @@ export type AppIntellisensePriorityOption = {
 
 export type AppIntellisenseWidthOption = {
     value: AppIntellisenseWidth;
+    label: string;
+};
+
+export type AppMiddleClickTabActionOption = {
+    value: AppMiddleClickTabAction;
     label: string;
 };

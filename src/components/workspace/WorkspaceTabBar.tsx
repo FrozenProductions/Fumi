@@ -31,6 +31,7 @@ export function WorkspaceTabBar({
     onReorderTab,
     onArchiveTab,
     onDeleteTab,
+    middleClickTabAction,
 }: WorkspaceTabBarProps): ReactElement {
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabListContainerRef = useRef<HTMLDivElement | null>(null);
@@ -277,8 +278,10 @@ export function WorkspaceTabBar({
                             tab={tab}
                             isActive={tab.id === workspace.activeTabId}
                             isTabDragActive={isTabDragActive}
+                            middleClickTabAction={middleClickTabAction}
                             onOpenContextMenu={handleOpenContextMenu}
                             onArchiveTab={onArchiveTab}
+                            onDeleteTab={onDeleteTab}
                             onSelectTab={onSelectTab}
                             handleRenameInputBlur={handleRenameInputBlur}
                             handleRenameInputChange={handleRenameInputChange}

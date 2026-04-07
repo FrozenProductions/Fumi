@@ -1,5 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
 import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename.type";
+import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type {
     WorkspaceSession,
     WorkspaceTab,
@@ -11,11 +12,13 @@ export type WorkspaceTabItemProps = {
     tab: WorkspaceTab;
     isActive: boolean;
     isTabDragActive: boolean;
+    middleClickTabAction: AppMiddleClickTabAction;
     onOpenContextMenu: (
         tabId: string,
         event: ReactMouseEvent<HTMLDivElement>,
     ) => void;
     onArchiveTab: (tabId: string) => void;
+    onDeleteTab: (tabId: string) => void;
     onSelectTab: (tabId: string) => void;
 } & Pick<
     UseWorkspaceTabRenameResult,

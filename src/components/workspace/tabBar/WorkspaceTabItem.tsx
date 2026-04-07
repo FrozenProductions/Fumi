@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
-import type { ReactElement } from "react";
+import type { ReactElement, MouseEvent as ReactMouseEvent } from "react";
 import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
 import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
@@ -15,8 +15,10 @@ export function WorkspaceTabItem({
     tab,
     isActive,
     isTabDragActive,
+    middleClickTabAction,
     onOpenContextMenu,
     onArchiveTab,
+    onDeleteTab,
     onSelectTab,
     handleRenameInputBlur,
     handleRenameInputChange,
@@ -39,17 +41,36 @@ export function WorkspaceTabItem({
     });
     const shouldShowDropTarget = isDropTarget && !isTabDragActive;
 
+    const handleMiddleClick = (
+        event: ReactMouseEvent<HTMLDivElement>,
+    ): void => {
+        if (event.button !== 1 || isRenaming) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (middleClickTabAction === "delete") {
+            onDeleteTab(tab.id);
+            return;
+        }
+
+        onArchiveTab(tab.id);
+    };
+
     return (
         <div
             ref={ref}
             data-tab-id={tab.id}
             onMouseDownCapture={(event) => {
-                if (event.button !== 2) {
+                if (event.button !== 1 && event.button !== 2) {
                     return;
                 }
 
                 event.preventDefault();
             }}
+            onAuxClick={handleMiddleClick}
             onContextMenu={(event) => {
                 onOpenContextMenu(tab.id, event);
             }}

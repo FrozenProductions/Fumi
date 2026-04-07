@@ -4,9 +4,11 @@ import type {
     AppEditorSettings,
     AppIntellisensePriority,
     AppIntellisenseWidth,
+    AppMiddleClickTabAction,
     AppSidebarItem,
     AppTheme,
     AppUpdaterSettings,
+    AppWorkspaceSettings,
 } from "../../lib/app/app.type";
 
 export type AppStoreState = {
@@ -24,6 +26,7 @@ export type AppStoreState = {
     theme: AppTheme;
     editorSettings: AppEditorSettings;
     updaterSettings: AppUpdaterSettings;
+    workspaceSettings: AppWorkspaceSettings;
 };
 
 export type AppStoreActions = {
@@ -45,6 +48,7 @@ export type AppStoreActions = {
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
     setEditorIntellisenseWidth: (width: AppIntellisenseWidth) => void;
+    setMiddleClickTabAction: (action: AppMiddleClickTabAction) => void;
 };
 
 export type AppStore = AppStoreState & AppStoreActions;

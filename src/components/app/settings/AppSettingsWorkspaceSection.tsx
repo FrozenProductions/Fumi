@@ -55,7 +55,9 @@ export function AppSettingsWorkspaceSection({
 
     useEffect(() => {
         const el = sentinelRef.current;
-        if (!el) return;
+        if (!el) {
+            return;
+        }
 
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -69,6 +71,7 @@ export function AppSettingsWorkspaceSection({
         );
 
         observer.observe(el);
+
         return () => observer.disconnect();
     }, []);
 
@@ -76,9 +79,9 @@ export function AppSettingsWorkspaceSection({
         if (!isMinified) {
             const timer = setTimeout(() => setIsExpandedFully(true), 150);
             return () => clearTimeout(timer);
-        } else {
-            setIsExpandedFully(false);
         }
+
+        setIsExpandedFully(false);
     }, [isMinified]);
 
     const { isPresent, isClosing } = usePresenceTransition({
@@ -89,15 +92,6 @@ export function AppSettingsWorkspaceSection({
     const searchMotionClass = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:-motion-translate-y-out-[10%] motion-safe:motion-duration-150"
         : "motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[10%] motion-safe:motion-duration-150 motion-safe:motion-ease-out-cubic";
-
-    if (!workspace) {
-        return (
-            <AppSettingsWorkspaceEmptyState
-                title="No workspace open"
-                description="Open a workspace to view and restore archived tabs."
-            />
-        );
-    }
 
     const handleRestoreTab = (tabId: string): void => {
         void workspaceSession.restoreArchivedWorkspaceTab(tabId);
@@ -123,6 +117,31 @@ export function AppSettingsWorkspaceSection({
     const baseActionButtonClass =
         "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-100 px-2.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600";
 
+    const dateFormatter = createArchivedTabsDateFormatter();
+    const actionButtonClassNames = {
+        base: baseActionButtonClass,
+        delete: deleteButtonClass,
+    };
+
+    const handleSearchQueryChange = (
+        event: ChangeEvent<HTMLInputElement>,
+    ): void => {
+        setSearchQuery(event.target.value);
+    };
+
+    const handleSortByChange = (value: ArchivedTabsSortOption): void => {
+        setSortBy(value);
+    };
+
+    if (!workspace) {
+        return (
+            <AppSettingsWorkspaceEmptyState
+                title="No workspace open"
+                description="Open a workspace to view and restore archived tabs."
+            />
+        );
+    }
+
     if (workspace.archivedTabs.length === 0) {
         return (
             <AppSettingsWorkspaceEmptyState
@@ -131,20 +150,6 @@ export function AppSettingsWorkspaceSection({
             />
         );
     }
-
-    const dateFormatter = createArchivedTabsDateFormatter();
-    const actionButtonClassNames = {
-        base: baseActionButtonClass,
-        delete: deleteButtonClass,
-    };
-    const handleSearchQueryChange = (
-        event: ChangeEvent<HTMLInputElement>,
-    ): void => {
-        setSearchQuery(event.target.value);
-    };
-    const handleSortByChange = (value: ArchivedTabsSortOption): void => {
-        setSortBy(value);
-    };
 
     return (
         <div className="relative flex w-full flex-col gap-4">

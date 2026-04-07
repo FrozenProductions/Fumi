@@ -3,16 +3,19 @@ import {
     APP_ZOOM_MAX,
     APP_ZOOM_MIN,
     DEFAULT_APP_EDITOR_SETTINGS,
+    DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
 } from "../../constants/app/settings";
 import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
 import type {
     AppIntellisenseWidth,
+    AppMiddleClickTabAction,
     AppSidebarItem,
     AppTheme,
 } from "./app.type";
 
 const APP_THEMES = ["light", "dark"] as const;
 const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
+const APP_MIDDLE_CLICK_TAB_ACTIONS = ["archive", "delete"] as const;
 
 export function clampAppZoomPercent(zoomPercent: number): number {
     if (!Number.isFinite(zoomPercent)) {
@@ -56,4 +59,13 @@ export function normalizeAppIntellisenseWidth(
         APP_INTELLISENSE_WIDTHS.includes(value as AppIntellisenseWidth)
         ? (value as AppIntellisenseWidth)
         : DEFAULT_APP_EDITOR_SETTINGS.intellisenseWidth;
+}
+
+export function normalizeAppMiddleClickTabAction(
+    value: unknown,
+): AppMiddleClickTabAction {
+    return typeof value === "string" &&
+        APP_MIDDLE_CLICK_TAB_ACTIONS.includes(value as AppMiddleClickTabAction)
+        ? (value as AppMiddleClickTabAction)
+        : DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION;
 }
