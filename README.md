@@ -14,7 +14,7 @@
 
 # Fumi
 
-Fumi is an elegant and soft UI wrapper for MacSploit.
+Fumi is an elegant and soft UI wrapper for MacSploit and Opiumware.
 
 This README is based on the public repository structure and config files such as [package.json](./package.json), [src-tauri/tauri.conf.json](./src-tauri/tauri.conf.json), and [.github/workflows/ci.yml](./.github/workflows/ci.yml).
 
@@ -26,7 +26,7 @@ This README is based on the public repository structure and config files such as
 - Browse and search a remote script library powered by Rscripts.net
 - Copy script links or full script contents to the clipboard
 - Import script-library entries directly into the active workspace
-- Attach to a local MacSploit socket and execute the active workspace tab
+- Attach to a supported local executor and execute the active workspace tab
 - Use native desktop menus, dialogs, zoom actions, and clipboard integrations through Tauri
 
 ## Technology Stack
@@ -60,7 +60,7 @@ Fumi is split into a React frontend and a Rust/Tauri backend:
 
 - The frontend under [`src/`](./src) is organized around [`src/view`](./src/view), reusable UI in [`src/components`](./src/components), hooks in [`src/hooks`](./src/hooks), and domain helpers in [`src/lib`](./src/lib).
 - Frontend access to native capabilities is funneled through wrappers in [`src/lib/platform`](./src/lib/platform) instead of calling raw Tauri APIs throughout the component tree.
-- The Rust backend in [`src-tauri/src`](./src-tauri/src) registers Tauri commands, menu events, lifecycle hooks, workspace persistence, updater/plugin setup, and MacSploit executor behavior.
+- The Rust backend in [`src-tauri/src`](./src-tauri/src) registers Tauri commands, menu events, lifecycle hooks, workspace persistence, updater/plugin setup, and executor behavior for MacSploit and Opiumware.
 - The script library is fetched by the frontend, while local workspace operations and executor actions go through the native backend.
 
 ```mermaid
@@ -71,7 +71,7 @@ flowchart LR
     Tauri --> Backend["Rust Backend<br/>src-tauri/src"]
     Backend --> Files["Workspace Files & Metadata"]
     Backend --> Native["Native Menu / Dialog / Clipboard"]
-    Backend --> Socket["MacSploit TCP Socket"]
+    Backend --> Socket["MacSploit / Opiumware IPC"]
 ```
 
 ### Main Runtime Areas
@@ -80,7 +80,7 @@ flowchart LR
 - [`src/view/appScreens.tsx`](./src/view/appScreens.tsx) switches between the workspace and script-library screens.
 - [`src-tauri/src/lib.rs`](./src-tauri/src/lib.rs) wires commands, plugins, menu handling, guarded app/window shutdown, and quit preparation.
 - [`src-tauri/src/workspace`](./src-tauri/src/workspace) owns workspace metadata, file operations, archive/restore flows, and session restore behavior.
-- [`src-tauri/src/executor`](./src-tauri/src/executor) manages the MacSploit socket protocol, attach/detach flow, and execution messages.
+- [`src-tauri/src/executor`](./src-tauri/src/executor) manages executor detection, MacSploit and Opiumware IPC flows, and execution messages.
 - [`src-tauri/src/menu.rs`](./src-tauri/src/menu.rs) defines native app, edit, file, view, and window menus.
 
 ## Getting Started
@@ -156,7 +156,7 @@ Requires the Tauri desktop shell:
 - Reading and writing workspace files
 - Persisting workspace state through Rust commands
 - Native dialogs, menus, zoom events, and clipboard integration
-- MacSploit attach and execute flows
+- MacSploit and Opiumware attach and execute flows
 
 ## Project Structure
 
