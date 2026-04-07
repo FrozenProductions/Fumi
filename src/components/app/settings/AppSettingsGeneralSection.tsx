@@ -22,6 +22,7 @@ import {
     shouldRefreshAppUpdaterPhrase,
 } from "../../../lib/app/updatePhrases";
 import { getAppUpdateProgressSummary } from "../../../lib/app/updaterPresentation";
+import { openExternalUrl } from "../../../lib/platform/opener";
 import { AppAnimatedText } from "../AppAnimatedText";
 import { AppIcon } from "../AppIcon";
 import { AppInput } from "../AppInput";
@@ -112,6 +113,10 @@ export function AppSettingsGeneralSection({
         setAutoUpdateEnabled(!isAutoUpdateEnabled);
     };
 
+    const handleOpenAuthorUrl = (): void => {
+        void openExternalUrl(APP_AUTHOR_URL);
+    };
+
     useEffect(() => {
         if (displayedUpdaterStatus === previousUpdaterStatusRef.current) {
             return;
@@ -154,14 +159,13 @@ export function AppSettingsGeneralSection({
                             </p>
                             <p className="mt-3 text-xs font-medium text-fumi-500">
                                 Made by{" "}
-                                <a
-                                    href={APP_AUTHOR_URL}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                <button
+                                    type="button"
+                                    onClick={handleOpenAuthorUrl}
                                     className="font-semibold text-fumi-700 underline decoration-fumi-300 underline-offset-2 transition-colors hover:text-fumi-900"
                                 >
                                     {APP_AUTHOR_NAME}
-                                </a>
+                                </button>
                             </p>
                         </div>
                     </div>
