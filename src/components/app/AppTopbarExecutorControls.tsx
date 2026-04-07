@@ -6,6 +6,7 @@ import { AppTooltip } from "./AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./appShell.type";
 
 export function AppTopbarExecutorControls({
+    hasSupportedExecutor,
     availablePorts,
     port,
     isAttached,
@@ -17,6 +18,9 @@ export function AppTopbarExecutorControls({
     const theme = useAppStore((state) => state.theme);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const isExecutorUnavailable = !hasSupportedExecutor;
+    const isPrimaryButtonDisabled = isBusy || isExecutorUnavailable;
+    const isDropdownDisabled = isBusy || isAttached || isExecutorUnavailable;
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -37,11 +41,13 @@ export function AppTopbarExecutorControls({
             <div className="pointer-events-auto flex h-[1.625rem] items-center rounded-md border border-fumi-200 bg-fumi-50 text-fumi-700 transition-[background-color,border-color] duration-150">
                 <AppTooltip
                     content={
-                        didRecentAttachFail
-                            ? `Could not connect to executor port ${port}`
-                            : isAttached
-                              ? "Disconnect from the active executor port"
-                              : `Connect to executor port ${port}`
+                        isExecutorUnavailable
+                            ? "No supported executor detected."
+                            : didRecentAttachFail
+                              ? `Could not connect to executor port ${port}`
+                              : isAttached
+                                ? "Disconnect from the active executor port"
+                                : `Connect to executor port ${port}`
                     }
                     side="bottom"
                 >
@@ -50,15 +56,25 @@ export function AppTopbarExecutorControls({
                         onClick={() => {
                             void toggleConnection();
                         }}
-                        disabled={isBusy}
+                        disabled={isPrimaryButtonDisabled}
                         data-topbar-interactive="true"
                         className={`app-select-none inline-flex h-full items-center justify-center gap-1.5 rounded-l-md px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
-                            didRecentAttachFail
+                            isExecutorUnavailable
                                 ? theme === "dark"
-                                    ? "bg-amber-950/70 text-amber-100 hover:bg-amber-900/80"
-                                    : "bg-amber-50 text-amber-800 hover:bg-amber-100"
-                                : "text-fumi-700 hover:bg-fumi-200"
-                        } ${isBusy ? "cursor-wait opacity-70" : ""}`}
+                                    ? "bg-fumi-800 text-fumi-400"
+                                    : "bg-fumi-100 text-fumi-400"
+                                : didRecentAttachFail
+                                  ? theme === "dark"
+                                      ? "bg-amber-950/70 text-amber-100 hover:bg-amber-900/80"
+                                      : "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                                  : "text-fumi-700 hover:bg-fumi-200"
+                        } ${
+                            isPrimaryButtonDisabled
+                                ? isBusy
+                                    ? "cursor-wait opacity-70"
+                                    : "cursor-not-allowed opacity-60"
+                                : ""
+                        }`}
                     >
                         {isAttached ? (
                             <span
@@ -75,11 +91,13 @@ export function AppTopbarExecutorControls({
                         <span className="translate-y-[0.5px]">
                             {isBusy
                                 ? "Working"
-                                : isAttached
-                                  ? "Detach"
-                                  : didRecentAttachFail
-                                    ? "Failed"
-                                    : "Attach"}
+                                : isExecutorUnavailable
+                                  ? "Unavailable"
+                                  : isAttached
+                                    ? "Detach"
+                                    : didRecentAttachFail
+                                      ? "Failed"
+                                      : "Attach"}
                         </span>
                     </button>
                 </AppTooltip>
@@ -90,10 +108,12 @@ export function AppTopbarExecutorControls({
                     <button
                         type="button"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        disabled={isBusy || isAttached}
+                        disabled={isDropdownDisabled}
                         data-topbar-interactive="true"
                         className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-r-md text-fumi-700 transition-[background-color,border-color] duration-150 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
-                            isAttached ? "cursor-not-allowed opacity-50" : ""
+                            isDropdownDisabled
+                                ? "cursor-not-allowed opacity-50"
+                                : ""
                         }`}
                     >
                         <AppIcon

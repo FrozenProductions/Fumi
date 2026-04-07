@@ -254,9 +254,12 @@ export function getCommandCommandPaletteItems({
         {
             id: "command-execute-tab",
             label: "Execute active tab",
-            description: `Run ${activeTab.fileName} through the executor.`,
+            description: workspaceExecutor.hasSupportedExecutor
+                ? `Run ${activeTab.fileName} through the executor.`
+                : "No supported executor detected.",
             icon: CommandIcon,
             keywords: `execute run script ${activeTab.fileName}`,
+            isDisabled: !workspaceExecutor.hasSupportedExecutor,
             onSelect: () => {
                 void workspaceExecutor.executeActiveTab();
             },

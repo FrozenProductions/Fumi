@@ -218,9 +218,11 @@ export function WorkspaceScreen({
                         <div className="pointer-events-none absolute bottom-5 right-5 z-20">
                             <AppTooltip
                                 content={
-                                    executor.isAttached
-                                        ? "Execute the current tab through the executor"
-                                        : "Attach to an executor port before executing"
+                                    !executor.hasSupportedExecutor
+                                        ? "No supported executor detected."
+                                        : executor.isAttached
+                                          ? "Execute the current tab through the executor"
+                                          : "Attach to an executor port before executing"
                                 }
                             >
                                 <button
@@ -228,11 +230,16 @@ export function WorkspaceScreen({
                                     onClick={() => {
                                         void executor.executeActiveTab();
                                     }}
-                                    disabled={executor.isBusy}
+                                    disabled={
+                                        executor.isBusy ||
+                                        !executor.hasSupportedExecutor
+                                    }
                                     className={`app-select-none ${executeButtonClassName} ${
                                         executor.isBusy
                                             ? "cursor-wait opacity-70"
-                                            : ""
+                                            : !executor.hasSupportedExecutor
+                                              ? "cursor-not-allowed opacity-60"
+                                              : ""
                                     }`}
                                 >
                                     <AppIcon

@@ -7,6 +7,7 @@ export type UseWorkspaceExecutorOptions = {
 export type UseWorkspaceExecutorResult = {
     executorKind: ExecutorKind;
     availablePorts: readonly number[];
+    hasSupportedExecutor: boolean;
     port: string;
     isAttached: boolean;
     didRecentAttachFail: boolean;

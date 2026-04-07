@@ -56,6 +56,7 @@ function createWorkspaceExecutor(
         availablePorts: [
             5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
         ],
+        hasSupportedExecutor: true,
         port: "5553",
         isAttached: false,
         didRecentAttachFail: false,
@@ -100,6 +101,52 @@ describe("normalizeAppCommandPaletteSearchValue", () => {
         expect(normalizeAppCommandPaletteSearchValue("  Go To Line  ")).toBe(
             "go to line",
         );
+    });
+
+    it("disables execute when no supported executor is detected", () => {
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    workspace: {
+                        workspacePath: "/workspace/current",
+                        workspaceName: "current",
+                        activeTabId: "tab-1",
+                        archivedTabs: [],
+                        tabs: [
+                            {
+                                id: "tab-1",
+                                fileName: "alpha.lua",
+                                content: "alpha",
+                                savedContent: "alpha",
+                                isDirty: false,
+                                cursor: { line: 0, column: 0, scrollTop: 0 },
+                            },
+                        ],
+                    },
+                    activeTab: {
+                        id: "tab-1",
+                        fileName: "alpha.lua",
+                        content: "alpha",
+                        savedContent: "alpha",
+                        isDirty: false,
+                        cursor: { line: 0, column: 0, scrollTop: 0 },
+                    },
+                }),
+                workspaceExecutor: createWorkspaceExecutor({
+                    executorKind: "unsupported",
+                    availablePorts: [],
+                    hasSupportedExecutor: false,
+                    port: "",
+                }),
+            }),
+        );
+
+        expect(
+            items.find((item) => item.id === "command-execute-tab"),
+        ).toMatchObject({
+            isDisabled: true,
+            description: "No supported executor detected.",
+        });
     });
 });
 

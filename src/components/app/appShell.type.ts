@@ -49,6 +49,7 @@ export type AppSidebarProps = {
 
 export type AppTopbarExecutorControlsProps = Pick<
     UseWorkspaceExecutorResult,
+    | "hasSupportedExecutor"
     | "availablePorts"
     | "port"
     | "isAttached"

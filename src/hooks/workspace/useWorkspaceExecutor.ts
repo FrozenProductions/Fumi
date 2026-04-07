@@ -190,8 +190,15 @@ export function useWorkspaceExecutor({
         setErrorMessage(null);
     };
 
+    const hasSupportedExecutor = executorKind !== "unsupported";
+
     const toggleConnection = async (): Promise<void> => {
         if (isBusy) {
+            return;
+        }
+
+        if (!hasSupportedExecutor) {
+            setErrorMessage("No supported executor detected.");
             return;
         }
 
@@ -276,6 +283,11 @@ export function useWorkspaceExecutor({
             return;
         }
 
+        if (!hasSupportedExecutor) {
+            setErrorMessage("No supported executor detected.");
+            return;
+        }
+
         if (!isAttached) {
             setErrorMessage("Attach to an executor port before executing.");
             return;
@@ -310,6 +322,7 @@ export function useWorkspaceExecutor({
     return {
         executorKind,
         availablePorts,
+        hasSupportedExecutor,
         port,
         isAttached,
         didRecentAttachFail,
