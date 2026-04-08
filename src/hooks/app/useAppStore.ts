@@ -7,7 +7,10 @@ import {
     DEFAULT_APP_UPDATER_SETTINGS,
     DEFAULT_APP_WORKSPACE_SETTINGS,
 } from "../../constants/app/settings";
-import { normalizeAppHotkeyBindings } from "../../lib/app/hotkeys";
+import {
+    isAppHotkeyOverride,
+    normalizeAppHotkeyBindings,
+} from "../../lib/app/hotkeys";
 import {
     clampAppZoomPercent,
     isAppSidebarItem,
@@ -154,12 +157,27 @@ export const useAppStore = create<AppStore>()(
                     return;
                 }
 
-                set((state) => ({
-                    hotkeyBindings: {
-                        ...state.hotkeyBindings,
-                        [action]: binding,
-                    },
-                }));
+                set((state) => {
+                    if (!isAppHotkeyOverride(action, binding)) {
+                        if (state.hotkeyBindings[action] === undefined) {
+                            return state;
+                        }
+
+                        const nextHotkeyBindings = { ...state.hotkeyBindings };
+                        delete nextHotkeyBindings[action];
+
+                        return {
+                            hotkeyBindings: nextHotkeyBindings,
+                        };
+                    }
+
+                    return {
+                        hotkeyBindings: {
+                            ...state.hotkeyBindings,
+                            [action]: binding,
+                        },
+                    };
+                });
             },
             resetHotkeyBinding: (action) => {
                 set((state) => {

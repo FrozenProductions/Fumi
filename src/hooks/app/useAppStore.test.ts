@@ -49,6 +49,25 @@ describe("useAppStore hotkeyBindings", () => {
         expect(useAppStore.getState().hotkeyBindings).toEqual({});
     });
 
+    it("does not store bindings that match the default shortcut", () => {
+        useAppStore
+            .getState()
+            .setHotkeyBinding("OPEN_COMMAND_PALETTE", "Mod+P");
+
+        expect(useAppStore.getState().hotkeyBindings).toEqual({});
+    });
+
+    it("clears an existing override when the default shortcut is restored", () => {
+        useAppStore
+            .getState()
+            .setHotkeyBinding("OPEN_COMMAND_PALETTE", "Mod+K");
+        useAppStore
+            .getState()
+            .setHotkeyBinding("OPEN_COMMAND_PALETTE", "Mod+P");
+
+        expect(useAppStore.getState().hotkeyBindings).toEqual({});
+    });
+
     it("clears all saved hotkey overrides", () => {
         useAppStore
             .getState()

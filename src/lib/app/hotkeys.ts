@@ -44,7 +44,8 @@ export function normalizeAppHotkeyBindings(value: unknown): AppHotkeyBindings {
         ([action, binding]) =>
             isAppHotkeyAction(action) &&
             APP_HOTKEY_DEFINITIONS[action].isEditable &&
-            isAppHotkeyBinding(binding),
+            isAppHotkeyBinding(binding) &&
+            isAppHotkeyOverride(action, binding),
     );
 
     return Object.fromEntries(entries) as AppHotkeyBindings;
@@ -87,12 +88,13 @@ export function isAppHotkeyCustomized(
     hotkeyBindings: AppHotkeyBindings,
 ): boolean {
     const definition = getAppHotkeyDefinition(action);
+    const binding = hotkeyBindings[action];
 
-    return (
-        definition.isEditable &&
-        hotkeyBindings[action] !== undefined &&
-        hotkeyBindings[action] !== definition.defaultBinding
-    );
+    if (!definition.isEditable || binding === undefined) {
+        return false;
+    }
+
+    return isAppHotkeyOverride(action, binding);
 }
 
 export function getResolvedAppHotkey(
@@ -184,6 +186,22 @@ export function findAppHotkeyConflict(
     }
 
     return null;
+}
+
+export function isAppHotkeyOverride(
+    action: AppHotkeyAction,
+    binding: AppHotkeyBinding,
+): boolean {
+    const definition = getAppHotkeyDefinition(action);
+
+    if (!definition.isEditable) {
+        return false;
+    }
+
+    return (
+        normalizeAppHotkeyBinding(binding) !==
+        normalizeAppHotkeyBinding(definition.defaultBinding)
+    );
 }
 
 export function shouldTriggerAppHotkeyCodeFallback(

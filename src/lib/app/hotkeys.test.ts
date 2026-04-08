@@ -5,6 +5,7 @@ import {
     getAppHotkeyBinding,
     getAppHotkeySettingsActions,
     getResolvedAppHotkey,
+    isAppHotkeyOverride,
     normalizeAppHotkeyBindings,
     shouldTriggerAppHotkeyCodeFallback,
 } from "./hotkeys";
@@ -14,6 +15,7 @@ describe("normalizeAppHotkeyBindings", () => {
         expect(
             normalizeAppHotkeyBindings({
                 OPEN_COMMAND_PALETTE: "Mod+K",
+                TOGGLE_SIDEBAR: "Mod+B",
                 OPEN_SETTINGS: "Mod+Shift+P",
                 BAD_ACTION: "Mod+B",
                 CREATE_WORKSPACE_FILE: "Shift",
@@ -21,6 +23,14 @@ describe("normalizeAppHotkeyBindings", () => {
         ).toEqual({
             OPEN_COMMAND_PALETTE: "Mod+K",
         });
+    });
+});
+
+describe("isAppHotkeyOverride", () => {
+    it("returns false when a binding matches the default shortcut", () => {
+        expect(isAppHotkeyOverride("OPEN_COMMAND_PALETTE", "Mod+P")).toBe(
+            false,
+        );
     });
 });
 
