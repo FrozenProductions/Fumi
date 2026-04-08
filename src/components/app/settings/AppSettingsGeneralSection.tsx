@@ -251,7 +251,7 @@ export function AppSettingsGeneralSection({
                 <div className="min-w-0">
                     <p className="text-xs font-semibold text-fumi-900">Theme</p>
                     <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
-                        Switch the app between the light and dark color themes.
+                        Switch the app between light, dark, or system theme.
                     </p>
                 </div>
                 <AppSelect

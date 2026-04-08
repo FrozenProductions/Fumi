@@ -29,7 +29,7 @@ export type AppRenameCurrentTabRequest = {
 
 export type AppSettingsSection = "general" | "workspace" | "editor";
 
-export type AppTheme = "light" | "dark";
+export type AppTheme = "system" | "light" | "dark";
 export type AppMiddleClickTabAction = "archive" | "delete";
 
 export type AppIntellisensePriority = "balanced" | "language" | "executor";

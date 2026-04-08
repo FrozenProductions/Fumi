@@ -221,6 +221,18 @@ export function getCommandCommandPaletteItems({
             onSelect: onZoomReset,
         },
         {
+            id: "command-theme-system",
+            label: "Set theme: System",
+            description: "Follow the OS light/dark preference automatically.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(theme === "system"),
+            keywords: "theme appearance system auto automatic os",
+            isDisabled: theme === "system",
+            onSelect: () => {
+                onSetTheme("system");
+            },
+        },
+        {
             id: "command-theme-light",
             label: "Set theme: Light",
             description: "Switch the app to the light theme.",

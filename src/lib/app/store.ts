@@ -13,7 +13,7 @@ import type {
     AppTheme,
 } from "./app.type";
 
-const APP_THEMES = ["light", "dark"] as const;
+const APP_THEMES = ["system", "light", "dark"] as const;
 const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
 const APP_MIDDLE_CLICK_TAB_ACTIONS = ["archive", "delete"] as const;
 

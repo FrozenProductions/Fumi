@@ -30,6 +30,7 @@ export const DEFAULT_APP_SETTINGS_SECTION =
     "general" satisfies AppSettingsSection;
 
 export const APP_THEME_OPTIONS = [
+    { value: "system", label: "System" },
     { value: "light", label: "Light" },
     { value: "dark", label: "Dark" },
 ] as const satisfies AppThemeOption[];
@@ -51,7 +52,7 @@ export const APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS = [
     { value: "delete", label: "Delete" },
 ] as const satisfies AppMiddleClickTabActionOption[];
 
-export const DEFAULT_APP_THEME = "light" satisfies AppTheme;
+export const DEFAULT_APP_THEME = "system" satisfies AppTheme;
 export const DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION =
     "archive" satisfies AppMiddleClickTabAction;
 

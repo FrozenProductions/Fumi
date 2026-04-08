@@ -148,7 +148,15 @@ export function loadAceRuntime(): Promise<LoadedAceRuntime> {
             getTheme(
                 appTheme: AppTheme,
             ): "github_dark" | "github_light_default" {
-                return appTheme === "dark"
+                const resolved =
+                    appTheme === "system"
+                        ? window.matchMedia("(prefers-color-scheme: dark)")
+                              .matches
+                            ? "dark"
+                            : "light"
+                        : appTheme;
+
+                return resolved === "dark"
                     ? "github_dark"
                     : "github_light_default";
             },

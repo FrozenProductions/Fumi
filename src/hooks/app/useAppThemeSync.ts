@@ -34,6 +34,17 @@ function disableAppTransitions(): () => void {
     };
 }
 
+function getSystemTheme(): "light" | "dark" {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+}
+
+function applyTheme(resolvedTheme: "light" | "dark"): void {
+    document.documentElement.dataset.theme = resolvedTheme;
+    document.documentElement.style.colorScheme = resolvedTheme;
+}
+
 export function useAppThemeSync(): void {
     const theme = useAppStore((state) => state.theme);
 
@@ -41,8 +52,46 @@ export function useAppThemeSync(): void {
         const restoreTransitions = disableAppTransitions();
         let secondAnimationFrameId = 0;
 
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.style.colorScheme = theme;
+        if (theme === "system") {
+            applyTheme(getSystemTheme());
+
+            const mediaQuery = window.matchMedia(
+                "(prefers-color-scheme: dark)",
+            );
+
+            const handleSystemThemeChange = (): void => {
+                const restoreAfterChange = disableAppTransitions();
+                applyTheme(getSystemTheme());
+
+                const f1 = window.requestAnimationFrame(() => {
+                    window.requestAnimationFrame(() => {
+                        restoreAfterChange();
+                    });
+                });
+
+                return void f1;
+            };
+
+            mediaQuery.addEventListener("change", handleSystemThemeChange);
+
+            const firstAnimationFrameId = window.requestAnimationFrame(() => {
+                secondAnimationFrameId = window.requestAnimationFrame(() => {
+                    restoreTransitions();
+                });
+            });
+
+            return () => {
+                window.cancelAnimationFrame(firstAnimationFrameId);
+                window.cancelAnimationFrame(secondAnimationFrameId);
+                mediaQuery.removeEventListener(
+                    "change",
+                    handleSystemThemeChange,
+                );
+                restoreTransitions();
+            };
+        }
+
+        applyTheme(theme);
 
         const firstAnimationFrameId = window.requestAnimationFrame(() => {
             secondAnimationFrameId = window.requestAnimationFrame(() => {
