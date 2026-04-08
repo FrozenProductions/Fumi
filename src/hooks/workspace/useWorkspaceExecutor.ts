@@ -24,6 +24,10 @@ import {
     normalizeExecutorPort,
     parseExecutorPort,
 } from "../../lib/workspace/executor";
+import {
+    persistExecutorPort,
+    resolvePersistedExecutorPort,
+} from "../../lib/workspace/executorPersistence";
 import type { ExecutorStatusPayload } from "../../lib/workspace/workspace.type";
 import type {
     UseWorkspaceExecutorOptions,
@@ -46,17 +50,20 @@ export function useWorkspaceExecutor({
 
     const applyExecutorStatus = useEffectEvent(
         (status: ExecutorStatusPayload): void => {
+            const nextPort = resolvePersistedExecutorPort({
+                executorKind: status.executorKind,
+                availablePorts: status.availablePorts,
+                fallbackPort: status.port,
+            });
             setExecutorKind(status.executorKind);
             setAvailablePorts(status.availablePorts);
             setPort(
-                normalizeExecutorPort(
-                    String(status.port),
-                    status.availablePorts,
-                ),
+                normalizeExecutorPort(String(nextPort), status.availablePorts),
             );
             setIsAttached(status.isAttached);
             setDidRecentAttachFail(false);
             wasAttachedRef.current = status.isAttached;
+            persistExecutorPort(status.executorKind, nextPort);
         },
     );
 
@@ -181,9 +188,14 @@ export function useWorkspaceExecutor({
     }, []);
 
     const updatePort = (value: string): void => {
-        setPort(normalizeExecutorPort(value, availablePorts));
+        const nextPort = normalizeExecutorPort(value, availablePorts);
+        setPort(nextPort);
         setDidRecentAttachFail(false);
         setErrorMessage(null);
+        const parsedPort = parseExecutorPort(nextPort, availablePorts);
+        if (parsedPort !== null) {
+            persistExecutorPort(executorKind, parsedPort);
+        }
     };
 
     const clearErrorMessage = (): void => {
