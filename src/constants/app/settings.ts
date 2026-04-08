@@ -23,6 +23,7 @@ import type {
 export const APP_SETTINGS_SECTIONS = [
     { id: "general", label: "General" },
     { id: "editor", label: "Editor" },
+    { id: "hotkeys", label: "Hotkeys" },
     { id: "workspace", label: "Workspace" },
 ] as const satisfies AppSettingsSectionOption[];
 

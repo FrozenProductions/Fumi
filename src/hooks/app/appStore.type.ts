@@ -3,6 +3,8 @@ import type {
     AppCommandPaletteScope,
     AppEditorSettings,
     AppGoToLineRequest,
+    AppHotkeyAction,
+    AppHotkeyBindings,
     AppIntellisensePriority,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
@@ -25,6 +27,7 @@ export type AppStoreState = {
     nextRenameCurrentTabRequestId: number;
     zoomPercent: number;
     theme: AppTheme;
+    hotkeyBindings: AppHotkeyBindings;
     editorSettings: AppEditorSettings;
     updaterSettings: AppUpdaterSettings;
     workspaceSettings: AppWorkspaceSettings;
@@ -46,6 +49,12 @@ export type AppStoreActions = {
     selectSidebarItem: (item: AppSidebarItem) => void;
     setZoomPercent: (zoomPercent: number) => void;
     setTheme: (theme: AppTheme) => void;
+    setHotkeyBinding: (
+        action: AppHotkeyAction,
+        binding: AppHotkeyBindings[AppHotkeyAction],
+    ) => void;
+    resetHotkeyBinding: (action: AppHotkeyAction) => void;
+    resetAllHotkeyBindings: () => void;
     setAutoUpdateEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;

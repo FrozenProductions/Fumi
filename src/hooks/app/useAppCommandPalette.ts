@@ -28,11 +28,13 @@ import {
     normalizeAppCommandPaletteSearchValue,
     parseGoToLineQuery,
 } from "../../lib/app/commandPalette";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
 import type {
     UseAppCommandPaletteOptions,
     UseAppCommandPaletteResult,
 } from "./useAppCommandPalette.type";
+import { useAppStore } from "./useAppStore";
 
 export function useAppCommandPalette({
     isOpen,
@@ -75,6 +77,7 @@ export function useAppCommandPalette({
     const deferredQuery = useDeferredValue(query);
     const normalizedQuery =
         normalizeAppCommandPaletteSearchValue(deferredQuery);
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const { activeTab } = workspaceSession.state;
     const currentLineNumber = activeTab ? activeTab.cursor.line + 1 : null;
     const goToLineNumber =
@@ -123,6 +126,44 @@ export function useAppCommandPalette({
         isSidebarOpen,
         activeSidebarItem,
         theme,
+        hotkeyLabels: {
+            activateGoToLine: getAppHotkeyShortcutLabel(
+                "ACTIVATE_GOTO_LINE_COMMAND",
+                hotkeyBindings,
+            ),
+            archiveWorkspaceTab: getAppHotkeyShortcutLabel(
+                "ARCHIVE_WORKSPACE_TAB",
+                hotkeyBindings,
+            ),
+            createWorkspaceFile: getAppHotkeyShortcutLabel(
+                "CREATE_WORKSPACE_FILE",
+                hotkeyBindings,
+            ),
+            openAccounts: getAppHotkeyShortcutLabel(
+                "OPEN_ACCOUNTS",
+                hotkeyBindings,
+            ),
+            openSettings: getAppHotkeyShortcutLabel(
+                "OPEN_SETTINGS",
+                hotkeyBindings,
+            ),
+            openWorkspaceDirectory: getAppHotkeyShortcutLabel(
+                "OPEN_WORKSPACE_DIRECTORY",
+                hotkeyBindings,
+            ),
+            openWorkspaceScreen: getAppHotkeyShortcutLabel(
+                "OPEN_WORKSPACE_SCREEN",
+                hotkeyBindings,
+            ),
+            openScriptLibrary: getAppHotkeyShortcutLabel(
+                "OPEN_SCRIPT_LIBRARY",
+                hotkeyBindings,
+            ),
+            toggleSidebar: getAppHotkeyShortcutLabel(
+                "TOGGLE_SIDEBAR",
+                hotkeyBindings,
+            ),
+        },
         onActivateGoToLineMode: activateGoToLineMode,
         onOpenWorkspaceScreen,
         onOpenScriptLibrary,

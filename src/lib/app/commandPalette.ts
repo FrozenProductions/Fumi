@@ -3,7 +3,6 @@ import {
     FileCodeIcon,
     FolderOpenIcon,
 } from "@hugeicons/core-free-icons";
-import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { AppCommandPaletteItem } from "../../lib/app/app.type";
 import { splitWorkspaceFileName } from "../workspace/fileName";
@@ -98,6 +97,7 @@ export function getCommandCommandPaletteItems({
     isSidebarOpen,
     activeSidebarItem,
     theme,
+    hotkeyLabels,
     onActivateGoToLineMode,
     onOpenWorkspaceScreen,
     onOpenScriptLibrary,
@@ -129,7 +129,7 @@ export function getCommandCommandPaletteItems({
             icon: CommandIcon,
             meta: getCurrentStateMeta(
                 activeSidebarItem === "workspace",
-                APP_HOTKEYS.OPEN_WORKSPACE_SCREEN.label,
+                hotkeyLabels.openWorkspaceScreen,
             ),
             keywords: "workspace editor tabs files screen",
             isDisabled: activeSidebarItem === "workspace",
@@ -142,7 +142,7 @@ export function getCommandCommandPaletteItems({
             icon: CommandIcon,
             meta: getCurrentStateMeta(
                 activeSidebarItem === "script-library",
-                APP_HOTKEYS.OPEN_SCRIPT_LIBRARY.label,
+                hotkeyLabels.openScriptLibrary,
             ),
             keywords: "script library browse import rscripts",
             isDisabled: activeSidebarItem === "script-library",
@@ -155,7 +155,7 @@ export function getCommandCommandPaletteItems({
             icon: CommandIcon,
             meta: getCurrentStateMeta(
                 activeSidebarItem === "accounts",
-                APP_HOTKEYS.OPEN_ACCOUNTS.label,
+                hotkeyLabels.openAccounts,
             ),
             keywords: "accounts roblox cookies launch manager",
             isDisabled: activeSidebarItem === "accounts",
@@ -168,7 +168,7 @@ export function getCommandCommandPaletteItems({
             icon: CommandIcon,
             meta: getCurrentStateMeta(
                 activeSidebarItem === "settings",
-                APP_HOTKEYS.OPEN_SETTINGS.label,
+                hotkeyLabels.openSettings,
             ),
             keywords: "settings preferences configuration",
             isDisabled: activeSidebarItem === "settings",
@@ -181,7 +181,7 @@ export function getCommandCommandPaletteItems({
                 ? "Pick a different folder for your scripts."
                 : "Pick a folder to start editing scripts.",
             icon: CommandIcon,
-            meta: APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.label,
+            meta: hotkeyLabels.openWorkspaceDirectory,
             keywords: "workspace folder open choose switch",
             onSelect: () => {
                 void openWorkspaceDirectory();
@@ -192,7 +192,7 @@ export function getCommandCommandPaletteItems({
             label: isSidebarOpen ? "Close sidebar" : "Open sidebar",
             description: "Toggle the main navigation rail.",
             icon: CommandIcon,
-            meta: APP_HOTKEYS.TOGGLE_SIDEBAR.label,
+            meta: hotkeyLabels.toggleSidebar,
             keywords: "sidebar navigation toggle panel",
             onSelect: onToggleSidebar,
         },
@@ -264,7 +264,7 @@ export function getCommandCommandPaletteItems({
             label: "Create new file",
             description: "Add a fresh script tab to the current workspace.",
             icon: CommandIcon,
-            meta: APP_HOTKEYS.CREATE_WORKSPACE_FILE.label,
+            meta: hotkeyLabels.createWorkspaceFile,
             keywords: "new create file tab script",
             onSelect: () => {
                 void createWorkspaceFile();
@@ -295,7 +295,7 @@ export function getCommandCommandPaletteItems({
             label: "Go to line",
             description: `Jump to a specific line in ${activeTab.fileName}.`,
             icon: CommandIcon,
-            meta: APP_HOTKEYS.ACTIVATE_GOTO_LINE_COMMAND.label,
+            meta: hotkeyLabels.activateGoToLine,
             keywords: `goto go to jump line ${activeTab.fileName} current tab`,
             closeOnSelect: false,
             onSelect: onActivateGoToLineMode,
@@ -337,7 +337,7 @@ export function getCommandCommandPaletteItems({
             label: "Archive current tab",
             description: `Archive ${activeTab.fileName} from the tab bar.`,
             icon: CommandIcon,
-            meta: APP_HOTKEYS.ARCHIVE_WORKSPACE_TAB.label,
+            meta: hotkeyLabels.archiveWorkspaceTab,
             keywords: `archive close remove ${activeTab.fileName}`,
             onSelect: () => {
                 void archiveWorkspaceTab(activeTab.id);

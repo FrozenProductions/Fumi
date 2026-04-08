@@ -1,9 +1,10 @@
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement, MouseEvent as ReactMouseEvent } from "react";
-import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
 import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
+import { useAppStore } from "../../../hooks/app/useAppStore";
+import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
 import { AppIcon } from "../../app/AppIcon";
 import { AppTooltip } from "../../app/AppTooltip";
@@ -30,6 +31,7 @@ export function WorkspaceTabItem({
     renameValue,
     renamingTabId,
 }: WorkspaceTabItemProps): ReactElement {
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isDirty = tab.content !== tab.savedContent;
     const isRenaming = tab.id === renamingTabId;
     const { baseName } = splitWorkspaceFileName(tab.fileName);
@@ -158,7 +160,10 @@ export function WorkspaceTabItem({
                     <AppTooltip
                         content="Archive tab"
                         side="bottom"
-                        shortcut={APP_HOTKEYS.ARCHIVE_WORKSPACE_TAB.label}
+                        shortcut={getAppHotkeyShortcutLabel(
+                            "ARCHIVE_WORKSPACE_TAB",
+                            hotkeyBindings,
+                        )}
                     >
                         <button
                             type="button"

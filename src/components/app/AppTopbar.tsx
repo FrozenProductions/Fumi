@@ -3,7 +3,8 @@ import {
     PanelLeftOpenIcon,
 } from "@hugeicons/core-free-icons";
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
-import { APP_HOTKEYS } from "../../constants/app/hotkeys";
+import { useAppStore } from "../../hooks/app/useAppStore";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import {
     formatWorkspaceTooltipPath,
     getAnimatedTitleCharacters,
@@ -39,7 +40,16 @@ export function AppTopbar({
     onOpenWorkspace,
     executorControls,
 }: AppTopbarProps): ReactElement {
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const animatedTitleCharacters = getAnimatedTitleCharacters(title);
+    const toggleSidebarShortcutLabel = getAppHotkeyShortcutLabel(
+        "TOGGLE_SIDEBAR",
+        hotkeyBindings,
+    );
+    const openWorkspaceShortcutLabel = getAppHotkeyShortcutLabel(
+        "OPEN_WORKSPACE_DIRECTORY",
+        hotkeyBindings,
+    );
 
     const handleTopbarMouseDown = (event: MouseEvent<HTMLElement>): void => {
         if (event.button !== 0 || isTopbarInteractiveTarget(event.target)) {
@@ -67,7 +77,7 @@ export function AppTopbar({
                 <AppTooltip
                     content={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
                     side="bottom"
-                    shortcut={APP_HOTKEYS.TOGGLE_SIDEBAR.label}
+                    shortcut={toggleSidebarShortcutLabel}
                 >
                     <AppIconButton
                         ariaLabel={
@@ -120,7 +130,7 @@ export function AppTopbar({
                 {workspaceName && onOpenWorkspace ? (
                     <AppTooltip
                         content={formatWorkspaceTooltipPath(workspacePath)}
-                        shortcut={APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.label}
+                        shortcut={openWorkspaceShortcutLabel}
                         side="bottom"
                     >
                         <button

@@ -4,10 +4,10 @@ import {
     PlayIcon,
 } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect } from "react";
-import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
@@ -22,6 +22,7 @@ export function WorkspaceScreen({
     executor,
 }: WorkspaceScreenProps): ReactElement {
     const appTheme = useAppStore((state) => state.theme);
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const editorSettings = useAppStore((state) => state.editorSettings);
     const middleClickTabAction = useAppStore(
         (state) => state.workspaceSettings.middleClickTabAction,
@@ -135,7 +136,10 @@ export function WorkspaceScreen({
         label: "New file",
         onClick: handleCreateWorkspaceFile,
         icon: Add01Icon,
-        shortcut: APP_HOTKEYS.CREATE_WORKSPACE_FILE.label,
+        shortcut: getAppHotkeyShortcutLabel(
+            "CREATE_WORKSPACE_FILE",
+            hotkeyBindings,
+        ),
     };
 
     if (isBootstrapping) {

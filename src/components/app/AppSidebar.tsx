@@ -3,6 +3,8 @@ import {
     APP_SETTINGS_SIDEBAR_ITEM,
     APP_SIDEBAR_ITEMS,
 } from "../../constants/app/sidebar";
+import { useAppStore } from "../../hooks/app/useAppStore";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
 import type { AppSidebarProps } from "./appShell.type";
@@ -13,12 +15,25 @@ export function AppSidebar({
     showsSettingsUpdateIndicator,
     onSelectItem,
 }: AppSidebarProps): ReactElement {
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const activeIndex = APP_SIDEBAR_ITEMS.findIndex(
         (item) => item.id === activeItem,
     );
     const activeIndicatorOffset = Math.max(0, activeIndex) * 48;
     const isNavigationItemActive = activeIndex !== -1;
     const settingsIcon = APP_SETTINGS_SIDEBAR_ITEM.icon;
+    const shortcutLabels = {
+        workspace: getAppHotkeyShortcutLabel(
+            "OPEN_WORKSPACE_SCREEN",
+            hotkeyBindings,
+        ),
+        "script-library": getAppHotkeyShortcutLabel(
+            "OPEN_SCRIPT_LIBRARY",
+            hotkeyBindings,
+        ),
+        accounts: getAppHotkeyShortcutLabel("OPEN_ACCOUNTS", hotkeyBindings),
+        settings: getAppHotkeyShortcutLabel("OPEN_SETTINGS", hotkeyBindings),
+    } as const;
 
     return (
         <aside
@@ -55,39 +70,36 @@ export function AppSidebar({
                         }}
                     />
 
-                    {APP_SIDEBAR_ITEMS.map(
-                        ({ id, label, icon, shortcutLabel }) => {
-                            const isActive = activeItem === id;
-                            return (
-                                <AppTooltip
-                                    key={id}
-                                    content={label}
-                                    side="right"
-                                    shortcut={shortcutLabel}
-                                    disabled={!shortcutLabel}
+                    {APP_SIDEBAR_ITEMS.map(({ id, label, icon }) => {
+                        const isActive = activeItem === id;
+                        return (
+                            <AppTooltip
+                                key={id}
+                                content={label}
+                                side="right"
+                                shortcut={shortcutLabels[id]}
+                            >
+                                <button
+                                    type="button"
+                                    aria-label={label}
+                                    aria-pressed={isActive}
+                                    onClick={() => onSelectItem(id)}
+                                    className={`group relative z-10 flex size-10 items-center justify-center rounded-[0.65rem] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
+                                        isActive
+                                            ? "text-fumi-600"
+                                            : "bg-transparent text-fumi-400 hover:bg-fumi-200 hover:text-fumi-600"
+                                    }`}
                                 >
-                                    <button
-                                        type="button"
-                                        aria-label={label}
-                                        aria-pressed={isActive}
-                                        onClick={() => onSelectItem(id)}
-                                        className={`group relative z-10 flex size-10 items-center justify-center rounded-[0.65rem] transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
-                                            isActive
-                                                ? "text-fumi-600"
-                                                : "bg-transparent text-fumi-400 hover:bg-fumi-200 hover:text-fumi-600"
-                                        }`}
-                                    >
-                                        <AppIcon
-                                            aria-hidden="true"
-                                            icon={icon}
-                                            className="block size-[1.2rem] [-webkit-user-drag:none]"
-                                            strokeWidth={isActive ? 2.5 : 2}
-                                        />
-                                    </button>
-                                </AppTooltip>
-                            );
-                        },
-                    )}
+                                    <AppIcon
+                                        aria-hidden="true"
+                                        icon={icon}
+                                        className="block size-[1.2rem] [-webkit-user-drag:none]"
+                                        strokeWidth={isActive ? 2.5 : 2}
+                                    />
+                                </button>
+                            </AppTooltip>
+                        );
+                    })}
                 </div>
 
                 <div
@@ -100,7 +112,7 @@ export function AppSidebar({
                     <AppTooltip
                         content={APP_SETTINGS_SIDEBAR_ITEM.label}
                         side="right"
-                        shortcut={APP_SETTINGS_SIDEBAR_ITEM.shortcutLabel}
+                        shortcut={shortcutLabels.settings}
                     >
                         <button
                             type="button"

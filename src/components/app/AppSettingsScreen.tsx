@@ -6,6 +6,7 @@ import {
 import type { AppSettingsSection } from "../../lib/app/app.type";
 import { AppSettingsEditorSection } from "./settings/AppSettingsEditorSection";
 import { AppSettingsGeneralSection } from "./settings/AppSettingsGeneralSection";
+import { AppSettingsHotkeysSection } from "./settings/AppSettingsHotkeysSection";
 import { AppSettingsWorkspaceSection } from "./settings/AppSettingsWorkspaceSection";
 import type { AppSettingsScreenProps } from "./settings/appSettings.type";
 
@@ -32,6 +33,10 @@ export function AppSettingsScreen({
 
         if (activeSection === "editor") {
             return <AppSettingsEditorSection />;
+        }
+
+        if (activeSection === "hotkeys") {
+            return <AppSettingsHotkeysSection />;
         }
 
         return <AppSettingsGeneralSection updater={updater} />;
@@ -75,7 +80,7 @@ export function AppSettingsScreen({
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col overflow-auto bg-fumi-50 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex max-w-4xl flex-1 flex-col px-10 py-10">
+                    <div className="flex max-w-4xl flex-1 flex-col px-10 py-2.5">
                         {renderSectionContent()}
                     </div>
                 </div>

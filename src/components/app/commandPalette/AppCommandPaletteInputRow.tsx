@@ -1,7 +1,8 @@
 import { CommandIcon, FolderOpenIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import { APP_HOTKEYS } from "../../../constants/app/hotkeys";
 import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
+import { useAppStore } from "../../../hooks/app/useAppStore";
+import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys";
 import { AppCommandPaletteScopeButton } from "../AppCommandPaletteScopeButton";
 import type { AppCommandPaletteInputRowProps } from "./appCommandPalette.type";
 
@@ -16,6 +17,8 @@ export function AppCommandPaletteInputRow({
     onInputKeyDown,
     onScopeSelect,
 }: AppCommandPaletteInputRowProps): ReactElement {
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
+
     return (
         <div className="flex items-center gap-2">
             <div className="relative min-w-0 flex-1">
@@ -44,7 +47,10 @@ export function AppCommandPaletteInputRow({
                 <AppCommandPaletteScopeButton
                     ariaLabel="Search commands"
                     content="Search commands"
-                    shortcut={APP_HOTKEYS.TOGGLE_COMMAND_PALETTE_COMMANDS.label}
+                    shortcut={getAppHotkeyShortcutLabel(
+                        "TOGGLE_COMMAND_PALETTE_COMMANDS",
+                        hotkeyBindings,
+                    )}
                     icon={CommandIcon}
                     isPressed={scope === "commands"}
                     onClick={() => onScopeSelect("commands")}
@@ -52,9 +58,10 @@ export function AppCommandPaletteInputRow({
                 <AppCommandPaletteScopeButton
                     ariaLabel="Search workspaces"
                     content="Search workspaces"
-                    shortcut={
-                        APP_HOTKEYS.TOGGLE_COMMAND_PALETTE_WORKSPACES.label
-                    }
+                    shortcut={getAppHotkeyShortcutLabel(
+                        "TOGGLE_COMMAND_PALETTE_WORKSPACES",
+                        hotkeyBindings,
+                    )}
                     icon={FolderOpenIcon}
                     isPressed={scope === "workspaces"}
                     onClick={() => onScopeSelect("workspaces")}

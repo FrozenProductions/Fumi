@@ -17,6 +17,17 @@ export type GetCommandPaletteCommandItemsOptions = {
     isSidebarOpen: boolean;
     activeSidebarItem: AppSidebarItem;
     theme: AppTheme;
+    hotkeyLabels: {
+        activateGoToLine: string;
+        archiveWorkspaceTab: string;
+        createWorkspaceFile: string;
+        openAccounts: string;
+        openSettings: string;
+        openWorkspaceDirectory: string;
+        openWorkspaceScreen: string;
+        openScriptLibrary: string;
+        toggleSidebar: string;
+    };
     onActivateGoToLineMode: () => void;
     onOpenWorkspaceScreen: () => void;
     onOpenScriptLibrary: () => void;

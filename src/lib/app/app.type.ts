@@ -1,4 +1,5 @@
 import type { IconSvgElement } from "@hugeicons/react";
+import type { RegisterableHotkey } from "@tanstack/hotkeys";
 
 export type AppIconGlyph = IconSvgElement;
 
@@ -27,7 +28,27 @@ export type AppRenameCurrentTabRequest = {
     requestId: number;
 };
 
-export type AppSettingsSection = "general" | "workspace" | "editor";
+export type AppSettingsSection = "general" | "workspace" | "editor" | "hotkeys";
+
+export type AppHotkeyAction =
+    | "QUIT_APP"
+    | "OPEN_COMMAND_PALETTE"
+    | "ACTIVATE_GOTO_LINE_COMMAND"
+    | "OPEN_WORKSPACE_DIRECTORY"
+    | "TOGGLE_COMMAND_PALETTE_COMMANDS"
+    | "TOGGLE_COMMAND_PALETTE_WORKSPACES"
+    | "TOGGLE_SIDEBAR"
+    | "OPEN_SETTINGS"
+    | "ARCHIVE_WORKSPACE_TAB"
+    | "CREATE_WORKSPACE_FILE"
+    | "OPEN_WORKSPACE_SCREEN"
+    | "OPEN_SCRIPT_LIBRARY"
+    | "OPEN_ACCOUNTS";
+
+export type AppHotkeyBinding = RegisterableHotkey;
+export type AppHotkeyBindings = Partial<
+    Record<AppHotkeyAction, AppHotkeyBinding>
+>;
 
 export type AppTheme = "system" | "light" | "dark";
 export type AppMiddleClickTabAction = "archive" | "delete";

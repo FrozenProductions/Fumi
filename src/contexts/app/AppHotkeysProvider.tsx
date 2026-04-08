@@ -1,7 +1,10 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { type ReactElement, useEffect } from "react";
-import { APP_HOTKEYS } from "../../constants/app/hotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
+import {
+    getAppHotkeyBinding,
+    shouldTriggerAppHotkeyCodeFallback,
+} from "../../lib/app/hotkeys";
 import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
 
 export function AppHotkeysProvider({
@@ -12,6 +15,7 @@ export function AppHotkeysProvider({
     const { createWorkspaceFile, openWorkspaceDirectory } =
         workspaceSession.workspaceActions;
     const { archiveWorkspaceTab } = workspaceSession.tabActions;
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
     const isCommandPaletteOpen = useAppStore(
         (state) => state.isCommandPaletteOpen,
@@ -30,34 +34,66 @@ export function AppHotkeysProvider({
     const toggleCommandPalette = useAppStore(
         (state) => state.toggleCommandPalette,
     );
+    const openCommandPaletteBinding = getAppHotkeyBinding(
+        "OPEN_COMMAND_PALETTE",
+        hotkeyBindings,
+    );
+    const openSettingsBinding = getAppHotkeyBinding(
+        "OPEN_SETTINGS",
+        hotkeyBindings,
+    );
+    const commandPaletteCommandsBinding = getAppHotkeyBinding(
+        "TOGGLE_COMMAND_PALETTE_COMMANDS",
+        hotkeyBindings,
+    );
+    const commandPaletteWorkspacesBinding = getAppHotkeyBinding(
+        "TOGGLE_COMMAND_PALETTE_WORKSPACES",
+        hotkeyBindings,
+    );
+    const goToLineBinding = getAppHotkeyBinding(
+        "ACTIVATE_GOTO_LINE_COMMAND",
+        hotkeyBindings,
+    );
 
     useEffect(() => {
         const handleGlobalAppKeydown = (event: KeyboardEvent): void => {
-            const isModifierPressed = event.metaKey || event.ctrlKey;
+            if (
+                shouldTriggerAppHotkeyCodeFallback(event, openSettingsBinding)
+            ) {
+                if (isCommandPaletteOpen) {
+                    return;
+                }
 
-            if (!isModifierPressed) {
-                return;
-            }
-
-            if (event.code === "Comma" && !isCommandPaletteOpen) {
                 event.preventDefault();
                 event.stopPropagation();
+
                 if (activeSidebarItem === "settings") {
                     selectSidebarItem("workspace");
-                } else {
-                    selectSidebarItem("settings");
+                    return;
                 }
+
+                selectSidebarItem("settings");
                 return;
             }
 
-            if (event.code === "KeyP") {
+            if (
+                shouldTriggerAppHotkeyCodeFallback(
+                    event,
+                    openCommandPaletteBinding,
+                )
+            ) {
                 event.preventDefault();
                 event.stopPropagation();
                 toggleCommandPalette();
                 return;
             }
 
-            if (event.code === "Digit1") {
+            if (
+                shouldTriggerAppHotkeyCodeFallback(
+                    event,
+                    commandPaletteCommandsBinding,
+                )
+            ) {
                 if (!isCommandPaletteOpen) {
                     return;
                 }
@@ -68,7 +104,12 @@ export function AppHotkeysProvider({
                 return;
             }
 
-            if (event.code === "Digit2") {
+            if (
+                shouldTriggerAppHotkeyCodeFallback(
+                    event,
+                    commandPaletteWorkspacesBinding,
+                )
+            ) {
                 if (!isCommandPaletteOpen) {
                     return;
                 }
@@ -79,11 +120,13 @@ export function AppHotkeysProvider({
                 return;
             }
 
-            if (event.code === "Backslash" && event.shiftKey) {
-                event.preventDefault();
-                event.stopPropagation();
-                toggleGoToLineCommandPalette();
+            if (!shouldTriggerAppHotkeyCodeFallback(event, goToLineBinding)) {
+                return;
             }
+
+            event.preventDefault();
+            event.stopPropagation();
+            toggleGoToLineCommandPalette();
         };
 
         window.addEventListener("keydown", handleGlobalAppKeydown, true);
@@ -92,16 +135,21 @@ export function AppHotkeysProvider({
             window.removeEventListener("keydown", handleGlobalAppKeydown, true);
         };
     }, [
+        activeSidebarItem,
+        commandPaletteCommandsBinding,
+        commandPaletteWorkspacesBinding,
+        goToLineBinding,
         isCommandPaletteOpen,
+        openCommandPaletteBinding,
+        openSettingsBinding,
+        selectSidebarItem,
         toggleCommandPalette,
         toggleCommandPaletteScope,
         toggleGoToLineCommandPalette,
-        activeSidebarItem,
-        selectSidebarItem,
     ]);
 
     useHotkey(
-        APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.binding,
+        getAppHotkeyBinding("OPEN_WORKSPACE_DIRECTORY", hotkeyBindings),
         () => {
             void openWorkspaceDirectory();
         },
@@ -111,7 +159,7 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
-        APP_HOTKEYS.TOGGLE_SIDEBAR.binding,
+        getAppHotkeyBinding("TOGGLE_SIDEBAR", hotkeyBindings),
         () => {
             toggleSidebar();
         },
@@ -121,7 +169,7 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
-        APP_HOTKEYS.OPEN_WORKSPACE_SCREEN.binding,
+        getAppHotkeyBinding("OPEN_WORKSPACE_SCREEN", hotkeyBindings),
         () => {
             selectSidebarItem("workspace");
         },
@@ -131,7 +179,7 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
-        APP_HOTKEYS.OPEN_SCRIPT_LIBRARY.binding,
+        getAppHotkeyBinding("OPEN_SCRIPT_LIBRARY", hotkeyBindings),
         () => {
             selectSidebarItem("script-library");
         },
@@ -141,7 +189,7 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
-        APP_HOTKEYS.OPEN_ACCOUNTS.binding,
+        getAppHotkeyBinding("OPEN_ACCOUNTS", hotkeyBindings),
         () => {
             selectSidebarItem("accounts");
         },
@@ -149,6 +197,49 @@ export function AppHotkeysProvider({
             enabled: !isCommandPaletteOpen,
         },
     );
+
+    useHotkey(openCommandPaletteBinding, () => {
+        toggleCommandPalette();
+    });
+
+    useHotkey(
+        openSettingsBinding,
+        () => {
+            if (activeSidebarItem === "settings") {
+                selectSidebarItem("workspace");
+                return;
+            }
+
+            selectSidebarItem("settings");
+        },
+        {
+            enabled: !isCommandPaletteOpen,
+        },
+    );
+
+    useHotkey(
+        commandPaletteCommandsBinding,
+        () => {
+            toggleCommandPaletteScope("commands");
+        },
+        {
+            enabled: isCommandPaletteOpen,
+        },
+    );
+
+    useHotkey(
+        commandPaletteWorkspacesBinding,
+        () => {
+            toggleCommandPaletteScope("workspaces");
+        },
+        {
+            enabled: isCommandPaletteOpen,
+        },
+    );
+
+    useHotkey(goToLineBinding, () => {
+        toggleGoToLineCommandPalette();
+    });
 
     useHotkey(
         "Escape",
@@ -168,7 +259,7 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
-        APP_HOTKEYS.CREATE_WORKSPACE_FILE.binding,
+        getAppHotkeyBinding("CREATE_WORKSPACE_FILE", hotkeyBindings),
         () => {
             void createWorkspaceFile();
         },
@@ -181,7 +272,7 @@ export function AppHotkeysProvider({
     );
 
     useHotkey(
-        APP_HOTKEYS.ARCHIVE_WORKSPACE_TAB.binding,
+        getAppHotkeyBinding("ARCHIVE_WORKSPACE_TAB", hotkeyBindings),
         () => {
             const activeTabId = activeTab?.id;
 

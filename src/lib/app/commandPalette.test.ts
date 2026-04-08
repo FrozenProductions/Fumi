@@ -129,6 +129,17 @@ function createCommandPaletteOptions(
         isSidebarOpen: false,
         activeSidebarItem: "workspace" satisfies AppSidebarItem,
         theme: "light" satisfies AppTheme,
+        hotkeyLabels: {
+            activateGoToLine: "Mod+Shift+\\",
+            archiveWorkspaceTab: "Mod+W",
+            createWorkspaceFile: "Mod+T",
+            openAccounts: "Mod+Shift+A",
+            openSettings: "Mod+,",
+            openWorkspaceDirectory: "Mod+O",
+            openWorkspaceScreen: "Mod+Shift+W",
+            openScriptLibrary: "Mod+Shift+S",
+            toggleSidebar: "Mod+B",
+        },
         onActivateGoToLineMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
         onOpenScriptLibrary: vi.fn(),
@@ -489,6 +500,31 @@ describe("getCommandCommandPaletteItems", () => {
             isDisabled: true,
             meta: "Current",
         });
+    });
+
+    it("uses resolved hotkey labels in command metadata", () => {
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                hotkeyLabels: {
+                    activateGoToLine: "Mod+Shift+\\",
+                    archiveWorkspaceTab: "Mod+Backspace",
+                    createWorkspaceFile: "Mod+N",
+                    openAccounts: "Mod+Shift+A",
+                    openSettings: "Mod+Alt+,",
+                    openWorkspaceDirectory: "Mod+O",
+                    openWorkspaceScreen: "Mod+Shift+W",
+                    openScriptLibrary: "Mod+Shift+S",
+                    toggleSidebar: "Mod+J",
+                },
+            }),
+        );
+
+        expect(
+            items.find((item) => item.id === "command-settings")?.meta,
+        ).toContain("Mod+Alt+,");
+        expect(items.find((item) => item.id === "command-sidebar")?.meta).toBe(
+            "Mod+J",
+        );
     });
 });
 

@@ -7,6 +7,7 @@ import {
     DEFAULT_APP_UPDATER_SETTINGS,
     DEFAULT_APP_WORKSPACE_SETTINGS,
 } from "../../constants/app/settings";
+import { normalizeAppHotkeyBindings } from "../../lib/app/hotkeys";
 import {
     clampAppZoomPercent,
     isAppSidebarItem,
@@ -30,6 +31,7 @@ export const useAppStore = create<AppStore>()(
             nextRenameCurrentTabRequestId: 0,
             zoomPercent: APP_ZOOM_DEFAULT,
             theme: DEFAULT_APP_THEME,
+            hotkeyBindings: {},
             editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
             updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
             workspaceSettings: DEFAULT_APP_WORKSPACE_SETTINGS,
@@ -147,6 +149,34 @@ export const useAppStore = create<AppStore>()(
             setTheme: (theme) => {
                 set({ theme });
             },
+            setHotkeyBinding: (action, binding) => {
+                if (!binding) {
+                    return;
+                }
+
+                set((state) => ({
+                    hotkeyBindings: {
+                        ...state.hotkeyBindings,
+                        [action]: binding,
+                    },
+                }));
+            },
+            resetHotkeyBinding: (action) => {
+                set((state) => {
+                    const nextHotkeyBindings = { ...state.hotkeyBindings };
+
+                    delete nextHotkeyBindings[action];
+
+                    return {
+                        hotkeyBindings: nextHotkeyBindings,
+                    };
+                });
+            },
+            resetAllHotkeyBindings: () => {
+                set({
+                    hotkeyBindings: {},
+                });
+            },
             setAutoUpdateEnabled: (isEnabled) => {
                 set((state) => ({
                     updaterSettings: {
@@ -215,6 +245,9 @@ export const useAppStore = create<AppStore>()(
                 const theme = isAppTheme(persistedAppState.theme)
                     ? persistedAppState.theme
                     : currentState.theme;
+                const hotkeyBindings = normalizeAppHotkeyBindings(
+                    persistedAppState.hotkeyBindings,
+                );
                 const intellisenseWidth = normalizeAppIntellisenseWidth(
                     persistedAppState.editorSettings?.intellisenseWidth,
                 );
@@ -228,6 +261,7 @@ export const useAppStore = create<AppStore>()(
                     activeSidebarItem,
                     zoomPercent,
                     theme,
+                    hotkeyBindings,
                     updaterSettings: {
                         ...currentState.updaterSettings,
                         ...persistedAppState.updaterSettings,
@@ -249,6 +283,7 @@ export const useAppStore = create<AppStore>()(
                 activeSidebarItem: state.activeSidebarItem,
                 zoomPercent: state.zoomPercent,
                 theme: state.theme,
+                hotkeyBindings: state.hotkeyBindings,
                 updaterSettings: state.updaterSettings,
                 editorSettings: state.editorSettings,
                 workspaceSettings: state.workspaceSettings,

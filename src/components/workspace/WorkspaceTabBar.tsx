@@ -7,8 +7,9 @@ import {
     useRef,
     useState,
 } from "react";
-import { APP_HOTKEYS } from "../../constants/app/hotkeys";
+import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import {
     reorderTabPreview,
     TAB_BAR_MODIFIERS,
@@ -34,6 +35,7 @@ export function WorkspaceTabBar({
     onDeleteTab,
     middleClickTabAction,
 }: WorkspaceTabBarProps): ReactElement {
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabListContainerRef = useRef<HTMLDivElement | null>(null);
     const tabListDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -359,7 +361,10 @@ export function WorkspaceTabBar({
                 <AppTooltip
                     content="New file"
                     side="bottom"
-                    shortcut={APP_HOTKEYS.CREATE_WORKSPACE_FILE.label}
+                    shortcut={getAppHotkeyShortcutLabel(
+                        "CREATE_WORKSPACE_FILE",
+                        hotkeyBindings,
+                    )}
                 >
                     <button
                         type="button"
