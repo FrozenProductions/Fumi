@@ -171,7 +171,7 @@ export function WorkspaceTabItem({
                                 event.stopPropagation();
                             }}
                             className={[
-                                "app-select-none pointer-events-none absolute right-0.5 top-1/2 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+                                "app-select-none pointer-events-none absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[0.35rem] text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
                                 isTabDragActive
                                     ? ""
                                     : "hover:bg-fumi-200 hover:text-fumi-600",
@@ -182,7 +182,7 @@ export function WorkspaceTabItem({
                         >
                             <AppIcon
                                 icon={Cancel01Icon}
-                                size={10}
+                                size={9}
                                 strokeWidth={2.5}
                             />
                         </button>
