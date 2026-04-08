@@ -30,23 +30,7 @@ export function AppCommandPalette({
     onZoomReset,
     onRequestRenameCurrentTab,
 }: AppCommandPaletteProps): ReactElement | null {
-    const {
-        activeResultIndex,
-        commitSelection,
-        handleBackdropMouseDown,
-        handleHoverItem,
-        handleInputChange,
-        handleInputKeyDown,
-        handleScopeSelect,
-        inputRef,
-        isClosing,
-        isPresent,
-        mode,
-        panelRef,
-        query,
-        results,
-        scope,
-    } = useAppCommandPalette({
+    const { handlers, input, results, visibility } = useAppCommandPalette({
         isOpen,
         requestedScope,
         requestedMode,
@@ -68,6 +52,17 @@ export function AppCommandPalette({
         onZoomReset,
         onRequestRenameCurrentTab,
     });
+    const { isClosing, isPresent } = visibility;
+    const { inputRef, mode, panelRef, query, scope } = input;
+    const { activeResultIndex, results: resultItems } = results;
+    const {
+        commitSelection,
+        handleBackdropMouseDown,
+        handleHoverItem,
+        handleInputChange,
+        handleInputKeyDown,
+        handleScopeSelect,
+    } = handlers;
 
     if (!isPresent) {
         return null;
@@ -116,7 +111,7 @@ export function AppCommandPalette({
                     <AppCommandPaletteResults
                         activeResultIndex={activeResultIndex}
                         isClosing={isClosing}
-                        results={results}
+                        results={resultItems}
                         onCommitSelection={commitSelection}
                         onHoverItem={handleHoverItem}
                     />

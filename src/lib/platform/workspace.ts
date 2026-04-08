@@ -62,7 +62,7 @@ export function bootstrapWorkspace(): Promise<WorkspaceBootstrapResponse> {
     return runPromise(bootstrapWorkspaceEffect());
 }
 
-export function bootstrapWorkspaceEffect(): Effect.Effect<
+function bootstrapWorkspaceEffect(): Effect.Effect<
     WorkspaceBootstrapResponse,
     WorkspaceCommandError
 > {
@@ -85,7 +85,7 @@ export function openWorkspace(
     return runPromise(openWorkspaceEffect(workspacePath));
 }
 
-export function openWorkspaceEffect(
+function openWorkspaceEffect(
     workspacePath: string,
 ): Effect.Effect<WorkspaceSnapshot, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
@@ -112,7 +112,7 @@ export function refreshWorkspace(
     return runPromise(refreshWorkspaceEffect(workspacePath));
 }
 
-export function refreshWorkspaceEffect(
+function refreshWorkspaceEffect(
     workspacePath: string,
 ): Effect.Effect<WorkspaceSnapshot | null, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
@@ -136,7 +136,7 @@ export function createWorkspaceFile(options: {
     return runPromise(createWorkspaceFileEffect(options));
 }
 
-export function createWorkspaceFileEffect(options: {
+function createWorkspaceFileEffect(options: {
     workspacePath: string;
     fileName?: string;
     initialContent?: string;
@@ -166,7 +166,7 @@ export function saveWorkspaceFile(options: {
     return runPromise(saveWorkspaceFileEffect(options));
 }
 
-export function saveWorkspaceFileEffect(options: {
+function saveWorkspaceFileEffect(options: {
     workspacePath: string;
     tabId: string;
     content: string;

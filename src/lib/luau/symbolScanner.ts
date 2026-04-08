@@ -1,4 +1,4 @@
-import type { LuauFileSymbol, LuauSymbolKind } from "./luau.type";
+import type { LuauSymbolKind } from "./luau.type";
 import type {
     LuauFileAnalysis,
     LuauToken,
@@ -1171,8 +1171,4 @@ export function scanLuauFileAnalysis(content: string): LuauFileAnalysis {
     lastScannedContent = content;
     lastScannedAnalysis = scanner.scan();
     return lastScannedAnalysis;
-}
-
-export function scanLuauFileSymbols(content: string): LuauFileSymbol[] {
-    return scanLuauFileAnalysis(content).symbols;
 }

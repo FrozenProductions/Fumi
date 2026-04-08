@@ -220,6 +220,10 @@ export function WorkspaceTabBar({
     const closeContextMenu = (): void => {
         setContextMenuState(null);
     };
+    const contextMenuPosition = {
+        x: contextMenuState?.x ?? 0,
+        y: contextMenuState?.y ?? 0,
+    };
 
     const handleRenameFromContextMenu = (): void => {
         if (!contextMenuState) {
@@ -307,10 +311,7 @@ export function WorkspaceTabBar({
             </DragDropProvider>
             <WorkspaceTabContextMenu
                 isOpen={contextMenuState !== null}
-                position={{
-                    x: contextMenuState?.x ?? 0,
-                    y: contextMenuState?.y ?? 0,
-                }}
+                position={contextMenuPosition}
                 onDuplicate={handleDuplicateFromContextMenu}
                 onArchive={handleArchiveFromContextMenu}
                 onClose={closeContextMenu}

@@ -7,14 +7,16 @@ use super::super::{
     models::MAX_WORKSPACE_TAB_NAME_LENGTH,
     storage::{
         create_empty_cursor_state, create_workspace_tab_id, ensure_unique_file_name,
-        ensure_workspace_exists, get_next_script_name, get_temporary_rename_file_name,
-        has_conflicting_workspace_file_name, is_case_only_workspace_rename, normalize_cursor_state,
-        normalize_new_workspace_file_name, persist_workspace_launch_state, read_workspace_metadata,
-        write_workspace_file, write_workspace_metadata,
+        get_next_script_name, get_temporary_rename_file_name, has_conflicting_workspace_file_name,
+        is_case_only_workspace_rename, normalize_cursor_state, normalize_new_workspace_file_name,
+        write_workspace_file,
     },
     WorkspaceCursorState, WorkspaceMetadata, WorkspaceTabSnapshot, WorkspaceTabState,
 };
-use super::{delete_workspace_tab_by_id, run_command, CommandResponse};
+use super::{
+    delete_workspace_tab_by_id, find_workspace_tab, load_workspace_metadata,
+    persist_workspace_metadata, require_workspace_tab_file_path, run_command, CommandResponse,
+};
 
 #[command]
 pub fn create_workspace_file(
@@ -27,8 +29,7 @@ pub fn create_workspace_file(
     let initial_content = initial_content.unwrap_or_default();
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
+        let metadata = load_workspace_metadata(&workspace_path)?;
         let trimmed_file_name = file_name.as_deref().map(str::trim).unwrap_or_default();
         let preferred_workspace_file_name = if trimmed_file_name.is_empty() {
             get_next_script_name(&workspace_path, &metadata)
@@ -65,7 +66,8 @@ pub fn create_workspace_file(
             archived_at: None,
         });
 
-        write_workspace_metadata(
+        persist_workspace_metadata(
+            &app,
             &workspace_path,
             &WorkspaceMetadata {
                 version: metadata.version,
@@ -74,7 +76,6 @@ pub fn create_workspace_file(
                 archived_tabs: metadata.archived_tabs,
             },
         )?;
-        persist_workspace_launch_state(&app, &workspace_path)?;
 
         Ok(WorkspaceTabSnapshot {
             id: tab_id,
@@ -97,19 +98,13 @@ pub fn save_workspace_file(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
-        let tab = metadata
-            .tabs
-            .iter()
-            .find(|item| item.id == tab_id)
-            .cloned()
-            .ok_or_else(|| anyhow!("Workspace tab not found: {tab_id}"))?;
-
-        let file_path = workspace_path.join(&tab.file_name);
-        if !file_path.exists() {
-            return Err(anyhow!("Workspace tab file not found: {}", tab.file_name));
-        }
+        let metadata = load_workspace_metadata(&workspace_path)?;
+        let tab = find_workspace_tab(&metadata, &tab_id)?;
+        let file_path = require_workspace_tab_file_path(
+            &workspace_path,
+            &tab.file_name,
+            "Workspace tab file not found",
+        )?;
 
         write_workspace_file(&file_path, &content)?;
 
@@ -135,8 +130,7 @@ pub fn save_workspace_file(
             archived_tabs: metadata.archived_tabs,
         };
 
-        write_workspace_metadata(&workspace_path, &next_metadata)?;
-        persist_workspace_launch_state(&app, &workspace_path)
+        persist_workspace_metadata(&app, &workspace_path, &next_metadata)
     })
 }
 
@@ -150,14 +144,8 @@ pub fn rename_workspace_file(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
-        let tab = metadata
-            .tabs
-            .iter()
-            .find(|item| item.id == tab_id)
-            .cloned()
-            .ok_or_else(|| anyhow!("Workspace tab not found: {tab_id}"))?;
+        let metadata = load_workspace_metadata(&workspace_path)?;
+        let tab = find_workspace_tab(&metadata, &tab_id)?;
 
         let normalized_file_name = normalize_new_workspace_file_name(&file_name);
         if normalized_file_name.is_empty() {
@@ -176,14 +164,14 @@ pub fn rename_workspace_file(
             ));
         }
 
-        let current_file_path = workspace_path.join(&tab.file_name);
+        let current_file_path = require_workspace_tab_file_path(
+            &workspace_path,
+            &tab.file_name,
+            "Workspace tab file not found",
+        )?;
         let next_file_path = workspace_path.join(&normalized_file_name);
         let is_case_only_rename =
             is_case_only_workspace_rename(&tab.file_name, &normalized_file_name);
-
-        if !current_file_path.exists() {
-            return Err(anyhow!("Workspace tab file not found: {}", tab.file_name));
-        }
 
         if next_file_path.exists() && !is_case_only_rename {
             return Err(anyhow!(
@@ -251,9 +239,7 @@ pub fn rename_workspace_file(
             })?;
         }
 
-        if let Err(error) = write_workspace_metadata(&workspace_path, &next_metadata)
-            .and_then(|_| persist_workspace_launch_state(&app, &workspace_path))
-        {
+        if let Err(error) = persist_workspace_metadata(&app, &workspace_path, &next_metadata) {
             if let Err(rollback_error) = fs::rename(&next_file_path, &current_file_path) {
                 eprintln!(
                     "Failed to roll back workspace file rename after metadata update failure: {rollback_error}"

@@ -23,10 +23,7 @@ const ROBLOX_BINARYCOOKIES_RELATIVE_PATH: &str =
 const ROBLOX_APPLICATION_PATH: &str = "/Applications/Roblox.app";
 
 pub(super) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountListResponse> {
-    list_accounts_with_running_state(
-        &get_accounts_root(app)?,
-        is_roblox_running()?,
-    )
+    list_accounts_with_running_state(&get_accounts_root(app)?, is_roblox_running()?)
 }
 
 pub(super) fn upsert_account<R: Runtime>(
@@ -75,12 +72,7 @@ fn list_accounts_with_running_state(
     let mut accounts = manifest
         .accounts
         .iter()
-        .map(|account| {
-            account.to_summary(
-                manifest.active_account_id.as_deref(),
-                is_roblox_running,
-            )
-        })
+        .map(|account| account.to_summary(manifest.active_account_id.as_deref(), is_roblox_running))
         .collect::<Vec<_>>();
 
     accounts.sort_by(|left, right| {
@@ -569,7 +561,10 @@ mod tests {
         let response = list_accounts_at(accounts_dir.path())?;
 
         assert_eq!(response.accounts.len(), 1);
-        assert_eq!(response.accounts[0].status, super::super::models::AccountStatus::Offline);
+        assert_eq!(
+            response.accounts[0].status,
+            super::super::models::AccountStatus::Offline
+        );
 
         Ok(())
     }

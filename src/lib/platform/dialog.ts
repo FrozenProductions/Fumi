@@ -38,7 +38,7 @@ export function confirmActionEffect(
     });
 }
 
-export function pickDirectoryEffect(
+function pickDirectoryEffect(
     defaultPath?: string,
 ): Effect.Effect<string | null, PlatformOperationError> {
     return Effect.tryPromise({

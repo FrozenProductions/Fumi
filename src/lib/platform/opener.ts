@@ -11,7 +11,7 @@ export async function openExternalUrl(url: string): Promise<void> {
     return runPromise(openExternalUrlEffect(url));
 }
 
-export function openExternalUrlEffect(
+function openExternalUrlEffect(
     url: string,
 ): Effect.Effect<void, PlatformOperationError> {
     if (!isTauriEnvironment()) {

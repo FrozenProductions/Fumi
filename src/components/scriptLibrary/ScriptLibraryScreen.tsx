@@ -13,12 +13,16 @@ import {
 import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.type";
 import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
-import type { ScriptLibraryScreenProps } from "./scriptLibrary.type";
+import type {
+    ScriptLibraryCardActions,
+    ScriptLibraryScreenProps,
+} from "./scriptLibrary.type";
 
 export function ScriptLibraryScreen({
     workspaceSession,
 }: ScriptLibraryScreenProps): ReactElement {
-    const hasWorkspace = Boolean(workspaceSession.workspace);
+    const hasWorkspace = Boolean(workspaceSession.state.workspace);
+    const { activity, actions, state } = useScriptLibrary();
     const {
         query,
         page,
@@ -30,11 +34,15 @@ export function ScriptLibraryScreen({
         errorMessage,
         canGoNext,
         maxPages,
+    } = state;
+    const {
         copyingScriptFor,
         addingScriptFor,
         copiedLinkId,
         copiedScriptId,
         addedScriptId,
+    } = activity;
+    const {
         setQuery,
         toggleFilter,
         setOrderBy,
@@ -46,7 +54,7 @@ export function ScriptLibraryScreen({
         activateCopiedLink,
         activateCopiedScript,
         activateAddedScript,
-    } = useScriptLibrary();
+    } = actions;
 
     async function handleCopyLink(script: ScriptLibraryEntry): Promise<void> {
         await copyTextToClipboard(getScriptLibraryPermalink(script));
@@ -73,7 +81,10 @@ export function ScriptLibraryScreen({
     async function handleAddToWorkspace(
         script: ScriptLibraryEntry,
     ): Promise<void> {
-        if (!workspaceSession.workspace || addingScriptFor === script._id) {
+        if (
+            !workspaceSession.state.workspace ||
+            addingScriptFor === script._id
+        ) {
             return;
         }
 
@@ -81,10 +92,11 @@ export function ScriptLibraryScreen({
 
         try {
             const scriptText = await fetchScriptText(script);
-            const didAdd = await workspaceSession.addWorkspaceScriptTab(
-                getWorkspaceScriptFileName(script),
-                scriptText,
-            );
+            const didAdd =
+                await workspaceSession.workspaceActions.addWorkspaceScriptTab(
+                    getWorkspaceScriptFileName(script),
+                    scriptText,
+                );
 
             if (didAdd) {
                 activateAddedScript(script._id);
@@ -94,6 +106,28 @@ export function ScriptLibraryScreen({
         } finally {
             setAddingScriptFor(null);
         }
+    }
+
+    function createCardActions(
+        script: ScriptLibraryEntry,
+    ): ScriptLibraryCardActions {
+        return {
+            hasWorkspace,
+            isAddingToWorkspace: addingScriptFor === script._id,
+            isAddedToWorkspace: addedScriptId === script._id,
+            isCopyingScript: copyingScriptFor === script._id,
+            isCopiedLink: copiedLinkId === script._id,
+            isCopiedScript: copiedScriptId === script._id,
+            onAddToWorkspace: () => {
+                void handleAddToWorkspace(script);
+            },
+            onCopyLink: () => {
+                void handleCopyLink(script);
+            },
+            onCopyScript: () => {
+                void handleCopyScript(script);
+            },
+        };
     }
 
     return (
@@ -159,34 +193,18 @@ export function ScriptLibraryScreen({
                                 : "flex flex-col gap-3"
                         }
                     >
-                        {scripts.map((script) => (
-                            <ScriptLibraryCard
-                                key={script._id}
-                                script={script}
-                                viewFormat={viewFormat}
-                                actions={{
-                                    hasWorkspace,
-                                    isAddingToWorkspace:
-                                        addingScriptFor === script._id,
-                                    isAddedToWorkspace:
-                                        addedScriptId === script._id,
-                                    isCopyingScript:
-                                        copyingScriptFor === script._id,
-                                    isCopiedLink: copiedLinkId === script._id,
-                                    isCopiedScript:
-                                        copiedScriptId === script._id,
-                                    onAddToWorkspace: () => {
-                                        void handleAddToWorkspace(script);
-                                    },
-                                    onCopyLink: () => {
-                                        void handleCopyLink(script);
-                                    },
-                                    onCopyScript: () => {
-                                        void handleCopyScript(script);
-                                    },
-                                }}
-                            />
-                        ))}
+                        {scripts.map((script) => {
+                            const actions = createCardActions(script);
+
+                            return (
+                                <ScriptLibraryCard
+                                    key={script._id}
+                                    script={script}
+                                    viewFormat={viewFormat}
+                                    actions={actions}
+                                />
+                            );
+                        })}
                     </div>
                 )}
             </div>

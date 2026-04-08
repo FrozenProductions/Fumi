@@ -33,24 +33,30 @@ export function WorkspaceScreen({
         (state) => state.clearRenameCurrentTabRequest,
     );
     const {
-        isBootstrapping,
-        workspace,
         activeTab,
         activeTabIndex,
         errorMessage,
-        openWorkspaceDirectory,
-        createWorkspaceFile,
-        duplicateWorkspaceTab,
+        isBootstrapping,
+        workspace,
+    } = session.state;
+    const { createWorkspaceFile, openWorkspaceDirectory } =
+        session.workspaceActions;
+    const {
         archiveWorkspaceTab,
         deleteWorkspaceTab,
+        duplicateWorkspaceTab,
         renameWorkspaceTab,
-        selectWorkspaceTab,
         reorderWorkspaceTab,
         saveActiveWorkspaceTab,
+        selectWorkspaceTab,
+    } = session.tabActions;
+    const {
         updateActiveTabContent,
         updateActiveTabCursor,
         updateActiveTabScrollTop,
-    } = session;
+    } = session.editorActions;
+    const executorState = executor.state;
+    const { executeActiveTab } = executor.actions;
     const activeEditorMode = activeTab
         ? getEditorModeForFileName(activeTab.fileName)
         : "text";
@@ -120,6 +126,17 @@ export function WorkspaceScreen({
         appTheme === "dark"
             ? "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-300 bg-fumi-700 px-3.5 text-xs font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-400 hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
             : "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-200 bg-fumi-600 px-3.5 text-xs font-semibold tracking-wide text-white shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-700 hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50";
+    const chooseWorkspaceAction = {
+        label: "Choose workspace",
+        onClick: handleOpenWorkspaceDirectory,
+        icon: FolderOpenIcon,
+    };
+    const createFileAction = {
+        label: "New file",
+        onClick: handleCreateWorkspaceFile,
+        icon: Add01Icon,
+        shortcut: APP_HOTKEYS.CREATE_WORKSPACE_FILE.label,
+    };
 
     if (isBootstrapping) {
         return (
@@ -139,20 +156,16 @@ export function WorkspaceScreen({
                 {errorMessage ? (
                     <WorkspaceErrorBanner errorMessage={errorMessage} />
                 ) : null}
-                {executor.errorMessage ? (
+                {executorState.errorMessage ? (
                     <WorkspaceErrorBanner
-                        errorMessage={executor.errorMessage}
+                        errorMessage={executorState.errorMessage}
                     />
                 ) : null}
                 <WorkspaceMessageState
                     eyebrow="Workspace"
                     title="Choose a folder to store scripts"
                     description="Pick a folder where you want to keep your scripts. You can change it later from the workspace button in the top bar."
-                    action={{
-                        label: "Choose workspace",
-                        onClick: handleOpenWorkspaceDirectory,
-                        icon: FolderOpenIcon,
-                    }}
+                    action={chooseWorkspaceAction}
                 />
             </section>
         );
@@ -163,8 +176,10 @@ export function WorkspaceScreen({
             {errorMessage ? (
                 <WorkspaceErrorBanner errorMessage={errorMessage} />
             ) : null}
-            {executor.errorMessage ? (
-                <WorkspaceErrorBanner errorMessage={executor.errorMessage} />
+            {executorState.errorMessage ? (
+                <WorkspaceErrorBanner
+                    errorMessage={executorState.errorMessage}
+                />
             ) : null}
             {workspace.tabs.length > 0 ? (
                 <WorkspaceTabBar
@@ -198,12 +213,7 @@ export function WorkspaceScreen({
                                 ? "Restore archived tabs from Settings, or create a new file to keep working."
                                 : "Scripts are stored directly in this workspace directory. Create a file, then edit it in the editor."
                         }
-                        action={{
-                            label: "New file",
-                            onClick: handleCreateWorkspaceFile,
-                            icon: Add01Icon,
-                            shortcut: APP_HOTKEYS.CREATE_WORKSPACE_FILE.label,
-                        }}
+                        action={createFileAction}
                     />
                 ) : activeTab ? (
                     <div className="relative flex min-h-0 flex-1">
@@ -224,9 +234,9 @@ export function WorkspaceScreen({
                         <div className="pointer-events-none absolute bottom-5 right-5 z-20">
                             <AppTooltip
                                 content={
-                                    !executor.hasSupportedExecutor
+                                    !executorState.hasSupportedExecutor
                                         ? "No supported executor detected."
-                                        : executor.isAttached
+                                        : executorState.isAttached
                                           ? "Execute the current tab through the executor"
                                           : "Attach to an executor port before executing"
                                 }
@@ -234,26 +244,28 @@ export function WorkspaceScreen({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        void executor.executeActiveTab();
+                                        void executeActiveTab();
                                     }}
                                     disabled={
-                                        executor.isBusy ||
-                                        !executor.hasSupportedExecutor
+                                        executorState.isBusy ||
+                                        !executorState.hasSupportedExecutor
                                     }
                                     className={`app-select-none ${executeButtonClassName} ${
-                                        executor.isBusy
+                                        executorState.isBusy
                                             ? "cursor-wait opacity-70"
-                                            : !executor.hasSupportedExecutor
+                                            : !executorState.hasSupportedExecutor
                                               ? "cursor-not-allowed opacity-60"
                                               : ""
                                     }`}
                                 >
                                     <AppIcon
                                         icon={PlayIcon}
-                                        className={`size-3.5 ${executor.isBusy ? "opacity-50" : ""}`}
+                                        className={`size-3.5 ${executorState.isBusy ? "opacity-50" : ""}`}
                                         strokeWidth={2.5}
                                     />
-                                    {executor.isBusy ? "Executing" : "Execute"}
+                                    {executorState.isBusy
+                                        ? "Executing"
+                                        : "Execute"}
                                 </button>
                             </AppTooltip>
                         </div>

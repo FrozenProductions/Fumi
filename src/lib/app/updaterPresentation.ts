@@ -1,6 +1,6 @@
 import type { AppUpdateDownloadProgress } from "../../lib/app/app.type";
 
-export function formatAppUpdateByteCount(value: number | null): string | null {
+function formatAppUpdateByteCount(value: number | null): string | null {
     if (value === null || value <= 0) {
         return null;
     }

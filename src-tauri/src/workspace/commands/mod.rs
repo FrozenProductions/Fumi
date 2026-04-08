@@ -1,8 +1,9 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
-use tauri::{command, State};
+use tauri::{command, AppHandle, State};
 
+use crate::command;
 use crate::state::AppRuntimeState;
 use crate::workspace::{
     models::StoredWorkspaceMetadata,
@@ -12,21 +13,62 @@ use crate::workspace::{
         persist_workspace_launch_state, read_workspace_metadata,
         resolve_workspace_file_delete_path, write_workspace_metadata,
     },
-    WorkspaceTabState,
+    WorkspaceMetadata, WorkspaceTabState,
 };
 
 pub(crate) mod archive;
 pub(crate) mod files;
 pub(crate) mod session;
 
-pub(super) type CommandResponse<T> = std::result::Result<T, String>;
+pub(super) use command::{run_command, CommandResponse};
 
-fn format_command_error(error: anyhow::Error) -> String {
-    format!("{error:#}")
+pub(super) fn load_workspace_metadata(workspace_path: &Path) -> Result<WorkspaceMetadata> {
+    ensure_workspace_exists(workspace_path)?;
+    read_workspace_metadata(workspace_path)
 }
 
-pub(super) fn run_command<T>(operation: impl FnOnce() -> Result<T>) -> CommandResponse<T> {
-    operation().map_err(format_command_error)
+pub(super) fn persist_workspace_metadata(
+    app: &AppHandle,
+    workspace_path: &Path,
+    metadata: &WorkspaceMetadata,
+) -> Result<()> {
+    write_workspace_metadata(workspace_path, metadata)?;
+    persist_workspace_launch_state(app, workspace_path)
+}
+
+pub(super) fn find_workspace_tab(
+    metadata: &WorkspaceMetadata,
+    tab_id: &str,
+) -> Result<WorkspaceTabState> {
+    metadata
+        .tabs
+        .iter()
+        .find(|item| item.id == tab_id)
+        .cloned()
+        .ok_or_else(|| anyhow!("Workspace tab not found: {tab_id}"))
+}
+
+pub(super) fn require_workspace_tab_file_path(
+    workspace_path: &Path,
+    file_name: &str,
+    missing_message_prefix: &str,
+) -> Result<PathBuf> {
+    let file_path = workspace_path.join(file_name);
+
+    if !file_path.exists() {
+        return Err(anyhow!("{missing_message_prefix}: {file_name}"));
+    }
+
+    Ok(file_path)
+}
+
+pub(super) fn restore_archived_workspace_tab_state(
+    archived_tab: &WorkspaceTabState,
+) -> WorkspaceTabState {
+    WorkspaceTabState {
+        archived_at: None,
+        ..archived_tab.clone()
+    }
 }
 
 fn get_next_active_tab_id_after_delete(
@@ -58,8 +100,7 @@ pub(super) fn delete_workspace_tab_by_id(
     workspace_path: &Path,
     tab_id: &str,
 ) -> Result<()> {
-    ensure_workspace_exists(workspace_path)?;
-    let metadata = read_workspace_metadata(workspace_path)?;
+    let metadata = load_workspace_metadata(workspace_path)?;
     let deleted_tab = metadata
         .tabs
         .iter()
@@ -108,8 +149,7 @@ pub(super) fn delete_workspace_tab_by_id(
         archived_tabs: Some(next_archived_tabs),
     }));
 
-    write_workspace_metadata(workspace_path, &normalized_metadata)?;
-    persist_workspace_launch_state(app, workspace_path)
+    persist_workspace_metadata(app, workspace_path, &normalized_metadata)
 }
 
 #[command]

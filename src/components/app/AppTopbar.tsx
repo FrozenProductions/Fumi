@@ -20,6 +20,16 @@ import { AppTopbarExecutorControls } from "./AppTopbarExecutorControls";
 import { AppTopbarTrafficLights } from "./AppTopbarTrafficLights";
 import type { AppTopbarProps } from "./appShell.type";
 
+type AppTopbarTitleLetterStyle = CSSProperties & {
+    "--title-letter-x": string;
+};
+
+function createTitleLetterStyle(offsetX: number): AppTopbarTitleLetterStyle {
+    return {
+        "--title-letter-x": `${offsetX}px`,
+    };
+}
+
 export function AppTopbar({
     title,
     isSidebarOpen,
@@ -93,11 +103,7 @@ export function AppTopbar({
                                 <span
                                     key={key}
                                     className="inline-block [transition:transform_260ms_cubic-bezier(0.22,1,0.36,1),color_220ms_ease-out] [will-change:transform,color] group-hover:text-fumi-700 group-hover:[transform:translateX(var(--title-letter-x,0))]"
-                                    style={
-                                        {
-                                            "--title-letter-x": `${offsetX}px`,
-                                        } as CSSProperties
-                                    }
+                                    style={createTitleLetterStyle(offsetX)}
                                 >
                                     {char}
                                 </span>

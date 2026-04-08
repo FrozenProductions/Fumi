@@ -27,14 +27,12 @@ const FRAME_TERMINATOR_LENGTH: usize = 1;
 const SOCKET_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
 const MAX_MESSAGE_LENGTH_BYTES: usize = 8 * 1024 * 1024;
 const POST_RECONNECT_SETTLE_DURATION: Duration = Duration::from_millis(75);
-const MACSPLOIT_DETECTION_PATH: &str =
-    "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
+const MACSPLOIT_DETECTION_PATH: &str = "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
 const OPIUMWARE_DETECTION_PATH: &str =
     "/Applications/Roblox.app/Contents/Resources/libOpiumware.dylib";
 const MACSPLOIT_AVAILABLE_PORTS: [u16; 10] =
     [5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562];
-const OPIUMWARE_AVAILABLE_PORTS: [u16; 6] =
-    [8392, 8393, 8394, 8395, 8396, 8397];
+const OPIUMWARE_AVAILABLE_PORTS: [u16; 6] = [8392, 8393, 8394, 8395, 8396, 8397];
 const UNSUPPORTED_EXECUTOR_PORTS: [u16; 0] = [];
 const OPIUMWARE_SCRIPT_PREFIX: &str = "OpiumwareScript ";
 
@@ -121,9 +119,7 @@ impl ExecutorRuntimeState {
                     let state = self.lock();
 
                     if state.connection.is_some() || state.is_opiumware_attached {
-                        log_executor_debug(
-                            "attach rejected because a connection already exists",
-                        );
+                        log_executor_debug("attach rejected because a connection already exists");
                         return Err(anyhow!(
                             "AlreadyInjectedError: Socket is already connected."
                         ));
@@ -172,9 +168,7 @@ impl ExecutorRuntimeState {
                     let state = self.lock();
 
                     if state.connection.is_some() || state.is_opiumware_attached {
-                        log_executor_debug(
-                            "attach rejected because a connection already exists",
-                        );
+                        log_executor_debug("attach rejected because a connection already exists");
                         return Err(anyhow!(
                             "AlreadyInjectedError: Socket is already connected."
                         ));
@@ -236,9 +230,10 @@ impl ExecutorRuntimeState {
             ExecutorKind::Macsploit => {
                 let connection = {
                     let mut state = self.lock();
-                    state.connection.take().ok_or_else(|| {
-                        anyhow!("NotInjectedError: Socket is already closed.")
-                    })?
+                    state
+                        .connection
+                        .take()
+                        .ok_or_else(|| anyhow!("NotInjectedError: Socket is already closed."))?
                 };
 
                 log_executor_debug(format!(
@@ -298,11 +293,7 @@ impl ExecutorRuntimeState {
                 ));
 
                 self.reconnect_on_port(app, port)?;
-                self.write_frame_with_reconnect(
-                    app,
-                    ExecutorIpcType::Execute,
-                    script.as_bytes(),
-                )
+                self.write_frame_with_reconnect(app, ExecutorIpcType::Execute, script.as_bytes())
             }
             ExecutorKind::Opiumware => {
                 let port = status.port;
@@ -878,8 +869,7 @@ mod tests {
     fn detect_executor_kind_detects_opiumware_when_only_its_dylib_exists() {
         let dylib_path = create_temp_path("missing-macsploit-dylib");
         let opiumware_path = create_temp_path("opiumware-dylib");
-        fs::write(&opiumware_path, "present")
-            .expect("temp Opiumware dylib should be created");
+        fs::write(&opiumware_path, "present").expect("temp Opiumware dylib should be created");
 
         assert_eq!(
             detect_executor_kind_at(&dylib_path, &opiumware_path),

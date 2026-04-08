@@ -75,7 +75,7 @@ export function useAppCommandPalette({
     const deferredQuery = useDeferredValue(query);
     const normalizedQuery =
         normalizeAppCommandPaletteSearchValue(deferredQuery);
-    const { activeTab } = workspaceSession;
+    const { activeTab } = workspaceSession.state;
     const currentLineNumber = activeTab ? activeTab.cursor.line + 1 : null;
     const goToLineNumber =
         mode === "goto-line" ? parseGoToLineQuery(query) : null;
@@ -334,20 +334,28 @@ export function useAppCommandPalette({
     }, []);
 
     return {
-        panelRef,
-        inputRef,
-        isPresent,
-        isClosing,
-        mode,
-        query,
-        scope,
-        activeResultIndex,
-        results,
-        commitSelection,
-        handleBackdropMouseDown,
-        handleHoverItem,
-        handleInputChange,
-        handleInputKeyDown,
-        handleScopeSelect,
+        visibility: {
+            isPresent,
+            isClosing,
+        },
+        input: {
+            panelRef,
+            inputRef,
+            mode,
+            query,
+            scope,
+        },
+        results: {
+            activeResultIndex,
+            results,
+        },
+        handlers: {
+            commitSelection,
+            handleBackdropMouseDown,
+            handleHoverItem,
+            handleInputChange,
+            handleInputKeyDown,
+            handleScopeSelect,
+        },
     };
 }

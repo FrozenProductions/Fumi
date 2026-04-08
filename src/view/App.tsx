@@ -48,10 +48,10 @@ export function App(): ReactElement {
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
     const workspaceSession = useWorkspaceSession();
+    const { activeTab, hasUnsavedChanges } = workspaceSession.state;
     const workspaceExecutor = useWorkspaceExecutor({
-        activeTabContent: workspaceSession.activeTab?.content ?? null,
+        activeTabContent: activeTab?.content ?? null,
     });
-    const { hasUnsavedChanges } = workspaceSession;
     const handleOpenSettings = (): void => {
         selectSidebarItem("settings");
     };
@@ -95,7 +95,10 @@ export function App(): ReactElement {
                     onOpenWorkspace={topbarWorkspaceContext.onOpenWorkspace}
                     executorControls={
                         activeSidebarItem === "workspace"
-                            ? workspaceExecutor
+                            ? {
+                                  state: workspaceExecutor.state,
+                                  actions: workspaceExecutor.actions,
+                              }
                             : undefined
                     }
                 />

@@ -9,7 +9,6 @@ import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
 } from "../../lib/app/app.type";
-import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { UpdaterError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
@@ -127,10 +126,6 @@ function mapDownloadProgress(
     };
 }
 
-export async function checkForAppUpdate(): Promise<AppUpdateMetadata | null> {
-    return runPromise(checkForAppUpdateEffect());
-}
-
 export function checkForAppUpdateEffect(): Effect.Effect<
     AppUpdateMetadata | null,
     UpdaterError
@@ -161,15 +156,6 @@ export function checkForAppUpdateEffect(): Effect.Effect<
 
         return mapUpdateMetadata(update);
     });
-}
-
-export async function downloadAndInstallAppUpdate(
-    updateMetadata: AppUpdateMetadata,
-    onProgress?: (progress: AppUpdateDownloadProgress) => void,
-): Promise<void> {
-    return runPromise(
-        downloadAndInstallAppUpdateEffect(updateMetadata, onProgress),
-    );
 }
 
 export function downloadAndInstallAppUpdateEffect(
@@ -225,10 +211,6 @@ export function downloadAndInstallAppUpdateEffect(
             yield* clearPendingUpdateEffect();
         }
     });
-}
-
-export async function relaunchApp(): Promise<void> {
-    return runPromise(relaunchAppEffect());
 }
 
 export function relaunchAppEffect(): Effect.Effect<void, UpdaterError> {

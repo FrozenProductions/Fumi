@@ -1,17 +1,7 @@
-use anyhow::Result;
 use tauri::{command, AppHandle, State};
 
 use super::{ExecutorRuntimeState, ExecutorStatusPayload};
-
-type CommandResponse<T> = std::result::Result<T, String>;
-
-fn format_command_error(error: anyhow::Error) -> String {
-    format!("{error:#}")
-}
-
-fn run_command<T>(operation: impl FnOnce() -> Result<T>) -> CommandResponse<T> {
-    operation().map_err(format_command_error)
-}
+use crate::command::{run_command, CommandResponse};
 
 #[command]
 pub fn get_executor_status(state: State<ExecutorRuntimeState>) -> ExecutorStatusPayload {

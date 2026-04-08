@@ -1,7 +1,18 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { describe, expect, it, vi } from "vite-plus/test";
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
-import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
+import type {
+    UseWorkspaceExecutorResult,
+    WorkspaceExecutorActions,
+    WorkspaceExecutorState,
+} from "../../hooks/workspace/useWorkspaceExecutor.type";
+import type {
+    UseWorkspaceSessionResult,
+    WorkspaceSessionArchiveActions,
+    WorkspaceSessionEditorActions,
+    WorkspaceSessionState,
+    WorkspaceSessionTabActions,
+    WorkspaceSessionWorkspaceActions,
+} from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
     AppCommandPaletteItem,
     AppSidebarItem,
@@ -16,58 +27,94 @@ import {
     parseGoToLineQuery,
 } from "./commandPalette";
 
+type WorkspaceSessionOverrides = {
+    state?: Partial<WorkspaceSessionState>;
+    workspaceActions?: Partial<WorkspaceSessionWorkspaceActions>;
+    tabActions?: Partial<WorkspaceSessionTabActions>;
+    archiveActions?: Partial<WorkspaceSessionArchiveActions>;
+    editorActions?: Partial<WorkspaceSessionEditorActions>;
+};
+
+type WorkspaceExecutorOverrides = {
+    state?: Partial<WorkspaceExecutorState>;
+    actions?: Partial<WorkspaceExecutorActions>;
+};
+
 function createWorkspaceSession(
-    overrides: Partial<UseWorkspaceSessionResult> = {},
+    overrides: WorkspaceSessionOverrides = {},
 ): UseWorkspaceSessionResult {
     return {
-        isBootstrapping: false,
-        workspace: null,
-        activeTab: null,
-        activeTabIndex: -1,
-        recentWorkspacePaths: [],
-        errorMessage: null,
-        hasUnsavedChanges: false,
-        openWorkspaceDirectory: vi.fn().mockResolvedValue(undefined),
-        openWorkspacePath: vi.fn().mockResolvedValue(undefined),
-        createWorkspaceFile: vi.fn().mockResolvedValue(undefined),
-        addWorkspaceScriptTab: vi.fn().mockResolvedValue(false),
-        duplicateWorkspaceTab: vi.fn().mockResolvedValue(undefined),
-        archiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
-        deleteWorkspaceTab: vi.fn().mockResolvedValue(undefined),
-        restoreArchivedWorkspaceTab: vi.fn().mockResolvedValue(undefined),
-        restoreAllArchivedWorkspaceTabs: vi.fn().mockResolvedValue(undefined),
-        deleteArchivedWorkspaceTab: vi.fn().mockResolvedValue(undefined),
-        deleteAllArchivedWorkspaceTabs: vi.fn().mockResolvedValue(undefined),
-        renameWorkspaceTab: vi.fn().mockResolvedValue(false),
-        selectWorkspaceTab: vi.fn(),
-        reorderWorkspaceTab: vi.fn(),
-        saveActiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
-        updateActiveTabContent: vi.fn(),
-        updateActiveTabCursor: vi.fn(),
-        updateActiveTabScrollTop: vi.fn(),
-        ...overrides,
+        state: {
+            isBootstrapping: false,
+            workspace: null,
+            activeTab: null,
+            activeTabIndex: -1,
+            recentWorkspacePaths: [],
+            errorMessage: null,
+            hasUnsavedChanges: false,
+            ...overrides.state,
+        },
+        workspaceActions: {
+            openWorkspaceDirectory: vi.fn().mockResolvedValue(undefined),
+            openWorkspacePath: vi.fn().mockResolvedValue(undefined),
+            createWorkspaceFile: vi.fn().mockResolvedValue(undefined),
+            addWorkspaceScriptTab: vi.fn().mockResolvedValue(false),
+            ...overrides.workspaceActions,
+        },
+        tabActions: {
+            duplicateWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            archiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            deleteWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            renameWorkspaceTab: vi.fn().mockResolvedValue(false),
+            selectWorkspaceTab: vi.fn(),
+            reorderWorkspaceTab: vi.fn(),
+            saveActiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            ...overrides.tabActions,
+        },
+        archiveActions: {
+            restoreArchivedWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            restoreAllArchivedWorkspaceTabs: vi
+                .fn()
+                .mockResolvedValue(undefined),
+            deleteArchivedWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            deleteAllArchivedWorkspaceTabs: vi
+                .fn()
+                .mockResolvedValue(undefined),
+            ...overrides.archiveActions,
+        },
+        editorActions: {
+            updateActiveTabContent: vi.fn(),
+            updateActiveTabCursor: vi.fn(),
+            updateActiveTabScrollTop: vi.fn(),
+            ...overrides.editorActions,
+        },
     };
 }
 
 function createWorkspaceExecutor(
-    overrides: Partial<UseWorkspaceExecutorResult> = {},
+    overrides: WorkspaceExecutorOverrides = {},
 ): UseWorkspaceExecutorResult {
     return {
-        executorKind: "macsploit",
-        availablePorts: [
-            5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
-        ],
-        hasSupportedExecutor: true,
-        port: "5553",
-        isAttached: false,
-        didRecentAttachFail: false,
-        isBusy: false,
-        errorMessage: null,
-        updatePort: vi.fn(),
-        clearErrorMessage: vi.fn(),
-        toggleConnection: vi.fn().mockResolvedValue(undefined),
-        executeActiveTab: vi.fn().mockResolvedValue(undefined),
-        ...overrides,
+        state: {
+            executorKind: "macsploit",
+            availablePorts: [
+                5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
+            ],
+            hasSupportedExecutor: true,
+            port: "5553",
+            isAttached: false,
+            didRecentAttachFail: false,
+            isBusy: false,
+            errorMessage: null,
+            ...overrides.state,
+        },
+        actions: {
+            updatePort: vi.fn(),
+            clearErrorMessage: vi.fn(),
+            toggleConnection: vi.fn().mockResolvedValue(undefined),
+            executeActiveTab: vi.fn().mockResolvedValue(undefined),
+            ...overrides.actions,
+        },
     };
 }
 
@@ -108,36 +155,44 @@ describe("normalizeAppCommandPaletteSearchValue", () => {
         const items = getCommandCommandPaletteItems(
             createCommandPaletteOptions({
                 workspaceSession: createWorkspaceSession({
-                    workspace: {
-                        workspacePath: "/workspace/current",
-                        workspaceName: "current",
-                        activeTabId: "tab-1",
-                        archivedTabs: [],
-                        tabs: [
-                            {
-                                id: "tab-1",
-                                fileName: "alpha.lua",
-                                content: "alpha",
-                                savedContent: "alpha",
-                                isDirty: false,
-                                cursor: { line: 0, column: 0, scrollTop: 0 },
-                            },
-                        ],
-                    },
-                    activeTab: {
-                        id: "tab-1",
-                        fileName: "alpha.lua",
-                        content: "alpha",
-                        savedContent: "alpha",
-                        isDirty: false,
-                        cursor: { line: 0, column: 0, scrollTop: 0 },
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: "tab-1",
+                            archivedTabs: [],
+                            tabs: [
+                                {
+                                    id: "tab-1",
+                                    fileName: "alpha.lua",
+                                    content: "alpha",
+                                    savedContent: "alpha",
+                                    isDirty: false,
+                                    cursor: {
+                                        line: 0,
+                                        column: 0,
+                                        scrollTop: 0,
+                                    },
+                                },
+                            ],
+                        },
+                        activeTab: {
+                            id: "tab-1",
+                            fileName: "alpha.lua",
+                            content: "alpha",
+                            savedContent: "alpha",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
                     },
                 }),
                 workspaceExecutor: createWorkspaceExecutor({
-                    executorKind: "unsupported",
-                    availablePorts: [],
-                    hasSupportedExecutor: false,
-                    port: "",
+                    state: {
+                        executorKind: "unsupported",
+                        availablePorts: [],
+                        hasSupportedExecutor: false,
+                        port: "",
+                    },
                 }),
             }),
         );
@@ -201,46 +256,52 @@ describe("getTabCommandPaletteItems", () => {
 
         items[0].onSelect();
 
-        expect(workspaceSession.openWorkspaceDirectory).toHaveBeenCalledOnce();
+        expect(
+            workspaceSession.workspaceActions.openWorkspaceDirectory,
+        ).toHaveBeenCalledOnce();
     });
 
     it("returns tab items with active-tab keywords and selection handlers", () => {
         const selectWorkspaceTab = vi.fn();
         const workspaceSession = createWorkspaceSession({
-            workspace: {
-                workspacePath: "/workspace/current",
-                workspaceName: "current",
-                activeTabId: "tab-2",
-                archivedTabs: [],
-                tabs: [
-                    {
-                        id: "tab-1",
-                        fileName: "alpha.lua",
-                        content: "alpha",
-                        savedContent: "alpha",
-                        isDirty: false,
-                        cursor: { line: 0, column: 0, scrollTop: 0 },
-                    },
-                    {
-                        id: "tab-2",
-                        fileName: "beta.lua",
-                        content: "beta",
-                        savedContent: "beta",
-                        isDirty: false,
-                        cursor: { line: 0, column: 0, scrollTop: 0 },
-                    },
-                ],
+            state: {
+                workspace: {
+                    workspacePath: "/workspace/current",
+                    workspaceName: "current",
+                    activeTabId: "tab-2",
+                    archivedTabs: [],
+                    tabs: [
+                        {
+                            id: "tab-1",
+                            fileName: "alpha.lua",
+                            content: "alpha",
+                            savedContent: "alpha",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                        {
+                            id: "tab-2",
+                            fileName: "beta.lua",
+                            content: "beta",
+                            savedContent: "beta",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                    ],
+                },
+                activeTab: {
+                    id: "tab-2",
+                    fileName: "beta.lua",
+                    content: "beta",
+                    savedContent: "beta",
+                    isDirty: false,
+                    cursor: { line: 0, column: 0, scrollTop: 0 },
+                },
+                activeTabIndex: 1,
             },
-            activeTab: {
-                id: "tab-2",
-                fileName: "beta.lua",
-                content: "beta",
-                savedContent: "beta",
-                isDirty: false,
-                cursor: { line: 0, column: 0, scrollTop: 0 },
+            tabActions: {
+                selectWorkspaceTab,
             },
-            activeTabIndex: 1,
-            selectWorkspaceTab,
         });
 
         const items = getTabCommandPaletteItems(workspaceSession);
@@ -304,38 +365,44 @@ describe("getCommandCommandPaletteItems", () => {
         const onRequestRenameCurrentTab = vi.fn();
 
         const workspaceSession = createWorkspaceSession({
-            workspace: {
-                workspacePath: "/workspace/current",
-                workspaceName: "current",
-                activeTabId: "tab-1",
-                archivedTabs: [],
-                tabs: [
-                    {
-                        id: "tab-1",
-                        fileName: "alpha.lua",
-                        content: "alpha",
-                        savedContent: "alpha",
-                        isDirty: false,
-                        cursor: { line: 0, column: 0, scrollTop: 0 },
-                    },
-                ],
+            state: {
+                workspace: {
+                    workspacePath: "/workspace/current",
+                    workspaceName: "current",
+                    activeTabId: "tab-1",
+                    archivedTabs: [],
+                    tabs: [
+                        {
+                            id: "tab-1",
+                            fileName: "alpha.lua",
+                            content: "alpha",
+                            savedContent: "alpha",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                    ],
+                },
+                activeTab: {
+                    id: "tab-1",
+                    fileName: "alpha.lua",
+                    content: "alpha",
+                    savedContent: "alpha",
+                    isDirty: false,
+                    cursor: { line: 0, column: 0, scrollTop: 0 },
+                },
+                activeTabIndex: 0,
             },
-            activeTab: {
-                id: "tab-1",
-                fileName: "alpha.lua",
-                content: "alpha",
-                savedContent: "alpha",
-                isDirty: false,
-                cursor: { line: 0, column: 0, scrollTop: 0 },
+            tabActions: {
+                deleteWorkspaceTab,
             },
-            activeTabIndex: 0,
-            deleteWorkspaceTab,
         });
         const items = getCommandCommandPaletteItems(
             createCommandPaletteOptions({
                 workspaceSession,
                 workspaceExecutor: createWorkspaceExecutor({
-                    executeActiveTab,
+                    actions: {
+                        executeActiveTab,
+                    },
                 }),
                 isSidebarOpen: true,
                 activeSidebarItem: "script-library",
@@ -420,25 +487,29 @@ describe("getWorkspaceCommandPaletteItems", () => {
     it("excludes the current workspace from recent workspace results", () => {
         const openWorkspacePath = vi.fn().mockResolvedValue(undefined);
         const workspaceSession = createWorkspaceSession({
-            workspace: {
-                workspacePath: "/Users/dayte/projects/current",
-                workspaceName: "current",
-                activeTabId: null,
-                tabs: [],
-                archivedTabs: [
-                    {
-                        id: "archived-1",
-                        fileName: "old.lua",
-                        cursor: { line: 0, column: 0, scrollTop: 0 },
-                    },
+            state: {
+                workspace: {
+                    workspacePath: "/Users/dayte/projects/current",
+                    workspaceName: "current",
+                    activeTabId: null,
+                    tabs: [],
+                    archivedTabs: [
+                        {
+                            id: "archived-1",
+                            fileName: "old.lua",
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                    ],
+                },
+                recentWorkspacePaths: [
+                    "/Users/dayte/projects/current",
+                    "/Users/dayte/projects/other",
+                    "/Users/dayte/projects/archive",
                 ],
             },
-            recentWorkspacePaths: [
-                "/Users/dayte/projects/current",
-                "/Users/dayte/projects/other",
-                "/Users/dayte/projects/archive",
-            ],
-            openWorkspacePath,
+            workspaceActions: {
+                openWorkspacePath,
+            },
         });
 
         const items = getWorkspaceCommandPaletteItems(workspaceSession);

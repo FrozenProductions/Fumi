@@ -5,6 +5,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import {
     type ChangeEvent,
+    type CSSProperties,
     type ReactElement,
     useEffect,
     useMemo,
@@ -27,12 +28,23 @@ import { AppSelect } from "../AppSelect";
 import type { AppSettingsWorkspaceSectionProps } from "./appSettings.type";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
+import type { ArchivedTabActionButtonClassNames } from "./workspace/appSettingsWorkspace.type";
+
+const ARCHIVED_TABS_SENTINEL_STYLE = {
+    top: "0px",
+} satisfies CSSProperties;
 
 export function AppSettingsWorkspaceSection({
     workspaceSession,
 }: AppSettingsWorkspaceSectionProps): ReactElement {
     const theme = useAppStore((state) => state.theme);
-    const workspace = workspaceSession.workspace;
+    const workspace = workspaceSession.state.workspace;
+    const {
+        deleteAllArchivedWorkspaceTabs,
+        deleteArchivedWorkspaceTab,
+        restoreAllArchivedWorkspaceTabs,
+        restoreArchivedWorkspaceTab,
+    } = workspaceSession.archiveActions;
 
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<ArchivedTabsSortOption>("dateDesc");
@@ -94,19 +106,19 @@ export function AppSettingsWorkspaceSection({
         : "motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[10%] motion-safe:motion-duration-150 motion-safe:motion-ease-out-cubic";
 
     const handleRestoreTab = (tabId: string): void => {
-        void workspaceSession.restoreArchivedWorkspaceTab(tabId);
+        void restoreArchivedWorkspaceTab(tabId);
     };
 
     const handleDeleteTab = (tabId: string): void => {
-        void workspaceSession.deleteArchivedWorkspaceTab(tabId);
+        void deleteArchivedWorkspaceTab(tabId);
     };
 
     const handleRestoreAll = (): void => {
-        void workspaceSession.restoreAllArchivedWorkspaceTabs();
+        void restoreAllArchivedWorkspaceTabs();
     };
 
     const handleDeleteAll = (): void => {
-        void workspaceSession.deleteAllArchivedWorkspaceTabs();
+        void deleteAllArchivedWorkspaceTabs();
     };
 
     const deleteButtonClass =
@@ -118,7 +130,7 @@ export function AppSettingsWorkspaceSection({
         "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-100 px-2.5 text-[11px] font-semibold text-fumi-700 transition-[background-color,border-color,color] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600";
 
     const dateFormatter = createArchivedTabsDateFormatter();
-    const actionButtonClassNames = {
+    const actionButtonClassNames: ArchivedTabActionButtonClassNames = {
         base: baseActionButtonClass,
         delete: deleteButtonClass,
     };
@@ -156,7 +168,7 @@ export function AppSettingsWorkspaceSection({
             <div
                 ref={sentinelRef}
                 className="pointer-events-none absolute left-0 h-[60px] w-full"
-                style={{ top: "0px" }}
+                style={ARCHIVED_TABS_SENTINEL_STYLE}
             />
 
             <div className="sticky top-0 z-30 -mx-6 -mt-6 bg-fumi-50 px-6 pt-6 pb-2">

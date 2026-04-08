@@ -52,7 +52,9 @@ export function matchesAppCommandPaletteItem(
 export function getTabCommandPaletteItems(
     workspaceSession: UseWorkspaceSessionResult,
 ): AppCommandPaletteItem[] {
-    const workspace = workspaceSession.workspace;
+    const { activeTab, workspace } = workspaceSession.state;
+    const { openWorkspaceDirectory } = workspaceSession.workspaceActions;
+    const { selectWorkspaceTab } = workspaceSession.tabActions;
 
     if (!workspace) {
         return [
@@ -63,7 +65,7 @@ export function getTabCommandPaletteItems(
                 icon: FolderOpenIcon,
                 keywords: "workspace folder open choose tabs",
                 onSelect: () => {
-                    void workspaceSession.openWorkspaceDirectory();
+                    void openWorkspaceDirectory();
                 },
             },
         ];
@@ -79,10 +81,12 @@ export function getTabCommandPaletteItems(
             description: "",
             icon: FileCodeIcon,
             keywords: `${tab.fileName} ${workspace.workspaceName} ${
-                isActive ? "active current selected" : ""
+                isActive || activeTab?.id === tab.id
+                    ? "active current selected"
+                    : ""
             }`,
             onSelect: () => {
-                workspaceSession.selectWorkspaceTab(tab.id);
+                selectWorkspaceTab(tab.id);
             },
         };
     });
@@ -106,7 +110,17 @@ export function getCommandCommandPaletteItems({
     onZoomReset,
     onRequestRenameCurrentTab,
 }: GetCommandPaletteCommandItemsOptions): AppCommandPaletteItem[] {
-    const { activeTab, workspace } = workspaceSession;
+    const { activeTab, workspace } = workspaceSession.state;
+    const { openWorkspaceDirectory, createWorkspaceFile } =
+        workspaceSession.workspaceActions;
+    const {
+        archiveWorkspaceTab,
+        deleteWorkspaceTab,
+        duplicateWorkspaceTab,
+        saveActiveWorkspaceTab,
+    } = workspaceSession.tabActions;
+    const executorState = workspaceExecutor.state;
+    const { executeActiveTab } = workspaceExecutor.actions;
     const commandItems: AppCommandPaletteItem[] = [
         {
             id: "command-open-workspace-screen",
@@ -170,7 +184,7 @@ export function getCommandCommandPaletteItems({
             meta: APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.label,
             keywords: "workspace folder open choose switch",
             onSelect: () => {
-                void workspaceSession.openWorkspaceDirectory();
+                void openWorkspaceDirectory();
             },
         },
         {
@@ -241,7 +255,7 @@ export function getCommandCommandPaletteItems({
             meta: APP_HOTKEYS.CREATE_WORKSPACE_FILE.label,
             keywords: "new create file tab script",
             onSelect: () => {
-                void workspaceSession.createWorkspaceFile();
+                void createWorkspaceFile();
             },
         });
     }
@@ -254,14 +268,14 @@ export function getCommandCommandPaletteItems({
         {
             id: "command-execute-tab",
             label: "Execute active tab",
-            description: workspaceExecutor.hasSupportedExecutor
+            description: executorState.hasSupportedExecutor
                 ? `Run ${activeTab.fileName} through the executor.`
                 : "No supported executor detected.",
             icon: CommandIcon,
             keywords: `execute run script ${activeTab.fileName}`,
-            isDisabled: !workspaceExecutor.hasSupportedExecutor,
+            isDisabled: !executorState.hasSupportedExecutor,
             onSelect: () => {
-                void workspaceExecutor.executeActiveTab();
+                void executeActiveTab();
             },
         },
         {
@@ -281,7 +295,7 @@ export function getCommandCommandPaletteItems({
             icon: CommandIcon,
             keywords: `save write ${activeTab.fileName}`,
             onSelect: () => {
-                void workspaceSession.saveActiveWorkspaceTab();
+                void saveActiveWorkspaceTab();
             },
         },
         {
@@ -303,7 +317,7 @@ export function getCommandCommandPaletteItems({
             keywords: `duplicate copy clone ${activeTab.fileName}`,
             onSelect: () => {
                 onOpenWorkspaceScreen();
-                void workspaceSession.duplicateWorkspaceTab(activeTab.id);
+                void duplicateWorkspaceTab(activeTab.id);
             },
         },
         {
@@ -314,7 +328,7 @@ export function getCommandCommandPaletteItems({
             meta: APP_HOTKEYS.ARCHIVE_WORKSPACE_TAB.label,
             keywords: `archive close remove ${activeTab.fileName}`,
             onSelect: () => {
-                void workspaceSession.archiveWorkspaceTab(activeTab.id);
+                void archiveWorkspaceTab(activeTab.id);
             },
         },
         {
@@ -324,7 +338,7 @@ export function getCommandCommandPaletteItems({
             icon: CommandIcon,
             keywords: `delete remove file ${activeTab.fileName}`,
             onSelect: () => {
-                void workspaceSession.deleteWorkspaceTab(activeTab.id);
+                void deleteWorkspaceTab(activeTab.id);
             },
         },
     );
@@ -335,7 +349,9 @@ export function getCommandCommandPaletteItems({
 export function getWorkspaceCommandPaletteItems(
     workspaceSession: UseWorkspaceSessionResult,
 ): AppCommandPaletteItem[] {
-    const { recentWorkspacePaths, workspace } = workspaceSession;
+    const { recentWorkspacePaths, workspace } = workspaceSession.state;
+    const { openWorkspaceDirectory, openWorkspacePath } =
+        workspaceSession.workspaceActions;
     const recentWorkspaceItems = recentWorkspacePaths
         .filter((workspacePath) => workspacePath !== workspace?.workspacePath)
         .map((workspacePath) => ({
@@ -348,7 +364,7 @@ export function getWorkspaceCommandPaletteItems(
                 workspacePath,
             )} recent workspace switch open`,
             onSelect: () => {
-                void workspaceSession.openWorkspacePath(workspacePath);
+                void openWorkspacePath(workspacePath);
             },
         }));
 
@@ -368,7 +384,7 @@ export function getWorkspaceCommandPaletteItems(
                 workspace?.workspacePath ?? ""
             } folder workspace current`,
             onSelect: () => {
-                void workspaceSession.openWorkspaceDirectory();
+                void openWorkspaceDirectory();
             },
         },
         ...recentWorkspaceItems,

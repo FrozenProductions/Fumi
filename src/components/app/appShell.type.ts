@@ -1,35 +1,11 @@
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
-import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
-    AppCommandPaletteMode,
-    AppCommandPaletteScope,
-    AppIconGlyph,
-    AppSidebarItem,
-    AppTheme,
-} from "../../lib/app/app.type";
+    WorkspaceExecutorActions,
+    WorkspaceExecutorState,
+} from "../../hooks/workspace/useWorkspaceExecutor.type";
+import type { AppIconGlyph, AppSidebarItem } from "../../lib/app/app.type";
+import type { AppCommandPaletteControllerOptions } from "../../lib/app/commandPalette.type";
 
-export type AppCommandPaletteProps = {
-    isOpen: boolean;
-    requestedScope: AppCommandPaletteScope | null;
-    requestedMode: AppCommandPaletteMode | null;
-    workspaceSession: UseWorkspaceSessionResult;
-    workspaceExecutor: UseWorkspaceExecutorResult;
-    isSidebarOpen: boolean;
-    activeSidebarItem: AppSidebarItem;
-    theme: AppTheme;
-    onClose: () => void;
-    onGoToLine: (lineNumber: number) => void;
-    onOpenWorkspaceScreen: () => void;
-    onOpenScriptLibrary: () => void;
-    onOpenAccounts: () => void;
-    onToggleSidebar: () => void;
-    onOpenSettings: () => void;
-    onSetTheme: (theme: AppTheme) => void;
-    onZoomIn: () => void;
-    onZoomOut: () => void;
-    onZoomReset: () => void;
-    onRequestRenameCurrentTab: () => void;
-};
+export type AppCommandPaletteProps = AppCommandPaletteControllerOptions;
 
 export type AppCommandPaletteScopeButtonProps = {
     ariaLabel: string;
@@ -47,17 +23,18 @@ export type AppSidebarProps = {
     onSelectItem: (item: AppSidebarItem) => void;
 };
 
-export type AppTopbarExecutorControlsProps = Pick<
-    UseWorkspaceExecutorResult,
-    | "hasSupportedExecutor"
-    | "availablePorts"
-    | "port"
-    | "isAttached"
-    | "didRecentAttachFail"
-    | "isBusy"
-    | "updatePort"
-    | "toggleConnection"
->;
+export type AppTopbarExecutorControlsProps = {
+    state: Pick<
+        WorkspaceExecutorState,
+        | "availablePorts"
+        | "didRecentAttachFail"
+        | "hasSupportedExecutor"
+        | "isAttached"
+        | "isBusy"
+        | "port"
+    >;
+    actions: Pick<WorkspaceExecutorActions, "toggleConnection" | "updatePort">;
+};
 
 export type AppTopbarProps = {
     title: string;

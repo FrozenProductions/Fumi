@@ -26,6 +26,12 @@ const TRAFFIC_LIGHT_STYLE_MAP: Record<TrafficLightTone, CSSProperties> = {
     },
 };
 
+function createWindowActionHandler(action: () => Promise<unknown>): () => void {
+    return () => {
+        void action();
+    };
+}
+
 function AppTopbarTrafficLightButton({
     glyph,
     label,
@@ -122,13 +128,8 @@ export function AppTopbarTrafficLights(): ReactElement {
         };
     }, []);
 
-    const handleMinimize = (): void => {
-        void minimizeCurrentWindow();
-    };
-
-    const handleClose = (): void => {
-        void closeCurrentWindow();
-    };
+    const handleMinimize = createWindowActionHandler(minimizeCurrentWindow);
+    const handleClose = createWindowActionHandler(closeCurrentWindow);
 
     const handleToggleMaximize = (): void => {
         void toggleCurrentWindowMaximize().then((nextMaximizedState) => {

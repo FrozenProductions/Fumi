@@ -1,39 +1,79 @@
-import type {
-    WorkspaceCursorState,
-    WorkspaceSession,
-    WorkspaceTab,
-} from "../../lib/workspace/workspace.type";
+import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
+import type { WorkspaceStore } from "./store/workspaceStore.type";
 
-export type UseWorkspaceSessionResult = {
-    isBootstrapping: boolean;
-    workspace: WorkspaceSession | null;
+type UseWorkspaceSessionStoreFields = Pick<
+    WorkspaceStore,
+    | "archiveWorkspaceTab"
+    | "addWorkspaceScriptTab"
+    | "createWorkspaceFile"
+    | "deleteAllArchivedWorkspaceTabs"
+    | "deleteArchivedWorkspaceTab"
+    | "deleteWorkspaceTab"
+    | "errorMessage"
+    | "isBootstrapping"
+    | "openWorkspaceDirectory"
+    | "openWorkspacePath"
+    | "recentWorkspacePaths"
+    | "renameWorkspaceTab"
+    | "reorderWorkspaceTab"
+    | "restoreAllArchivedWorkspaceTabs"
+    | "restoreArchivedWorkspaceTab"
+    | "saveActiveWorkspaceTab"
+    | "selectWorkspaceTab"
+    | "updateActiveTabContent"
+    | "updateActiveTabCursor"
+    | "updateActiveTabScrollTop"
+    | "workspace"
+    | "duplicateWorkspaceTab"
+>;
+
+export type WorkspaceSessionState = Pick<
+    UseWorkspaceSessionStoreFields,
+    "errorMessage" | "isBootstrapping" | "recentWorkspacePaths" | "workspace"
+> & {
     activeTab: WorkspaceTab | null;
     activeTabIndex: number;
-    recentWorkspacePaths: string[];
-    errorMessage: string | null;
     hasUnsavedChanges: boolean;
-    openWorkspaceDirectory: () => Promise<void>;
-    openWorkspacePath: (workspacePath: string) => Promise<void>;
-    createWorkspaceFile: () => Promise<void>;
-    addWorkspaceScriptTab: (
-        fileName: string,
-        content: string,
-    ) => Promise<boolean>;
-    duplicateWorkspaceTab: (tabId: string) => Promise<void>;
-    archiveWorkspaceTab: (tabId: string) => Promise<void>;
-    deleteWorkspaceTab: (tabId: string) => Promise<void>;
-    restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;
-    restoreAllArchivedWorkspaceTabs: () => Promise<void>;
-    deleteArchivedWorkspaceTab: (tabId: string) => Promise<void>;
-    deleteAllArchivedWorkspaceTabs: () => Promise<void>;
-    renameWorkspaceTab: (
-        tabId: string,
-        nextBaseName: string,
-    ) => Promise<boolean>;
-    selectWorkspaceTab: (tabId: string) => void;
-    reorderWorkspaceTab: (draggedTabId: string, targetTabId: string) => void;
-    saveActiveWorkspaceTab: () => Promise<void>;
-    updateActiveTabContent: (content: string) => void;
-    updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;
-    updateActiveTabScrollTop: (scrollTop: number) => void;
+};
+
+export type WorkspaceSessionWorkspaceActions = Pick<
+    UseWorkspaceSessionStoreFields,
+    | "addWorkspaceScriptTab"
+    | "createWorkspaceFile"
+    | "openWorkspaceDirectory"
+    | "openWorkspacePath"
+>;
+
+export type WorkspaceSessionTabActions = Pick<
+    UseWorkspaceSessionStoreFields,
+    | "archiveWorkspaceTab"
+    | "deleteWorkspaceTab"
+    | "duplicateWorkspaceTab"
+    | "renameWorkspaceTab"
+    | "reorderWorkspaceTab"
+    | "saveActiveWorkspaceTab"
+    | "selectWorkspaceTab"
+>;
+
+export type WorkspaceSessionArchiveActions = Pick<
+    UseWorkspaceSessionStoreFields,
+    | "deleteAllArchivedWorkspaceTabs"
+    | "deleteArchivedWorkspaceTab"
+    | "restoreAllArchivedWorkspaceTabs"
+    | "restoreArchivedWorkspaceTab"
+>;
+
+export type WorkspaceSessionEditorActions = Pick<
+    UseWorkspaceSessionStoreFields,
+    | "updateActiveTabContent"
+    | "updateActiveTabCursor"
+    | "updateActiveTabScrollTop"
+>;
+
+export type UseWorkspaceSessionResult = {
+    state: WorkspaceSessionState;
+    workspaceActions: WorkspaceSessionWorkspaceActions;
+    tabActions: WorkspaceSessionTabActions;
+    archiveActions: WorkspaceSessionArchiveActions;
+    editorActions: WorkspaceSessionEditorActions;
 };

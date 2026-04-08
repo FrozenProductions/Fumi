@@ -6,13 +6,12 @@ use tauri::{command, AppHandle};
 use super::super::{
     models::StoredWorkspaceMetadata,
     storage::{
-        clear_workspace_launch_state, ensure_workspace_exists, is_workspace_missing_error,
-        normalize_workspace_metadata, persist_workspace_launch_state, read_app_state,
-        read_workspace_snapshot, write_workspace_metadata,
+        clear_workspace_launch_state, is_workspace_missing_error, normalize_workspace_metadata,
+        persist_workspace_launch_state, read_app_state, read_workspace_snapshot,
     },
     WorkspaceBootstrapResponse, WorkspaceSnapshot, WorkspaceTabState,
 };
-use super::{run_command, CommandResponse};
+use super::{load_workspace_metadata, persist_workspace_metadata, run_command, CommandResponse};
 
 #[command]
 pub fn bootstrap_workspace(app: AppHandle) -> CommandResponse<WorkspaceBootstrapResponse> {
@@ -78,14 +77,13 @@ pub fn persist_workspace_state(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
+        let _ = load_workspace_metadata(&workspace_path)?;
         let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
             version: 2,
             active_tab_id,
             tabs: Some(tabs),
             archived_tabs: Some(archived_tabs),
         }));
-        write_workspace_metadata(&workspace_path, &metadata)?;
-        persist_workspace_launch_state(&app, &workspace_path)
+        persist_workspace_metadata(&app, &workspace_path, &metadata)
     })
 }

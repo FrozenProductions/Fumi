@@ -6,15 +6,18 @@ import { AppTooltip } from "./AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./appShell.type";
 
 export function AppTopbarExecutorControls({
-    hasSupportedExecutor,
-    availablePorts,
-    port,
-    isAttached,
-    didRecentAttachFail,
-    isBusy,
-    updatePort,
-    toggleConnection,
+    actions,
+    state,
 }: AppTopbarExecutorControlsProps): ReactElement {
+    const {
+        availablePorts,
+        didRecentAttachFail,
+        hasSupportedExecutor,
+        isAttached,
+        isBusy,
+        port,
+    } = state;
+    const { toggleConnection, updatePort } = actions;
     const theme = useAppStore((state) => state.theme);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);

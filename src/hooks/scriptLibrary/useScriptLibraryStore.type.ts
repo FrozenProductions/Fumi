@@ -46,3 +46,41 @@ export type ScriptLibraryStoreActions = {
 
 export type ScriptLibraryStore = ScriptLibraryStoreState &
     ScriptLibraryStoreActions;
+
+export type ScriptLibraryViewState = Pick<
+    ScriptLibraryStore,
+    | "canGoNext"
+    | "errorMessage"
+    | "filters"
+    | "isLoading"
+    | "maxPages"
+    | "orderBy"
+    | "page"
+    | "query"
+    | "scripts"
+    | "viewFormat"
+>;
+
+export type ScriptLibraryActivityState = Pick<
+    ScriptLibraryStore,
+    | "addedScriptId"
+    | "addingScriptFor"
+    | "copiedLinkId"
+    | "copiedScriptId"
+    | "copyingScriptFor"
+>;
+
+export type ScriptLibraryViewActions = Pick<
+    ScriptLibraryStore,
+    | "activateAddedScript"
+    | "activateCopiedLink"
+    | "activateCopiedScript"
+    | "goToNextPage"
+    | "goToPreviousPage"
+    | "setAddingScriptFor"
+    | "setCopyingScriptFor"
+    | "setOrderBy"
+    | "setQuery"
+    | "setViewFormat"
+    | "toggleFilter"
+>;

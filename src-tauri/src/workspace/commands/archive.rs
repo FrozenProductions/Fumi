@@ -6,13 +6,16 @@ use tauri::{command, AppHandle};
 use super::super::{
     models::StoredWorkspaceMetadata,
     storage::{
-        delete_workspace_file_from_disk, ensure_workspace_exists, normalize_workspace_metadata,
-        persist_workspace_launch_state, read_workspace_metadata,
-        resolve_workspace_file_delete_path, write_workspace_metadata,
+        delete_workspace_file_from_disk, normalize_workspace_metadata,
+        resolve_workspace_file_delete_path,
     },
-    WorkspaceMetadata, WorkspaceTabSnapshot, WorkspaceTabState,
+    WorkspaceMetadata, WorkspaceTabSnapshot,
 };
-use super::{delete_workspace_tab_by_id, run_command, CommandResponse};
+use super::{
+    delete_workspace_tab_by_id, load_workspace_metadata, persist_workspace_metadata,
+    require_workspace_tab_file_path, restore_archived_workspace_tab_state, run_command,
+    CommandResponse,
+};
 
 #[command]
 pub fn restore_archived_workspace_tab(
@@ -23,29 +26,22 @@ pub fn restore_archived_workspace_tab(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
+        let metadata = load_workspace_metadata(&workspace_path)?;
         let archived_tab = metadata
             .archived_tabs
             .iter()
             .find(|item| item.id == tab_id)
             .cloned()
             .ok_or_else(|| anyhow!("Archived workspace tab not found: {tab_id}"))?;
-
-        let file_path = workspace_path.join(&archived_tab.file_name);
-        if !file_path.exists() {
-            return Err(anyhow!(
-                "Archived workspace tab file not found: {}",
-                archived_tab.file_name
-            ));
-        }
+        let file_path = require_workspace_tab_file_path(
+            &workspace_path,
+            &archived_tab.file_name,
+            "Archived workspace tab file not found",
+        )?;
 
         let content = fs::read_to_string(&file_path)
             .with_context(|| format!("failed to read {}", file_path.display()))?;
-        let restored_tab = WorkspaceTabState {
-            archived_at: None,
-            ..archived_tab.clone()
-        };
+        let restored_tab = restore_archived_workspace_tab_state(&archived_tab);
         let next_metadata = WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: Some(restored_tab.id.clone()),
@@ -62,8 +58,7 @@ pub fn restore_archived_workspace_tab(
                 .collect(),
         };
 
-        write_workspace_metadata(&workspace_path, &next_metadata)?;
-        persist_workspace_launch_state(&app, &workspace_path)?;
+        persist_workspace_metadata(&app, &workspace_path, &next_metadata)?;
 
         Ok(WorkspaceTabSnapshot {
             id: archived_tab.id,
@@ -95,17 +90,12 @@ pub fn restore_all_archived_workspace_tabs(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
+        let metadata = load_workspace_metadata(&workspace_path)?;
 
         let mut next_tabs = metadata.tabs.clone();
         for archived_tab in &metadata.archived_tabs {
-            let file_path = workspace_path.join(&archived_tab.file_name);
-            if file_path.exists() {
-                next_tabs.push(WorkspaceTabState {
-                    archived_at: None,
-                    ..archived_tab.clone()
-                });
+            if workspace_path.join(&archived_tab.file_name).exists() {
+                next_tabs.push(restore_archived_workspace_tab_state(archived_tab));
             }
         }
 
@@ -116,8 +106,7 @@ pub fn restore_all_archived_workspace_tabs(
             archived_tabs: Vec::new(),
         };
 
-        write_workspace_metadata(&workspace_path, &next_metadata)?;
-        persist_workspace_launch_state(&app, &workspace_path)
+        persist_workspace_metadata(&app, &workspace_path, &next_metadata)
     })
 }
 
@@ -129,8 +118,7 @@ pub fn delete_all_archived_workspace_tabs(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        ensure_workspace_exists(&workspace_path)?;
-        let metadata = read_workspace_metadata(&workspace_path)?;
+        let metadata = load_workspace_metadata(&workspace_path)?;
 
         for archived_tab in &metadata.archived_tabs {
             if let Ok(file_path) =
@@ -153,7 +141,6 @@ pub fn delete_all_archived_workspace_tabs(
             tabs: Some(next_metadata.tabs),
             archived_tabs: Some(next_metadata.archived_tabs),
         }));
-        write_workspace_metadata(&workspace_path, &normalized_metadata)?;
-        persist_workspace_launch_state(&app, &workspace_path)
+        persist_workspace_metadata(&app, &workspace_path, &normalized_metadata)
     })
 }

@@ -41,7 +41,7 @@ function parsePersistedExecutorPorts(
     return decodeResult._tag === "Right" ? decodeResult.right : null;
 }
 
-export function readPersistedExecutorPorts(): PersistedExecutorPorts {
+function readPersistedExecutorPorts(): PersistedExecutorPorts {
     try {
         const storedValue =
             globalThis.localStorage?.getItem(EXECUTOR_PORTS_STORAGE_KEY) ??

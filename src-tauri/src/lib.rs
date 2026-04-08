@@ -1,5 +1,6 @@
 mod accounts;
 pub(crate) mod binarycookies;
+mod command;
 mod dialog;
 mod events;
 mod executor;

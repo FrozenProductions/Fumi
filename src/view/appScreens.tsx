@@ -14,6 +14,8 @@ export function getAppTopbarWorkspaceContext(
     activeSidebarItem: AppSidebarItem,
     workspaceSession: UseWorkspaceSessionResult,
 ): AppTopbarWorkspaceContext {
+    const { workspace } = workspaceSession.state;
+
     if (!showsWorkspaceContext(activeSidebarItem)) {
         return {
             workspaceName: null,
@@ -23,10 +25,10 @@ export function getAppTopbarWorkspaceContext(
     }
 
     return {
-        workspaceName: workspaceSession.workspace?.workspaceName ?? "None",
-        workspacePath: workspaceSession.workspace?.workspacePath ?? null,
+        workspaceName: workspace?.workspaceName ?? "None",
+        workspacePath: workspace?.workspacePath ?? null,
         onOpenWorkspace: () => {
-            void workspaceSession.openWorkspaceDirectory();
+            void workspaceSession.workspaceActions.openWorkspaceDirectory();
         },
     };
 }

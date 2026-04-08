@@ -8,6 +8,10 @@ export function AppHotkeysProvider({
     children,
     workspaceSession,
 }: AppHotkeysProviderProps): ReactElement {
+    const { activeTab, workspace } = workspaceSession.state;
+    const { createWorkspaceFile, openWorkspaceDirectory } =
+        workspaceSession.workspaceActions;
+    const { archiveWorkspaceTab } = workspaceSession.tabActions;
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
     const isCommandPaletteOpen = useAppStore(
         (state) => state.isCommandPaletteOpen,
@@ -99,7 +103,7 @@ export function AppHotkeysProvider({
     useHotkey(
         APP_HOTKEYS.OPEN_WORKSPACE_DIRECTORY.binding,
         () => {
-            void workspaceSession.openWorkspaceDirectory();
+            void openWorkspaceDirectory();
         },
         {
             enabled: !isCommandPaletteOpen,
@@ -166,33 +170,33 @@ export function AppHotkeysProvider({
     useHotkey(
         APP_HOTKEYS.CREATE_WORKSPACE_FILE.binding,
         () => {
-            void workspaceSession.createWorkspaceFile();
+            void createWorkspaceFile();
         },
         {
             enabled:
                 !isCommandPaletteOpen &&
                 activeSidebarItem === "workspace" &&
-                Boolean(workspaceSession.workspace),
+                Boolean(workspace),
         },
     );
 
     useHotkey(
         APP_HOTKEYS.ARCHIVE_WORKSPACE_TAB.binding,
         () => {
-            const activeTabId = workspaceSession.activeTab?.id;
+            const activeTabId = activeTab?.id;
 
             if (!activeTabId) {
                 return;
             }
 
-            void workspaceSession.archiveWorkspaceTab(activeTabId);
+            void archiveWorkspaceTab(activeTabId);
         },
         {
             enabled:
                 !isCommandPaletteOpen &&
                 activeSidebarItem === "workspace" &&
-                Boolean(workspaceSession.workspace) &&
-                Boolean(workspaceSession.activeTab),
+                Boolean(workspace) &&
+                Boolean(activeTab),
         },
     );
 

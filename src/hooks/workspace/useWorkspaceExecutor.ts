@@ -332,17 +332,21 @@ export function useWorkspaceExecutor({
     };
 
     return {
-        executorKind,
-        availablePorts,
-        hasSupportedExecutor,
-        port,
-        isAttached,
-        didRecentAttachFail,
-        isBusy,
-        errorMessage,
-        updatePort,
-        clearErrorMessage,
-        toggleConnection,
-        executeActiveTab,
+        state: {
+            executorKind,
+            availablePorts,
+            hasSupportedExecutor,
+            port,
+            isAttached,
+            didRecentAttachFail,
+            isBusy,
+            errorMessage,
+        },
+        actions: {
+            updatePort,
+            clearErrorMessage,
+            toggleConnection,
+            executeActiveTab,
+        },
     };
 }
