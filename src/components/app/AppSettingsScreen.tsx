@@ -45,7 +45,7 @@ export function AppSettingsScreen({
     return (
         <div className="flex h-full w-full flex-col overflow-hidden bg-fumi-50">
             <div className="flex flex-1 overflow-hidden">
-                <div className="flex w-64 shrink-0 flex-col border-r border-fumi-200 bg-fumi-100/80 p-4">
+                <div className="flex w-56 shrink-0 flex-col border-r border-fumi-200 bg-fumi-100/80 p-4">
                     <div className="px-2 pb-4 pt-2">
                         <h2
                             id="app-settings-title"

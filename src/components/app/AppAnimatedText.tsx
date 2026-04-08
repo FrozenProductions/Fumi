@@ -20,7 +20,10 @@ function splitTextIntoCharacters(text: string): AnimatedCharacter[] {
     });
 }
 
-export function AppAnimatedText({ text }: AppAnimatedTextProps): ReactElement {
+export function AppAnimatedText({
+    text,
+    animateOnInitialRender = true,
+}: AppAnimatedTextProps): ReactElement {
     const [displayedText, setDisplayedText] = useState(text);
     const [animationKey, setAnimationKey] = useState(0);
 
@@ -34,6 +37,10 @@ export function AppAnimatedText({ text }: AppAnimatedTextProps): ReactElement {
     }, [displayedText, text]);
 
     const characters = splitTextIntoCharacters(displayedText);
+    const shouldAnimateCharacters = animateOnInitialRender || animationKey > 0;
+    const characterClassName = shouldAnimateCharacters
+        ? "inline-block whitespace-pre motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[18%] motion-safe:motion-duration-130 motion-safe:motion-ease-out-cubic motion-reduce:animate-none motion-reduce:transform-none"
+        : "inline-block whitespace-pre";
 
     return (
         <span
@@ -49,7 +56,7 @@ export function AppAnimatedText({ text }: AppAnimatedTextProps): ReactElement {
                     <span
                         key={`${animationKey}-${key}`}
                         aria-hidden="true"
-                        className="inline-block whitespace-pre motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[18%] motion-safe:motion-duration-130 motion-safe:motion-ease-out-cubic motion-reduce:animate-none motion-reduce:transform-none"
+                        className={characterClassName}
                         style={{
                             animationDelay: `${delayMs}ms`,
                         }}

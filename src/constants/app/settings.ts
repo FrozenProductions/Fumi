@@ -24,7 +24,7 @@ export const APP_SETTINGS_SECTIONS = [
     { id: "general", label: "General" },
     { id: "editor", label: "Editor" },
     { id: "hotkeys", label: "Hotkeys" },
-    { id: "workspace", label: "Workspace" },
+    { id: "workspace", label: "Archived Tabs" },
 ] as const satisfies AppSettingsSectionOption[];
 
 export const DEFAULT_APP_SETTINGS_SECTION =

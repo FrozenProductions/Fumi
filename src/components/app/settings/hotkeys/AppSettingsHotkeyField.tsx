@@ -54,7 +54,10 @@ export function AppSettingsHotkeyField({
                             : "min-w-[3.5rem] border-fumi-200 bg-fumi-50 text-fumi-700 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800"
                     }`}
                 >
-                    <AppAnimatedText text={buttonLabel} />
+                    <AppAnimatedText
+                        text={buttonLabel}
+                        animateOnInitialRender={false}
+                    />
                 </button>
 
                 {!isRecording && isCustomized ? (

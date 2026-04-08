@@ -4,6 +4,7 @@ import type { AppIconGlyph } from "../../lib/app/app.type";
 
 export type AppAnimatedTextProps = {
     text: string;
+    animateOnInitialRender?: boolean;
 };
 
 export type AnimatedCharacter = {
