@@ -29,6 +29,7 @@ export function WorkspaceTabBar({
     onCreateFile,
     onSelectTab,
     onReorderTab,
+    onDuplicateTab,
     onArchiveTab,
     onDeleteTab,
     middleClickTabAction,
@@ -252,6 +253,14 @@ export function WorkspaceTabBar({
         onArchiveTab(contextMenuState.tabId);
     };
 
+    const handleDuplicateFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onDuplicateTab(contextMenuState.tabId);
+    };
+
     return (
         <div
             ref={tabBarRef}
@@ -302,6 +311,7 @@ export function WorkspaceTabBar({
                     x: contextMenuState?.x ?? 0,
                     y: contextMenuState?.y ?? 0,
                 }}
+                onDuplicate={handleDuplicateFromContextMenu}
                 onArchive={handleArchiveFromContextMenu}
                 onClose={closeContextMenu}
                 onDelete={handleDeleteFromContextMenu}

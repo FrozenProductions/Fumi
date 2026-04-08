@@ -10,6 +10,7 @@ import {
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
 } from "../../../lib/platform/workspace";
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
+import { buildDuplicateWorkspaceTabDraft } from "../../../lib/workspace/duplicate";
 import {
     buildWorkspaceFileName,
     clampWorkspaceTabBaseName,
@@ -148,6 +149,47 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                     ),
                 });
                 return false;
+            }
+        },
+        duplicateWorkspaceTab: async (tabId: string): Promise<void> => {
+            const { workspace } = get();
+
+            if (!workspace) {
+                return;
+            }
+
+            const tabToDuplicate = workspace.tabs.find(
+                (tab) => tab.id === tabId,
+            );
+
+            if (!tabToDuplicate) {
+                return;
+            }
+
+            try {
+                const duplicateDraft =
+                    buildDuplicateWorkspaceTabDraft(tabToDuplicate);
+                const duplicatedTab = await createWorkspaceFileCommand({
+                    workspacePath: workspace.workspacePath,
+                    fileName: duplicateDraft.fileName,
+                    initialContent: duplicateDraft.initialContent,
+                });
+
+                const nextWorkspace = updateWorkspaceForPath(
+                    workspace.workspacePath,
+                    (currentWorkspace) =>
+                        upsertWorkspaceTab(currentWorkspace, duplicatedTab),
+                );
+
+                markNextWorkspaceAsPersisted(nextWorkspace);
+            } catch (error) {
+                console.error("Failed to duplicate workspace tab.", error);
+                set({
+                    errorMessage: getErrorMessage(
+                        error,
+                        "Could not duplicate the selected tab.",
+                    ),
+                });
             }
         },
         archiveWorkspaceTab: async (tabId: string): Promise<void> => {

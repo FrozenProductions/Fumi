@@ -9,6 +9,7 @@ const WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS = 120;
 export function WorkspaceTabContextMenu({
     isOpen,
     position,
+    onDuplicate,
     onArchive,
     onClose,
     onDelete,
@@ -100,6 +101,17 @@ export function WorkspaceTabContextMenu({
                 className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
             >
                 Rename
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onDuplicate();
+                    onClose();
+                }}
+                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+            >
+                Duplicate
             </button>
             <button
                 type="button"

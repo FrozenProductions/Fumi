@@ -40,6 +40,7 @@ export function WorkspaceScreen({
         errorMessage,
         openWorkspaceDirectory,
         createWorkspaceFile,
+        duplicateWorkspaceTab,
         archiveWorkspaceTab,
         deleteWorkspaceTab,
         renameWorkspaceTab,
@@ -91,6 +92,10 @@ export function WorkspaceScreen({
 
     const handleArchiveWorkspaceTab = (tabId: string): void => {
         void archiveWorkspaceTab(tabId);
+    };
+
+    const handleDuplicateWorkspaceTab = (tabId: string): void => {
+        void duplicateWorkspaceTab(tabId);
     };
 
     const handleDeleteWorkspaceTab = (tabId: string): void => {
@@ -168,6 +173,7 @@ export function WorkspaceScreen({
                     onCreateFile={handleCreateWorkspaceFile}
                     onSelectTab={selectWorkspaceTab}
                     onReorderTab={reorderWorkspaceTab}
+                    onDuplicateTab={handleDuplicateWorkspaceTab}
                     onArchiveTab={handleArchiveWorkspaceTab}
                     onDeleteTab={handleDeleteWorkspaceTab}
                     middleClickTabAction={middleClickTabAction}

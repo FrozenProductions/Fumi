@@ -19,6 +19,7 @@ export type UseWorkspaceSessionResult = {
         fileName: string,
         content: string,
     ) => Promise<boolean>;
+    duplicateWorkspaceTab: (tabId: string) => Promise<void>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
     deleteWorkspaceTab: (tabId: string) => Promise<void>;
     restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;

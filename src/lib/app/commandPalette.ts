@@ -296,6 +296,17 @@ export function getCommandCommandPaletteItems({
             },
         },
         {
+            id: "command-duplicate-tab",
+            label: "Duplicate current tab",
+            description: `Create a copy of ${activeTab.fileName}.`,
+            icon: CommandIcon,
+            keywords: `duplicate copy clone ${activeTab.fileName}`,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                void workspaceSession.duplicateWorkspaceTab(activeTab.id);
+            },
+        },
+        {
             id: "command-archive-tab",
             label: "Archive current tab",
             description: `Archive ${activeTab.fileName} from the tab bar.`,

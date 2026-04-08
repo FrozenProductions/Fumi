@@ -45,6 +45,7 @@ export type WorkspaceTabContextMenuProps = {
         x: number;
         y: number;
     };
+    onDuplicate: () => void;
     onArchive: () => void;
     onClose: () => void;
     onDelete: () => void;
