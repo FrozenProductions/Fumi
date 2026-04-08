@@ -77,6 +77,19 @@
             0 16px 36px rgb(0 0 0 / 0.38), 0 4px 10px rgb(0 0 0 / 0.26);
     }
 
+    html,
+    body,
+    #root {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    html,
+    body {
+        overscroll-behavior: none;
+    }
+
     body {
         margin: 0;
         background: var(--color-fumi-50);
