@@ -93,6 +93,10 @@ flowchart LR
 - Bun `1.3.10+`
 - Rust `1.88.0+`
 
+### Supported macOS Version
+
+- Fumi bundles with a minimum macOS version of `11.0`.
+
 ### Installation
 
 ```bash

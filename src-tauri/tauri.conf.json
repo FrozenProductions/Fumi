@@ -58,7 +58,7 @@
         "createUpdaterArtifacts": true,
         "targets": ["app", "dmg"],
         "macOS": {
-            "minimumSystemVersion": "10.15"
+            "minimumSystemVersion": "11.0"
         },
         "icon": ["icons/icon.icns"]
     },
