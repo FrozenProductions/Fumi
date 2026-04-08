@@ -351,6 +351,7 @@ describe("getCommandCommandPaletteItems", () => {
 
     it("dispatches the new navigation, theme, zoom, and active-tab commands", () => {
         const executeActiveTab = vi.fn().mockResolvedValue(undefined);
+        const duplicateWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const deleteWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const onActivateGoToLineMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
@@ -393,6 +394,7 @@ describe("getCommandCommandPaletteItems", () => {
                 activeTabIndex: 0,
             },
             tabActions: {
+                duplicateWorkspaceTab,
                 deleteWorkspaceTab,
             },
         });
@@ -438,6 +440,7 @@ describe("getCommandCommandPaletteItems", () => {
             "command-goto-line",
             "command-save-tab",
             "command-rename-tab",
+            "command-duplicate-tab",
             "command-archive-tab",
             "command-delete-tab",
         ]);
@@ -454,9 +457,10 @@ describe("getCommandCommandPaletteItems", () => {
         items[12]?.onSelect();
         items[13]?.onSelect();
         items[15]?.onSelect();
-        items[17]?.onSelect();
+        items[16]?.onSelect();
+        items[18]?.onSelect();
 
-        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(2);
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(3);
         expect(onOpenScriptLibrary).not.toHaveBeenCalled();
         expect(onOpenAccounts).toHaveBeenCalledOnce();
         expect(onOpenSettings).toHaveBeenCalledOnce();
@@ -468,6 +472,7 @@ describe("getCommandCommandPaletteItems", () => {
         expect(executeActiveTab).toHaveBeenCalledOnce();
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
+        expect(duplicateWorkspaceTab).toHaveBeenCalledWith("tab-1");
         expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
         expect(items[13]).toMatchObject({
             closeOnSelect: false,
