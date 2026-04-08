@@ -335,6 +335,7 @@ describe("getCommandCommandPaletteItems", () => {
             "command-zoom-in",
             "command-zoom-out",
             "command-zoom-reset",
+            "command-theme-system",
             "command-theme-light",
             "command-theme-dark",
         ]);
@@ -343,7 +344,7 @@ describe("getCommandCommandPaletteItems", () => {
             isDisabled: true,
             meta: "Current",
         });
-        expect(noWorkspaceItems[9]).toMatchObject({
+        expect(noWorkspaceItems[10]).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
@@ -433,6 +434,7 @@ describe("getCommandCommandPaletteItems", () => {
             "command-zoom-in",
             "command-zoom-out",
             "command-zoom-reset",
+            "command-theme-system",
             "command-theme-light",
             "command-theme-dark",
             "command-create-file",
@@ -454,11 +456,12 @@ describe("getCommandCommandPaletteItems", () => {
         items[7]?.onSelect();
         items[8]?.onSelect();
         items[9]?.onSelect();
-        items[12]?.onSelect();
+        items[10]?.onSelect();
         items[13]?.onSelect();
-        items[15]?.onSelect();
+        items[14]?.onSelect();
         items[16]?.onSelect();
-        items[18]?.onSelect();
+        items[17]?.onSelect();
+        items[19]?.onSelect();
 
         expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(3);
         expect(onOpenScriptLibrary).not.toHaveBeenCalled();
@@ -468,20 +471,21 @@ describe("getCommandCommandPaletteItems", () => {
         expect(onZoomIn).toHaveBeenCalledOnce();
         expect(onZoomOut).toHaveBeenCalledOnce();
         expect(onZoomReset).toHaveBeenCalledOnce();
-        expect(onSetTheme).toHaveBeenCalledWith("light");
+        expect(onSetTheme).toHaveBeenNthCalledWith(1, "system");
+        expect(onSetTheme).toHaveBeenNthCalledWith(2, "light");
         expect(executeActiveTab).toHaveBeenCalledOnce();
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
         expect(duplicateWorkspaceTab).toHaveBeenCalledWith("tab-1");
         expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
-        expect(items[13]).toMatchObject({
+        expect(items[14]).toMatchObject({
             closeOnSelect: false,
         });
         expect(items[1]).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
-        expect(items[10]).toMatchObject({
+        expect(items[11]).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
