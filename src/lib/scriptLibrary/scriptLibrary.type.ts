@@ -4,6 +4,8 @@ export type ScriptLibrarySort = "date" | "views" | "likes";
 
 export type ScriptLibraryViewFormat = "grid" | "list";
 
+export type ScriptLibraryContentMode = "browse" | "favorites";
+
 export type ScriptLibraryFilters = {
     keyless: boolean;
     free: boolean;
@@ -100,3 +102,5 @@ export type ScriptLibraryEntry = {
     unpatched: boolean;
     creator: ScriptLibraryCreator;
 };
+
+export type ScriptLibraryFavoriteEntry = ScriptLibraryEntry;

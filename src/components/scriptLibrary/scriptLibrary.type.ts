@@ -1,5 +1,6 @@
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
+    ScriptLibraryContentMode,
     ScriptLibraryEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
@@ -13,9 +14,11 @@ export type ScriptLibraryCardActions = {
     isCopyingScript: boolean;
     isCopiedLink: boolean;
     isCopiedScript: boolean;
+    isFavorite: boolean;
     onAddToWorkspace: () => void;
     onCopyLink: () => void;
     onCopyScript: () => void;
+    onToggleFavorite: () => void;
 };
 
 export type ScriptLibraryCardProps = {
@@ -29,10 +32,14 @@ export type ScriptLibraryScreenProps = {
 };
 
 export type ScriptLibraryToolbarProps = {
+    contentMode: ScriptLibraryContentMode;
+    favoriteCount: number;
     query: string;
     filters: ScriptLibraryFilters;
     orderBy: ScriptLibrarySort;
     viewFormat: ScriptLibraryViewFormat;
+    onClearFavorites: () => void;
+    onContentModeChange: (contentMode: ScriptLibraryContentMode) => void;
     onQueryChange: (query: string) => void;
     onToggleFilter: (filterKey: keyof ScriptLibraryFilters) => void;
     onOrderByChange: (orderBy: ScriptLibrarySort) => void;

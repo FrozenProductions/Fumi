@@ -10,7 +10,10 @@ import {
     getScriptLibraryPermalink,
     getWorkspaceScriptFileName,
 } from "../../lib/scriptLibrary/scriptLibrary";
-import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.type";
+import type {
+    ScriptLibraryContentMode,
+    ScriptLibraryEntry,
+} from "../../lib/scriptLibrary/scriptLibrary.type";
 import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
 import type {
@@ -18,17 +21,56 @@ import type {
     ScriptLibraryScreenProps,
 } from "./scriptLibrary.type";
 
+type ScriptLibraryEmptyState = {
+    eyebrow: string;
+    title: string;
+    description: string;
+};
+
+function getScriptLibraryEmptyState(options: {
+    contentMode: ScriptLibraryContentMode;
+    favoriteCount: number;
+}): ScriptLibraryEmptyState {
+    if (options.contentMode === "favorites" && options.favoriteCount === 0) {
+        return {
+            eyebrow: "No Favorites",
+            title: "Save scripts you want to keep close",
+            description:
+                "Star any script from the library to keep a local favorites list you can revisit anytime.",
+        };
+    }
+
+    if (options.contentMode === "favorites") {
+        return {
+            eyebrow: "No Matching Favorites",
+            title: "No saved scripts match this view",
+            description:
+                "Try adjusting your search or filters, or go back to the full library to discover more scripts.",
+        };
+    }
+
+    return {
+        eyebrow: "No Results",
+        title: "Cannot find any scripts",
+        description:
+            "Try adjusting your search or filters to find what you are looking for.",
+    };
+}
+
 export function ScriptLibraryScreen({
     workspaceSession,
 }: ScriptLibraryScreenProps): ReactElement {
     const hasWorkspace = Boolean(workspaceSession.state.workspace);
     const { activity, actions, state } = useScriptLibrary();
     const {
+        contentMode,
         query,
         page,
         filters,
         orderBy,
         viewFormat,
+        favoriteCount,
+        favoriteIds,
         scripts,
         isLoading,
         errorMessage,
@@ -43,10 +85,13 @@ export function ScriptLibraryScreen({
         addedScriptId,
     } = activity;
     const {
+        clearFavorites,
+        setContentMode,
         setQuery,
         toggleFilter,
         setOrderBy,
         setViewFormat,
+        toggleFavorite,
         goToPreviousPage,
         goToNextPage,
         setCopyingScriptFor,
@@ -55,6 +100,10 @@ export function ScriptLibraryScreen({
         activateCopiedScript,
         activateAddedScript,
     } = actions;
+    const emptyState = getScriptLibraryEmptyState({
+        contentMode,
+        favoriteCount,
+    });
 
     async function handleCopyLink(script: ScriptLibraryEntry): Promise<void> {
         await copyTextToClipboard(getScriptLibraryPermalink(script));
@@ -118,6 +167,7 @@ export function ScriptLibraryScreen({
             isCopyingScript: copyingScriptFor === script._id,
             isCopiedLink: copiedLinkId === script._id,
             isCopiedScript: copiedScriptId === script._id,
+            isFavorite: favoriteIds.has(script._id),
             onAddToWorkspace: () => {
                 void handleAddToWorkspace(script);
             },
@@ -127,16 +177,23 @@ export function ScriptLibraryScreen({
             onCopyScript: () => {
                 void handleCopyScript(script);
             },
+            onToggleFavorite: () => {
+                toggleFavorite(script);
+            },
         };
     }
 
     return (
         <section className="flex h-full min-h-0 flex-col bg-fumi-50">
             <ScriptLibraryToolbar
+                contentMode={contentMode}
+                favoriteCount={favoriteCount}
                 query={query}
                 filters={filters}
                 orderBy={orderBy}
                 viewFormat={viewFormat}
+                onClearFavorites={clearFavorites}
+                onContentModeChange={setContentMode}
                 onQueryChange={setQuery}
                 onToggleFilter={toggleFilter}
                 onOrderByChange={setOrderBy}
@@ -174,14 +231,13 @@ export function ScriptLibraryScreen({
                     <div className="flex flex-1 items-center justify-center">
                         <div className="max-w-md text-center">
                             <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
-                                No Results
+                                {emptyState.eyebrow}
                             </p>
                             <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-fumi-900">
-                                Cannot find any scripts
+                                {emptyState.title}
                             </h3>
                             <p className="mt-3 text-sm leading-6 text-fumi-400">
-                                Try adjusting your search or filters to find
-                                what you are looking for.
+                                {emptyState.description}
                             </p>
                         </div>
                     </div>
@@ -209,11 +265,16 @@ export function ScriptLibraryScreen({
                 )}
             </div>
 
-            <div className="flex shrink-0 items-center justify-between border-t border-fumi-200 bg-fumi-50 px-4 py-3">
+            <div className="flex min-h-[3.625rem] shrink-0 items-center justify-between border-t border-fumi-200 bg-fumi-50 px-4 py-3">
                 <p className="text-[11px] font-semibold text-fumi-400">
-                    Powered by Rscripts.net
+                    {contentMode === "favorites"
+                        ? `${favoriteCount} saved favorite${favoriteCount === 1 ? "" : "s"}`
+                        : "Powered by Rscripts.net"}
                 </p>
-                {!isLoading && !errorMessage && scripts.length > 0 ? (
+                {contentMode === "browse" &&
+                !isLoading &&
+                !errorMessage &&
+                scripts.length > 0 ? (
                     <div className="flex items-center gap-3">
                         <button
                             type="button"
@@ -236,7 +297,9 @@ export function ScriptLibraryScreen({
                             Next
                         </button>
                     </div>
-                ) : null}
+                ) : (
+                    <div className="h-8" aria-hidden="true" />
+                )}
             </div>
         </section>
     );

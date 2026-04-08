@@ -1,16 +1,20 @@
 import type {
+    ScriptLibraryContentMode,
     ScriptLibraryEntry,
+    ScriptLibraryFavoriteEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
     ScriptLibraryViewFormat,
 } from "../../lib/scriptLibrary/scriptLibrary.type";
 
 export type ScriptLibraryStoreState = {
+    contentMode: ScriptLibraryContentMode;
     query: string;
     page: number;
     filters: ScriptLibraryFilters;
     orderBy: ScriptLibrarySort;
     viewFormat: ScriptLibraryViewFormat;
+    favoriteScripts: ScriptLibraryFavoriteEntry[];
     scripts: ScriptLibraryEntry[];
     isLoading: boolean;
     errorMessage: string | null;
@@ -24,10 +28,14 @@ export type ScriptLibraryStoreState = {
 };
 
 export type ScriptLibraryStoreActions = {
+    setContentMode: (contentMode: ScriptLibraryContentMode) => void;
     setQuery: (query: string) => void;
     toggleFilter: (filterKey: keyof ScriptLibraryFilters) => void;
     setOrderBy: (orderBy: ScriptLibrarySort) => void;
     setViewFormat: (viewFormat: ScriptLibraryViewFormat) => void;
+    toggleFavorite: (script: ScriptLibraryEntry) => void;
+    removeFavorite: (scriptId: string) => void;
+    clearFavorites: () => void;
     goToPreviousPage: () => void;
     goToNextPage: () => void;
     setCopyingScriptFor: (scriptId: string | null) => void;
@@ -50,7 +58,9 @@ export type ScriptLibraryStore = ScriptLibraryStoreState &
 export type ScriptLibraryViewState = Pick<
     ScriptLibraryStore,
     | "canGoNext"
+    | "contentMode"
     | "errorMessage"
+    | "favoriteScripts"
     | "filters"
     | "isLoading"
     | "maxPages"
@@ -75,12 +85,16 @@ export type ScriptLibraryViewActions = Pick<
     | "activateAddedScript"
     | "activateCopiedLink"
     | "activateCopiedScript"
+    | "clearFavorites"
     | "goToNextPage"
     | "goToPreviousPage"
+    | "removeFavorite"
     | "setAddingScriptFor"
+    | "setContentMode"
     | "setCopyingScriptFor"
     | "setOrderBy"
     | "setQuery"
     | "setViewFormat"
+    | "toggleFavorite"
     | "toggleFilter"
 >;

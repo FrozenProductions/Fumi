@@ -1,7 +1,9 @@
 import {
+    Delete02Icon,
     LayoutGridIcon,
     ListViewIcon,
     Search01Icon,
+    StarIcon,
 } from "@hugeicons/core-free-icons";
 import type { ChangeEvent, ReactElement } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
@@ -15,10 +17,14 @@ import { AppTooltip } from "../app/AppTooltip";
 import type { ScriptLibraryToolbarProps } from "./scriptLibrary.type";
 
 export function ScriptLibraryToolbar({
+    contentMode,
+    favoriteCount,
     query,
     filters,
     orderBy,
     viewFormat,
+    onClearFavorites,
+    onContentModeChange,
     onQueryChange,
     onToggleFilter,
     onOrderByChange,
@@ -49,13 +55,43 @@ export function ScriptLibraryToolbar({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            onContentModeChange(
+                                contentMode === "favorites"
+                                    ? "browse"
+                                    : "favorites",
+                            )
+                        }
+                        className={`app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border px-3 text-xs font-semibold tracking-wide transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-400 ${
+                            contentMode === "favorites"
+                                ? "border-transparent bg-fumi-600 text-fumi-50 hover:bg-fumi-500"
+                                : "border-fumi-200 bg-fumi-50 text-fumi-500 hover:bg-fumi-200 hover:text-fumi-700"
+                        }`}
+                    >
+                        <AppIcon icon={StarIcon} size={12} strokeWidth={2.5} />
+                        Favorites
+                        <span
+                            className={`inline-flex min-w-[1.15rem] items-center justify-center rounded-full px-1 py-0.5 text-[10px] font-semibold ${
+                                contentMode === "favorites"
+                                    ? "bg-fumi-50/20 text-fumi-50"
+                                    : "bg-fumi-100 text-fumi-700"
+                            }`}
+                        >
+                            {favoriteCount}
+                        </span>
+                    </button>
+
+                    <div className="mx-1 h-5 w-px bg-fumi-200" />
+
                     {SCRIPT_LIBRARY_FILTER_BUTTONS.map(
                         ({ key, label, icon }) => (
                             <button
                                 key={key}
                                 type="button"
                                 onClick={() => onToggleFilter(key)}
-                                className={`app-select-none inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold tracking-wide transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                className={`app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border px-3 text-xs font-semibold tracking-wide transition-[background-color,color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     filters[key]
                                         ? "border-transparent bg-fumi-600 text-white"
                                         : "border-fumi-200 bg-fumi-50 text-fumi-500 hover:bg-fumi-200 hover:text-fumi-600"
@@ -70,14 +106,26 @@ export function ScriptLibraryToolbar({
                             </button>
                         ),
                     )}
-
-                    <div className="mx-1 h-5 w-px bg-fumi-200" />
-
                     <AppSelect
                         value={orderBy}
                         onChange={onOrderByChange}
                         options={SCRIPT_LIBRARY_SORT_OPTIONS}
                     />
+
+                    {contentMode === "favorites" && favoriteCount > 0 ? (
+                        <button
+                            type="button"
+                            onClick={onClearFavorites}
+                            className="app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-400"
+                        >
+                            <AppIcon
+                                icon={Delete02Icon}
+                                size={12}
+                                strokeWidth={2.5}
+                            />
+                            Clear Favorites
+                        </button>
+                    ) : null}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1 rounded-[0.65rem] bg-fumi-200/50 p-1">

@@ -17,6 +17,7 @@ import { decodeUnknownWithSchema } from "../shared/schema";
 import { combineAbortSignals } from "./abort";
 import type { ScriptLibraryCachedSession, ScriptLibraryPage } from "./api.type";
 import { ScriptLibraryError } from "./errors";
+import { matchesScriptLibraryFilters } from "./scriptLibrary";
 
 const RscriptsUserSchema = Schema.Struct({
     _id: Schema.optional(Schema.String),
@@ -147,29 +148,6 @@ function normalizeScript(script: RscriptsListScript): ScriptLibraryEntry {
         unpatched: script.unpatched === true,
         creator: normalizeCreator(script),
     };
-}
-
-function matchesFilters(
-    script: ScriptLibraryEntry,
-    filters: ScriptLibraryFilters,
-): boolean {
-    if (filters.keyless && script.keySystem !== false) {
-        return false;
-    }
-
-    if (filters.free && script.paid !== false) {
-        return false;
-    }
-
-    if (filters.unpatched && script.unpatched !== true) {
-        return false;
-    }
-
-    if (filters.verified && script.creator.verified !== true) {
-        return false;
-    }
-
-    return true;
 }
 
 function getDetailRawScriptUrl(data: {
@@ -469,7 +447,7 @@ export function fetchFilteredScriptsPageEffect(
             maxSourcePages = currentPage.maxPages;
 
             for (const script of currentPage.scripts) {
-                if (matchesFilters(script, filters)) {
+                if (matchesScriptLibraryFilters(script, filters)) {
                     filteredScripts.push(script);
                 }
             }

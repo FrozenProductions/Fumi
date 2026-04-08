@@ -1,4 +1,9 @@
-import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.type";
+import type {
+    ScriptLibraryEntry,
+    ScriptLibraryFavoriteEntry,
+    ScriptLibraryFilters,
+    ScriptLibrarySort,
+} from "../../lib/scriptLibrary/scriptLibrary.type";
 import { clampWorkspaceTabBaseName } from "../workspace/fileName";
 
 const SCRIPT_LIBRARY_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
@@ -31,4 +36,106 @@ export function getWorkspaceScriptFileName(
     script: Pick<ScriptLibraryEntry, "title">,
 ): string {
     return `${clampWorkspaceTabBaseName(script.title.trim())}.lua`;
+}
+
+export function normalizeScriptLibraryFavoriteEntry(
+    script: ScriptLibraryEntry,
+): ScriptLibraryFavoriteEntry {
+    return {
+        ...script,
+        creator: {
+            ...script.creator,
+        },
+    };
+}
+
+export function matchesScriptLibraryFilters(
+    script: ScriptLibraryEntry,
+    filters: ScriptLibraryFilters,
+): boolean {
+    if (filters.keyless && script.keySystem !== false) {
+        return false;
+    }
+
+    if (filters.free && script.paid !== false) {
+        return false;
+    }
+
+    if (filters.unpatched && script.unpatched !== true) {
+        return false;
+    }
+
+    if (filters.verified && script.creator.verified !== true) {
+        return false;
+    }
+
+    return true;
+}
+
+export function matchesScriptLibraryQuery(
+    script: ScriptLibraryEntry,
+    query: string,
+): boolean {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+        return true;
+    }
+
+    return [
+        script.title,
+        script.description,
+        script.creator.name,
+        script.slug,
+    ].some((value) => value.toLowerCase().includes(normalizedQuery));
+}
+
+export function sortScriptLibraryEntries(
+    scripts: ScriptLibraryEntry[],
+    orderBy: ScriptLibrarySort,
+): ScriptLibraryEntry[] {
+    return [...scripts].sort((left, right) => {
+        if (orderBy === "views") {
+            return (
+                right.views - left.views ||
+                left.title.localeCompare(right.title)
+            );
+        }
+
+        if (orderBy === "likes") {
+            return (
+                right.likes - left.likes ||
+                left.title.localeCompare(right.title)
+            );
+        }
+
+        const leftDate = Date.parse(left.createdAt);
+        const rightDate = Date.parse(right.createdAt);
+        const leftTimestamp = Number.isNaN(leftDate) ? 0 : leftDate;
+        const rightTimestamp = Number.isNaN(rightDate) ? 0 : rightDate;
+
+        return (
+            rightTimestamp - leftTimestamp ||
+            left.title.localeCompare(right.title)
+        );
+    });
+}
+
+export function getVisibleScriptLibraryEntries(
+    scripts: ScriptLibraryEntry[],
+    options: {
+        query: string;
+        filters: ScriptLibraryFilters;
+        orderBy: ScriptLibrarySort;
+    },
+): ScriptLibraryEntry[] {
+    return sortScriptLibraryEntries(
+        scripts.filter((script) => {
+            return (
+                matchesScriptLibraryQuery(script, options.query) &&
+                matchesScriptLibraryFilters(script, options.filters)
+            );
+        }),
+        options.orderBy,
+    );
 }

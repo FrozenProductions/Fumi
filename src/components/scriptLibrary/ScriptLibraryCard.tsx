@@ -29,10 +29,36 @@ export function ScriptLibraryCard({
         isCopyingScript,
         isCopiedLink,
         isCopiedScript,
+        isFavorite,
         onAddToWorkspace,
         onCopyLink,
         onCopyScript,
+        onToggleFavorite,
     } = actions;
+    const scriptBadgeIcons = (
+        <>
+            {script.keySystem === false ? (
+                <div
+                    title="Keyless"
+                    className="flex size-6 items-center justify-center rounded-full bg-fumi-100 text-fumi-600"
+                >
+                    <AppIcon icon={Key01Icon} size={12} strokeWidth={2.4} />
+                </div>
+            ) : null}
+            {script.unpatched ? (
+                <div
+                    title="Unpatched"
+                    className="flex size-6 items-center justify-center rounded-full bg-fumi-100 text-fumi-600"
+                >
+                    <AppIcon
+                        icon={CheckmarkCircle01Icon}
+                        size={12}
+                        strokeWidth={2.4}
+                    />
+                </div>
+            ) : null}
+        </>
+    );
 
     return (
         <article
@@ -45,9 +71,16 @@ export function ScriptLibraryCard({
             <div className={viewFormat === "grid" ? "" : "min-w-0 flex-1"}>
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <h3 className="truncate font-semibold leading-tight tracking-[-0.01em] text-fumi-900">
-                            {script.title}
-                        </h3>
+                        <div className="flex items-start gap-2">
+                            <h3 className="truncate font-semibold leading-tight tracking-[-0.01em] text-fumi-900">
+                                {script.title}
+                            </h3>
+                            {viewFormat === "list" ? (
+                                <div className="flex shrink-0 gap-1">
+                                    {scriptBadgeIcons}
+                                </div>
+                            ) : null}
+                        </div>
                         <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-fumi-400">
                             <span className="truncate">
                                 @{script.creator.name}
@@ -64,32 +97,11 @@ export function ScriptLibraryCard({
                             ) : null}
                         </div>
                     </div>
-                    <div className="flex shrink-0 gap-1">
-                        {script.keySystem === false ? (
-                            <div
-                                title="Keyless"
-                                className="flex size-6 items-center justify-center rounded-full bg-fumi-100 text-fumi-600"
-                            >
-                                <AppIcon
-                                    icon={Key01Icon}
-                                    size={12}
-                                    strokeWidth={2.4}
-                                />
-                            </div>
-                        ) : null}
-                        {script.unpatched ? (
-                            <div
-                                title="Unpatched"
-                                className="flex size-6 items-center justify-center rounded-full bg-fumi-100 text-fumi-600"
-                            >
-                                <AppIcon
-                                    icon={CheckmarkCircle01Icon}
-                                    size={12}
-                                    strokeWidth={2.4}
-                                />
-                            </div>
-                        ) : null}
-                    </div>
+                    {viewFormat === "grid" ? (
+                        <div className="flex shrink-0 gap-1">
+                            {scriptBadgeIcons}
+                        </div>
+                    ) : null}
                 </div>
 
                 <p
@@ -134,6 +146,31 @@ export function ScriptLibraryCard({
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
+                    <AppTooltip
+                        content={
+                            isFavorite
+                                ? "Remove from favorites"
+                                : "Save to favorites"
+                        }
+                    >
+                        <button
+                            type="button"
+                            onClick={onToggleFavorite}
+                            className="app-select-none inline-flex size-8 items-center justify-center rounded-[0.65rem] bg-fumi-50 text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-400"
+                            aria-label={
+                                isFavorite
+                                    ? "Remove from favorites"
+                                    : "Save to favorites"
+                            }
+                        >
+                            <AppIcon
+                                icon={StarIcon}
+                                size={14}
+                                strokeWidth={2.5}
+                                className={isFavorite ? "fill-current" : ""}
+                            />
+                        </button>
+                    </AppTooltip>
                     <AppTooltip
                         content={
                             hasWorkspace
