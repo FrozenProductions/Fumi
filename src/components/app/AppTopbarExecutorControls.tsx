@@ -24,6 +24,7 @@ export function AppTopbarExecutorControls({
     const isExecutorUnavailable = !hasSupportedExecutor;
     const isPrimaryButtonDisabled = isBusy || isExecutorUnavailable;
     const isDropdownDisabled = isBusy || isAttached || isExecutorUnavailable;
+    const unavailableButtonClassName = `${theme === "dark" ? "bg-fumi-800" : "bg-fumi-100"} cursor-not-allowed text-fumi-400 opacity-60`;
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -63,9 +64,7 @@ export function AppTopbarExecutorControls({
                         data-topbar-interactive="true"
                         className={`app-select-none inline-flex h-full items-center justify-center gap-1.5 rounded-l-md px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
                             isExecutorUnavailable
-                                ? theme === "dark"
-                                    ? "bg-fumi-800 text-fumi-400"
-                                    : "bg-fumi-100 text-fumi-400"
+                                ? unavailableButtonClassName
                                 : didRecentAttachFail
                                   ? theme === "dark"
                                       ? "bg-amber-950/70 text-amber-100 hover:bg-amber-900/80"
@@ -75,7 +74,9 @@ export function AppTopbarExecutorControls({
                             isPrimaryButtonDisabled
                                 ? isBusy
                                     ? "cursor-wait opacity-70"
-                                    : "cursor-not-allowed opacity-60"
+                                    : isExecutorUnavailable
+                                      ? ""
+                                      : "cursor-not-allowed opacity-60"
                                 : ""
                         }`}
                     >
@@ -87,7 +88,9 @@ export function AppTopbarExecutorControls({
                         ) : (
                             <AppIcon
                                 icon={ConnectIcon}
-                                className={`size-3.5 shrink-0 -translate-y-[0.25px] ${isBusy ? "opacity-50" : ""}`}
+                                className={`size-3.5 shrink-0 -translate-y-[0.25px] ${
+                                    isExecutorUnavailable ? "text-fumi-400" : ""
+                                } ${isBusy ? "opacity-50" : ""}`}
                                 strokeWidth={2.5}
                             />
                         )}
@@ -113,17 +116,21 @@ export function AppTopbarExecutorControls({
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         disabled={isDropdownDisabled}
                         data-topbar-interactive="true"
-                        className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-r-md text-fumi-700 transition-[background-color,border-color] duration-150 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
-                            isDropdownDisabled
-                                ? "cursor-not-allowed opacity-50"
-                                : ""
+                        className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-r-md text-fumi-700 transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
+                            isDropdownDisabled ? "" : "hover:bg-fumi-200"
+                        } ${
+                            isExecutorUnavailable
+                                ? unavailableButtonClassName
+                                : isDropdownDisabled
+                                  ? "cursor-not-allowed opacity-50"
+                                  : ""
                         }`}
                     >
                         <AppIcon
                             icon={ArrowDown01Icon}
                             className={`size-3.5 transition-transform duration-200 ${
                                 isDropdownOpen ? "rotate-180" : ""
-                            }`}
+                            } ${isExecutorUnavailable ? "text-fumi-400" : ""}`}
                             strokeWidth={2.5}
                         />
                     </button>
