@@ -397,7 +397,14 @@ export function WorkspaceTabBar({
                 className="absolute inset-y-0 right-0 z-20 flex items-center gap-1 bg-fumi-100 px-2 py-1.5"
             >
                 {isSplit ? (
-                    <AppTooltip content="Close split view" side="bottom">
+                    <AppTooltip
+                        content="Close split view"
+                        side="bottom"
+                        shortcut={getAppHotkeyShortcutLabel(
+                            "TOGGLE_WORKSPACE_SPLIT_VIEW",
+                            hotkeyBindings,
+                        )}
+                    >
                         <button
                             type="button"
                             aria-label="Close split view"
