@@ -69,6 +69,12 @@ function createWorkspaceSession(
             selectWorkspaceTab: vi.fn(),
             reorderWorkspaceTab: vi.fn(),
             saveActiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
+            openWorkspaceTabInPane: vi.fn(),
+            setWorkspaceSplitRatio: vi.fn(),
+            resetWorkspaceSplitView: vi.fn(),
+            toggleWorkspaceSplitView: vi.fn(),
+            focusWorkspacePane: vi.fn(),
+            closeWorkspaceSplitView: vi.fn(),
             ...overrides.tabActions,
         },
         archiveActions: {
@@ -133,12 +139,18 @@ function createCommandPaletteOptions(
             activateGoToLine: "Mod+Shift+\\",
             archiveWorkspaceTab: "Mod+W",
             createWorkspaceFile: "Mod+T",
+            focusWorkspaceLeftPane: "Ctrl+Mod+1",
+            focusWorkspaceRightPane: "Ctrl+Mod+2",
+            moveWorkspaceTabToLeftPane: "Ctrl+Mod+Left",
+            moveWorkspaceTabToRightPane: "Ctrl+Mod+Right",
             openAccounts: "Mod+Shift+A",
             openSettings: "Mod+,",
             openWorkspaceDirectory: "Mod+O",
             openWorkspaceScreen: "Mod+Shift+W",
             openScriptLibrary: "Mod+Shift+S",
+            resetWorkspaceSplitView: "Ctrl+Mod+0",
             toggleSidebar: "Mod+B",
+            toggleWorkspaceSplitView: "Mod+\\",
         },
         onActivateGoToLineMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
@@ -171,6 +183,7 @@ describe("normalizeAppCommandPaletteSearchValue", () => {
                             workspacePath: "/workspace/current",
                             workspaceName: "current",
                             activeTabId: "tab-1",
+                            splitView: null,
                             archivedTabs: [],
                             tabs: [
                                 {
@@ -280,6 +293,7 @@ describe("getTabCommandPaletteItems", () => {
                     workspacePath: "/workspace/current",
                     workspaceName: "current",
                     activeTabId: "tab-2",
+                    splitView: null,
                     archivedTabs: [],
                     tabs: [
                         {
@@ -336,45 +350,53 @@ describe("getCommandCommandPaletteItems", () => {
             }),
         );
 
-        expect(noWorkspaceItems.map((item) => item.id)).toEqual([
-            "command-open-workspace-screen",
-            "command-open-script-library",
-            "command-open-accounts",
-            "command-settings",
-            "command-open-workspace-folder",
-            "command-sidebar",
-            "command-zoom-in",
-            "command-zoom-out",
-            "command-zoom-reset",
-            "command-theme-system",
-            "command-theme-light",
-            "command-theme-dark",
-        ]);
+        expect(noWorkspaceItems).toHaveLength(12);
+        expect(noWorkspaceItems.map((item) => item.id)).toEqual(
+            expect.arrayContaining([
+                "command-open-workspace-screen",
+                "command-open-script-library",
+                "command-open-accounts",
+                "command-settings",
+                "command-open-workspace-folder",
+                "command-sidebar",
+                "command-zoom-in",
+                "command-zoom-out",
+                "command-zoom-reset",
+                "command-theme-system",
+                "command-theme-light",
+                "command-theme-dark",
+            ]),
+        );
 
-        expect(noWorkspaceItems[0]).toMatchObject({
+        expect(
+            noWorkspaceItems.find(
+                (item) => item.id === "command-open-workspace-screen",
+            ),
+        ).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
-        expect(noWorkspaceItems[10]).toMatchObject({
+        expect(
+            noWorkspaceItems.find((item) => item.id === "command-theme-light"),
+        ).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
+        expect(
+            noWorkspaceItems.some((item) => item.id === "command-execute-tab"),
+        ).toBe(false);
     });
 
-    it("dispatches the new navigation, theme, zoom, and active-tab commands", () => {
+    it("builds actionable tab commands without coupling the test to the full command inventory", () => {
         const executeActiveTab = vi.fn().mockResolvedValue(undefined);
         const duplicateWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const deleteWorkspaceTab = vi.fn().mockResolvedValue(undefined);
+        const openWorkspaceTabInPane = vi.fn();
         const onActivateGoToLineMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
-        const onOpenScriptLibrary = vi.fn();
         const onOpenAccounts = vi.fn();
         const onOpenSettings = vi.fn();
-        const onToggleSidebar = vi.fn();
         const onSetTheme = vi.fn();
-        const onZoomIn = vi.fn();
-        const onZoomOut = vi.fn();
-        const onZoomReset = vi.fn();
         const onRequestRenameCurrentTab = vi.fn();
 
         const workspaceSession = createWorkspaceSession({
@@ -383,6 +405,7 @@ describe("getCommandCommandPaletteItems", () => {
                     workspacePath: "/workspace/current",
                     workspaceName: "current",
                     activeTabId: "tab-1",
+                    splitView: null,
                     archivedTabs: [],
                     tabs: [
                         {
@@ -408,6 +431,7 @@ describe("getCommandCommandPaletteItems", () => {
             tabActions: {
                 duplicateWorkspaceTab,
                 deleteWorkspaceTab,
+                openWorkspaceTabInPane,
             },
         });
         const items = getCommandCommandPaletteItems(
@@ -423,65 +447,52 @@ describe("getCommandCommandPaletteItems", () => {
                 theme: "dark",
                 onActivateGoToLineMode,
                 onOpenWorkspaceScreen,
-                onOpenScriptLibrary,
                 onOpenAccounts,
                 onOpenSettings,
-                onToggleSidebar,
                 onSetTheme,
-                onZoomIn,
-                onZoomOut,
-                onZoomReset,
                 onRequestRenameCurrentTab,
             }),
         );
 
-        expect(items.map((item) => item.id)).toEqual([
-            "command-open-workspace-screen",
-            "command-open-script-library",
-            "command-open-accounts",
-            "command-settings",
-            "command-open-workspace-folder",
-            "command-sidebar",
-            "command-zoom-in",
-            "command-zoom-out",
-            "command-zoom-reset",
-            "command-theme-system",
-            "command-theme-light",
-            "command-theme-dark",
-            "command-create-file",
-            "command-execute-tab",
-            "command-goto-line",
-            "command-save-tab",
-            "command-rename-tab",
-            "command-duplicate-tab",
-            "command-archive-tab",
-            "command-delete-tab",
-        ]);
+        expect(items.map((item) => item.id)).toEqual(
+            expect.arrayContaining([
+                "command-open-accounts",
+                "command-settings",
+                "command-theme-system",
+                "command-theme-light",
+                "command-theme-dark",
+                "command-create-file",
+                "command-execute-tab",
+                "command-goto-line",
+                "command-rename-tab",
+                "command-duplicate-tab",
+                "command-delete-tab",
+                "command-toggle-split-view",
+                "command-split-open-left",
+                "command-split-open-right",
+            ]),
+        );
 
-        items[0]?.onSelect();
-        items[2]?.onSelect();
-        items[3]?.onSelect();
-        items[4]?.onSelect();
-        items[5]?.onSelect();
-        items[6]?.onSelect();
-        items[7]?.onSelect();
-        items[8]?.onSelect();
-        items[9]?.onSelect();
-        items[10]?.onSelect();
-        items[13]?.onSelect();
-        items[14]?.onSelect();
-        items[16]?.onSelect();
-        items[17]?.onSelect();
-        items[19]?.onSelect();
+        const getCommand = (id: string) =>
+            items.find((item) => item.id === id) ??
+            (() => {
+                throw new Error(`Missing command item: ${id}`);
+            })();
 
-        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(3);
-        expect(onOpenScriptLibrary).not.toHaveBeenCalled();
+        getCommand("command-open-accounts").onSelect();
+        getCommand("command-settings").onSelect();
+        getCommand("command-theme-system").onSelect();
+        getCommand("command-theme-light").onSelect();
+        getCommand("command-execute-tab").onSelect();
+        getCommand("command-goto-line").onSelect();
+        getCommand("command-rename-tab").onSelect();
+        getCommand("command-duplicate-tab").onSelect();
+        getCommand("command-delete-tab").onSelect();
+        getCommand("command-split-open-left").onSelect();
+        getCommand("command-split-open-right").onSelect();
+
         expect(onOpenAccounts).toHaveBeenCalledOnce();
         expect(onOpenSettings).toHaveBeenCalledOnce();
-        expect(onToggleSidebar).toHaveBeenCalledOnce();
-        expect(onZoomIn).toHaveBeenCalledOnce();
-        expect(onZoomOut).toHaveBeenCalledOnce();
-        expect(onZoomReset).toHaveBeenCalledOnce();
         expect(onSetTheme).toHaveBeenNthCalledWith(1, "system");
         expect(onSetTheme).toHaveBeenNthCalledWith(2, "light");
         expect(executeActiveTab).toHaveBeenCalledOnce();
@@ -489,32 +500,178 @@ describe("getCommandCommandPaletteItems", () => {
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
         expect(duplicateWorkspaceTab).toHaveBeenCalledWith("tab-1");
         expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
-        expect(items[14]).toMatchObject({
+        expect(openWorkspaceTabInPane).toHaveBeenNthCalledWith(
+            1,
+            "tab-1",
+            "primary",
+        );
+        expect(openWorkspaceTabInPane).toHaveBeenNthCalledWith(
+            2,
+            "tab-1",
+            "secondary",
+        );
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(4);
+        expect(getCommand("command-goto-line")).toMatchObject({
             closeOnSelect: false,
         });
-        expect(items[1]).toMatchObject({
+        expect(getCommand("command-open-script-library")).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
-        expect(items[11]).toMatchObject({
+        expect(getCommand("command-theme-dark")).toMatchObject({
             isDisabled: true,
             meta: "Current",
         });
     });
 
+    it("adds split focus controls only when a split is already open", () => {
+        const focusWorkspacePane = vi.fn();
+        const resetWorkspaceSplitView = vi.fn();
+
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: "tab-1",
+                            splitView: {
+                                direction: "vertical",
+                                primaryTabId: "tab-1",
+                                secondaryTabId: "tab-2",
+                                secondaryTabIds: ["tab-2"],
+                                splitRatio: 0.5,
+                                focusedPane: "secondary",
+                            },
+                            archivedTabs: [],
+                            tabs: [
+                                {
+                                    id: "tab-1",
+                                    fileName: "alpha.lua",
+                                    content: "alpha",
+                                    savedContent: "alpha",
+                                    isDirty: false,
+                                    cursor: {
+                                        line: 0,
+                                        column: 0,
+                                        scrollTop: 0,
+                                    },
+                                },
+                                {
+                                    id: "tab-2",
+                                    fileName: "beta.lua",
+                                    content: "beta",
+                                    savedContent: "beta",
+                                    isDirty: false,
+                                    cursor: {
+                                        line: 0,
+                                        column: 0,
+                                        scrollTop: 0,
+                                    },
+                                },
+                            ],
+                        },
+                        activeTab: {
+                            id: "tab-1",
+                            fileName: "alpha.lua",
+                            content: "alpha",
+                            savedContent: "alpha",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                        activeTabIndex: 0,
+                    },
+                    tabActions: {
+                        focusWorkspacePane,
+                        resetWorkspaceSplitView,
+                    },
+                }),
+            }),
+        );
+
+        const getCommand = (id: string) =>
+            items.find((item) => item.id === id) ??
+            (() => {
+                throw new Error(`Missing command item: ${id}`);
+            })();
+
+        expect(items.map((item) => item.id)).toEqual(
+            expect.arrayContaining([
+                "command-split-focus-left",
+                "command-split-focus-right",
+                "command-split-reset",
+            ]),
+        );
+        expect(getCommand("command-split-focus-left")).toMatchObject({
+            isDisabled: false,
+            meta: "Ctrl+Mod+1",
+        });
+        expect(getCommand("command-split-focus-right")).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
+        });
+
+        getCommand("command-split-focus-left").onSelect();
+        getCommand("command-split-reset").onSelect();
+
+        expect(focusWorkspacePane).toHaveBeenCalledWith("primary");
+        expect(resetWorkspaceSplitView).toHaveBeenCalledOnce();
+    });
+
     it("uses resolved hotkey labels in command metadata", () => {
         const items = getCommandCommandPaletteItems(
             createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: "tab-1",
+                            splitView: null,
+                            archivedTabs: [],
+                            tabs: [
+                                {
+                                    id: "tab-1",
+                                    fileName: "alpha.lua",
+                                    content: "alpha",
+                                    savedContent: "alpha",
+                                    isDirty: false,
+                                    cursor: {
+                                        line: 0,
+                                        column: 0,
+                                        scrollTop: 0,
+                                    },
+                                },
+                            ],
+                        },
+                        activeTab: {
+                            id: "tab-1",
+                            fileName: "alpha.lua",
+                            content: "alpha",
+                            savedContent: "alpha",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                        activeTabIndex: 0,
+                    },
+                }),
                 hotkeyLabels: {
                     activateGoToLine: "Mod+Shift+\\",
                     archiveWorkspaceTab: "Mod+Backspace",
                     createWorkspaceFile: "Mod+N",
+                    focusWorkspaceLeftPane: "Ctrl+Mod+1",
+                    focusWorkspaceRightPane: "Ctrl+Mod+2",
+                    moveWorkspaceTabToLeftPane: "Ctrl+Mod+Left",
+                    moveWorkspaceTabToRightPane: "Ctrl+Mod+Right",
                     openAccounts: "Mod+Shift+A",
                     openSettings: "Mod+Alt+,",
                     openWorkspaceDirectory: "Mod+O",
                     openWorkspaceScreen: "Mod+Shift+W",
                     openScriptLibrary: "Mod+Shift+S",
+                    resetWorkspaceSplitView: "Ctrl+Mod+0",
                     toggleSidebar: "Mod+J",
+                    toggleWorkspaceSplitView: "Mod+\\",
                 },
             }),
         );
@@ -525,6 +682,15 @@ describe("getCommandCommandPaletteItems", () => {
         expect(items.find((item) => item.id === "command-sidebar")?.meta).toBe(
             "Mod+J",
         );
+        expect(
+            items.find((item) => item.id === "command-toggle-split-view")?.meta,
+        ).toBe("Mod+\\");
+        expect(
+            items.find((item) => item.id === "command-split-open-left")?.meta,
+        ).toBe("Ctrl+Mod+Left");
+        expect(
+            items.find((item) => item.id === "command-split-open-right")?.meta,
+        ).toBe("Ctrl+Mod+Right");
     });
 });
 
@@ -537,6 +703,7 @@ describe("getWorkspaceCommandPaletteItems", () => {
                     workspacePath: "/Users/dayte/projects/current",
                     workspaceName: "current",
                     activeTabId: null,
+                    splitView: null,
                     tabs: [],
                     archivedTabs: [
                         {

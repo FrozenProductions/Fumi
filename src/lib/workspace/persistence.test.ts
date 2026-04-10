@@ -27,6 +27,7 @@ function createWorkspaceSession(
         workspacePath: "/tmp/fumi",
         workspaceName: "fumi",
         activeTabId: "tab-1",
+        splitView: null,
         tabs: [
             {
                 id: "tab-1",

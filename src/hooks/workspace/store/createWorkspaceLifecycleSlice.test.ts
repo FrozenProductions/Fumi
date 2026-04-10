@@ -56,6 +56,7 @@ function createWorkspaceSession(
         workspacePath: "/workspace/current",
         workspaceName: "current",
         activeTabId: "tab-1",
+        splitView: null,
         archivedTabs: [],
         tabs: [
             {
@@ -84,6 +85,7 @@ function createWorkspaceSnapshot(
         metadata: {
             version: 2,
             activeTabId: "tab-2",
+            splitView: null,
             tabs: [
                 {
                     id: "tab-2",

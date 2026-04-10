@@ -24,6 +24,21 @@ async function loadAccountsModule(): Promise<typeof import("./accounts")> {
     return import("./accounts");
 }
 
+function createAccountSummary(
+    overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+    return {
+        id: "account-1",
+        userId: 42,
+        username: "cool-user",
+        displayName: "Cool User",
+        avatarUrl: "https://cdn.test/42.png",
+        status: "offline",
+        lastLaunchedAt: null,
+        ...overrides,
+    };
+}
+
 describe("accounts platform commands", () => {
     beforeEach(() => {
         mocks.invoke.mockReset();
@@ -48,47 +63,25 @@ describe("accounts platform commands", () => {
     it("invokes add and launch commands with typed payloads", async () => {
         const accountsModule = await loadAccountsModule();
         mocks.invoke
-            .mockResolvedValueOnce({
-                id: "account-1",
-                userId: 42,
-                username: "cool-user",
-                displayName: "Cool User",
-                avatarUrl: "https://cdn.test/42.png",
-                status: "offline",
-                lastLaunchedAt: null,
-            })
-            .mockResolvedValueOnce({
-                id: "account-1",
-                userId: 42,
-                username: "cool-user",
-                displayName: "Cool User",
-                avatarUrl: "https://cdn.test/42.png",
-                status: "active",
-                lastLaunchedAt: 123,
-            });
+            .mockResolvedValueOnce(createAccountSummary())
+            .mockResolvedValueOnce(
+                createAccountSummary({
+                    status: "active",
+                    lastLaunchedAt: 123,
+                }),
+            );
 
         await expect(
             accountsModule.addAccount("cookie-value"),
-        ).resolves.toEqual({
-            id: "account-1",
-            userId: 42,
-            username: "cool-user",
-            displayName: "Cool User",
-            avatarUrl: "https://cdn.test/42.png",
-            status: "offline",
-            lastLaunchedAt: null,
-        });
+        ).resolves.toEqual(createAccountSummary());
         await expect(
             accountsModule.launchAccount("account-1"),
-        ).resolves.toEqual({
-            id: "account-1",
-            userId: 42,
-            username: "cool-user",
-            displayName: "Cool User",
-            avatarUrl: "https://cdn.test/42.png",
-            status: "active",
-            lastLaunchedAt: 123,
-        });
+        ).resolves.toEqual(
+            createAccountSummary({
+                status: "active",
+                lastLaunchedAt: 123,
+            }),
+        );
 
         expect(mocks.invoke).toHaveBeenNthCalledWith(1, "add_account", {
             cookie: "cookie-value",
@@ -98,16 +91,44 @@ describe("accounts platform commands", () => {
         });
     });
 
-    it("invokes delete_account with the expected payload", async () => {
+    it("rejects shell-only account mutations outside the desktop shell", async () => {
+        mocks.isTauriEnvironment.mockReturnValue(false);
         const accountsModule = await loadAccountsModule();
-        mocks.invoke.mockResolvedValue(undefined);
 
-        await expect(accountsModule.deleteAccount("account-1")).resolves.toBe(
-            undefined,
+        await expect(
+            accountsModule.addAccount("cookie-value"),
+        ).rejects.toHaveProperty(
+            "message",
+            "Accounts commands require the Tauri desktop shell.",
+        );
+        await expect(
+            accountsModule.launchAccount("account-1"),
+        ).rejects.toHaveProperty(
+            "message",
+            "Accounts commands require the Tauri desktop shell.",
+        );
+        await expect(
+            accountsModule.deleteAccount("account-1"),
+        ).rejects.toHaveProperty(
+            "message",
+            "Accounts commands require the Tauri desktop shell.",
         );
 
-        expect(mocks.invoke).toHaveBeenCalledWith("delete_account", {
-            accountId: "account-1",
+        expect(mocks.invoke).not.toHaveBeenCalled();
+    });
+
+    it("rejects malformed backend payloads instead of returning invalid account data", async () => {
+        const accountsModule = await loadAccountsModule();
+        mocks.invoke.mockResolvedValue({
+            id: "account-1",
+            userId: "42",
         });
+
+        await expect(
+            accountsModule.addAccount("cookie-value"),
+        ).rejects.toHaveProperty(
+            "message",
+            "Unexpected response shape for addAccount.",
+        );
     });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
+import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../constants/workspace/workspace";
 import type {
     WorkspaceCursorState,
     WorkspaceSession,
@@ -66,6 +67,7 @@ function createWorkspaceSnapshot(
         metadata: {
             version: 2,
             activeTabId: tabs[0]?.id ?? null,
+            splitView: null,
             tabs: tabs.map((tab) =>
                 createTabState(tab.id, {
                     fileName: tab.fileName,
@@ -98,6 +100,7 @@ function createWorkspaceSession(
         workspacePath: "/tmp/fumi",
         workspaceName: "fumi",
         activeTabId: tabs[0]?.id ?? null,
+        splitView: null,
         tabs,
         archivedTabs: [],
         ...overrides,
@@ -126,6 +129,7 @@ describe("buildWorkspaceSession", () => {
             metadata: {
                 version: 2,
                 activeTabId: "missing-tab",
+                splitView: null,
                 tabs: [
                     createTabState("tab-2", {
                         fileName: "renamed.lua",
@@ -163,6 +167,36 @@ describe("buildWorkspaceSession", () => {
                 column: 4,
                 scrollTop: 6,
             },
+        });
+    });
+
+    it("normalizes split ratio when restoring a split workspace", () => {
+        const snapshot = createWorkspaceSnapshot({
+            metadata: {
+                version: 3,
+                activeTabId: "tab-2",
+                splitView: {
+                    direction: "vertical",
+                    primaryTabId: "tab-1",
+                    secondaryTabId: "tab-2",
+                    secondaryTabIds: ["tab-2"],
+                    splitRatio: Number.NaN,
+                    focusedPane: "secondary",
+                },
+                tabs: [createTabState("tab-1"), createTabState("tab-2")],
+                archivedTabs: [],
+            },
+        });
+
+        const session = buildWorkspaceSession(snapshot);
+
+        expect(session.splitView).toEqual({
+            direction: "vertical",
+            primaryTabId: "tab-1",
+            secondaryTabId: "tab-2",
+            secondaryTabIds: ["tab-2"],
+            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+            focusedPane: "secondary",
         });
     });
 });
@@ -222,6 +256,50 @@ describe("reorderWorkspaceTabs", () => {
             "tab-1",
         ]);
     });
+
+    it("keeps right-pane ordering in sync with reordered tabs", () => {
+        const workspace = createWorkspaceSession({
+            tabs: [
+                {
+                    ...createSnapshotTab("tab-1"),
+                    savedContent: "tab-1-content",
+                },
+                {
+                    ...createSnapshotTab("tab-2"),
+                    savedContent: "tab-2-content",
+                },
+                {
+                    ...createSnapshotTab("tab-3"),
+                    savedContent: "tab-3-content",
+                },
+                {
+                    ...createSnapshotTab("tab-4"),
+                    savedContent: "tab-4-content",
+                },
+            ],
+            splitView: {
+                direction: "vertical",
+                primaryTabId: "tab-1",
+                secondaryTabId: "tab-3",
+                secondaryTabIds: ["tab-3", "tab-4"],
+                splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                focusedPane: "secondary",
+            },
+        });
+
+        const nextWorkspace = reorderWorkspaceTabs(workspace, "tab-4", "tab-3");
+
+        expect(nextWorkspace.tabs.map((tab) => tab.id)).toEqual([
+            "tab-1",
+            "tab-2",
+            "tab-4",
+            "tab-3",
+        ]);
+        expect(nextWorkspace.splitView?.secondaryTabIds).toEqual([
+            "tab-4",
+            "tab-3",
+        ]);
+    });
 });
 
 describe("mergeWorkspaceSession", () => {
@@ -261,6 +339,7 @@ describe("mergeWorkspaceSession", () => {
             metadata: {
                 version: 2,
                 activeTabId: "missing-active",
+                splitView: null,
                 tabs: [
                     createTabState("tab-clean", {
                         fileName: "clean-renamed.lua",

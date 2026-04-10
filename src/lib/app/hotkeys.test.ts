@@ -7,6 +7,7 @@ import {
     getResolvedAppHotkey,
     isAppHotkeyOverride,
     normalizeAppHotkeyBindings,
+    shouldTriggerAppHotkeyCapture,
     shouldTriggerAppHotkeyCodeFallback,
 } from "./hotkeys";
 
@@ -55,10 +56,26 @@ describe("findAppHotkeyConflict", () => {
 
     it("detects conflicts against fixed native menu shortcuts", () => {
         expect(
-            findAppHotkeyConflict("OPEN_COMMAND_PALETTE", "Mod+0", {}),
+            findAppHotkeyConflict("OPEN_COMMAND_PALETTE", "Mod+=", {}),
         ).toEqual({
-            label: "Reset zoom",
-            shortcutLabel: formatForDisplay("Mod+0"),
+            label: "Zoom in",
+            shortcutLabel: formatForDisplay("Mod+="),
+        });
+    });
+
+    it("detects conflicts against editable raw-object shortcuts", () => {
+        expect(
+            findAppHotkeyConflict(
+                "OPEN_COMMAND_PALETTE",
+                getAppHotkeyBinding("RESET_WORKSPACE_SPLIT_VIEW", {}),
+                {},
+            ),
+        ).toEqual({
+            label: "Reset split ratio",
+            shortcutLabel: getResolvedAppHotkey(
+                "RESET_WORKSPACE_SPLIT_VIEW",
+                {},
+            ).shortcutLabel,
         });
     });
 
@@ -132,5 +149,45 @@ describe("shouldTriggerAppHotkeyCodeFallback", () => {
                 },
             ),
         ).toBe(false);
+    });
+});
+
+describe("shouldTriggerAppHotkeyCapture", () => {
+    it("matches logical hotkeys during capture handling", () => {
+        expect(
+            shouldTriggerAppHotkeyCapture(
+                {
+                    key: "\\",
+                    code: "Backslash",
+                    ctrlKey: false,
+                    shiftKey: false,
+                    altKey: false,
+                    metaKey: true,
+                } as KeyboardEvent,
+                {
+                    key: "\\",
+                    meta: true,
+                },
+            ),
+        ).toBe(true);
+    });
+
+    it("matches physical keys when the keyboard layout changes the logical key", () => {
+        expect(
+            shouldTriggerAppHotkeyCapture(
+                {
+                    key: "з",
+                    code: "KeyP",
+                    ctrlKey: false,
+                    shiftKey: false,
+                    altKey: false,
+                    metaKey: true,
+                } as KeyboardEvent,
+                {
+                    key: "P",
+                    meta: true,
+                },
+            ),
+        ).toBe(true);
     });
 });

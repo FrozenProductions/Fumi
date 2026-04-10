@@ -70,6 +70,7 @@ fn normalize_workspace_metadata_repairs_invalid_entries_and_conflicts() {
     let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
         version: 2,
         active_tab_id: Some("missing-tab".to_string()),
+        split_view: None,
         tabs: Some(vec![
             tab(
                 "  open-1  ",
@@ -86,7 +87,8 @@ fn normalize_workspace_metadata_repairs_invalid_entries_and_conflicts() {
         ]),
     }));
 
-    assert_eq!(metadata.version, 2);
+    assert_eq!(metadata.version, 3);
+    assert!(metadata.split_view.is_none());
     assert_eq!(metadata.active_tab_id.as_deref(), Some("open-1"));
     assert_eq!(metadata.tabs.len(), 1);
     assert_eq!(metadata.tabs[0].id, "open-1");
@@ -102,14 +104,64 @@ fn normalize_workspace_metadata_repairs_invalid_entries_and_conflicts() {
 }
 
 #[test]
+fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
+    let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
+        version: 3,
+        active_tab_id: Some("tab-3".to_string()),
+        split_view: Some(WorkspaceSplitView {
+            direction: "vertical".to_string(),
+            primary_tab_id: "tab-3".to_string(),
+            secondary_tab_id: "tab-1".to_string(),
+            secondary_tab_ids: vec![
+                "tab-1".to_string(),
+                "tab-2".to_string(),
+                "missing-tab".to_string(),
+            ],
+            split_ratio: 0.68,
+            focused_pane: WorkspacePaneId::Primary,
+        }),
+        tabs: Some(vec![
+            tab("tab-1", "one.lua", create_empty_cursor_state(), None),
+            tab("tab-2", "two.lua", create_empty_cursor_state(), None),
+            tab("tab-3", "three.lua", create_empty_cursor_state(), None),
+        ]),
+        archived_tabs: Some(vec![]),
+    }));
+
+    assert_eq!(metadata.split_view.as_ref().map(|split| split.primary_tab_id.as_str()), Some("tab-3"));
+    assert_eq!(
+        metadata
+            .split_view
+            .as_ref()
+            .map(|split| split.secondary_tab_id.as_str()),
+        Some("tab-1")
+    );
+    assert_eq!(
+        metadata
+            .split_view
+            .as_ref()
+            .map(|split| split.secondary_tab_ids.clone()),
+        Some(vec!["tab-1".to_string(), "tab-2".to_string()])
+    );
+    assert_eq!(
+        metadata
+            .split_view
+            .as_ref()
+            .map(|split| split.split_ratio),
+        Some(0.68)
+    );
+}
+
+#[test]
 fn ensure_unique_file_name_accounts_for_metadata_and_existing_files() {
     let workspace_dir = TestWorkspaceDir::new("unique-name");
     fs::write(workspace_dir.path().join("alpha-2.lua"), "-- existing file")
         .expect("existing workspace file should be created");
 
     let metadata = WorkspaceMetadata {
-        version: 2,
+        version: 3,
         active_tab_id: Some("open-1".to_string()),
+        split_view: None,
         tabs: vec![tab(
             "open-1",
             "alpha.lua",
@@ -147,8 +199,9 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
     write_json_file(
         &get_workspace_metadata_path(workspace_dir.path()),
         &WorkspaceMetadata {
-            version: 2,
+            version: 3,
             active_tab_id: Some("missing-open".to_string()),
+            split_view: None,
             tabs: vec![
                 tab(
                     "missing-open",
@@ -189,6 +242,7 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
     assert_eq!(snapshot.tabs[0].content, "print('open')");
     assert!(!snapshot.tabs[0].is_dirty);
     assert_eq!(snapshot.metadata.active_tab_id.as_deref(), Some("open-1"));
+    assert!(snapshot.metadata.split_view.is_none());
     assert_eq!(snapshot.metadata.tabs.len(), 1);
     assert_eq!(snapshot.metadata.archived_tabs.len(), 1);
     assert_eq!(snapshot.metadata.archived_tabs[0].file_name, "archived.lua");
@@ -197,6 +251,7 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
         read_json_file::<WorkspaceMetadata>(&get_workspace_metadata_path(workspace_dir.path()))?
             .expect("normalized metadata should be persisted");
     assert_eq!(persisted_metadata.active_tab_id.as_deref(), Some("open-1"));
+    assert!(persisted_metadata.split_view.is_none());
     assert_eq!(persisted_metadata.tabs.len(), 1);
     assert_eq!(persisted_metadata.tabs[0].file_name, "open.lua");
     assert_eq!(persisted_metadata.archived_tabs.len(), 1);
@@ -204,6 +259,53 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
         persisted_metadata.archived_tabs[0].file_name,
         "archived.lua"
     );
+
+    Ok(())
+}
+
+#[test]
+fn read_workspace_snapshot_preserves_split_membership() -> anyhow::Result<()> {
+    let workspace_dir = TestWorkspaceDir::new("split-membership");
+
+    write_workspace_file(&workspace_dir.path().join("one.lua"), "print('one')")?;
+    write_workspace_file(&workspace_dir.path().join("two.lua"), "print('two')")?;
+    write_workspace_file(&workspace_dir.path().join("three.lua"), "print('three')")?;
+
+    write_json_file(
+        &get_workspace_metadata_path(workspace_dir.path()),
+        &WorkspaceMetadata {
+            version: 3,
+            active_tab_id: Some("tab-3".to_string()),
+            split_view: Some(WorkspaceSplitView {
+                direction: "vertical".to_string(),
+                primary_tab_id: "tab-3".to_string(),
+                secondary_tab_id: "tab-1".to_string(),
+                secondary_tab_ids: vec!["tab-1".to_string(), "tab-2".to_string()],
+                split_ratio: 0.64,
+                focused_pane: WorkspacePaneId::Primary,
+            }),
+            tabs: vec![
+                tab("tab-1", "one.lua", create_empty_cursor_state(), None),
+                tab("tab-2", "two.lua", create_empty_cursor_state(), None),
+                tab("tab-3", "three.lua", create_empty_cursor_state(), None),
+            ],
+            archived_tabs: vec![],
+        },
+    )?;
+
+    let snapshot = read_workspace_snapshot(workspace_dir.path())?;
+    let split_view = snapshot
+        .metadata
+        .split_view
+        .expect("split view should survive snapshot normalization");
+
+    assert_eq!(split_view.primary_tab_id, "tab-3");
+    assert_eq!(split_view.secondary_tab_id, "tab-1");
+    assert_eq!(
+        split_view.secondary_tab_ids,
+        vec!["tab-1".to_string(), "tab-2".to_string()]
+    );
+    assert_eq!(split_view.split_ratio, 0.64);
 
     Ok(())
 }
