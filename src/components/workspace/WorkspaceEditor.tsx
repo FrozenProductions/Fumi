@@ -1,8 +1,8 @@
 import { useDroppable } from "@dnd-kit/react";
 import type {
     CSSProperties,
-    PointerEvent as ReactPointerEvent,
     ReactElement,
+    PointerEvent as ReactPointerEvent,
     RefCallback,
 } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -186,7 +186,10 @@ export function WorkspaceEditor({
             const cleanup = (): void => {
                 window.removeEventListener("pointermove", handlePointerMove);
                 window.removeEventListener("pointerup", handlePointerUp);
-                window.removeEventListener("pointercancel", handlePointerCancel);
+                window.removeEventListener(
+                    "pointercancel",
+                    handlePointerCancel,
+                );
                 restoreBodyStyles();
                 splitResizeCleanupRef.current = null;
             };
@@ -228,7 +231,10 @@ export function WorkspaceEditor({
 
     return (
         <div className="flex min-h-0 flex-1 overflow-hidden bg-fumi-50">
-            <div ref={editorContainerRef} className="relative flex min-h-0 flex-1">
+            <div
+                ref={editorContainerRef}
+                className="relative flex min-h-0 flex-1"
+            >
                 {!isAceReady ? (
                     <div className="flex h-full w-full items-center justify-center bg-fumi-50 text-xs font-semibold uppercase tracking-[0.16em] text-fumi-400">
                         Loading editor

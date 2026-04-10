@@ -180,7 +180,8 @@ export const APP_HOTKEY_DEFINITIONS = {
     },
     RESET_WORKSPACE_SPLIT_VIEW: {
         label: "Reset split ratio",
-        description: "Reset the current split editor back to an even 50/50 layout.",
+        description:
+            "Reset the current split editor back to an even 50/50 layout.",
         defaultBinding: {
             key: "0",
             mod: true,
