@@ -113,3 +113,15 @@ export type GetGoToLineCommandPaletteItemsOptions = {
 };
 
 export type WorkspaceCommandPaletteItem = AppCommandPaletteItem;
+
+export type AppCommandPaletteSearchFieldName =
+    | "label"
+    | "keywords"
+    | "meta"
+    | "description";
+
+export type AppCommandPaletteSearchResult = {
+    item: AppCommandPaletteItem;
+    index: number;
+    score: number;
+};

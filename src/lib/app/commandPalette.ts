@@ -11,10 +11,6 @@ import type {
     GetGoToLineCommandPaletteItemsOptions,
 } from "./commandPalette.type";
 
-export function normalizeAppCommandPaletteSearchValue(value: string): string {
-    return value.trim().toLowerCase();
-}
-
 export function parseGoToLineQuery(value: string): number | null {
     const trimmedValue = value.trim();
 
@@ -33,19 +29,6 @@ export function parseGoToLineQuery(value: string): number | null {
     const lineNumber = Number.parseInt(match[1], 10);
 
     return Number.isInteger(lineNumber) && lineNumber > 0 ? lineNumber : null;
-}
-
-export function matchesAppCommandPaletteItem(
-    item: AppCommandPaletteItem,
-    searchValue: string,
-): boolean {
-    if (!searchValue) {
-        return true;
-    }
-
-    return normalizeAppCommandPaletteSearchValue(
-        `${item.label} ${item.description} ${item.keywords} ${item.meta ?? ""}`,
-    ).includes(searchValue);
 }
 
 export function getTabCommandPaletteItems(
@@ -438,7 +421,8 @@ export function getCommandCommandPaletteItems({
             {
                 id: "command-split-reset",
                 label: "Reset split view",
-                description: "Reset the split ratio back to an even 50/50 layout.",
+                description:
+                    "Reset the split ratio back to an even 50/50 layout.",
                 icon: CommandIcon,
                 meta: hotkeyLabels.resetWorkspaceSplitView,
                 keywords: "split reset ratio even equal panes editor",

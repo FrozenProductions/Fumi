@@ -10,6 +10,7 @@ import {
     useState,
 } from "react";
 import {
+    APP_COMMAND_PALETTE_MAX_RESULTS,
     COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS,
     COMMAND_PALETTE_EXIT_DURATION_MS,
 } from "../../constants/app/commandPalette";
@@ -24,10 +25,12 @@ import {
     getGoToLineCommandPaletteItems,
     getTabCommandPaletteItems,
     getWorkspaceCommandPaletteItems,
-    matchesAppCommandPaletteItem,
-    normalizeAppCommandPaletteSearchValue,
     parseGoToLineQuery,
 } from "../../lib/app/commandPalette";
+import {
+    normalizeAppCommandPaletteSearchValue,
+    searchAppCommandPaletteItems,
+} from "../../lib/app/commandPaletteSearch";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
 import type {
@@ -218,11 +221,11 @@ export function useAppCommandPalette({
     const results =
         mode === "goto-line"
             ? goToLineItems
-            : scopedItems
-                  .filter((item) =>
-                      matchesAppCommandPaletteItem(item, normalizedQuery),
-                  )
-                  .slice(0, 5);
+            : searchAppCommandPaletteItems(
+                  scopedItems,
+                  normalizedQuery,
+                  APP_COMMAND_PALETTE_MAX_RESULTS,
+              );
 
     useEffect(() => {
         if (!isOpen && focusTimeoutRef.current !== null) {
