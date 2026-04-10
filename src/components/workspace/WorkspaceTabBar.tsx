@@ -1,6 +1,10 @@
-import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
-import { Add01Icon, Menu02Icon } from "@hugeicons/core-free-icons";
 import {
+    Add01Icon,
+    Cancel01Icon,
+    Menu02Icon,
+} from "@hugeicons/core-free-icons";
+import {
+    type CSSProperties,
     type ReactElement,
     type MouseEvent as ReactMouseEvent,
     useEffect,
@@ -10,12 +14,7 @@ import {
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
-import {
-    reorderTabPreview,
-    TAB_BAR_MODIFIERS,
-    TAB_BAR_SENSORS,
-    TAB_BAR_SORTABLE_GROUP,
-} from "../../lib/workspace/tabBar";
+import { TAB_BAR_SORTABLE_GROUP } from "../../lib/workspace/tabBar";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
@@ -24,25 +23,42 @@ import { WorkspaceTabListDropdown } from "./tabBar/WorkspaceTabListDropdown";
 import type { WorkspaceTabBarProps } from "./workspaceScreen.type";
 import type { WorkspaceTabContextMenuState } from "./workspaceTabBar.type";
 
+export type WorkspaceTabBarDragCallbacks = {
+    onDragPreview: (draggedTabId: string, targetTabId: string) => void;
+    onDragStart: () => void;
+    onDragEnd: (
+        canceled: boolean,
+        draggedTabId: string | undefined,
+        rawTargetTabId: string | undefined,
+    ) => void;
+};
+
+type WorkspaceTabBarInternalProps = WorkspaceTabBarProps &
+    WorkspaceTabBarDragCallbacks & {
+        previewTabs: WorkspaceTabBarProps["workspace"]["tabs"];
+        isTabDragActive: boolean;
+    };
+
 export function WorkspaceTabBar({
     workspace,
+    splitView,
     renameState,
+    previewTabs,
+    isTabDragActive,
+    splitDropTarget,
     onCreateFile,
     onSelectTab,
-    onReorderTab,
     onDuplicateTab,
     onArchiveTab,
     onDeleteTab,
+    onOpenTabInPane,
+    onCloseSplitView,
     middleClickTabAction,
-}: WorkspaceTabBarProps): ReactElement {
+}: WorkspaceTabBarInternalProps): ReactElement {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabListContainerRef = useRef<HTMLDivElement | null>(null);
     const tabListDropdownRef = useRef<HTMLDivElement | null>(null);
-    const lastDropTargetTabIdRef = useRef<string | null>(null);
-    const lastPreviewTargetTabIdRef = useRef<string | null>(null);
-    const [isTabDragActive, setIsTabDragActive] = useState(false);
-    const [previewTabs, setPreviewTabs] = useState(workspace.tabs);
     const [contextMenuState, setContextMenuState] =
         useState<WorkspaceTabContextMenuState | null>(null);
     const isTabListOpen = useWorkspaceUiStore((state) => state.isTabListOpen);
@@ -60,6 +76,36 @@ export function WorkspaceTabBar({
         handleRenameInputKeyDown,
         handleStartRename,
     } = renameState;
+
+    const isSplit = splitView !== null;
+    const secondaryTabId = splitView?.secondaryTabId ?? null;
+    const secondaryTabIds = splitView?.secondaryTabIds ?? [];
+    const splitRatio = splitView?.splitRatio ?? 0.5;
+    const primarySectionStyle = {
+        width: `${splitRatio * 100}%`,
+    } satisfies CSSProperties;
+    const secondarySectionStyle = {
+        width: `${(1 - splitRatio) * 100}%`,
+    } satisfies CSSProperties;
+    const dividerStyle = {
+        left: `${splitRatio * 100}%`,
+    } satisfies CSSProperties;
+    const controlsClearanceClass = isSplit ? "pr-32" : "pr-24";
+    const previewTabsById = new Map(
+        previewTabs.map((tab) => [tab.id, tab] as const),
+    );
+    const secondaryTabIdSet = new Set(secondaryTabIds);
+    const primaryTabs = isSplit
+        ? previewTabs.filter((tab) => !secondaryTabIdSet.has(tab.id))
+        : previewTabs;
+    const secondaryTabs = isSplit
+        ? secondaryTabIds
+              .map((id) => previewTabsById.get(id))
+              .filter(
+                  (tab): tab is (typeof previewTabs)[number] =>
+                      tab !== undefined,
+              )
+        : [];
 
     useEffect(() => {
         if (!isTabListOpen) {
@@ -123,84 +169,6 @@ export function WorkspaceTabBar({
         };
     }, [activeTabId]);
 
-    useEffect(() => {
-        setPreviewTabs(workspace.tabs);
-    }, [workspace.tabs]);
-
-    const resetPreviewTabs = (): void => {
-        setPreviewTabs(workspace.tabs);
-    };
-
-    const handleDragOver: DragDropEventHandlers["onDragOver"] = ({
-        operation,
-    }): void => {
-        const draggedTabId = operation.source?.id;
-        const targetTabId = operation.target?.id;
-
-        if (
-            typeof draggedTabId !== "string" ||
-            typeof targetTabId !== "string"
-        ) {
-            return;
-        }
-
-        if (draggedTabId === targetTabId) {
-            return;
-        }
-
-        if (lastPreviewTargetTabIdRef.current === targetTabId) {
-            return;
-        }
-
-        lastDropTargetTabIdRef.current = targetTabId;
-        lastPreviewTargetTabIdRef.current = targetTabId;
-        setPreviewTabs(
-            reorderTabPreview(workspace.tabs, draggedTabId, targetTabId),
-        );
-    };
-
-    const handleDragStart: DragDropEventHandlers["onDragStart"] = (): void => {
-        setIsTabDragActive(true);
-        setContextMenuState(null);
-        lastDropTargetTabIdRef.current = null;
-        lastPreviewTargetTabIdRef.current = null;
-        setPreviewTabs(workspace.tabs);
-    };
-
-    const handleDragEnd: DragDropEventHandlers["onDragEnd"] = ({
-        canceled,
-        operation,
-    }): void => {
-        setIsTabDragActive(false);
-        lastPreviewTargetTabIdRef.current = null;
-
-        if (canceled) {
-            lastDropTargetTabIdRef.current = null;
-            resetPreviewTabs();
-            return;
-        }
-
-        const draggedTabId = operation.source?.id;
-        const rawTargetTabId = operation.target?.id;
-        const targetTabId =
-            typeof rawTargetTabId === "string" &&
-            rawTargetTabId !== draggedTabId
-                ? rawTargetTabId
-                : lastDropTargetTabIdRef.current;
-
-        lastDropTargetTabIdRef.current = null;
-
-        if (
-            typeof draggedTabId !== "string" ||
-            typeof targetTabId !== "string"
-        ) {
-            resetPreviewTabs();
-            return;
-        }
-
-        onReorderTab(draggedTabId, targetTabId);
-    };
-
     const handleOpenContextMenu = (
         tabId: string,
         event: ReactMouseEvent<HTMLDivElement>,
@@ -222,6 +190,7 @@ export function WorkspaceTabBar({
     const closeContextMenu = (): void => {
         setContextMenuState(null);
     };
+
     const contextMenuPosition = {
         x: contextMenuState?.x ?? 0,
         y: contextMenuState?.y ?? 0,
@@ -267,63 +236,183 @@ export function WorkspaceTabBar({
         onDuplicateTab(contextMenuState.tabId);
     };
 
+    const handleOpenInLeftPaneFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onOpenTabInPane(contextMenuState.tabId, "primary");
+    };
+
+    const handleOpenInRightPaneFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onOpenTabInPane(contextMenuState.tabId, "secondary");
+    };
+
+    const sharedTabItemProps = {
+        isTabDragActive,
+        middleClickTabAction,
+        onOpenContextMenu: handleOpenContextMenu,
+        onArchiveTab,
+        onDeleteTab,
+        onSelectTab,
+        handleRenameInputBlur,
+        handleRenameInputChange,
+        handleRenameInputKeyDown,
+        handleStartRename,
+        hasRenameError,
+        isRenameSubmitting,
+        renameInputRef,
+        renameValue,
+        renamingTabId,
+    } as const;
+
     return (
         <div
             ref={tabBarRef}
-            className="relative shrink-0 flex items-center gap-2 border-b border-fumi-200 bg-fumi-100 px-2 py-1.5"
+            className="relative shrink-0 border-b border-fumi-200 bg-fumi-100"
         >
-            <DragDropProvider
-                modifiers={TAB_BAR_MODIFIERS}
-                sensors={TAB_BAR_SENSORS}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnd={handleDragEnd}
-            >
+            <div className="relative flex items-stretch">
                 <div
                     ref={tabListContainerRef}
                     role="tablist"
                     aria-label="Workspace files"
-                    className="min-w-0 flex flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    className="min-w-0 flex-1 overflow-hidden"
                 >
-                    {previewTabs.map((tab, index) => (
-                        <WorkspaceTabItem
-                            key={tab.id}
-                            index={index}
-                            sortableGroup={TAB_BAR_SORTABLE_GROUP}
-                            tab={tab}
-                            isActive={tab.id === workspace.activeTabId}
-                            isTabDragActive={isTabDragActive}
-                            middleClickTabAction={middleClickTabAction}
-                            onOpenContextMenu={handleOpenContextMenu}
-                            onArchiveTab={onArchiveTab}
-                            onDeleteTab={onDeleteTab}
-                            onSelectTab={onSelectTab}
-                            handleRenameInputBlur={handleRenameInputBlur}
-                            handleRenameInputChange={handleRenameInputChange}
-                            handleRenameInputKeyDown={handleRenameInputKeyDown}
-                            handleStartRename={handleStartRename}
-                            hasRenameError={hasRenameError}
-                            isRenameSubmitting={isRenameSubmitting}
-                            renameInputRef={renameInputRef}
-                            renameValue={renameValue}
-                            renamingTabId={renamingTabId}
-                        />
-                    ))}
+                    {isSplit && secondaryTabs.length > 0 ? (
+                        <div className="relative flex items-stretch">
+                            {/* Primary tab section — all tabs except secondary */}
+                            <div
+                                style={primarySectionStyle}
+                                className="min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                            >
+                                {primaryTabs.map((tab, index) => {
+                                    const isPrimary =
+                                        splitView.primaryTabId === tab.id;
+                                    const isVisibleInSplit = isPrimary;
+
+                                    return (
+                                        <WorkspaceTabItem
+                                            key={tab.id}
+                                            index={index}
+                                            sortableGroup={
+                                                TAB_BAR_SORTABLE_GROUP
+                                            }
+                                            tab={tab}
+                                            isActive={tab.id === activeTabId}
+                                            isVisibleInSplit={isVisibleInSplit}
+                                            {...sharedTabItemProps}
+                                            onSelectTab={(id) =>
+                                                onOpenTabInPane(id, "primary")
+                                            }
+                                        />
+                                    );
+                                })}
+                            </div>
+
+                            {/* Divider centered on the full tab bar width to match the editor split */}
+                            <div
+                                style={dividerStyle}
+                                className={[
+                                    "pointer-events-none absolute bottom-0 top-0 z-10 w-px -translate-x-1/2 transition-colors duration-150",
+                                    splitDropTarget === "secondary"
+                                        ? "bg-fumi-400/60"
+                                        : "bg-fumi-200",
+                                ].join(" ")}
+                            />
+
+                            {/* Secondary tab section */}
+                            <div
+                                style={secondarySectionStyle}
+                                className={[
+                                    "min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                                    controlsClearanceClass,
+                                    splitDropTarget === "secondary"
+                                        ? "bg-fumi-200/40"
+                                        : "",
+                                ].join(" ")}
+                            >
+                                {secondaryTabs.map((tab, secIndex) => (
+                                    <WorkspaceTabItem
+                                        key={tab.id}
+                                        index={primaryTabs.length + secIndex}
+                                        sortableGroup={TAB_BAR_SORTABLE_GROUP}
+                                        tab={tab}
+                                        isActive={tab.id === activeTabId}
+                                        isVisibleInSplit={
+                                            tab.id === secondaryTabId
+                                        }
+                                        {...sharedTabItemProps}
+                                        onSelectTab={(id) =>
+                                            onOpenTabInPane(id, "secondary")
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div
+                            className={[
+                                "min-w-0 flex items-center gap-2 px-2 py-1.5 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                                controlsClearanceClass,
+                            ].join(" ")}
+                        >
+                            {primaryTabs.map((tab, index) => (
+                                <WorkspaceTabItem
+                                    key={tab.id}
+                                    index={index}
+                                    sortableGroup={TAB_BAR_SORTABLE_GROUP}
+                                    tab={tab}
+                                    isActive={tab.id === activeTabId}
+                                    isVisibleInSplit={false}
+                                    {...sharedTabItemProps}
+                                    onSelectTab={onSelectTab}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </DragDropProvider>
+            </div>
+
             <WorkspaceTabContextMenu
                 isOpen={contextMenuState !== null}
                 position={contextMenuPosition}
+                splitView={splitView}
                 onDuplicate={handleDuplicateFromContextMenu}
                 onArchive={handleArchiveFromContextMenu}
                 onClose={closeContextMenu}
                 onDelete={handleDeleteFromContextMenu}
                 onRename={handleRenameFromContextMenu}
+                onOpenInLeftPane={handleOpenInLeftPaneFromContextMenu}
+                onOpenInRightPane={handleOpenInRightPaneFromContextMenu}
+                onCloseSplitView={onCloseSplitView}
             />
+
+            {/* Controls: tab list dropdown + new file button */}
             <div
                 ref={tabListDropdownRef}
-                className="relative ml-auto flex shrink-0 items-center gap-1"
+                className="absolute inset-y-0 right-0 z-20 flex items-center gap-1 bg-fumi-100 px-2 py-1.5"
             >
+                {isSplit ? (
+                    <AppTooltip content="Close split view" side="bottom">
+                        <button
+                            type="button"
+                            aria-label="Close split view"
+                            onClick={onCloseSplitView}
+                            className="app-select-none inline-flex size-7 items-center justify-center rounded-md border border-fumi-200 bg-fumi-50 text-fumi-500 transition-colors hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100"
+                        >
+                            <AppIcon
+                                icon={Cancel01Icon}
+                                size={14}
+                                strokeWidth={2.5}
+                            />
+                        </button>
+                    </AppTooltip>
+                ) : null}
+
                 <AppTooltip content="Tab list" side="bottom">
                     <button
                         type="button"

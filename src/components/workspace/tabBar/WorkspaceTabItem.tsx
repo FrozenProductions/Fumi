@@ -15,6 +15,7 @@ export function WorkspaceTabItem({
     sortableGroup,
     tab,
     isActive,
+    isVisibleInSplit,
     isTabDragActive,
     middleClickTabAction,
     onOpenContextMenu,
@@ -85,11 +86,13 @@ export function WorkspaceTabItem({
                       ? isRenaming && hasRenameError
                           ? "border-rose-400 bg-rose-50 ring-2 ring-rose-200/50 shadow-sm"
                           : "border-fumi-200 bg-fumi-50 shadow-sm"
-                      : shouldShowDropTarget
-                        ? "border-fumi-300 bg-fumi-50"
-                        : isTabDragActive
-                          ? "border-transparent bg-transparent"
-                          : "border-transparent bg-transparent hover:border-fumi-200 hover:bg-fumi-50",
+                      : isVisibleInSplit
+                        ? "border-fumi-200/70 bg-fumi-50/60"
+                        : shouldShowDropTarget
+                          ? "border-fumi-300 bg-fumi-50"
+                          : isTabDragActive
+                            ? "border-transparent bg-transparent"
+                            : "border-transparent bg-transparent hover:border-fumi-200 hover:bg-fumi-50",
             ].join(" ")}
         >
             {isRenaming ? (

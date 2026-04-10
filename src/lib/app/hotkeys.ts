@@ -225,6 +225,18 @@ export function shouldTriggerAppHotkeyCodeFallback(
     );
 }
 
+export function shouldTriggerAppHotkeyCapture(
+    event: KeyboardEvent,
+    binding: AppHotkeyBinding,
+): boolean {
+    const parsedBinding = parseAppHotkeyBinding(binding);
+
+    return (
+        matchesKeyboardEvent(event, parsedBinding) ||
+        shouldTriggerAppHotkeyCodeFallback(event, binding)
+    );
+}
+
 function getReservedHotkeyShortcutLabel(hotkey: AppReservedHotkey): string {
     return formatForDisplay(hotkey.binding);
 }

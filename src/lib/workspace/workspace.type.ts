@@ -43,9 +43,21 @@ export type WorkspaceTabSnapshot = WorkspaceTabState & {
     isDirty: boolean;
 };
 
+export type WorkspacePaneId = "primary" | "secondary";
+
+export type WorkspaceSplitView = {
+    direction: "vertical";
+    primaryTabId: string;
+    secondaryTabId: string;
+    secondaryTabIds: string[];
+    splitRatio: number;
+    focusedPane: WorkspacePaneId;
+};
+
 export type WorkspaceMetadata = {
-    version: 2;
+    version: 2 | 3;
     activeTabId: string | null;
+    splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTabState[];
     archivedTabs: WorkspaceTabState[];
 };
@@ -70,6 +82,7 @@ export type WorkspaceSession = {
     workspacePath: string;
     workspaceName: string;
     activeTabId: string | null;
+    splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTab[];
     archivedTabs: WorkspaceTabState[];
 };

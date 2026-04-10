@@ -135,8 +135,24 @@ export function useAppCommandPalette({
                 "ARCHIVE_WORKSPACE_TAB",
                 hotkeyBindings,
             ),
+            focusWorkspaceLeftPane: getAppHotkeyShortcutLabel(
+                "FOCUS_WORKSPACE_LEFT_PANE",
+                hotkeyBindings,
+            ),
+            focusWorkspaceRightPane: getAppHotkeyShortcutLabel(
+                "FOCUS_WORKSPACE_RIGHT_PANE",
+                hotkeyBindings,
+            ),
             createWorkspaceFile: getAppHotkeyShortcutLabel(
                 "CREATE_WORKSPACE_FILE",
+                hotkeyBindings,
+            ),
+            moveWorkspaceTabToLeftPane: getAppHotkeyShortcutLabel(
+                "MOVE_WORKSPACE_TAB_TO_LEFT_PANE",
+                hotkeyBindings,
+            ),
+            moveWorkspaceTabToRightPane: getAppHotkeyShortcutLabel(
+                "MOVE_WORKSPACE_TAB_TO_RIGHT_PANE",
                 hotkeyBindings,
             ),
             openAccounts: getAppHotkeyShortcutLabel(
@@ -159,8 +175,16 @@ export function useAppCommandPalette({
                 "OPEN_SCRIPT_LIBRARY",
                 hotkeyBindings,
             ),
+            resetWorkspaceSplitView: getAppHotkeyShortcutLabel(
+                "RESET_WORKSPACE_SPLIT_VIEW",
+                hotkeyBindings,
+            ),
             toggleSidebar: getAppHotkeyShortcutLabel(
                 "TOGGLE_SIDEBAR",
+                hotkeyBindings,
+            ),
+            toggleWorkspaceSplitView: getAppHotkeyShortcutLabel(
+                "TOGGLE_WORKSPACE_SPLIT_VIEW",
                 hotkeyBindings,
             ),
         },

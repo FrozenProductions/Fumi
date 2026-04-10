@@ -9,7 +9,7 @@ use super::super::{
         clear_workspace_launch_state, is_workspace_missing_error, normalize_workspace_metadata,
         persist_workspace_launch_state, read_app_state, read_workspace_snapshot,
     },
-    WorkspaceBootstrapResponse, WorkspaceSnapshot, WorkspaceTabState,
+    WorkspaceBootstrapResponse, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabState,
 };
 use super::{load_workspace_metadata, persist_workspace_metadata, run_command, CommandResponse};
 
@@ -71,6 +71,7 @@ pub fn persist_workspace_state(
     app: AppHandle,
     workspace_path: String,
     active_tab_id: Option<String>,
+    split_view: Option<WorkspaceSplitView>,
     tabs: Vec<WorkspaceTabState>,
     archived_tabs: Vec<WorkspaceTabState>,
 ) -> CommandResponse<()> {
@@ -79,8 +80,9 @@ pub fn persist_workspace_state(
     run_command(|| {
         let _ = load_workspace_metadata(&workspace_path)?;
         let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
-            version: 2,
+            version: 3,
             active_tab_id,
+            split_view,
             tabs: Some(tabs),
             archived_tabs: Some(archived_tabs),
         }));

@@ -3,6 +3,7 @@ import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWo
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type {
     WorkspaceSession,
+    WorkspaceSplitView,
     WorkspaceTab,
 } from "../../../lib/workspace/workspace.type";
 
@@ -11,6 +12,7 @@ export type WorkspaceTabItemProps = {
     sortableGroup: string;
     tab: WorkspaceTab;
     isActive: boolean;
+    isVisibleInSplit: boolean;
     isTabDragActive: boolean;
     middleClickTabAction: AppMiddleClickTabAction;
     onOpenContextMenu: (
@@ -45,9 +47,13 @@ export type WorkspaceTabContextMenuProps = {
         x: number;
         y: number;
     };
+    splitView: WorkspaceSplitView | null;
     onDuplicate: () => void;
     onArchive: () => void;
     onClose: () => void;
     onDelete: () => void;
     onRename: () => void;
+    onOpenInLeftPane: () => void;
+    onOpenInRightPane: () => void;
+    onCloseSplitView: () => void;
 };

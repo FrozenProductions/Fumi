@@ -2,11 +2,13 @@ import type {
     WorkspaceCursorState,
     WorkspaceSession,
     WorkspaceSnapshot,
+    WorkspaceSplitView,
     WorkspaceTab,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
 } from "../../lib/workspace/workspace.type";
 import { clamp } from "../shared/math";
+import { normalizeWorkspaceSplitRatio } from "./splitView";
 
 export function clampCursorToContent(
     content: string,
@@ -31,6 +33,52 @@ function createWorkspaceTab(tab: WorkspaceTabSnapshot): WorkspaceTab {
     };
 }
 
+export function normalizeSplitView(
+    splitView: WorkspaceSplitView | null,
+    openTabIds: Set<string>,
+): WorkspaceSplitView | null {
+    if (!splitView) {
+        return null;
+    }
+
+    const primaryValid = openTabIds.has(splitView.primaryTabId);
+    const secondaryValid = openTabIds.has(splitView.secondaryTabId);
+    const notSame = splitView.primaryTabId !== splitView.secondaryTabId;
+
+    if (!primaryValid || !secondaryValid || !notSame) {
+        return null;
+    }
+
+    const validSecondaryTabIds = (
+        splitView.secondaryTabIds ?? [splitView.secondaryTabId]
+    ).filter((id) => openTabIds.has(id) && id !== splitView.primaryTabId);
+
+    const normalizedSecondaryTabIds = validSecondaryTabIds.includes(
+        splitView.secondaryTabId,
+    )
+        ? validSecondaryTabIds
+        : [splitView.secondaryTabId, ...validSecondaryTabIds];
+
+    return {
+        ...splitView,
+        secondaryTabIds: normalizedSecondaryTabIds,
+        splitRatio: normalizeWorkspaceSplitRatio(splitView.splitRatio),
+    };
+}
+
+export function getFocusedPaneTabId(
+    splitView: WorkspaceSplitView | null,
+    activeTabId: string | null,
+): string | null {
+    if (!splitView) {
+        return activeTabId;
+    }
+
+    return splitView.focusedPane === "primary"
+        ? splitView.primaryTabId
+        : splitView.secondaryTabId;
+}
+
 export function buildWorkspaceSession(
     snapshot: WorkspaceSnapshot,
 ): WorkspaceSession {
@@ -53,16 +101,25 @@ export function buildWorkspaceSession(
         })
         .filter((tab): tab is WorkspaceTab => tab !== null);
 
-    const activeTabId = tabs.some(
-        (tab) => tab.id === snapshot.metadata.activeTabId,
-    )
-        ? snapshot.metadata.activeTabId
-        : (tabs[0]?.id ?? null);
+    const openTabIds = new Set(tabs.map((tab) => tab.id));
+    const normalizedSplitView = normalizeSplitView(
+        snapshot.metadata.splitView ?? null,
+        openTabIds,
+    );
+
+    const activeTabId = normalizedSplitView
+        ? normalizedSplitView.focusedPane === "primary"
+            ? normalizedSplitView.primaryTabId
+            : normalizedSplitView.secondaryTabId
+        : tabs.some((tab) => tab.id === snapshot.metadata.activeTabId)
+          ? snapshot.metadata.activeTabId
+          : (tabs[0]?.id ?? null);
 
     return {
         workspacePath: snapshot.workspacePath,
         workspaceName: snapshot.workspaceName,
         activeTabId,
+        splitView: normalizedSplitView,
         tabs,
         archivedTabs: snapshot.metadata.archivedTabs,
     };
@@ -117,6 +174,7 @@ export function upsertWorkspaceTab(
     return {
         ...currentWorkspace,
         activeTabId: tab.id,
+        splitView: null,
         archivedTabs: currentWorkspace.archivedTabs.filter(
             (archivedTab) => archivedTab.id !== tab.id,
         ),
@@ -153,8 +211,20 @@ export function reorderWorkspaceTabs(
 
     nextTabs.splice(targetTabIndex, 0, draggedTab);
 
+    const nextSplitView = currentWorkspace.splitView
+        ? {
+              ...currentWorkspace.splitView,
+              secondaryTabIds: nextTabs
+                  .map((tab) => tab.id)
+                  .filter((id) =>
+                      currentWorkspace.splitView?.secondaryTabIds.includes(id),
+                  ),
+          }
+        : null;
+
     return {
         ...currentWorkspace,
+        splitView: nextSplitView,
         tabs: nextTabs,
     };
 }
@@ -197,6 +267,38 @@ export function updateActiveWorkspaceTab(
         currentWorkspace.activeTabId,
         updateTab,
     );
+}
+
+export function removedTabFromSplitView(
+    splitView: WorkspaceSplitView,
+    removedTabId: string,
+): WorkspaceSplitView | null {
+    if (splitView.primaryTabId === removedTabId) {
+        return null;
+    }
+
+    if (splitView.secondaryTabIds.includes(removedTabId)) {
+        const nextSecondaryTabIds = splitView.secondaryTabIds.filter(
+            (id) => id !== removedTabId,
+        );
+
+        if (nextSecondaryTabIds.length === 0) {
+            return null;
+        }
+
+        const nextSecondaryTabId =
+            splitView.secondaryTabId === removedTabId
+                ? (nextSecondaryTabIds[0] ?? splitView.secondaryTabId)
+                : splitView.secondaryTabId;
+
+        return {
+            ...splitView,
+            secondaryTabId: nextSecondaryTabId,
+            secondaryTabIds: nextSecondaryTabIds,
+        };
+    }
+
+    return splitView;
 }
 
 export function mergeWorkspaceSession(
@@ -251,19 +353,28 @@ export function mergeWorkspaceSession(
             cursor: clampCursorToContent(tab.content, tab.cursor),
         }));
     const nextTabs = [...refreshedTabs, ...preservedDirtyTabs];
+    const nextTabIds = new Set(nextTabs.map((tab) => tab.id));
 
-    const nextActiveTabId = nextTabs.some(
-        (tab) => tab.id === snapshot.metadata.activeTabId,
-    )
-        ? snapshot.metadata.activeTabId
-        : nextTabs.some((tab) => tab.id === currentWorkspace.activeTabId)
-          ? currentWorkspace.activeTabId
-          : (nextTabs[0]?.id ?? null);
+    const normalizedSplitView = normalizeSplitView(
+        currentWorkspace.splitView,
+        nextTabIds,
+    );
+
+    const nextActiveTabId = normalizedSplitView
+        ? normalizedSplitView.focusedPane === "primary"
+            ? normalizedSplitView.primaryTabId
+            : normalizedSplitView.secondaryTabId
+        : nextTabs.some((tab) => tab.id === snapshot.metadata.activeTabId)
+          ? snapshot.metadata.activeTabId
+          : nextTabs.some((tab) => tab.id === currentWorkspace.activeTabId)
+            ? currentWorkspace.activeTabId
+            : (nextTabs[0]?.id ?? null);
 
     return {
         workspacePath: snapshot.workspacePath,
         workspaceName: snapshot.workspaceName,
         activeTabId: nextActiveTabId,
+        splitView: normalizedSplitView,
         tabs: nextTabs,
         archivedTabs: snapshot.metadata.archivedTabs,
     };

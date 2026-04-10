@@ -4,5 +4,5 @@ mod storage;
 
 pub use models::{
     WorkspaceBootstrapResponse, WorkspaceCursorState, WorkspaceMetadata, WorkspaceSnapshot,
-    WorkspaceTabSnapshot, WorkspaceTabState,
+    WorkspaceSplitView, WorkspaceTabSnapshot, WorkspaceTabState,
 };

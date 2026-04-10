@@ -72,6 +72,7 @@ pub fn create_workspace_file(
             &WorkspaceMetadata {
                 version: metadata.version,
                 active_tab_id: Some(tab_id.clone()),
+                split_view: None,
                 tabs: next_tabs,
                 archived_tabs: metadata.archived_tabs,
             },
@@ -111,6 +112,7 @@ pub fn save_workspace_file(
         let next_metadata = WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: metadata.active_tab_id,
+            split_view: metadata.split_view,
             tabs: metadata
                 .tabs
                 .into_iter()
@@ -188,6 +190,7 @@ pub fn rename_workspace_file(
         let next_metadata = WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: metadata.active_tab_id.clone(),
+            split_view: metadata.split_view.clone(),
             tabs: metadata
                 .tabs
                 .iter()

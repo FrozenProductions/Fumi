@@ -8,6 +8,9 @@ pub(super) const DEFAULT_WORKSPACE_FILE_EXTENSION: &str = ".lua";
 pub(super) const MAX_WORKSPACE_TAB_NAME_LENGTH: usize = 20;
 pub(super) const WORKSPACE_MISSING_ERROR_MESSAGE: &str = "Workspace not found.";
 pub(super) const LEGACY_STATE_DIRECTORIES: [&str; 2] = ["Fumi", "frozenproductions.fumi"];
+pub(super) const DEFAULT_WORKSPACE_SPLIT_RATIO: f64 = 0.5;
+pub(super) const MIN_WORKSPACE_SPLIT_RATIO: f64 = 0.12;
+pub(super) const MAX_WORKSPACE_SPLIT_RATIO: f64 = 0.88;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,11 +40,37 @@ pub struct WorkspaceTabSnapshot {
     pub is_dirty: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum WorkspacePaneId {
+    Primary,
+    Secondary,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceSplitView {
+    pub direction: String,
+    pub primary_tab_id: String,
+    pub secondary_tab_id: String,
+    #[serde(default)]
+    pub secondary_tab_ids: Vec<String>,
+    #[serde(default = "default_workspace_split_ratio")]
+    pub split_ratio: f64,
+    pub focused_pane: WorkspacePaneId,
+}
+
+fn default_workspace_split_ratio() -> f64 {
+    DEFAULT_WORKSPACE_SPLIT_RATIO
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceMetadata {
     pub version: u8,
     pub active_tab_id: Option<String>,
+    #[serde(default)]
+    pub split_view: Option<WorkspaceSplitView>,
     pub tabs: Vec<WorkspaceTabState>,
     pub archived_tabs: Vec<WorkspaceTabState>,
 }
@@ -73,6 +102,8 @@ pub(super) struct StoredAppState {
 pub(super) struct StoredWorkspaceMetadata {
     pub(super) version: u8,
     pub(super) active_tab_id: Option<String>,
+    #[serde(default)]
+    pub(super) split_view: Option<WorkspaceSplitView>,
     pub(super) tabs: Option<Vec<WorkspaceTabState>>,
     pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
 }

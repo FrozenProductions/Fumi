@@ -3,6 +3,7 @@ import { type ReactElement, useEffect } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import {
     getAppHotkeyBinding,
+    shouldTriggerAppHotkeyCapture,
     shouldTriggerAppHotkeyCodeFallback,
 } from "../../lib/app/hotkeys";
 import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
@@ -14,7 +15,13 @@ export function AppHotkeysProvider({
     const { activeTab, workspace } = workspaceSession.state;
     const { createWorkspaceFile, openWorkspaceDirectory } =
         workspaceSession.workspaceActions;
-    const { archiveWorkspaceTab } = workspaceSession.tabActions;
+    const {
+        archiveWorkspaceTab,
+        focusWorkspacePane,
+        openWorkspaceTabInPane,
+        resetWorkspaceSplitView,
+        toggleWorkspaceSplitView,
+    } = workspaceSession.tabActions;
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
     const isCommandPaletteOpen = useAppStore(
@@ -54,9 +61,49 @@ export function AppHotkeysProvider({
         "ACTIVATE_GOTO_LINE_COMMAND",
         hotkeyBindings,
     );
+    const toggleWorkspaceSplitViewBinding = getAppHotkeyBinding(
+        "TOGGLE_WORKSPACE_SPLIT_VIEW",
+        hotkeyBindings,
+    );
+    const moveWorkspaceTabToLeftPaneBinding = getAppHotkeyBinding(
+        "MOVE_WORKSPACE_TAB_TO_LEFT_PANE",
+        hotkeyBindings,
+    );
+    const moveWorkspaceTabToRightPaneBinding = getAppHotkeyBinding(
+        "MOVE_WORKSPACE_TAB_TO_RIGHT_PANE",
+        hotkeyBindings,
+    );
+    const focusWorkspaceLeftPaneBinding = getAppHotkeyBinding(
+        "FOCUS_WORKSPACE_LEFT_PANE",
+        hotkeyBindings,
+    );
+    const focusWorkspaceRightPaneBinding = getAppHotkeyBinding(
+        "FOCUS_WORKSPACE_RIGHT_PANE",
+        hotkeyBindings,
+    );
+    const resetWorkspaceSplitViewBinding = getAppHotkeyBinding(
+        "RESET_WORKSPACE_SPLIT_VIEW",
+        hotkeyBindings,
+    );
 
     useEffect(() => {
         const handleGlobalAppKeydown = (event: KeyboardEvent): void => {
+            if (
+                shouldTriggerAppHotkeyCapture(
+                    event,
+                    toggleWorkspaceSplitViewBinding,
+                )
+            ) {
+                if (!isCommandPaletteOpen && workspace && activeTab) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    selectSidebarItem("workspace");
+                    toggleWorkspaceSplitView();
+                }
+
+                return;
+            }
+
             if (
                 shouldTriggerAppHotkeyCodeFallback(event, openSettingsBinding)
             ) {
@@ -143,9 +190,13 @@ export function AppHotkeysProvider({
         openCommandPaletteBinding,
         openSettingsBinding,
         selectSidebarItem,
+        toggleWorkspaceSplitView,
+        toggleWorkspaceSplitViewBinding,
         toggleCommandPalette,
         toggleCommandPaletteScope,
         toggleGoToLineCommandPalette,
+        activeTab,
+        workspace,
     ]);
 
     useHotkey(
@@ -288,6 +339,102 @@ export function AppHotkeysProvider({
                 activeSidebarItem === "workspace" &&
                 Boolean(workspace) &&
                 Boolean(activeTab),
+        },
+    );
+
+    useHotkey(
+        toggleWorkspaceSplitViewBinding,
+        () => {
+            selectSidebarItem("workspace");
+            toggleWorkspaceSplitView();
+        },
+        {
+            enabled:
+                !isCommandPaletteOpen &&
+                Boolean(workspace) &&
+                Boolean(activeTab),
+        },
+    );
+
+    useHotkey(
+        moveWorkspaceTabToLeftPaneBinding,
+        () => {
+            const activeTabId = activeTab?.id;
+
+            if (!activeTabId) {
+                return;
+            }
+
+            selectSidebarItem("workspace");
+            openWorkspaceTabInPane(activeTabId, "primary");
+        },
+        {
+            enabled:
+                !isCommandPaletteOpen &&
+                Boolean(workspace) &&
+                Boolean(activeTab),
+        },
+    );
+
+    useHotkey(
+        moveWorkspaceTabToRightPaneBinding,
+        () => {
+            const activeTabId = activeTab?.id;
+
+            if (!activeTabId) {
+                return;
+            }
+
+            selectSidebarItem("workspace");
+            openWorkspaceTabInPane(activeTabId, "secondary");
+        },
+        {
+            enabled:
+                !isCommandPaletteOpen &&
+                Boolean(workspace) &&
+                Boolean(activeTab),
+        },
+    );
+
+    useHotkey(
+        resetWorkspaceSplitViewBinding,
+        () => {
+            selectSidebarItem("workspace");
+            resetWorkspaceSplitView();
+        },
+        {
+            enabled:
+                !isCommandPaletteOpen &&
+                activeSidebarItem !== "settings" &&
+                Boolean(workspace?.splitView),
+        },
+    );
+
+    useHotkey(
+        focusWorkspaceLeftPaneBinding,
+        () => {
+            selectSidebarItem("workspace");
+            focusWorkspacePane("primary");
+        },
+        {
+            enabled:
+                !isCommandPaletteOpen &&
+                activeSidebarItem !== "settings" &&
+                Boolean(workspace?.splitView),
+        },
+    );
+
+    useHotkey(
+        focusWorkspaceRightPaneBinding,
+        () => {
+            selectSidebarItem("workspace");
+            focusWorkspacePane("secondary");
+        },
+        {
+            enabled:
+                !isCommandPaletteOpen &&
+                activeSidebarItem !== "settings" &&
+                Boolean(workspace?.splitView),
         },
     );
 

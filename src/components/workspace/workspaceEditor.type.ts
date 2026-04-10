@@ -5,7 +5,11 @@ import type {
     LuauCompletionPopupPosition,
 } from "../../lib/luau/luau.type";
 import type { WorkspaceEditorSearchController } from "../../lib/workspace/editorSearch.type";
-import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
+import type {
+    WorkspacePaneId,
+    WorkspaceSplitView,
+    WorkspaceTab,
+} from "../../lib/workspace/workspace.type";
 
 export type AppCodeCompletionProps = {
     items: LuauCompletionItem[];
@@ -20,7 +24,12 @@ export type WorkspaceEditorProps = {
     appTheme: AppTheme;
     editorFontSize: number;
     tabs: WorkspaceTab[];
+    splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
+    onFocusPane: (pane: WorkspacePaneId) => void;
+    onResizeSplitPreview: (splitRatio: number) => void;
+    onResizeSplitCommit: (splitRatio: number) => void;
+    onResizeSplitCancel: () => void;
 } & Pick<
     UseWorkspaceCodeCompletionResult,
     | "acceptCompletion"

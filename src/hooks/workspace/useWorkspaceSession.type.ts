@@ -20,6 +20,12 @@ type UseWorkspaceSessionStoreFields = Pick<
     | "restoreArchivedWorkspaceTab"
     | "saveActiveWorkspaceTab"
     | "selectWorkspaceTab"
+    | "openWorkspaceTabInPane"
+    | "setWorkspaceSplitRatio"
+    | "resetWorkspaceSplitView"
+    | "toggleWorkspaceSplitView"
+    | "focusWorkspacePane"
+    | "closeWorkspaceSplitView"
     | "updateActiveTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
@@ -53,6 +59,12 @@ export type WorkspaceSessionTabActions = Pick<
     | "reorderWorkspaceTab"
     | "saveActiveWorkspaceTab"
     | "selectWorkspaceTab"
+    | "openWorkspaceTabInPane"
+    | "setWorkspaceSplitRatio"
+    | "resetWorkspaceSplitView"
+    | "toggleWorkspaceSplitView"
+    | "focusWorkspacePane"
+    | "closeWorkspaceSplitView"
 >;
 
 export type WorkspaceSessionArchiveActions = Pick<

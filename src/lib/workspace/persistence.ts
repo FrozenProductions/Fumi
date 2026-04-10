@@ -29,6 +29,7 @@ export function getWorkspacePersistSignature(
     return JSON.stringify({
         workspacePath: workspace.workspacePath,
         activeTabId: workspace.activeTabId,
+        splitView: workspace.splitView,
         tabs: workspace.tabs.map(serializeTabState),
         archivedTabs: workspace.archivedTabs,
     });

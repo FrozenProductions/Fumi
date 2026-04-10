@@ -1,6 +1,10 @@
 import { getWorkspacePersistSignature } from "../../../lib/workspace/persistence";
 import { getActiveTabIndex } from "../../../lib/workspace/session";
-import type { WorkspaceTab } from "../../../lib/workspace/workspace.type";
+import type {
+    WorkspacePaneId,
+    WorkspaceSplitView,
+    WorkspaceTab,
+} from "../../../lib/workspace/workspace.type";
 import { getActiveTabFromWorkspace } from "./helpers";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
@@ -32,3 +36,11 @@ export const selectWorkspacePersistSignature = (
     state: WorkspaceStore,
 ): string | null =>
     state.isHydrated ? getWorkspacePersistSignature(state.workspace) : null;
+
+export const selectWorkspaceSplitView = (
+    state: WorkspaceStore,
+): WorkspaceSplitView | null => state.workspace?.splitView ?? null;
+
+export const selectWorkspaceSplitFocusedPane = (
+    state: WorkspaceStore,
+): WorkspacePaneId | null => state.workspace?.splitView?.focusedPane ?? null;

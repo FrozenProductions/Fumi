@@ -13,7 +13,7 @@ use crate::workspace::{
         persist_workspace_launch_state, read_workspace_metadata,
         resolve_workspace_file_delete_path, write_workspace_metadata,
     },
-    WorkspaceMetadata, WorkspaceTabState,
+    WorkspaceMetadata, WorkspaceSplitView, WorkspaceTabState,
 };
 
 pub(crate) mod archive;
@@ -95,6 +95,29 @@ fn get_next_active_tab_id_after_delete(
     }
 }
 
+fn get_next_split_view_after_delete(
+    split_view: Option<WorkspaceSplitView>,
+    deleted_tab_id: &str,
+) -> Option<WorkspaceSplitView> {
+    match split_view {
+        Some(split) if split.primary_tab_id == deleted_tab_id => None,
+        Some(mut split) if split.secondary_tab_ids.iter().any(|id| id == deleted_tab_id) => {
+            split.secondary_tab_ids.retain(|id| id != deleted_tab_id);
+
+            if split.secondary_tab_ids.is_empty() {
+                return None;
+            }
+
+            if split.secondary_tab_id == deleted_tab_id {
+                split.secondary_tab_id = split.secondary_tab_ids.first()?.clone();
+            }
+
+            Some(split)
+        }
+        other => other,
+    }
+}
+
 pub(super) fn delete_workspace_tab_by_id(
     app: &tauri::AppHandle,
     workspace_path: &Path,
@@ -116,11 +139,13 @@ pub(super) fn delete_workspace_tab_by_id(
     let StoredWorkspaceMetadata {
         version,
         active_tab_id,
+        split_view,
         tabs,
         archived_tabs,
     } = StoredWorkspaceMetadata {
         version: metadata.version,
         active_tab_id: metadata.active_tab_id,
+        split_view: metadata.split_view,
         tabs: Some(metadata.tabs),
         archived_tabs: Some(metadata.archived_tabs),
     };
@@ -145,6 +170,7 @@ pub(super) fn delete_workspace_tab_by_id(
             deleted_open_tab_index,
             active_tab_id,
         ),
+        split_view: get_next_split_view_after_delete(split_view, tab_id),
         tabs: Some(next_tabs),
         archived_tabs: Some(next_archived_tabs),
     }));
@@ -155,4 +181,36 @@ pub(super) fn delete_workspace_tab_by_id(
 #[command]
 pub fn set_workspace_unsaved_changes(state: State<AppRuntimeState>, has_unsaved_changes: bool) {
     state.set_workspace_unsaved_changes(has_unsaved_changes);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::get_next_split_view_after_delete;
+    use crate::workspace::{models::WorkspacePaneId, WorkspaceSplitView};
+
+    fn split_view() -> WorkspaceSplitView {
+        WorkspaceSplitView {
+            direction: "vertical".to_string(),
+            primary_tab_id: "tab-1".to_string(),
+            secondary_tab_id: "tab-2".to_string(),
+            secondary_tab_ids: vec!["tab-2".to_string(), "tab-3".to_string()],
+            split_ratio: 0.5,
+            focused_pane: WorkspacePaneId::Secondary,
+        }
+    }
+
+    #[test]
+    fn deleting_active_secondary_tab_promotes_next_secondary_tab() {
+        let next_split =
+            get_next_split_view_after_delete(Some(split_view()), "tab-2").expect("split remains");
+
+        assert_eq!(next_split.primary_tab_id, "tab-1");
+        assert_eq!(next_split.secondary_tab_id, "tab-3");
+        assert_eq!(next_split.secondary_tab_ids, vec!["tab-3".to_string()]);
+    }
+
+    #[test]
+    fn deleting_primary_tab_collapses_split_view() {
+        assert!(get_next_split_view_after_delete(Some(split_view()), "tab-1").is_none());
+    }
 }

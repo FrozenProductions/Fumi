@@ -45,6 +45,7 @@ pub fn restore_archived_workspace_tab(
         let next_metadata = WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: Some(restored_tab.id.clone()),
+            split_view: metadata.split_view,
             tabs: metadata
                 .tabs
                 .iter()
@@ -102,6 +103,7 @@ pub fn restore_all_archived_workspace_tabs(
         let next_metadata = WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: metadata.active_tab_id,
+            split_view: metadata.split_view,
             tabs: next_tabs,
             archived_tabs: Vec::new(),
         };
@@ -131,6 +133,7 @@ pub fn delete_all_archived_workspace_tabs(
         let next_metadata = WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: metadata.active_tab_id,
+            split_view: metadata.split_view,
             tabs: metadata.tabs,
             archived_tabs: Vec::new(),
         };
@@ -138,6 +141,7 @@ pub fn delete_all_archived_workspace_tabs(
         let normalized_metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
             version: next_metadata.version,
             active_tab_id: next_metadata.active_tab_id,
+            split_view: next_metadata.split_view,
             tabs: Some(next_metadata.tabs),
             archived_tabs: Some(next_metadata.archived_tabs),
         }));

@@ -150,6 +150,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 await persistWorkspaceStateCommand({
                     workspacePath: workspace.workspacePath,
                     activeTabId: workspace.activeTabId,
+                    splitView: workspace.splitView,
                     tabs: workspace.tabs.map(serializeTabState),
                     archivedTabs: workspace.archivedTabs,
                 });

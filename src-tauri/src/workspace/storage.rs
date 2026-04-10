@@ -12,10 +12,11 @@ use uuid::Uuid;
 
 use super::models::{
     StoredAppState, StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceMetadata,
-    WorkspaceSnapshot, WorkspaceTabSnapshot, WorkspaceTabState, APP_STATE_FILE_NAME,
-    DEFAULT_WORKSPACE_FILE_BASE_NAME, DEFAULT_WORKSPACE_FILE_EXTENSION, LEGACY_STATE_DIRECTORIES,
-    MAX_WORKSPACE_TAB_NAME_LENGTH, WORKSPACE_METADATA_DIR_NAME, WORKSPACE_METADATA_FILE_NAME,
-    WORKSPACE_MISSING_ERROR_MESSAGE,
+    WorkspacePaneId, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabSnapshot, WorkspaceTabState,
+    APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME, DEFAULT_WORKSPACE_FILE_EXTENSION,
+    DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES, MAX_WORKSPACE_SPLIT_RATIO,
+    MAX_WORKSPACE_TAB_NAME_LENGTH, MIN_WORKSPACE_SPLIT_RATIO, WORKSPACE_METADATA_DIR_NAME,
+    WORKSPACE_METADATA_FILE_NAME, WORKSPACE_MISSING_ERROR_MESSAGE,
 };
 
 #[derive(Debug)]
@@ -172,11 +173,52 @@ pub(super) fn create_workspace_tab_id(seen_tab_ids: &HashSet<String>) -> String 
 
 fn create_default_metadata() -> WorkspaceMetadata {
     WorkspaceMetadata {
-        version: 2,
+        version: 3,
         active_tab_id: None,
+        split_view: None,
         tabs: Vec::new(),
         archived_tabs: Vec::new(),
     }
+}
+
+fn normalize_split_view(
+    split_view: Option<WorkspaceSplitView>,
+    open_tab_ids: &HashSet<String>,
+) -> Option<WorkspaceSplitView> {
+    let split = split_view?;
+
+    let primary_valid = open_tab_ids.contains(&split.primary_tab_id);
+    let secondary_valid = open_tab_ids.contains(&split.secondary_tab_id);
+    let not_same = split.primary_tab_id != split.secondary_tab_id;
+
+    if !primary_valid || !secondary_valid || !not_same {
+        return None;
+    }
+
+    let mut normalized_secondary_tab_ids = split
+        .secondary_tab_ids
+        .into_iter()
+        .filter(|id| open_tab_ids.contains(id) && id != &split.primary_tab_id)
+        .collect::<Vec<_>>();
+
+    if !normalized_secondary_tab_ids.contains(&split.secondary_tab_id) {
+        normalized_secondary_tab_ids.insert(0, split.secondary_tab_id.clone());
+    }
+
+    let normalized_split_ratio = if split.split_ratio.is_finite() {
+        split.split_ratio.clamp(
+            MIN_WORKSPACE_SPLIT_RATIO,
+            MAX_WORKSPACE_SPLIT_RATIO,
+        )
+    } else {
+        DEFAULT_WORKSPACE_SPLIT_RATIO
+    };
+
+    Some(WorkspaceSplitView {
+        secondary_tab_ids: normalized_secondary_tab_ids,
+        split_ratio: normalized_split_ratio,
+        ..split
+    })
 }
 
 pub(super) fn normalize_cursor_state(cursor: &WorkspaceCursorState) -> WorkspaceCursorState {
@@ -248,7 +290,7 @@ pub(super) fn normalize_workspace_metadata(
         return create_default_metadata();
     };
 
-    if metadata.version != 1 && metadata.version != 2 {
+    if metadata.version != 1 && metadata.version != 2 && metadata.version != 3 {
         return create_default_metadata();
     }
 
@@ -256,7 +298,7 @@ pub(super) fn normalize_workspace_metadata(
     let mut seen_file_names = HashSet::new();
     let normalized_tabs =
         normalize_workspace_tab_collection(metadata.tabs, &mut seen_tab_ids, &mut seen_file_names);
-    let normalized_archived_tabs = if metadata.version == 2 {
+    let normalized_archived_tabs = if metadata.version >= 2 {
         normalize_workspace_tab_collection(
             metadata.archived_tabs,
             &mut seen_tab_ids,
@@ -266,14 +308,31 @@ pub(super) fn normalize_workspace_metadata(
         Vec::new()
     };
 
-    let active_tab_id = metadata
-        .active_tab_id
-        .filter(|active_tab_id| normalized_tabs.iter().any(|tab| tab.id == *active_tab_id))
-        .or_else(|| normalized_tabs.first().map(|tab| tab.id.clone()));
+    let open_tab_ids: HashSet<String> = normalized_tabs.iter().map(|t| t.id.clone()).collect();
+    let normalized_split_view = if metadata.version == 3 {
+        normalize_split_view(metadata.split_view, &open_tab_ids)
+    } else {
+        None
+    };
+
+    let active_tab_id = match &normalized_split_view {
+        Some(split) => {
+            let focused_id = match split.focused_pane {
+                WorkspacePaneId::Primary => &split.primary_tab_id,
+                WorkspacePaneId::Secondary => &split.secondary_tab_id,
+            };
+            Some(focused_id.clone())
+        }
+        None => metadata
+            .active_tab_id
+            .filter(|id| open_tab_ids.contains(id.as_str()))
+            .or_else(|| normalized_tabs.first().map(|tab| tab.id.clone())),
+    };
 
     WorkspaceMetadata {
-        version: 2,
+        version: 3,
         active_tab_id,
+        split_view: normalized_split_view,
         tabs: normalized_tabs,
         archived_tabs: normalized_archived_tabs,
     }
@@ -494,6 +553,7 @@ pub(super) fn get_temporary_rename_file_name(
         &WorkspaceMetadata {
             version: metadata.version,
             active_tab_id: metadata.active_tab_id.clone(),
+            split_view: metadata.split_view.clone(),
             tabs: metadata
                 .tabs
                 .iter()
@@ -563,16 +623,29 @@ pub(super) fn read_workspace_snapshot(workspace_path: &Path) -> Result<Workspace
         }
     }
 
-    let normalized_metadata = WorkspaceMetadata {
-        version: 2,
-        active_tab_id: metadata
+    let existing_tab_id_set: HashSet<String> =
+        existing_tab_states.iter().map(|t| t.id.clone()).collect();
+    let normalized_split_view =
+        normalize_split_view(metadata.split_view, &existing_tab_id_set);
+
+    let active_tab_id = match &normalized_split_view {
+        Some(split) => {
+            let focused_id = match split.focused_pane {
+                WorkspacePaneId::Primary => &split.primary_tab_id,
+                WorkspacePaneId::Secondary => &split.secondary_tab_id,
+            };
+            Some(focused_id.clone())
+        }
+        None => metadata
             .active_tab_id
-            .filter(|active_tab_id| {
-                existing_tab_states
-                    .iter()
-                    .any(|tab| tab.id == *active_tab_id)
-            })
+            .filter(|id| existing_tab_id_set.contains(id.as_str()))
             .or_else(|| existing_tab_states.first().map(|tab| tab.id.clone())),
+    };
+
+    let normalized_metadata = WorkspaceMetadata {
+        version: 3,
+        active_tab_id,
+        split_view: normalized_split_view,
         tabs: existing_tab_states,
         archived_tabs: existing_archived_tab_states,
     };

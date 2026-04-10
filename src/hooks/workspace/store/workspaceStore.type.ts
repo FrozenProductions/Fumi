@@ -1,6 +1,7 @@
 import type { StateCreator } from "zustand";
 import type {
     WorkspaceCursorState,
+    WorkspacePaneId,
     WorkspaceSession,
 } from "../../../lib/workspace/workspace.type";
 
@@ -36,6 +37,12 @@ export type WorkspaceStoreActions = {
     ) => Promise<boolean>;
     selectWorkspaceTab: (tabId: string) => void;
     reorderWorkspaceTab: (draggedTabId: string, targetTabId: string) => void;
+    openWorkspaceTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
+    setWorkspaceSplitRatio: (splitRatio: number) => void;
+    resetWorkspaceSplitView: () => void;
+    toggleWorkspaceSplitView: () => void;
+    focusWorkspacePane: (pane: WorkspacePaneId) => void;
+    closeWorkspaceSplitView: () => void;
     saveActiveWorkspaceTab: () => Promise<void>;
     updateActiveTabContent: (content: string) => void;
     updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;
@@ -73,6 +80,12 @@ export type WorkspaceTabSlice = Pick<
     | "renameWorkspaceTab"
     | "selectWorkspaceTab"
     | "reorderWorkspaceTab"
+    | "openWorkspaceTabInPane"
+    | "setWorkspaceSplitRatio"
+    | "resetWorkspaceSplitView"
+    | "toggleWorkspaceSplitView"
+    | "focusWorkspacePane"
+    | "closeWorkspaceSplitView"
 >;
 
 export type WorkspaceEditorSlice = Pick<

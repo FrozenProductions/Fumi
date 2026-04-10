@@ -1,9 +1,8 @@
-import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { PointerSensor } from "@dnd-kit/react";
 import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 
-export const TAB_BAR_MODIFIERS = [RestrictToHorizontalAxis];
+export const TAB_BAR_MODIFIERS: never[] = [];
 
 export const TAB_BAR_SENSORS = [
     PointerSensor.configure({

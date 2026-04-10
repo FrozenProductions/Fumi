@@ -21,12 +21,18 @@ export type GetCommandPaletteCommandItemsOptions = {
         activateGoToLine: string;
         archiveWorkspaceTab: string;
         createWorkspaceFile: string;
+        focusWorkspaceLeftPane: string;
+        focusWorkspaceRightPane: string;
+        moveWorkspaceTabToLeftPane: string;
+        moveWorkspaceTabToRightPane: string;
         openAccounts: string;
         openSettings: string;
         openWorkspaceDirectory: string;
         openWorkspaceScreen: string;
         openScriptLibrary: string;
+        resetWorkspaceSplitView: string;
         toggleSidebar: string;
+        toggleWorkspaceSplitView: string;
     };
     onActivateGoToLineMode: () => void;
     onOpenWorkspaceScreen: () => void;

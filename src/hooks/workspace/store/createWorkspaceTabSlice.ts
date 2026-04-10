@@ -1,4 +1,7 @@
-import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
+import {
+    DEFAULT_WORKSPACE_SPLIT_RATIO,
+    MAX_WORKSPACE_TAB_NAME_LENGTH,
+} from "../../../constants/workspace/workspace";
 import { confirmAction } from "../../../lib/platform/dialog";
 import {
     createWorkspaceFile as createWorkspaceFileCommand,
@@ -23,12 +26,17 @@ import {
 } from "../../../lib/workspace/persistence";
 import {
     getNextActiveTabId,
+    removedTabFromSplitView,
     reorderWorkspaceTabs,
     serializeTabState,
     updateWorkspaceTab,
     upsertWorkspaceTab,
 } from "../../../lib/workspace/session";
-import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
+import { normalizeWorkspaceSplitRatio } from "../../../lib/workspace/splitView";
+import type {
+    WorkspacePaneId,
+    WorkspaceSession,
+} from "../../../lib/workspace/workspace.type";
 import { isMatchingWorkspacePath } from "./helpers";
 import type {
     WorkspaceStoreSliceCreator,
@@ -39,6 +47,27 @@ import type {
 export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
     WorkspaceTabSlice
 > = (set, get) => {
+    const getPrimaryPaneTabId = (
+        workspace: WorkspaceSession,
+        secondaryTabIds: string[],
+        fallbackTabId: string | null,
+    ): string | null => {
+        const secondaryTabIdSet = new Set(secondaryTabIds);
+
+        if (
+            fallbackTabId &&
+            !secondaryTabIdSet.has(fallbackTabId) &&
+            workspace.tabs.some((tab) => tab.id === fallbackTabId)
+        ) {
+            return fallbackTabId;
+        }
+
+        return (
+            workspace.tabs.find((tab) => !secondaryTabIdSet.has(tab.id))?.id ??
+            null
+        );
+    };
+
     const updateWorkspaceForPath = (
         workspacePath: string,
         updater: WorkspaceStoreUpdater,
@@ -236,6 +265,12 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                         const nextTabs = currentWorkspace.tabs.filter(
                             (tab) => tab.id !== tabId,
                         );
+                        const nextSplitView = currentWorkspace.splitView
+                            ? removedTabFromSplitView(
+                                  currentWorkspace.splitView,
+                                  tabId,
+                              )
+                            : null;
 
                         return {
                             ...currentWorkspace,
@@ -243,6 +278,7 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                                 nextTabs,
                                 currentArchivedTabIndex,
                             ),
+                            splitView: nextSplitView,
                             archivedTabs: [
                                 ...currentWorkspace.archivedTabs.filter(
                                     (tab) => tab.id !== tabId,
@@ -320,6 +356,12 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                         const nextTabs = currentWorkspace.tabs.filter(
                             (tab) => tab.id !== tabId,
                         );
+                        const nextSplitView = currentWorkspace.splitView
+                            ? removedTabFromSplitView(
+                                  currentWorkspace.splitView,
+                                  tabId,
+                              )
+                            : null;
 
                         return {
                             ...currentWorkspace,
@@ -330,6 +372,7 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                                           currentDeletedTabIndex,
                                       )
                                     : currentWorkspace.activeTabId,
+                            splitView: nextSplitView,
                             tabs: nextTabs,
                         };
                     },
@@ -597,12 +640,81 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
                     return {};
                 }
 
-                hasSelectedTab = state.workspace.activeTabId !== tabId;
+                const splitView = state.workspace.splitView;
+                let nextSplitView = splitView;
+                const nextActiveTabId = tabId;
+
+                if (splitView) {
+                    const isInSecondary =
+                        splitView.secondaryTabIds.includes(tabId);
+                    const isInPrimary = !isInSecondary;
+
+                    if (
+                        isInSecondary &&
+                        splitView.focusedPane === "secondary"
+                    ) {
+                        nextSplitView = {
+                            ...splitView,
+                            secondaryTabId: tabId,
+                        };
+                    } else if (
+                        isInSecondary &&
+                        splitView.focusedPane === "primary"
+                    ) {
+                        nextSplitView = {
+                            ...splitView,
+                            secondaryTabId: tabId,
+                            focusedPane: "secondary",
+                        };
+                    } else if (
+                        isInPrimary &&
+                        splitView.focusedPane === "primary"
+                    ) {
+                        nextSplitView = {
+                            ...splitView,
+                            primaryTabId: tabId,
+                        };
+                    } else {
+                        nextSplitView = {
+                            ...splitView,
+                            primaryTabId: tabId,
+                            focusedPane: "primary",
+                        };
+                    }
+
+                    const nextPrimary =
+                        nextSplitView?.primaryTabId ?? splitView.primaryTabId;
+                    if (nextSplitView?.secondaryTabIds.includes(nextPrimary)) {
+                        const filteredSecondary =
+                            nextSplitView.secondaryTabIds.filter(
+                                (id) => id !== nextPrimary,
+                            );
+                        if (filteredSecondary.length === 0) {
+                            nextSplitView = null;
+                        } else {
+                            nextSplitView = {
+                                ...nextSplitView,
+                                secondaryTabIds: filteredSecondary,
+                                secondaryTabId: filteredSecondary.includes(
+                                    nextSplitView.secondaryTabId,
+                                )
+                                    ? nextSplitView.secondaryTabId
+                                    : (filteredSecondary[0] ??
+                                      nextSplitView.secondaryTabId),
+                            };
+                        }
+                    }
+                }
+
+                hasSelectedTab =
+                    state.workspace.activeTabId !== nextActiveTabId ||
+                    state.workspace.splitView !== nextSplitView;
 
                 return {
                     workspace: {
                         ...state.workspace,
-                        activeTabId: tabId,
+                        activeTabId: nextActiveTabId,
+                        splitView: nextSplitView,
                     },
                 };
             });
@@ -632,6 +744,343 @@ export const createWorkspaceTabSlice: WorkspaceStoreSliceCreator<
             );
 
             if (nextWorkspace && nextWorkspace !== workspace) {
+                void get().persistWorkspaceState();
+            }
+        },
+        openWorkspaceTabInPane: (
+            tabId: string,
+            pane: WorkspacePaneId,
+        ): void => {
+            set((state) => {
+                if (!state.workspace) {
+                    return {};
+                }
+
+                const { workspace } = state;
+
+                if (!workspace.tabs.some((tab) => tab.id === tabId)) {
+                    return {};
+                }
+
+                const existingSplit = workspace.splitView;
+
+                if (existingSplit) {
+                    if (pane === "secondary") {
+                        let nextSecondaryTabIds =
+                            existingSplit.secondaryTabIds.includes(tabId)
+                                ? existingSplit.secondaryTabIds
+                                : [...existingSplit.secondaryTabIds, tabId];
+                        let nextPrimaryTabId = getPrimaryPaneTabId(
+                            workspace,
+                            nextSecondaryTabIds,
+                            existingSplit.primaryTabId === tabId
+                                ? null
+                                : existingSplit.primaryTabId,
+                        );
+
+                        if (!nextPrimaryTabId) {
+                            nextPrimaryTabId =
+                                existingSplit.secondaryTabId === tabId
+                                    ? (existingSplit.secondaryTabIds.find(
+                                          (id) => id !== tabId,
+                                      ) ?? null)
+                                    : existingSplit.secondaryTabId;
+                        }
+
+                        if (!nextPrimaryTabId) {
+                            return {
+                                workspace: {
+                                    ...workspace,
+                                    activeTabId: tabId,
+                                    splitView: null,
+                                },
+                            };
+                        }
+
+                        nextSecondaryTabIds = nextSecondaryTabIds.filter(
+                            (id) => id !== nextPrimaryTabId,
+                        );
+
+                        const nextSplit = {
+                            ...existingSplit,
+                            primaryTabId: nextPrimaryTabId,
+                            secondaryTabId: tabId,
+                            secondaryTabIds: nextSecondaryTabIds,
+                            splitRatio: existingSplit.splitRatio,
+                            focusedPane: pane,
+                        };
+
+                        return {
+                            workspace: {
+                                ...workspace,
+                                activeTabId: tabId,
+                                splitView: nextSplit,
+                            },
+                        };
+                    }
+
+                    const nextSecondaryTabIds =
+                        existingSplit.secondaryTabIds.filter(
+                            (id) => id !== tabId,
+                        );
+
+                    const resolvedSecondaryTabIds =
+                        nextSecondaryTabIds.length > 0
+                            ? nextSecondaryTabIds
+                            : existingSplit.primaryTabId !== tabId
+                              ? [existingSplit.primaryTabId]
+                              : [];
+
+                    if (resolvedSecondaryTabIds.length === 0) {
+                        return {
+                            workspace: {
+                                ...workspace,
+                                activeTabId: tabId,
+                                splitView: null,
+                            },
+                        };
+                    }
+
+                    const nextSplit = {
+                        ...existingSplit,
+                        primaryTabId: tabId,
+                        secondaryTabId: resolvedSecondaryTabIds.includes(
+                            existingSplit.secondaryTabId,
+                        )
+                            ? existingSplit.secondaryTabId
+                            : (resolvedSecondaryTabIds[0] ??
+                              existingSplit.secondaryTabId),
+                        secondaryTabIds: resolvedSecondaryTabIds,
+                        splitRatio: existingSplit.splitRatio,
+                        focusedPane: pane,
+                    };
+
+                    return {
+                        workspace: {
+                            ...workspace,
+                            activeTabId: tabId,
+                            splitView: nextSplit,
+                        },
+                    };
+                }
+
+                const currentActiveTabId = workspace.activeTabId;
+
+                if (!currentActiveTabId) {
+                    return {
+                        workspace: {
+                            ...workspace,
+                            activeTabId: tabId,
+                        },
+                    };
+                }
+
+                if (currentActiveTabId === tabId) {
+                    const otherTabs = workspace.tabs.filter(
+                        (tab) => tab.id !== tabId,
+                    );
+
+                    if (otherTabs.length === 0) {
+                        return {};
+                    }
+
+                    const newSplit =
+                        pane === "primary"
+                            ? {
+                                  direction: "vertical" as const,
+                                  primaryTabId: tabId,
+                                  secondaryTabId: otherTabs[0]?.id ?? tabId,
+                                  secondaryTabIds: otherTabs.map(
+                                      (tab) => tab.id,
+                                  ),
+                                  splitRatio: normalizeWorkspaceSplitRatio(
+                                      DEFAULT_WORKSPACE_SPLIT_RATIO,
+                                  ),
+                                  focusedPane: pane,
+                              }
+                            : {
+                                  direction: "vertical" as const,
+                                  primaryTabId: otherTabs[0]?.id ?? tabId,
+                                  secondaryTabId: tabId,
+                                  secondaryTabIds: [tabId],
+                                  splitRatio: normalizeWorkspaceSplitRatio(
+                                      DEFAULT_WORKSPACE_SPLIT_RATIO,
+                                  ),
+                                  focusedPane: pane,
+                              };
+
+                    return {
+                        workspace: {
+                            ...workspace,
+                            activeTabId: tabId,
+                            splitView: newSplit,
+                        },
+                    };
+                }
+
+                const newSplit =
+                    pane === "primary"
+                        ? {
+                              direction: "vertical" as const,
+                              primaryTabId: tabId,
+                              secondaryTabId: currentActiveTabId,
+                              secondaryTabIds: workspace.tabs
+                                  .filter((tab) => tab.id !== tabId)
+                                  .map((tab) => tab.id),
+                              splitRatio: normalizeWorkspaceSplitRatio(
+                                  DEFAULT_WORKSPACE_SPLIT_RATIO,
+                              ),
+                              focusedPane: pane,
+                          }
+                        : {
+                              direction: "vertical" as const,
+                              primaryTabId: currentActiveTabId,
+                              secondaryTabId: tabId,
+                              secondaryTabIds: [tabId],
+                              splitRatio: normalizeWorkspaceSplitRatio(
+                                  DEFAULT_WORKSPACE_SPLIT_RATIO,
+                              ),
+                              focusedPane: pane,
+                          };
+
+                return {
+                    workspace: {
+                        ...workspace,
+                        activeTabId: tabId,
+                        splitView: newSplit,
+                    },
+                };
+            });
+
+            void get().persistWorkspaceState();
+        },
+        setWorkspaceSplitRatio: (splitRatio: number): void => {
+            set((state) => {
+                if (!state.workspace?.splitView) {
+                    return {};
+                }
+
+                return {
+                    workspace: {
+                        ...state.workspace,
+                        splitView: {
+                            ...state.workspace.splitView,
+                            splitRatio:
+                                normalizeWorkspaceSplitRatio(splitRatio),
+                        },
+                    },
+                };
+            });
+        },
+        resetWorkspaceSplitView: (): void => {
+            let didReset = false;
+
+            set((state) => {
+                if (!state.workspace?.splitView) {
+                    return {};
+                }
+
+                if (
+                    state.workspace.splitView.splitRatio ===
+                    DEFAULT_WORKSPACE_SPLIT_RATIO
+                ) {
+                    return {};
+                }
+
+                didReset = true;
+
+                return {
+                    workspace: {
+                        ...state.workspace,
+                        splitView: {
+                            ...state.workspace.splitView,
+                            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                        },
+                    },
+                };
+            });
+
+            if (didReset) {
+                void get().persistWorkspaceState();
+            }
+        },
+        toggleWorkspaceSplitView: (): void => {
+            const { workspace } = get();
+
+            if (!workspace?.activeTabId) {
+                return;
+            }
+
+            if (workspace.splitView) {
+                get().closeWorkspaceSplitView();
+                return;
+            }
+
+            get().openWorkspaceTabInPane(workspace.activeTabId, "secondary");
+        },
+        focusWorkspacePane: (pane: WorkspacePaneId): void => {
+            let didChange = false;
+
+            set((state) => {
+                if (!state.workspace?.splitView) {
+                    return {};
+                }
+
+                const { splitView } = state.workspace;
+
+                if (splitView.focusedPane === pane) {
+                    return {};
+                }
+
+                const focusedTabId =
+                    pane === "primary"
+                        ? splitView.primaryTabId
+                        : splitView.secondaryTabId;
+
+                didChange = true;
+
+                return {
+                    workspace: {
+                        ...state.workspace,
+                        activeTabId: focusedTabId,
+                        splitView: {
+                            ...splitView,
+                            focusedPane: pane,
+                        },
+                    },
+                };
+            });
+
+            if (didChange) {
+                void get().persistWorkspaceState();
+            }
+        },
+        closeWorkspaceSplitView: (): void => {
+            let didClose = false;
+
+            set((state) => {
+                if (!state.workspace?.splitView) {
+                    return {};
+                }
+
+                const { splitView } = state.workspace;
+                const keepTabId =
+                    splitView.focusedPane === "primary"
+                        ? splitView.primaryTabId
+                        : splitView.secondaryTabId;
+
+                didClose = true;
+
+                return {
+                    workspace: {
+                        ...state.workspace,
+                        activeTabId: keepTabId,
+                        splitView: null,
+                    },
+                };
+            });
+
+            if (didClose) {
                 void get().persistWorkspaceState();
             }
         },

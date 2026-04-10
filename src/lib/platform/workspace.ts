@@ -4,6 +4,7 @@ import type {
     WorkspaceBootstrapResponse,
     WorkspaceCursorState,
     WorkspaceSnapshot,
+    WorkspaceSplitView,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
 } from "../../lib/workspace/workspace.type";
@@ -247,6 +248,7 @@ export function deleteWorkspaceFileEffect(options: {
 export function persistWorkspaceState(options: {
     workspacePath: string;
     activeTabId: string | null;
+    splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTabState[];
     archivedTabs: WorkspaceTabState[];
 }): Promise<void> {
@@ -256,6 +258,7 @@ export function persistWorkspaceState(options: {
 export function persistWorkspaceStateEffect(options: {
     workspacePath: string;
     activeTabId: string | null;
+    splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTabState[];
     archivedTabs: WorkspaceTabState[];
 }): Effect.Effect<void, WorkspaceCommandError> {
