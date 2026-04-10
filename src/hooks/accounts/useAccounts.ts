@@ -17,6 +17,7 @@ export function useAccounts(): UseAccountsResult {
     const [accounts, setAccounts] = useState(
         () => [] as ReturnType<typeof sortAccounts>,
     );
+    const [isRobloxRunning, setIsRobloxRunning] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -43,6 +44,7 @@ export function useAccounts(): UseAccountsResult {
                 }
 
                 setAccounts(sortAccounts(response.accounts));
+                setIsRobloxRunning(response.isRobloxRunning);
                 setErrorMessage(null);
             } catch (error) {
                 if (!isMounted || options?.suppressError) {
@@ -158,6 +160,7 @@ export function useAccounts(): UseAccountsResult {
 
     return {
         accounts,
+        isRobloxRunning,
         isLoading,
         errorMessage,
         isAddModalOpen,

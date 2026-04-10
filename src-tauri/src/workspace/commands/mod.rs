@@ -101,7 +101,12 @@ fn get_next_split_view_after_delete(
 ) -> Option<WorkspaceSplitView> {
     match split_view {
         Some(split) if split.primary_tab_id == deleted_tab_id => None,
-        Some(mut split) if split.secondary_tab_ids.iter().any(|id| id == deleted_tab_id) => {
+        Some(mut split)
+            if split
+                .secondary_tab_ids
+                .iter()
+                .any(|id| id == deleted_tab_id) =>
+        {
             split.secondary_tab_ids.retain(|id| id != deleted_tab_id);
 
             if split.secondary_tab_ids.is_empty() {

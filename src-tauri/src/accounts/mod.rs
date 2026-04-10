@@ -39,9 +39,7 @@ pub(crate) fn kill_roblox_processes() -> Result<()> {
 }
 
 pub(crate) fn launch_roblox() -> Result<()> {
-    storage::launch_roblox_application(std::path::Path::new(
-        storage::ROBLOX_APPLICATION_PATH,
-    ))
+    storage::launch_roblox_application(std::path::Path::new(storage::ROBLOX_APPLICATION_PATH))
 }
 
 pub(crate) fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {

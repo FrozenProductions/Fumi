@@ -12,11 +12,11 @@ use uuid::Uuid;
 
 use super::models::{
     StoredAppState, StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceMetadata,
-    WorkspacePaneId, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabSnapshot, WorkspaceTabState,
-    APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME, DEFAULT_WORKSPACE_FILE_EXTENSION,
-    DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES, MAX_WORKSPACE_SPLIT_RATIO,
-    MAX_WORKSPACE_TAB_NAME_LENGTH, MIN_WORKSPACE_SPLIT_RATIO, WORKSPACE_METADATA_DIR_NAME,
-    WORKSPACE_METADATA_FILE_NAME, WORKSPACE_MISSING_ERROR_MESSAGE,
+    WorkspacePaneId, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabSnapshot,
+    WorkspaceTabState, APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME,
+    DEFAULT_WORKSPACE_FILE_EXTENSION, DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES,
+    MAX_WORKSPACE_SPLIT_RATIO, MAX_WORKSPACE_TAB_NAME_LENGTH, MIN_WORKSPACE_SPLIT_RATIO,
+    WORKSPACE_METADATA_DIR_NAME, WORKSPACE_METADATA_FILE_NAME, WORKSPACE_MISSING_ERROR_MESSAGE,
 };
 
 #[derive(Debug)]
@@ -206,10 +206,9 @@ fn normalize_split_view(
     }
 
     let normalized_split_ratio = if split.split_ratio.is_finite() {
-        split.split_ratio.clamp(
-            MIN_WORKSPACE_SPLIT_RATIO,
-            MAX_WORKSPACE_SPLIT_RATIO,
-        )
+        split
+            .split_ratio
+            .clamp(MIN_WORKSPACE_SPLIT_RATIO, MAX_WORKSPACE_SPLIT_RATIO)
     } else {
         DEFAULT_WORKSPACE_SPLIT_RATIO
     };
@@ -625,8 +624,7 @@ pub(super) fn read_workspace_snapshot(workspace_path: &Path) -> Result<Workspace
 
     let existing_tab_id_set: HashSet<String> =
         existing_tab_states.iter().map(|t| t.id.clone()).collect();
-    let normalized_split_view =
-        normalize_split_view(metadata.split_view, &existing_tab_id_set);
+    let normalized_split_view = normalize_split_view(metadata.split_view, &existing_tab_id_set);
 
     let active_tab_id = match &normalized_split_view {
         Some(split) => {

@@ -128,7 +128,13 @@ fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
         archived_tabs: Some(vec![]),
     }));
 
-    assert_eq!(metadata.split_view.as_ref().map(|split| split.primary_tab_id.as_str()), Some("tab-3"));
+    assert_eq!(
+        metadata
+            .split_view
+            .as_ref()
+            .map(|split| split.primary_tab_id.as_str()),
+        Some("tab-3")
+    );
     assert_eq!(
         metadata
             .split_view
@@ -144,10 +150,7 @@ fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
         Some(vec!["tab-1".to_string(), "tab-2".to_string()])
     );
     assert_eq!(
-        metadata
-            .split_view
-            .as_ref()
-            .map(|split| split.split_ratio),
+        metadata.split_view.as_ref().map(|split| split.split_ratio),
         Some(0.68)
     );
 }
