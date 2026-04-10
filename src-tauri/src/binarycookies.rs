@@ -1,13 +1,12 @@
-#![allow(dead_code)]
-
 use std::{
-    fmt::Write as _,
     fs,
-    path::{Path, PathBuf},
+    path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result};
+#[cfg(test)]
+use anyhow::{anyhow, bail};
 
 const FILE_MAGIC: &[u8; 4] = b"cook";
 const PAGE_MAGIC: u32 = 0x0000_0100;
@@ -16,6 +15,7 @@ const COOKIE_HEADER_LEN: usize = 56;
 const ROBLOX_DOMAIN: &[u8] = b".roblox.com";
 const ROBLOX_PATH: &[u8] = b"/";
 const ROBLOSECURITY_COOKIE_NAME: &[u8] = b".ROBLOSECURITY";
+#[cfg(test)]
 const ROBLOXCOOKIES_COOKIE_NAME: &[u8] = b".ROBLOXSECURITY";
 const MAC_EPOCH_OFFSET_SECS: f64 = 978_307_200.0;
 const ROBLOX_COOKIE_LIFETIME_SECS: u64 = 60 * 60 * 24 * 30;
@@ -49,10 +49,12 @@ struct BinaryCookie {
 }
 
 impl BinaryCookie {
+    #[cfg(test)]
     fn is_secure(&self) -> bool {
         self.raw_flags & 0x1 != 0
     }
 
+    #[cfg(test)]
     fn is_http_only(&self) -> bool {
         self.raw_flags & 0x4 != 0
     }
@@ -91,6 +93,7 @@ impl BinaryCookie {
         Ok(payload)
     }
 
+    #[cfg(test)]
     fn into_minimal(self) -> Self {
         let mut raw_flags = 0u32;
 
@@ -165,6 +168,7 @@ impl CookiePage {
 }
 
 impl BinaryCookiesFile {
+    #[cfg(test)]
     fn parse(input: &[u8]) -> Result<Self> {
         let mut cursor = 0usize;
 
@@ -248,10 +252,12 @@ impl BinaryCookiesFile {
         Ok(output)
     }
 
+    #[cfg(test)]
     fn cookie_count(&self) -> usize {
         self.pages.iter().map(|page| page.cookies.len()).sum()
     }
 
+    #[cfg(test)]
     fn find_cookie(&self, domain: &[u8], name: &[u8]) -> Option<&BinaryCookie> {
         self.pages
             .iter()
@@ -259,6 +265,7 @@ impl BinaryCookiesFile {
             .find(|cookie| cookie.domain == domain && cookie.name == name)
     }
 
+    #[cfg(test)]
     fn upsert_cookie(&mut self, cookie: BinaryCookie) {
         if let Some(existing_cookie) = self
             .pages
@@ -330,6 +337,7 @@ impl BinaryCookiesFile {
         }
     }
 
+    #[cfg(test)]
     fn retain_only_cookie(&mut self, domain: &[u8], name: &[u8]) -> usize {
         for page in &mut self.pages {
             page.cookies
@@ -340,6 +348,7 @@ impl BinaryCookiesFile {
         self.cookie_count()
     }
 
+    #[cfg(test)]
     fn into_minimal(self) -> Self {
         let pages = self
             .pages
@@ -361,46 +370,10 @@ impl BinaryCookiesFile {
             metadata: Vec::new(),
         }
     }
-
-    fn describe(&self) -> String {
-        let mut summary = String::new();
-        let _ = writeln!(
-            &mut summary,
-            "pages={} cookies={} checksum=0x{:08x} metadata_bytes={}",
-            self.pages.len(),
-            self.cookie_count(),
-            self.checksum,
-            self.metadata.len()
-        );
-
-        for (page_index, page) in self.pages.iter().enumerate() {
-            let _ = writeln!(
-                &mut summary,
-                "page[{page_index}] cookies={}",
-                page.cookies.len()
-            );
-
-            for (cookie_index, cookie) in page.cookies.iter().enumerate() {
-                let _ = writeln!(
-                    &mut summary,
-                    "  cookie[{cookie_index}] domain={:?} name={:?} path={:?} value={:?} flags=0x{:08x} secure={} http_only={} trailer_bytes={}",
-                    String::from_utf8_lossy(&cookie.domain),
-                    String::from_utf8_lossy(&cookie.name),
-                    String::from_utf8_lossy(&cookie.path),
-                    String::from_utf8_lossy(&cookie.value),
-                    cookie.raw_flags,
-                    cookie.is_secure(),
-                    cookie.is_http_only(),
-                    cookie.trailing_data.len()
-                );
-            }
-        }
-
-        summary
-    }
 }
 
 impl CookiePage {
+    #[cfg(test)]
     fn parse(page_bytes: &[u8]) -> Result<Self> {
         let mut cursor = 0usize;
 
@@ -446,6 +419,7 @@ impl CookiePage {
 }
 
 impl BinaryCookie {
+    #[cfg(test)]
     fn parse(cookie_bytes: &[u8]) -> Result<Self> {
         if cookie_bytes.len() < COOKIE_HEADER_LEN {
             bail!(
@@ -545,6 +519,7 @@ fn append_c_string(buffer: &mut Vec<u8>, value: &[u8]) -> Result<u32> {
     Ok(offset)
 }
 
+#[cfg(test)]
 fn read_c_string(input: &[u8], offset: usize, label: &str) -> Result<(Vec<u8>, usize)> {
     if offset >= input.len() {
         bail!(
@@ -573,6 +548,7 @@ fn calculate_page_checksum(page: &[u8]) -> u32 {
         .fold(0u32, |sum, byte| sum.wrapping_add(u32::from(*byte)))
 }
 
+#[cfg(test)]
 fn read_bytes<'a>(
     input: &'a [u8],
     cursor: &mut usize,
@@ -587,6 +563,7 @@ fn read_bytes<'a>(
     Ok(bytes)
 }
 
+#[cfg(test)]
 fn read_u32_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     let bytes = read_bytes(input, cursor, 4, label)?;
     Ok(u32::from_be_bytes(
@@ -594,6 +571,7 @@ fn read_u32_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     ))
 }
 
+#[cfg(test)]
 fn read_u64_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u64> {
     let bytes = read_bytes(input, cursor, 8, label)?;
     Ok(u64::from_be_bytes(
@@ -601,6 +579,7 @@ fn read_u64_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u64> {
     ))
 }
 
+#[cfg(test)]
 fn read_u32_le(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     let bytes = read_bytes(input, cursor, 4, label)?;
     Ok(u32::from_le_bytes(
@@ -608,6 +587,7 @@ fn read_u32_le(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     ))
 }
 
+#[cfg(test)]
 fn read_f64_le(input: &[u8], cursor: &mut usize, label: &str) -> Result<f64> {
     let bytes = read_bytes(input, cursor, 8, label)?;
     Ok(f64::from_le_bytes(
@@ -623,51 +603,7 @@ fn write_f64_le(buffer: &mut [u8], offset: usize, value: f64) {
     buffer[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
 }
 
-fn default_roundtrip_path(input_path: &Path) -> PathBuf {
-    let mut output_path = input_path.to_path_buf();
-    let Some(file_name) = input_path.file_name() else {
-        return input_path.with_extension("roundtrip.binarycookies");
-    };
-
-    let mut next_name = file_name.to_os_string();
-    next_name.push(".roundtrip");
-    output_path.set_file_name(next_name);
-    output_path
-}
-
-fn default_backup_path(input_path: &Path) -> Result<PathBuf> {
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .context("system clock is before unix epoch")?
-        .as_secs();
-
-    let Some(file_name) = input_path.file_name() else {
-        bail!(
-            "cannot derive backup file name from {}",
-            input_path.display()
-        );
-    };
-
-    let mut backup_name = file_name.to_os_string();
-    backup_name.push(format!(".bak.{timestamp}"));
-
-    Ok(input_path.with_file_name(backup_name))
-}
-
-fn load_cookie_value(cookie_value_path: &Path) -> Result<Vec<u8>> {
-    let cookie_value = fs::read(cookie_value_path)
-        .with_context(|| format!("failed to read {}", cookie_value_path.display()))?;
-
-    Ok(cookie_value
-        .into_iter()
-        .rev()
-        .skip_while(|byte| *byte == b'\n' || *byte == b'\r')
-        .collect::<Vec<_>>()
-        .into_iter()
-        .rev()
-        .collect())
-}
-
+#[cfg(test)]
 fn build_roblox_cookie(
     file: &BinaryCookiesFile,
     target_name: &[u8],
@@ -703,6 +639,7 @@ fn build_robloxcookies_cookie(file: &BinaryCookiesFile, value: Vec<u8>) -> Binar
     build_roblox_cookie(file, ROBLOXCOOKIES_COOKIE_NAME, value)
 }
 
+#[cfg(test)]
 fn build_roblosecurity_cookie(file: &BinaryCookiesFile, value: Vec<u8>) -> BinaryCookie {
     build_roblox_cookie(file, ROBLOSECURITY_COOKIE_NAME, value)
 }
@@ -770,123 +707,6 @@ pub(crate) fn write_minimal_roblosecurity_cookie_file(
     let output_bytes = build_minimal_roblosecurity_binarycookies(cookie_value)?;
     fs::write(output_path, output_bytes)
         .with_context(|| format!("failed to write {}", output_path.display()))
-}
-
-pub(crate) fn inject_roblox_cookie(
-    input_path: &Path,
-    cookie_value_path: &Path,
-    output_path: Option<&Path>,
-) -> Result<()> {
-    let input_bytes =
-        fs::read(input_path).with_context(|| format!("failed to read {}", input_path.display()))?;
-    let cookie_value = load_cookie_value(cookie_value_path)?;
-    let parsed = build_minimal_roblosecurity_file(cookie_value)?;
-    let output_bytes = parsed.encode()?;
-
-    let destination = output_path.unwrap_or(input_path);
-
-    if destination == input_path {
-        let backup_path = default_backup_path(input_path)?;
-        fs::write(&backup_path, &input_bytes)
-            .with_context(|| format!("failed to write backup {}", backup_path.display()))?;
-    }
-
-    fs::write(destination, &output_bytes)
-        .with_context(|| format!("failed to write {}", destination.display()))?;
-
-    Ok(())
-}
-
-pub(crate) fn replace_roblosecurity_cookie(
-    input_path: &Path,
-    cookie_value_path: &Path,
-    output_path: Option<&Path>,
-) -> Result<()> {
-    let input_bytes =
-        fs::read(input_path).with_context(|| format!("failed to read {}", input_path.display()))?;
-    let mut parsed = BinaryCookiesFile::parse(&input_bytes)?;
-    let cookie_value = load_cookie_value(cookie_value_path)?;
-    let cookie = build_roblosecurity_cookie(&parsed, cookie_value);
-    parsed.upsert_cookie(cookie);
-    let output_bytes = parsed.encode()?;
-
-    let destination = output_path.unwrap_or(input_path);
-
-    if destination == input_path {
-        let backup_path = default_backup_path(input_path)?;
-        fs::write(&backup_path, &input_bytes)
-            .with_context(|| format!("failed to write backup {}", backup_path.display()))?;
-    }
-
-    fs::write(destination, &output_bytes)
-        .with_context(|| format!("failed to write {}", destination.display()))?;
-
-    Ok(())
-}
-
-pub(crate) fn keep_only_robloxcookies(input_path: &Path, output_path: Option<&Path>) -> Result<()> {
-    let input_bytes =
-        fs::read(input_path).with_context(|| format!("failed to read {}", input_path.display()))?;
-    let mut parsed = BinaryCookiesFile::parse(&input_bytes)?;
-    let remaining = parsed.retain_only_cookie(ROBLOX_DOMAIN, ROBLOXCOOKIES_COOKIE_NAME);
-
-    if remaining == 0 {
-        bail!(
-            "no {} cookie found in {}",
-            String::from_utf8_lossy(ROBLOXCOOKIES_COOKIE_NAME),
-            input_path.display()
-        );
-    }
-
-    let output_bytes = parsed.encode()?;
-    let destination = output_path.unwrap_or(input_path);
-
-    if destination == input_path {
-        let backup_path = default_backup_path(input_path)?;
-        fs::write(&backup_path, &input_bytes)
-            .with_context(|| format!("failed to write backup {}", backup_path.display()))?;
-    }
-
-    fs::write(destination, &output_bytes)
-        .with_context(|| format!("failed to write {}", destination.display()))?;
-
-    Ok(())
-}
-
-pub(crate) fn rewrite_minimal(input_path: &Path, output_path: Option<&Path>) -> Result<()> {
-    let input_bytes =
-        fs::read(input_path).with_context(|| format!("failed to read {}", input_path.display()))?;
-    let parsed = BinaryCookiesFile::parse(&input_bytes)?;
-    let minimal = parsed.into_minimal();
-    let output_bytes = minimal.encode()?;
-
-    let destination = output_path.unwrap_or(input_path);
-
-    if destination == input_path {
-        let backup_path = default_backup_path(input_path)?;
-        fs::write(&backup_path, &input_bytes)
-            .with_context(|| format!("failed to write backup {}", backup_path.display()))?;
-    }
-
-    fs::write(destination, &output_bytes)
-        .with_context(|| format!("failed to write {}", destination.display()))?;
-
-    Ok(())
-}
-
-pub(crate) fn roundtrip_binarycookies(input_path: &Path, output_path: Option<&Path>) -> Result<()> {
-    let output_path = output_path
-        .map(PathBuf::from)
-        .unwrap_or_else(|| default_roundtrip_path(input_path));
-    let input_bytes = fs::read(&input_path)
-        .with_context(|| format!("failed to read {}", input_path.display()))?;
-    let parsed = BinaryCookiesFile::parse(&input_bytes)?;
-    let output_bytes = parsed.encode()?;
-
-    fs::write(&output_path, &output_bytes)
-        .with_context(|| format!("failed to write {}", output_path.display()))?;
-
-    Ok(())
 }
 
 #[cfg(test)]

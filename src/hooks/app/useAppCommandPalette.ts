@@ -10,7 +10,6 @@ import {
     useState,
 } from "react";
 import {
-    APP_COMMAND_PALETTE_MAX_RESULTS,
     COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS,
     COMMAND_PALETTE_EXIT_DURATION_MS,
 } from "../../constants/app/commandPalette";
@@ -20,18 +19,9 @@ import type {
     AppCommandPaletteViewMode,
     AppCommandPaletteMode as RequestedAppCommandPaletteMode,
 } from "../../lib/app/app.type";
-import {
-    getCommandCommandPaletteItems,
-    getGoToLineCommandPaletteItems,
-    getTabCommandPaletteItems,
-    getWorkspaceCommandPaletteItems,
-    parseGoToLineQuery,
-} from "../../lib/app/commandPalette";
-import {
-    normalizeAppCommandPaletteSearchValue,
-    searchAppCommandPaletteItems,
-} from "../../lib/app/commandPaletteSearch";
-import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
+import { parseGoToLineQuery } from "../../lib/app/commandPalette";
+import { getAppCommandPaletteResults } from "../../lib/app/commandPaletteController";
+import { normalizeAppCommandPaletteSearchValue } from "../../lib/app/commandPaletteSearch";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
 import type {
     UseAppCommandPaletteOptions,
@@ -121,111 +111,31 @@ export function useAppCommandPalette({
 
         scheduleInputFocus({ shouldSelect: true });
     }, [currentLineNumber, scheduleInputFocus]);
-
-    const tabItems = getTabCommandPaletteItems(workspaceSession);
-    const commandItems = getCommandCommandPaletteItems({
+    const results = getAppCommandPaletteResults({
         workspaceSession,
         workspaceExecutor,
         isSidebarOpen,
         activeSidebarItem,
         theme,
-        hotkeyLabels: {
-            activateGoToLine: getAppHotkeyShortcutLabel(
-                "ACTIVATE_GOTO_LINE_COMMAND",
-                hotkeyBindings,
-            ),
-            archiveWorkspaceTab: getAppHotkeyShortcutLabel(
-                "ARCHIVE_WORKSPACE_TAB",
-                hotkeyBindings,
-            ),
-            focusWorkspaceLeftPane: getAppHotkeyShortcutLabel(
-                "FOCUS_WORKSPACE_LEFT_PANE",
-                hotkeyBindings,
-            ),
-            focusWorkspaceRightPane: getAppHotkeyShortcutLabel(
-                "FOCUS_WORKSPACE_RIGHT_PANE",
-                hotkeyBindings,
-            ),
-            createWorkspaceFile: getAppHotkeyShortcutLabel(
-                "CREATE_WORKSPACE_FILE",
-                hotkeyBindings,
-            ),
-            moveWorkspaceTabToLeftPane: getAppHotkeyShortcutLabel(
-                "MOVE_WORKSPACE_TAB_TO_LEFT_PANE",
-                hotkeyBindings,
-            ),
-            moveWorkspaceTabToRightPane: getAppHotkeyShortcutLabel(
-                "MOVE_WORKSPACE_TAB_TO_RIGHT_PANE",
-                hotkeyBindings,
-            ),
-            openAccounts: getAppHotkeyShortcutLabel(
-                "OPEN_ACCOUNTS",
-                hotkeyBindings,
-            ),
-            openSettings: getAppHotkeyShortcutLabel(
-                "OPEN_SETTINGS",
-                hotkeyBindings,
-            ),
-            openWorkspaceDirectory: getAppHotkeyShortcutLabel(
-                "OPEN_WORKSPACE_DIRECTORY",
-                hotkeyBindings,
-            ),
-            openWorkspaceScreen: getAppHotkeyShortcutLabel(
-                "OPEN_WORKSPACE_SCREEN",
-                hotkeyBindings,
-            ),
-            openScriptLibrary: getAppHotkeyShortcutLabel(
-                "OPEN_SCRIPT_LIBRARY",
-                hotkeyBindings,
-            ),
-            resetWorkspaceSplitView: getAppHotkeyShortcutLabel(
-                "RESET_WORKSPACE_SPLIT_VIEW",
-                hotkeyBindings,
-            ),
-            toggleSidebar: getAppHotkeyShortcutLabel(
-                "TOGGLE_SIDEBAR",
-                hotkeyBindings,
-            ),
-            toggleWorkspaceSplitView: getAppHotkeyShortcutLabel(
-                "TOGGLE_WORKSPACE_SPLIT_VIEW",
-                hotkeyBindings,
-            ),
-        },
-        onActivateGoToLineMode: activateGoToLineMode,
+        onGoToLine,
         onOpenWorkspaceScreen,
         onOpenScriptLibrary,
         onOpenAccounts,
-        onOpenSettings,
         onToggleSidebar,
+        onOpenSettings,
         onSetTheme,
         onZoomIn,
         onZoomOut,
         onZoomReset,
         onRequestRenameCurrentTab,
-    });
-    const workspaceItems = getWorkspaceCommandPaletteItems(workspaceSession);
-    const goToLineItems = getGoToLineCommandPaletteItems({
+        hotkeyBindings,
         activeTab,
         goToLineNumber,
-        onGoToLine,
+        mode,
+        scope,
+        normalizedQuery,
+        onActivateGoToLineMode: activateGoToLineMode,
     });
-
-    const scopedItems =
-        mode === "goto-line"
-            ? goToLineItems
-            : scope === "commands"
-              ? commandItems
-              : scope === "workspaces"
-                ? workspaceItems
-                : tabItems;
-    const results =
-        mode === "goto-line"
-            ? goToLineItems
-            : searchAppCommandPaletteItems(
-                  scopedItems,
-                  normalizedQuery,
-                  APP_COMMAND_PALETTE_MAX_RESULTS,
-              );
 
     useEffect(() => {
         if (!isOpen && focusTimeoutRef.current !== null) {

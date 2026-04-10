@@ -6,6 +6,7 @@ import type {
     AppCommandPaletteMode,
     AppCommandPaletteScope,
     AppCommandPaletteViewMode,
+    AppHotkeyBindings,
     AppSidebarItem,
     AppTheme,
 } from "../../lib/app/app.type";
@@ -17,23 +18,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     isSidebarOpen: boolean;
     activeSidebarItem: AppSidebarItem;
     theme: AppTheme;
-    hotkeyLabels: {
-        activateGoToLine: string;
-        archiveWorkspaceTab: string;
-        createWorkspaceFile: string;
-        focusWorkspaceLeftPane: string;
-        focusWorkspaceRightPane: string;
-        moveWorkspaceTabToLeftPane: string;
-        moveWorkspaceTabToRightPane: string;
-        openAccounts: string;
-        openSettings: string;
-        openWorkspaceDirectory: string;
-        openWorkspaceScreen: string;
-        openScriptLibrary: string;
-        resetWorkspaceSplitView: string;
-        toggleSidebar: string;
-        toggleWorkspaceSplitView: string;
-    };
+    hotkeyLabels: AppCommandPaletteHotkeyLabels;
     onActivateGoToLineMode: () => void;
     onOpenWorkspaceScreen: () => void;
     onOpenScriptLibrary: () => void;
@@ -104,6 +89,52 @@ export type AppCommandPaletteControllerResult = {
     input: AppCommandPaletteInputState;
     results: AppCommandPaletteResultsState;
     handlers: AppCommandPaletteHandlers;
+};
+
+export type AppCommandPaletteHotkeyLabels = {
+    activateGoToLine: string;
+    archiveWorkspaceTab: string;
+    createWorkspaceFile: string;
+    focusWorkspaceLeftPane: string;
+    focusWorkspaceRightPane: string;
+    moveWorkspaceTabToLeftPane: string;
+    moveWorkspaceTabToRightPane: string;
+    openAccounts: string;
+    openSettings: string;
+    openWorkspaceDirectory: string;
+    openWorkspaceScreen: string;
+    openScriptLibrary: string;
+    resetWorkspaceSplitView: string;
+    toggleSidebar: string;
+    toggleWorkspaceSplitView: string;
+};
+
+export type GetAppCommandPaletteResultsOptions = Pick<
+    AppCommandPaletteControllerOptions,
+    | "workspaceSession"
+    | "workspaceExecutor"
+    | "isSidebarOpen"
+    | "activeSidebarItem"
+    | "theme"
+    | "onGoToLine"
+    | "onOpenWorkspaceScreen"
+    | "onOpenScriptLibrary"
+    | "onOpenAccounts"
+    | "onToggleSidebar"
+    | "onOpenSettings"
+    | "onSetTheme"
+    | "onZoomIn"
+    | "onZoomOut"
+    | "onZoomReset"
+    | "onRequestRenameCurrentTab"
+> & {
+    hotkeyBindings: AppHotkeyBindings;
+    activeTab: WorkspaceTab | null;
+    goToLineNumber: number | null;
+    mode: AppCommandPaletteViewMode;
+    scope: AppCommandPaletteScope;
+    normalizedQuery: string;
+    onActivateGoToLineMode: () => void;
 };
 
 export type GetGoToLineCommandPaletteItemsOptions = {

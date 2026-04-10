@@ -18,7 +18,7 @@ const VIEW_ZOOM_IN_ID: &str = "view-zoom-in";
 const VIEW_ZOOM_OUT_ID: &str = "view-zoom-out";
 const VIEW_ZOOM_RESET_ID: &str = "view-zoom-reset";
 
-pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
+pub(crate) fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let package_info = app.package_info();
     let about_metadata = AboutMetadata {
         name: Some(package_info.name.clone()),
@@ -114,7 +114,7 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
     )
 }
 
-pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
+pub(crate) fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
     let result = match event.id().as_ref() {
         APP_OPEN_SETTINGS_ID => emit_open_settings(app),
         APP_CHECK_FOR_UPDATES_ID => emit_check_for_updates(app),
