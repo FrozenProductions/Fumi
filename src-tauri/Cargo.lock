@@ -1145,7 +1145,7 @@ dependencies = [
 
 [[package]]
 name = "fumi"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "anyhow",
  "flate2",
