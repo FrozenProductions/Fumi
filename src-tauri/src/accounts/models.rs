@@ -28,6 +28,14 @@ pub struct AccountSummary {
 #[serde(rename_all = "camelCase")]
 pub struct AccountListResponse {
     pub accounts: Vec<AccountSummary>,
+    pub is_roblox_running: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RobloxProcessInfo {
+    pub pid: u32,
+    pub started_at: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

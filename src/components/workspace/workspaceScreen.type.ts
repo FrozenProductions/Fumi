@@ -1,6 +1,7 @@
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename.type";
+import type { RobloxProcessInfo } from "../../lib/accounts/accounts.type";
 import type { AppMiddleClickTabAction } from "../../lib/app/app.type";
 import type {
     WorkspacePaneId,
@@ -11,6 +12,17 @@ import type {
 export type WorkspaceScreenProps = {
     session: UseWorkspaceSessionResult;
     executor: UseWorkspaceExecutorResult;
+};
+
+export type WorkspaceActionsButtonProps = {
+    executor: UseWorkspaceExecutorResult;
+    isRobloxRunning: boolean;
+    isLaunching: boolean;
+    onLaunchRoblox: () => Promise<void>;
+    isKillingRoblox: boolean;
+    onKillRoblox: () => Promise<void>;
+    robloxProcesses: readonly RobloxProcessInfo[];
+    onKillRobloxProcess: (pid: number) => Promise<void>;
 };
 
 export type WorkspaceTabBarProps = {

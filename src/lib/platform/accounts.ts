@@ -3,6 +3,7 @@ import { Effect, Schema } from "effect";
 import type {
     AccountListResponse,
     AccountSummary,
+    RobloxProcessInfo,
 } from "../accounts/accounts.type";
 import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
@@ -27,6 +28,7 @@ const AccountSummarySchema = Schema.Struct({
 
 const AccountListResponseSchema = Schema.Struct({
     accounts: Schema.Array(AccountSummarySchema),
+    isRobloxRunning: Schema.Boolean,
 });
 
 function createAccountsCommandError(
@@ -94,7 +96,7 @@ export function listAccountsEffect(): Effect.Effect<
     AccountsCommandError
 > {
     if (!isTauriEnvironment()) {
-        return Effect.succeed({ accounts: [] });
+        return Effect.succeed({ accounts: [], isRobloxRunning: false });
     }
 
     return invokeAccountsCommandEffect(
@@ -171,4 +173,96 @@ export function deleteAccountEffect(
     return invokeAccountsVoidCommandEffect("delete_account", "deleteAccount", {
         accountId,
     });
+}
+
+export function killRobloxProcesses(): Promise<void> {
+    return runPromise(killRobloxProcessesEffect());
+}
+
+export function killRobloxProcessesEffect(): Effect.Effect<
+    void,
+    AccountsCommandError
+> {
+    if (!isTauriEnvironment()) {
+        return Effect.fail(
+            new AccountsCommandError({
+                operation: "killRobloxProcesses",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeAccountsVoidCommandEffect(
+        "kill_roblox_processes",
+        "killRobloxProcesses",
+    );
+}
+
+const RobloxProcessInfoSchema = Schema.Struct({
+    pid: Schema.Number,
+    startedAt: Schema.Number,
+});
+
+const RobloxProcessListSchema = Schema.Array(RobloxProcessInfoSchema);
+
+export function launchRoblox(): Promise<void> {
+    return runPromise(launchRobloxEffect());
+}
+
+export function launchRobloxEffect(): Effect.Effect<
+    void,
+    AccountsCommandError
+> {
+    if (!isTauriEnvironment()) {
+        return Effect.fail(
+            new AccountsCommandError({
+                operation: "launchRoblox",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeAccountsVoidCommandEffect("launch_roblox", "launchRoblox");
+}
+
+export function listRobloxProcesses(): Promise<readonly RobloxProcessInfo[]> {
+    return runPromise(listRobloxProcessesEffect());
+}
+
+export function listRobloxProcessesEffect(): Effect.Effect<
+    readonly RobloxProcessInfo[],
+    AccountsCommandError
+> {
+    if (!isTauriEnvironment()) {
+        return Effect.succeed([]);
+    }
+
+    return invokeAccountsCommandEffect(
+        "list_roblox_processes",
+        RobloxProcessListSchema,
+        "listRobloxProcesses",
+    );
+}
+
+export function killRobloxProcess(pid: number): Promise<void> {
+    return runPromise(killRobloxProcessEffect(pid));
+}
+
+export function killRobloxProcessEffect(
+    pid: number,
+): Effect.Effect<void, AccountsCommandError> {
+    if (!isTauriEnvironment()) {
+        return Effect.fail(
+            new AccountsCommandError({
+                operation: "killRobloxProcess",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeAccountsVoidCommandEffect(
+        "kill_roblox_process",
+        "killRobloxProcess",
+        { pid },
+    );
 }

@@ -56,6 +56,7 @@ describe("accounts platform commands", () => {
 
         await expect(accountsModule.listAccounts()).resolves.toEqual({
             accounts: [],
+            isRobloxRunning: false,
         });
         expect(mocks.invoke).not.toHaveBeenCalled();
     });

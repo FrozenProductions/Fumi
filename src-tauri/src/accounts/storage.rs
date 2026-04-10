@@ -3,7 +3,8 @@ use std::{
     io::ErrorKind,
     path::{Path, PathBuf},
     process::Command,
-    time::{SystemTime, UNIX_EPOCH},
+    thread,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use anyhow::{anyhow, Context, Result};
@@ -20,7 +21,10 @@ use super::models::{
 
 const ROBLOX_BINARYCOOKIES_RELATIVE_PATH: &str =
     "Library/HTTPStorages/com.roblox.RobloxPlayer.binarycookies";
-const ROBLOX_APPLICATION_PATH: &str = "/Applications/Roblox.app";
+pub(crate) const ROBLOX_APPLICATION_PATH: &str = "/Applications/Roblox.app";
+const ROBLOX_PROCESS_NAMES: &[&str] = &["RobloxPlayer", "RobloxPlayerBeta"];
+const PROCESS_EXIT_POLL_INTERVAL: Duration = Duration::from_millis(100);
+const PROCESS_EXIT_POLL_ATTEMPTS: usize = 10;
 
 pub(super) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountListResponse> {
     list_accounts_with_running_state(&get_accounts_root(app)?, is_roblox_running()?)
@@ -85,7 +89,10 @@ fn list_accounts_with_running_state(
             .then_with(|| left.display_name.cmp(&right.display_name))
     });
 
-    Ok(AccountListResponse { accounts })
+    Ok(AccountListResponse {
+        accounts,
+        is_roblox_running,
+    })
 }
 
 pub(super) fn upsert_account_at(
@@ -226,7 +233,118 @@ pub(super) fn delete_account_at(
     write_accounts_manifest(accounts_root, &manifest)
 }
 
-pub(super) fn launch_roblox_application(roblox_app_path: &Path) -> Result<()> {
+pub(super) fn kill_roblox_processes() -> Result<()> {
+    for pid in list_roblox_process_ids()? {
+        terminate_process(pid).with_context(|| format!("failed to kill roblox process {pid}"))?;
+    }
+
+    Ok(())
+}
+
+pub(super) fn list_roblox_processes() -> Result<Vec<super::models::RobloxProcessInfo>> {
+    let pids = list_roblox_process_ids()?;
+    let mut processes = Vec::new();
+
+    for pid in pids {
+        let started_at = get_process_start_time(pid).unwrap_or(0);
+        processes.push(super::models::RobloxProcessInfo { pid, started_at });
+    }
+
+    processes.sort_by_key(|p| p.started_at);
+
+    Ok(processes)
+}
+
+pub(super) fn kill_roblox_process(pid: u32) -> Result<()> {
+    if !list_roblox_process_ids()?.contains(&pid) {
+        return Err(anyhow!("roblox process {pid} is no longer running"));
+    }
+
+    terminate_process(pid).with_context(|| format!("failed to kill roblox process {pid}"))
+}
+
+fn get_process_start_time(pid: u32) -> Result<i64> {
+    let output = Command::new("ps")
+        .args(["-o", "lstart=", "-p", &pid.to_string()])
+        .output()
+        .context("failed to get process start time")?;
+
+    if !output.status.success() {
+        return Err(anyhow!("process {pid} not found"));
+    }
+
+    let raw = String::from_utf8_lossy(&output.stdout);
+    let trimmed = raw.trim();
+
+    parse_ps_lstart(trimmed)
+}
+
+fn parse_ps_lstart(s: &str) -> Result<i64> {
+    let normalised: String = s.split_whitespace().collect::<Vec<_>>().join(" ");
+    let parts: Vec<&str> = normalised.splitn(5, ' ').collect();
+    if parts.len() < 5 {
+        return Err(anyhow!("unexpected ps lstart format: {s}"));
+    }
+
+    let month_str = parts[1];
+    let day_str = parts[2];
+    let time_str = parts[3];
+    let year_str = parts[4];
+
+    let month: u32 = match month_str {
+        "Jan" => 1,
+        "Feb" => 2,
+        "Mar" => 3,
+        "Apr" => 4,
+        "May" => 5,
+        "Jun" => 6,
+        "Jul" => 7,
+        "Aug" => 8,
+        "Sep" => 9,
+        "Oct" => 10,
+        "Nov" => 11,
+        "Dec" => 12,
+        _ => return Err(anyhow!("unknown month: {month_str}")),
+    };
+
+    let day: u32 = day_str.parse().context("failed to parse day")?;
+    let year: i32 = year_str.parse().context("failed to parse year")?;
+
+    let time_parts: Vec<&str> = time_str.splitn(3, ':').collect();
+    if time_parts.len() < 3 {
+        return Err(anyhow!("unexpected time format: {time_str}"));
+    }
+    let hour: u32 = time_parts[0].parse().context("failed to parse hour")?;
+    let minute: u32 = time_parts[1].parse().context("failed to parse minute")?;
+    let second: u32 = time_parts[2].parse().context("failed to parse second")?;
+
+    let timestamp = naive_local_to_unix(year, month, day, hour, minute, second)?;
+    Ok(timestamp)
+}
+
+fn naive_local_to_unix(
+    year: i32,
+    month: u32,
+    day: u32,
+    hour: u32,
+    minute: u32,
+    second: u32,
+) -> Result<i64> {
+    let m = month as i32;
+    let d = day as i32;
+    let y = if m <= 2 { year - 1 } else { year };
+    let era = if y >= 0 { y } else { y - 399 } / 400;
+    let yoe = y - era * 400;
+    let doy = (153 * (m + (if m > 2 { -3 } else { 9 })) + 2) / 5 + d - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days_since_epoch = (era * 146_097 + doe - 719_468) as i64;
+
+    let secs = days_since_epoch * 86_400 + hour as i64 * 3_600 + minute as i64 * 60 + second as i64;
+
+    Ok(secs)
+}
+
+pub(crate) fn launch_roblox_application(roblox_app_path: &Path) -> Result<()> {
     if !roblox_app_path.exists() {
         return Err(anyhow!(
             "roblox application not found at {}",
@@ -235,6 +353,7 @@ pub(super) fn launch_roblox_application(roblox_app_path: &Path) -> Result<()> {
     }
 
     let status = Command::new("open")
+        .arg("-n")
         .arg("-a")
         .arg(roblox_app_path)
         .status()
@@ -248,11 +367,113 @@ pub(super) fn launch_roblox_application(roblox_app_path: &Path) -> Result<()> {
 }
 
 fn is_roblox_running() -> Result<bool> {
-    let status = Command::new("pgrep")
-        .arg("-x")
-        .arg("RobloxPlayer")
+    Ok(!list_roblox_process_ids()?.is_empty())
+}
+
+fn list_roblox_process_ids() -> Result<Vec<u32>> {
+    let output = Command::new("ps")
+        .args(["-axo", "pid=,comm="])
+        .output()
+        .context("failed to list roblox processes")?;
+
+    if !output.status.success() {
+        return Err(anyhow!("failed to list roblox processes"));
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(collect_roblox_process_ids(&stdout))
+}
+
+fn collect_roblox_process_ids(stdout: &str) -> Vec<u32> {
+    let mut pids = stdout
+        .lines()
+        .filter_map(parse_ps_process_line)
+        .filter_map(|(pid, command)| is_roblox_process_command(command).then_some(pid))
+        .collect::<Vec<_>>();
+
+    pids.sort_unstable();
+    pids.dedup();
+    pids
+}
+
+fn parse_ps_process_line(line: &str) -> Option<(u32, &str)> {
+    let trimmed = line.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let pid_end = trimmed.find(char::is_whitespace)?;
+    let (pid_str, command_with_whitespace) = trimmed.split_at(pid_end);
+    let command = command_with_whitespace.trim();
+    if command.is_empty() {
+        return None;
+    }
+
+    let pid = pid_str.parse().ok()?;
+    Some((pid, command))
+}
+
+fn is_roblox_process_command(command: &str) -> bool {
+    let executable_name = Path::new(command)
+        .file_name()
+        .and_then(|file_name| file_name.to_str())
+        .unwrap_or(command);
+
+    ROBLOX_PROCESS_NAMES.contains(&executable_name)
+}
+
+fn terminate_process(pid: u32) -> Result<()> {
+    if !is_process_running(pid)? {
+        return Ok(());
+    }
+
+    send_process_signal(pid, "-TERM")
+        .with_context(|| format!("failed to send TERM signal to process {pid}"))?;
+    if wait_for_process_exit(pid)? {
+        return Ok(());
+    }
+
+    send_process_signal(pid, "-KILL")
+        .with_context(|| format!("failed to send KILL signal to process {pid}"))?;
+    if wait_for_process_exit(pid)? {
+        return Ok(());
+    }
+
+    Err(anyhow!("process {pid} is still running after SIGKILL"))
+}
+
+fn send_process_signal(pid: u32, signal: &str) -> Result<()> {
+    let status = Command::new("kill")
+        .arg(signal)
+        .arg(pid.to_string())
         .status()
-        .context("failed to inspect roblox process state")?;
+        .with_context(|| format!("failed to run kill {signal} {pid}"))?;
+
+    if status.success() || status.code() == Some(1) {
+        return Ok(());
+    }
+
+    Err(anyhow!("kill {signal} {pid} exited with status {status}"))
+}
+
+fn wait_for_process_exit(pid: u32) -> Result<bool> {
+    for _ in 0..PROCESS_EXIT_POLL_ATTEMPTS {
+        if !is_process_running(pid)? {
+            return Ok(true);
+        }
+
+        thread::sleep(PROCESS_EXIT_POLL_INTERVAL);
+    }
+
+    Ok(!is_process_running(pid)?)
+}
+
+fn is_process_running(pid: u32) -> Result<bool> {
+    let status = Command::new("kill")
+        .arg("-0")
+        .arg(pid.to_string())
+        .status()
+        .with_context(|| format!("failed to inspect process {pid}"))?;
 
     Ok(status.success())
 }
@@ -561,6 +782,7 @@ mod tests {
         let response = list_accounts_at(accounts_dir.path())?;
 
         assert_eq!(response.accounts.len(), 1);
+        assert!(!response.is_roblox_running);
         assert_eq!(
             response.accounts[0].status,
             super::super::models::AccountStatus::Offline
@@ -605,5 +827,24 @@ mod tests {
             .contains("Close Roblox before launching a different account"));
 
         Ok(())
+    }
+
+    #[test]
+    fn collect_roblox_process_ids_matches_supported_names() {
+        let stdout = " 101 /Applications/Roblox.app/Contents/MacOS/RobloxPlayer\n\
+ 102 RobloxPlayerBeta\n\
+ 103 /Applications/Roblox.app/Contents/MacOS/RobloxStudio\n\
+ 104 Safari\n";
+
+        let pids = collect_roblox_process_ids(stdout);
+
+        assert_eq!(pids, vec![101, 102]);
+    }
+
+    #[test]
+    fn parse_ps_process_line_rejects_invalid_rows() {
+        assert_eq!(parse_ps_process_line(""), None);
+        assert_eq!(parse_ps_process_line("abc RobloxPlayer"), None);
+        assert_eq!(parse_ps_process_line("123"), None);
     }
 }

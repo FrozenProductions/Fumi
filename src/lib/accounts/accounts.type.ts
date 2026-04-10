@@ -12,4 +12,10 @@ export type AccountSummary = {
 
 export type AccountListResponse = {
     accounts: readonly AccountSummary[];
+    isRobloxRunning: boolean;
+};
+
+export type RobloxProcessInfo = {
+    pid: number;
+    startedAt: number;
 };

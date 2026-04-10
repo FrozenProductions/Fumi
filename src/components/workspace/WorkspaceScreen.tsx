@@ -1,9 +1,5 @@
 import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
-import {
-    Add01Icon,
-    FolderOpenIcon,
-    PlayIcon,
-} from "@hugeicons/core-free-icons";
+import { Add01Icon, FolderOpenIcon } from "@hugeicons/core-free-icons";
 import {
     type ReactElement,
     useCallback,
@@ -15,8 +11,15 @@ import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
+import type { RobloxProcessInfo } from "../../lib/accounts/accounts.type";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
+import {
+    killRobloxProcess,
+    killRobloxProcesses,
+    launchRoblox,
+    listRobloxProcesses,
+} from "../../lib/platform/accounts";
 import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
@@ -27,8 +30,7 @@ import {
     TAB_BAR_SENSORS,
 } from "../../lib/workspace/tabBar";
 import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
-import { AppIcon } from "../app/AppIcon";
-import { AppTooltip } from "../app/AppTooltip";
+import { WorkspaceActionsButton } from "./WorkspaceActionsButton";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
@@ -87,7 +89,65 @@ export function WorkspaceScreen({
         updateActiveTabScrollTop,
     } = session.editorActions;
     const executorState = executor.state;
-    const { executeActiveTab } = executor.actions;
+
+    const [isRobloxRunning, setIsRobloxRunning] = useState(false);
+    const [robloxProcesses, setRobloxProcesses] = useState<
+        readonly RobloxProcessInfo[]
+    >([]);
+    const [isLaunching, setIsLaunching] = useState(false);
+    const [isKillingRoblox, setIsKillingRoblox] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function pollRobloxState(): Promise<void> {
+            try {
+                const processes = await listRobloxProcesses();
+                if (isMounted) {
+                    setRobloxProcesses(processes);
+                    setIsRobloxRunning(processes.length > 0);
+                }
+            } catch {}
+        }
+
+        void pollRobloxState();
+        const intervalId = window.setInterval(() => {
+            void pollRobloxState();
+        }, 2_000);
+
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+        };
+    }, []);
+
+    const handleLaunchRoblox = async (): Promise<void> => {
+        if (isLaunching) {
+            return;
+        }
+        setIsLaunching(true);
+        try {
+            await launchRoblox();
+        } finally {
+            setIsLaunching(false);
+        }
+    };
+
+    const handleKillRoblox = async (): Promise<void> => {
+        if (isKillingRoblox) {
+            return;
+        }
+        setIsKillingRoblox(true);
+        try {
+            await killRobloxProcesses();
+        } finally {
+            setIsKillingRoblox(false);
+        }
+    };
+
+    const handleKillRobloxProcess = async (pid: number): Promise<void> => {
+        await killRobloxProcess(pid);
+    };
     const activeEditorMode = activeTab
         ? getEditorModeForFileName(activeTab.fileName)
         : "text";
@@ -347,10 +407,6 @@ export function WorkspaceScreen({
         renameCurrentTabRequest,
     ]);
 
-    const executeButtonClassName =
-        appTheme === "dark"
-            ? "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-300 bg-fumi-700 px-3.5 text-xs font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-400 hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
-            : "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-[0.5rem] border border-fumi-200 bg-fumi-600 px-3.5 text-xs font-semibold tracking-wide text-white shadow-sm transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-700 hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50";
     const chooseWorkspaceAction = {
         label: "Choose workspace",
         onClick: handleOpenWorkspaceDirectory,
@@ -484,42 +540,18 @@ export function WorkspaceScreen({
                                 onResizeSplitCancel={handleResizeSplitCancel}
                             />
                             <div className="pointer-events-none absolute bottom-5 right-5 z-20">
-                                <AppTooltip
-                                    content={
-                                        !executorState.hasSupportedExecutor
-                                            ? "No supported executor detected."
-                                            : executorState.isAttached
-                                              ? "Execute the current tab through the executor"
-                                              : "Attach to an executor port before executing"
+                                <WorkspaceActionsButton
+                                    executor={executor}
+                                    isRobloxRunning={isRobloxRunning}
+                                    isLaunching={isLaunching}
+                                    onLaunchRoblox={handleLaunchRoblox}
+                                    isKillingRoblox={isKillingRoblox}
+                                    onKillRoblox={handleKillRoblox}
+                                    robloxProcesses={robloxProcesses}
+                                    onKillRobloxProcess={
+                                        handleKillRobloxProcess
                                     }
-                                >
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            void executeActiveTab();
-                                        }}
-                                        disabled={
-                                            executorState.isBusy ||
-                                            !executorState.hasSupportedExecutor
-                                        }
-                                        className={`app-select-none ${executeButtonClassName} ${
-                                            executorState.isBusy
-                                                ? "cursor-wait opacity-70"
-                                                : !executorState.hasSupportedExecutor
-                                                  ? "cursor-not-allowed opacity-60"
-                                                  : ""
-                                        }`}
-                                    >
-                                        <AppIcon
-                                            icon={PlayIcon}
-                                            className={`size-3.5 ${executorState.isBusy ? "opacity-50" : ""}`}
-                                            strokeWidth={2.5}
-                                        />
-                                        {executorState.isBusy
-                                            ? "Executing"
-                                            : "Execute"}
-                                    </button>
-                                </AppTooltip>
+                                />
                             </div>
                         </div>
                     ) : (
