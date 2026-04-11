@@ -37,6 +37,11 @@ export function getAppCommandPaletteHotkeyLabels(
             "FOCUS_WORKSPACE_RIGHT_PANE",
             hotkeyBindings,
         ),
+        killRoblox: getAppHotkeyShortcutLabel("KILL_ROBLOX", hotkeyBindings),
+        launchRoblox: getAppHotkeyShortcutLabel(
+            "LAUNCH_ROBLOX",
+            hotkeyBindings,
+        ),
         moveWorkspaceTabToLeftPane: getAppHotkeyShortcutLabel(
             "MOVE_WORKSPACE_TAB_TO_LEFT_PANE",
             hotkeyBindings,

@@ -97,6 +97,8 @@ export type AppCommandPaletteHotkeyLabels = {
     createWorkspaceFile: string;
     focusWorkspaceLeftPane: string;
     focusWorkspaceRightPane: string;
+    killRoblox: string;
+    launchRoblox: string;
     moveWorkspaceTabToLeftPane: string;
     moveWorkspaceTabToRightPane: string;
     openAccounts: string;

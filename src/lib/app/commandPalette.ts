@@ -5,6 +5,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { AppCommandPaletteItem } from "../../lib/app/app.type";
+import { killRobloxProcesses, launchRoblox } from "../../lib/platform/accounts";
+import { confirmAction } from "../../lib/platform/dialog";
+import { isTauriEnvironment } from "../../lib/platform/runtime";
 import { splitWorkspaceFileName } from "../workspace/fileName";
 import type {
     GetCommandPaletteCommandItemsOptions,
@@ -109,6 +112,7 @@ export function getCommandCommandPaletteItems({
     const { splitView } = workspaceSession.state.workspace ?? {};
     const executorState = workspaceExecutor.state;
     const { executeActiveTab } = workspaceExecutor.actions;
+    const isDesktopShell = isTauriEnvironment();
     const commandItems: AppCommandPaletteItem[] = [
         {
             id: "command-open-workspace-screen",
@@ -173,6 +177,36 @@ export function getCommandCommandPaletteItems({
             keywords: "workspace folder open choose switch",
             onSelect: () => {
                 void openWorkspaceDirectory();
+            },
+        },
+        {
+            id: "command-launch-roblox",
+            label: "Launch Roblox",
+            description: isDesktopShell
+                ? "Start a Roblox client from the desktop app."
+                : "Roblox controls require the Tauri desktop shell.",
+            icon: CommandIcon,
+            meta: hotkeyLabels.launchRoblox,
+            keywords: "roblox launch start open player client",
+            isDisabled: !isDesktopShell,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                void launchRoblox();
+            },
+        },
+        {
+            id: "command-kill-roblox",
+            label: "Kill Roblox",
+            description: isDesktopShell
+                ? "Attempt to close Roblox after confirmation."
+                : "Roblox controls require the Tauri desktop shell.",
+            icon: CommandIcon,
+            meta: hotkeyLabels.killRoblox,
+            keywords: "roblox kill close terminate quit player client",
+            isDisabled: !isDesktopShell,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                void confirmKillRobloxProcesses();
             },
         },
         {
@@ -435,6 +469,16 @@ export function getCommandCommandPaletteItems({
     }
 
     return commandItems;
+}
+
+async function confirmKillRobloxProcesses(): Promise<void> {
+    const shouldKillRoblox = await confirmAction("Attempt to close Roblox?");
+
+    if (!shouldKillRoblox) {
+        return;
+    }
+
+    await killRobloxProcesses();
 }
 
 export function getWorkspaceCommandPaletteItems(
