@@ -1,9 +1,10 @@
-import { Schema } from "effect";
+import {
+    OperationError,
+    type OperationErrorOptions,
+} from "../shared/operationError";
 
-export class ScriptLibraryError extends Schema.TaggedError<ScriptLibraryError>()(
-    "ScriptLibraryError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class ScriptLibraryError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("ScriptLibraryError", options);
+    }
+}

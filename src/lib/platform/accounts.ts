@@ -1,35 +1,16 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Effect, Schema } from "effect";
 import type {
     AccountListResponse,
     AccountSummary,
     RobloxProcessInfo,
 } from "../accounts/accounts.type";
-import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { decodeUnknownWithSchema } from "../shared/schema";
+import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
 import { AccountsCommandError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 
 const DESKTOP_SHELL_REQUIRED_ERROR =
     "Accounts commands require the Tauri desktop shell.";
-
-const AccountStatusSchema = Schema.Literal("active", "offline");
-
-const AccountSummarySchema = Schema.Struct({
-    id: Schema.String,
-    userId: Schema.Number,
-    username: Schema.String,
-    displayName: Schema.String,
-    avatarUrl: Schema.NullOr(Schema.String),
-    status: AccountStatusSchema,
-    lastLaunchedAt: Schema.NullOr(Schema.Number),
-});
-
-const AccountListResponseSchema = Schema.Struct({
-    accounts: Schema.Array(AccountSummarySchema),
-    isRobloxRunning: Schema.Boolean,
-});
 
 function createAccountsCommandError(
     operation: string,
@@ -42,79 +23,159 @@ function createAccountsCommandError(
     });
 }
 
-function invokeAccountsCommandEffect<A, I>(
-    command: string,
-    schema: Schema.Schema<A, I, never>,
+function createInvalidAccountsResponseError(
     operation: string,
-    args?: Record<string, unknown>,
-): Effect.Effect<A, AccountsCommandError> {
-    return Effect.tryPromise({
-        try: () => invoke<unknown>(command, args),
-        catch: (error) =>
-            createAccountsCommandError(
-                operation,
-                error,
-                `Could not complete ${operation}.`,
-            ),
-    }).pipe(
-        Effect.flatMap((value) =>
-            decodeUnknownWithSchema(
-                schema,
-                value,
-                () =>
-                    new AccountsCommandError({
-                        operation,
-                        message: `Unexpected response shape for ${operation}.`,
-                    }),
-            ),
-        ),
-    );
-}
-
-function invokeAccountsVoidCommandEffect(
-    command: string,
-    operation: string,
-    args?: Record<string, unknown>,
-): Effect.Effect<void, AccountsCommandError> {
-    return Effect.tryPromise({
-        try: () => invoke<void>(command, args),
-        catch: (error) =>
-            createAccountsCommandError(
-                operation,
-                error,
-                `Could not complete ${operation}.`,
-            ),
+): AccountsCommandError {
+    return new AccountsCommandError({
+        operation,
+        message: `Unexpected response shape for ${operation}.`,
     });
 }
 
-export function listAccounts(): Promise<AccountListResponse> {
-    return runPromise(listAccountsEffect());
-}
-
-export function listAccountsEffect(): Effect.Effect<
-    AccountListResponse,
-    AccountsCommandError
-> {
-    if (!isTauriEnvironment()) {
-        return Effect.succeed({ accounts: [], isRobloxRunning: false });
+function parseAccountSummary(
+    value: unknown,
+    operation: string,
+): AccountSummary {
+    if (!isRecord(value)) {
+        throw createInvalidAccountsResponseError(operation);
     }
 
-    return invokeAccountsCommandEffect(
+    if (
+        !isString(value.id) ||
+        !isNumber(value.userId) ||
+        !isString(value.username) ||
+        !isString(value.displayName)
+    ) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    if (value.avatarUrl !== null && !isString(value.avatarUrl)) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    if (value.status !== "active" && value.status !== "offline") {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    if (value.lastLaunchedAt !== null && !isNumber(value.lastLaunchedAt)) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    return {
+        id: value.id,
+        userId: value.userId,
+        username: value.username,
+        displayName: value.displayName,
+        avatarUrl: value.avatarUrl,
+        status: value.status,
+        lastLaunchedAt: value.lastLaunchedAt,
+    };
+}
+
+function parseAccountListResponse(
+    value: unknown,
+    operation: string,
+): AccountListResponse {
+    if (!isRecord(value) || !Array.isArray(value.accounts)) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    if (!isBoolean(value.isRobloxRunning)) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    return {
+        accounts: value.accounts.map((account) =>
+            parseAccountSummary(account, operation),
+        ),
+        isRobloxRunning: value.isRobloxRunning,
+    };
+}
+
+function parseRobloxProcessInfo(
+    value: unknown,
+    operation: string,
+): RobloxProcessInfo {
+    if (
+        !isRecord(value) ||
+        !isNumber(value.pid) ||
+        !isNumber(value.startedAt)
+    ) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    return {
+        pid: value.pid,
+        startedAt: value.startedAt,
+    };
+}
+
+function parseRobloxProcessList(
+    value: unknown,
+    operation: string,
+): readonly RobloxProcessInfo[] {
+    if (!Array.isArray(value)) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    return value.map((processInfo) =>
+        parseRobloxProcessInfo(processInfo, operation),
+    );
+}
+
+async function invokeAccountsCommand<T>(
+    command: string,
+    operation: string,
+    parseValue: (value: unknown, parseOperation: string) => T,
+    args?: Record<string, unknown>,
+): Promise<T> {
+    try {
+        const value = await invoke<unknown>(command, args);
+        return parseValue(value, operation);
+    } catch (error) {
+        if (error instanceof AccountsCommandError) {
+            throw error;
+        }
+
+        throw createAccountsCommandError(
+            operation,
+            error,
+            `Could not complete ${operation}.`,
+        );
+    }
+}
+
+async function invokeAccountsVoidCommand(
+    command: string,
+    operation: string,
+    args?: Record<string, unknown>,
+): Promise<void> {
+    try {
+        await invoke<void>(command, args);
+    } catch (error) {
+        throw createAccountsCommandError(
+            operation,
+            error,
+            `Could not complete ${operation}.`,
+        );
+    }
+}
+
+export function listAccounts(): Promise<AccountListResponse> {
+    if (!isTauriEnvironment()) {
+        return Promise.resolve({ accounts: [], isRobloxRunning: false });
+    }
+
+    return invokeAccountsCommand(
         "list_accounts",
-        AccountListResponseSchema,
         "listAccounts",
+        parseAccountListResponse,
     );
 }
 
 export function addAccount(cookie: string): Promise<AccountSummary> {
-    return runPromise(addAccountEffect(cookie));
-}
-
-export function addAccountEffect(
-    cookie: string,
-): Effect.Effect<AccountSummary, AccountsCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new AccountsCommandError({
                 operation: "addAccount",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -122,23 +183,17 @@ export function addAccountEffect(
         );
     }
 
-    return invokeAccountsCommandEffect(
+    return invokeAccountsCommand(
         "add_account",
-        AccountSummarySchema,
         "addAccount",
+        parseAccountSummary,
         { cookie },
     );
 }
 
 export function launchAccount(accountId: string): Promise<AccountSummary> {
-    return runPromise(launchAccountEffect(accountId));
-}
-
-export function launchAccountEffect(
-    accountId: string,
-): Effect.Effect<AccountSummary, AccountsCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new AccountsCommandError({
                 operation: "launchAccount",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -146,23 +201,17 @@ export function launchAccountEffect(
         );
     }
 
-    return invokeAccountsCommandEffect(
+    return invokeAccountsCommand(
         "launch_account",
-        AccountSummarySchema,
         "launchAccount",
+        parseAccountSummary,
         { accountId },
     );
 }
 
 export function deleteAccount(accountId: string): Promise<void> {
-    return runPromise(deleteAccountEffect(accountId));
-}
-
-export function deleteAccountEffect(
-    accountId: string,
-): Effect.Effect<void, AccountsCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new AccountsCommandError({
                 operation: "deleteAccount",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -170,21 +219,14 @@ export function deleteAccountEffect(
         );
     }
 
-    return invokeAccountsVoidCommandEffect("delete_account", "deleteAccount", {
+    return invokeAccountsVoidCommand("delete_account", "deleteAccount", {
         accountId,
     });
 }
 
 export function killRobloxProcesses(): Promise<void> {
-    return runPromise(killRobloxProcessesEffect());
-}
-
-export function killRobloxProcessesEffect(): Effect.Effect<
-    void,
-    AccountsCommandError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new AccountsCommandError({
                 operation: "killRobloxProcesses",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -192,29 +234,15 @@ export function killRobloxProcessesEffect(): Effect.Effect<
         );
     }
 
-    return invokeAccountsVoidCommandEffect(
+    return invokeAccountsVoidCommand(
         "kill_roblox_processes",
         "killRobloxProcesses",
     );
 }
 
-const RobloxProcessInfoSchema = Schema.Struct({
-    pid: Schema.Number,
-    startedAt: Schema.Number,
-});
-
-const RobloxProcessListSchema = Schema.Array(RobloxProcessInfoSchema);
-
 export function launchRoblox(): Promise<void> {
-    return runPromise(launchRobloxEffect());
-}
-
-export function launchRobloxEffect(): Effect.Effect<
-    void,
-    AccountsCommandError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new AccountsCommandError({
                 operation: "launchRoblox",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -222,37 +250,24 @@ export function launchRobloxEffect(): Effect.Effect<
         );
     }
 
-    return invokeAccountsVoidCommandEffect("launch_roblox", "launchRoblox");
+    return invokeAccountsVoidCommand("launch_roblox", "launchRoblox");
 }
 
 export function listRobloxProcesses(): Promise<readonly RobloxProcessInfo[]> {
-    return runPromise(listRobloxProcessesEffect());
-}
-
-export function listRobloxProcessesEffect(): Effect.Effect<
-    readonly RobloxProcessInfo[],
-    AccountsCommandError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed([]);
+        return Promise.resolve([]);
     }
 
-    return invokeAccountsCommandEffect(
+    return invokeAccountsCommand(
         "list_roblox_processes",
-        RobloxProcessListSchema,
         "listRobloxProcesses",
+        parseRobloxProcessList,
     );
 }
 
 export function killRobloxProcess(pid: number): Promise<void> {
-    return runPromise(killRobloxProcessEffect(pid));
-}
-
-export function killRobloxProcessEffect(
-    pid: number,
-): Effect.Effect<void, AccountsCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new AccountsCommandError({
                 operation: "killRobloxProcess",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -260,7 +275,7 @@ export function killRobloxProcessEffect(
         );
     }
 
-    return invokeAccountsVoidCommandEffect(
+    return invokeAccountsVoidCommand(
         "kill_roblox_process",
         "killRobloxProcess",
         { pid },

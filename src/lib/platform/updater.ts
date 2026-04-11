@@ -4,7 +4,6 @@ import {
     type DownloadEvent,
     type Update,
 } from "@tauri-apps/plugin-updater";
-import { Effect } from "effect";
 import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
@@ -37,70 +36,66 @@ function mapUpdateMetadata(update: Update): AppUpdateMetadata {
     };
 }
 
-function clearPendingUpdateEffect(): Effect.Effect<void, UpdaterError> {
-    return Effect.gen(function* () {
-        const updateToClose = pendingUpdate;
+async function clearPendingUpdate(): Promise<void> {
+    const updateToClose = pendingUpdate;
 
-        pendingUpdate = null;
-        pendingUpdateVersion = null;
+    pendingUpdate = null;
+    pendingUpdateVersion = null;
 
-        if (!updateToClose) {
-            return;
-        }
+    if (!updateToClose) {
+        return;
+    }
 
-        yield* Effect.tryPromise({
-            try: () => updateToClose.close(),
-            catch: (error) =>
-                createUpdaterError(
-                    "clearPendingUpdate",
-                    error,
-                    "Could not clear the cached update handle.",
-                ),
-        }).pipe(Effect.catchAll(() => Effect.void));
-    });
+    try {
+        await updateToClose.close();
+    } catch {
+        return;
+    }
 }
 
-function getPendingUpdateForVersionEffect(
-    version: string,
-): Effect.Effect<Update, UpdaterError> {
-    return Effect.gen(function* () {
-        if (pendingUpdate && pendingUpdateVersion === version) {
-            return pendingUpdate;
-        }
+async function getPendingUpdateForVersion(version: string): Promise<Update> {
+    if (pendingUpdate && pendingUpdateVersion === version) {
+        return pendingUpdate;
+    }
 
-        const refreshedUpdate = yield* Effect.tryPromise({
-            try: () => check(),
-            catch: (error) =>
-                createUpdaterError(
-                    "getPendingUpdateForVersion",
-                    error,
-                    "Could not refresh the pending app update.",
-                ),
-        });
+    let refreshedUpdate: Update | null;
 
-        if (!refreshedUpdate || refreshedUpdate.version !== version) {
-            if (refreshedUpdate) {
-                yield* Effect.tryPromise({
-                    try: () => refreshedUpdate.close(),
-                    catch: () => undefined,
-                }).pipe(Effect.catchAll(() => Effect.void));
+    try {
+        refreshedUpdate = await check();
+    } catch (error) {
+        throw createUpdaterError(
+            "getPendingUpdateForVersion",
+            error,
+            "Could not refresh the pending app update.",
+        );
+    }
+
+    if (!refreshedUpdate || refreshedUpdate.version !== version) {
+        if (refreshedUpdate) {
+            try {
+                await refreshedUpdate.close();
+            } catch {
+                return Promise.reject(
+                    new UpdaterError({
+                        operation: "getPendingUpdateForVersion",
+                        message: `Update v${version} is no longer available.`,
+                    }),
+                );
             }
-
-            return yield* Effect.fail(
-                new UpdaterError({
-                    operation: "getPendingUpdateForVersion",
-                    message: `Update v${version} is no longer available.`,
-                }),
-            );
         }
 
-        yield* clearPendingUpdateEffect();
+        throw new UpdaterError({
+            operation: "getPendingUpdateForVersion",
+            message: `Update v${version} is no longer available.`,
+        });
+    }
 
-        pendingUpdate = refreshedUpdate;
-        pendingUpdateVersion = refreshedUpdate.version;
+    await clearPendingUpdate();
 
-        return refreshedUpdate;
-    });
+    pendingUpdate = refreshedUpdate;
+    pendingUpdateVersion = refreshedUpdate.version;
+
+    return refreshedUpdate;
 }
 
 function mapDownloadProgress(
@@ -126,105 +121,88 @@ function mapDownloadProgress(
     };
 }
 
-export function checkForAppUpdateEffect(): Effect.Effect<
-    AppUpdateMetadata | null,
-    UpdaterError
-> {
+export async function checkForAppUpdate(): Promise<AppUpdateMetadata | null> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(null);
+        return null;
     }
 
-    return Effect.gen(function* () {
-        yield* clearPendingUpdateEffect();
+    await clearPendingUpdate();
 
-        const update = yield* Effect.tryPromise({
-            try: () => check(),
-            catch: (error) =>
-                createUpdaterError(
-                    "checkForAppUpdate",
-                    error,
-                    "Could not check for app updates.",
-                ),
-        });
+    let update: Update | null;
 
-        if (!update) {
-            return null;
-        }
+    try {
+        update = await check();
+    } catch (error) {
+        throw createUpdaterError(
+            "checkForAppUpdate",
+            error,
+            "Could not check for app updates.",
+        );
+    }
 
-        pendingUpdate = update;
-        pendingUpdateVersion = update.version;
+    if (!update) {
+        return null;
+    }
 
-        return mapUpdateMetadata(update);
-    });
+    pendingUpdate = update;
+    pendingUpdateVersion = update.version;
+
+    return mapUpdateMetadata(update);
 }
 
-export function downloadAndInstallAppUpdateEffect(
+export async function downloadAndInstallAppUpdate(
     updateMetadata: AppUpdateMetadata,
     onProgress?: (progress: AppUpdateDownloadProgress) => void,
-): Effect.Effect<void, UpdaterError> {
+): Promise<void> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.gen(function* () {
-        const update = yield* getPendingUpdateForVersionEffect(
-            updateMetadata.version,
+    const update = await getPendingUpdateForVersion(updateMetadata.version);
+    let downloadedBytes = 0;
+    let contentLength: number | null = null;
+
+    try {
+        await update.downloadAndInstall((event) => {
+            if (event.event === "Started") {
+                contentLength = event.data.contentLength ?? null;
+            }
+
+            if (event.event === "Progress") {
+                downloadedBytes += event.data.chunkLength;
+            }
+
+            if (event.event === "Finished" && contentLength !== null) {
+                downloadedBytes = contentLength;
+            }
+
+            onProgress?.(
+                mapDownloadProgress(event, downloadedBytes, contentLength),
+            );
+        });
+    } catch (error) {
+        throw createUpdaterError(
+            "downloadAndInstallAppUpdate",
+            error,
+            `Could not install Fumi v${updateMetadata.version}.`,
         );
-        let downloadedBytes = 0;
-        let contentLength: number | null = null;
-
-        try {
-            yield* Effect.tryPromise({
-                try: () =>
-                    update.downloadAndInstall((event) => {
-                        if (event.event === "Started") {
-                            contentLength = event.data.contentLength ?? null;
-                        }
-
-                        if (event.event === "Progress") {
-                            downloadedBytes += event.data.chunkLength;
-                        }
-
-                        if (
-                            event.event === "Finished" &&
-                            contentLength !== null
-                        ) {
-                            downloadedBytes = contentLength;
-                        }
-
-                        onProgress?.(
-                            mapDownloadProgress(
-                                event,
-                                downloadedBytes,
-                                contentLength,
-                            ),
-                        );
-                    }),
-                catch: (error) =>
-                    createUpdaterError(
-                        "downloadAndInstallAppUpdate",
-                        error,
-                        `Could not install Fumi v${updateMetadata.version}.`,
-                    ),
-            });
-        } finally {
-            yield* clearPendingUpdateEffect();
-        }
-    });
+    } finally {
+        await clearPendingUpdate();
+    }
 }
 
-export function relaunchAppEffect(): Effect.Effect<void, UpdaterError> {
+export async function relaunchApp(): Promise<void> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.tryPromise({
-        try: () => relaunch(),
-        catch: (error) =>
-            createUpdaterError(
-                "relaunchApp",
-                error,
-                "Could not restart the app.",
-            ),
-    });
+    try {
+        await relaunch();
+    } catch (error) {
+        throw createUpdaterError(
+            "relaunchApp",
+            error,
+            "Could not restart the app.",
+        );
+    }
 }

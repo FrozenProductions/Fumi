@@ -1,18 +1,16 @@
-import { Effect } from "effect";
 import { create, type StateCreator } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { DEFAULT_SCRIPT_LIBRARY_FILTERS } from "../../constants/scriptLibrary/scriptLibrary";
 import {
     createScriptLibraryCachedSession,
-    fetchFilteredScriptsPageEffect,
-    fetchScriptsPageEffect,
+    fetchFilteredScriptsPage,
+    fetchScriptsPage,
     getScriptLibrarySessionKey,
     hasActiveScriptLibraryFilters,
 } from "../../lib/scriptLibrary/api";
 import type { ScriptLibraryCachedSession } from "../../lib/scriptLibrary/api.type";
 import { normalizeScriptLibraryFavoriteEntry } from "../../lib/scriptLibrary/scriptLibrary";
 import type { ScriptLibrarySort } from "../../lib/scriptLibrary/scriptLibrary.type";
-import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type {
     ScriptLibraryStore,
@@ -227,72 +225,67 @@ export const createScriptLibraryStoreStateCreator: StateCreator<
             errorMessage: null,
         });
 
-        const program = (
-            hasActiveFilters
-                ? fetchFilteredScriptsPageEffect(
-                      session,
-                      trimmedQuery,
-                      page,
-                      filters,
-                      orderBy,
-                      signal,
-                  ).pipe(
-                      Effect.map((filteredResult) => ({
-                          scripts: filteredResult.scripts,
-                          canGoNext: filteredResult.canGoNext,
-                          maxPages: filteredResult.maxPages,
-                      })),
-                  )
-                : fetchScriptsPageEffect(
-                      session,
-                      trimmedQuery,
-                      page,
-                      orderBy,
-                      signal,
-                  ).pipe(
-                      Effect.map((scriptsPage) => ({
-                          scripts: scriptsPage.scripts,
-                          canGoNext: page < scriptsPage.maxPages,
-                          maxPages: scriptsPage.maxPages,
-                      })),
-                  )
-        ).pipe(
-            Effect.match({
-                onSuccess: (result) => {
-                    if (signal.aborted) {
-                        return;
-                    }
+        try {
+            if (hasActiveFilters) {
+                const result = await fetchFilteredScriptsPage(
+                    session,
+                    trimmedQuery,
+                    page,
+                    filters,
+                    orderBy,
+                    signal,
+                );
 
-                    set({
-                        scripts: result.scripts,
-                        canGoNext: result.canGoNext,
-                        maxPages: result.maxPages,
-                        isLoading: false,
-                    });
-                },
-                onFailure: (error) => {
-                    if (signal.aborted) {
-                        return;
-                    }
+                if (signal.aborted) {
+                    return;
+                }
 
-                    set({
-                        scripts: [],
-                        canGoNext: false,
-                        maxPages: null,
-                        errorMessage: getErrorMessage(
-                            error,
-                            "Could not load script library.",
-                            {
-                                useFallbackForAbort: true,
-                            },
-                        ),
-                        isLoading: false,
-                    });
-                },
-            }),
-        );
+                set({
+                    scripts: result.scripts,
+                    canGoNext: result.canGoNext,
+                    maxPages: result.maxPages,
+                    isLoading: false,
+                });
+                return;
+            }
 
-        await runPromise(program);
+            const result = await fetchScriptsPage(
+                session,
+                trimmedQuery,
+                page,
+                orderBy,
+                signal,
+            );
+
+            if (signal.aborted) {
+                return;
+            }
+
+            set({
+                scripts: result.scripts,
+                canGoNext: page < result.maxPages,
+                maxPages: result.maxPages,
+                isLoading: false,
+            });
+        } catch (error) {
+            if (signal.aborted) {
+                return;
+            }
+
+            set({
+                scripts: [],
+                canGoNext: false,
+                maxPages: null,
+                errorMessage: getErrorMessage(
+                    error,
+                    "Could not load script library.",
+                    {
+                        useFallbackForAbort: true,
+                    },
+                ),
+                isLoading: false,
+            });
+        }
     },
 });
 

@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import {
     afterEach,
     beforeEach,
@@ -10,9 +9,8 @@ import {
 import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import {
     getWorkspacePersistSignature,
-    persistRecentWorkspacePathsEffect,
+    persistRecentWorkspacePaths,
     readRecentWorkspacePaths,
-    readRecentWorkspacePathsEffect,
     updateRecentWorkspacePaths,
 } from "./persistence";
 
@@ -144,8 +142,8 @@ describe("getWorkspacePersistSignature", () => {
     });
 });
 
-describe("readRecentWorkspacePathsEffect", () => {
-    it("returns normalized workspace paths for valid stored values", async () => {
+describe("readRecentWorkspacePaths", () => {
+    it("returns normalized workspace paths for valid stored values", () => {
         globalThis.localStorage.setItem(
             RECENT_WORKSPACE_STORAGE_KEY,
             JSON.stringify([
@@ -156,13 +154,14 @@ describe("readRecentWorkspacePathsEffect", () => {
             ]),
         );
 
-        await expect(
-            Effect.runPromise(readRecentWorkspacePathsEffect()),
-        ).resolves.toEqual(["/workspace/one", "/workspace/two"]);
+        expect(readRecentWorkspacePaths()).toEqual([
+            "/workspace/one",
+            "/workspace/two",
+        ]);
     });
 });
 
-describe("readRecentWorkspacePaths", () => {
+describe("readRecentWorkspacePaths error handling", () => {
     it("returns an empty list and warns when storage contains malformed json", () => {
         const warnSpy = vi
             .spyOn(console, "warn")
@@ -192,14 +191,9 @@ describe("readRecentWorkspacePaths", () => {
     });
 });
 
-describe("persistRecentWorkspacePathsEffect", () => {
+describe("persistRecentWorkspacePaths", () => {
     it("writes the provided paths to local storage", async () => {
-        await Effect.runPromise(
-            persistRecentWorkspacePathsEffect([
-                "/workspace/one",
-                "/workspace/two",
-            ]),
-        );
+        persistRecentWorkspacePaths(["/workspace/one", "/workspace/two"]);
 
         expect(
             globalThis.localStorage.getItem(RECENT_WORKSPACE_STORAGE_KEY),

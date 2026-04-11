@@ -1,14 +1,10 @@
-import { Effect, Schema } from "effect";
 import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
-import { runSync } from "../shared/effectRuntime";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { decodeUnknownWithSchema } from "../shared/schema";
+import { isString } from "../shared/validation";
 import { PersistenceError } from "./errors";
 import { serializeTabState } from "./session";
 
 const RECENT_WORKSPACE_STORAGE_KEY = "fumi-recent-workspaces";
 const MAX_RECENT_WORKSPACES = 6;
-const RecentWorkspacePathsSchema = Schema.Array(Schema.String);
 
 let lastPersistedWorkspaceSignature: string | null = null;
 
@@ -46,28 +42,43 @@ export function markWorkspacePersistedSignature(
 }
 
 export function readRecentWorkspacePaths(): string[] {
-    return runSync(
-        readRecentWorkspacePathsEffect().pipe(
-            Effect.catchAll((error) => {
-                return Effect.sync(() => {
-                    logWorkspacePersistenceFailure("read", error);
-                    return [];
-                });
-            }),
-        ),
-    );
+    try {
+        const storedValue =
+            globalThis.localStorage?.getItem(RECENT_WORKSPACE_STORAGE_KEY) ??
+            null;
+
+        if (!storedValue) {
+            return [];
+        }
+
+        const parsedValue = JSON.parse(storedValue);
+
+        if (
+            !Array.isArray(parsedValue) ||
+            !parsedValue.every((workspacePath) => isString(workspacePath))
+        ) {
+            throw new PersistenceError({
+                operation: "readRecentWorkspacePaths",
+                message: "Recent workspace storage has an invalid shape.",
+            });
+        }
+
+        return normalizeRecentWorkspacePaths(parsedValue);
+    } catch (error) {
+        logWorkspacePersistenceFailure("read", error);
+        return [];
+    }
 }
 
 export function persistRecentWorkspacePaths(paths: string[]): void {
-    runSync(
-        persistRecentWorkspacePathsEffect(paths).pipe(
-            Effect.catchAll((error) => {
-                return Effect.sync(() => {
-                    logWorkspacePersistenceFailure("write", error);
-                });
-            }),
-        ),
-    );
+    try {
+        globalThis.localStorage?.setItem(
+            RECENT_WORKSPACE_STORAGE_KEY,
+            JSON.stringify(paths),
+        );
+    } catch (error) {
+        logWorkspacePersistenceFailure("write", error);
+    }
 }
 
 export function updateRecentWorkspacePaths(
@@ -87,77 +98,4 @@ function normalizeRecentWorkspacePaths(paths: string[]): string[] {
             );
         })
         .slice(0, MAX_RECENT_WORKSPACES);
-}
-
-export function readRecentWorkspacePathsEffect(): Effect.Effect<
-    string[],
-    PersistenceError
-> {
-    return Effect.try({
-        try: () =>
-            globalThis.localStorage?.getItem(RECENT_WORKSPACE_STORAGE_KEY) ??
-            null,
-        catch: (error) =>
-            new PersistenceError({
-                operation: "readRecentWorkspacePaths",
-                message: getUnknownCauseMessage(
-                    error,
-                    "Could not access recent workspace storage.",
-                ),
-            }),
-    }).pipe(
-        Effect.flatMap((storedValue) => {
-            if (!storedValue) {
-                return Effect.succeed([]);
-            }
-
-            return Effect.try({
-                try: () => JSON.parse(storedValue),
-                catch: (error) =>
-                    new PersistenceError({
-                        operation: "readRecentWorkspacePaths",
-                        message: getUnknownCauseMessage(
-                            error,
-                            "Could not parse recent workspace storage.",
-                        ),
-                    }),
-            }).pipe(
-                Effect.flatMap((parsedValue) =>
-                    decodeUnknownWithSchema(
-                        RecentWorkspacePathsSchema,
-                        parsedValue,
-                        () =>
-                            new PersistenceError({
-                                operation: "readRecentWorkspacePaths",
-                                message:
-                                    "Recent workspace storage has an invalid shape.",
-                            }),
-                    ),
-                ),
-                Effect.map((paths) => Array.from(paths)),
-            );
-        }),
-        Effect.map(normalizeRecentWorkspacePaths),
-    );
-}
-
-export function persistRecentWorkspacePathsEffect(
-    paths: string[],
-): Effect.Effect<void, PersistenceError> {
-    return Effect.try({
-        try: () => {
-            globalThis.localStorage?.setItem(
-                RECENT_WORKSPACE_STORAGE_KEY,
-                JSON.stringify(paths),
-            );
-        },
-        catch: (error) =>
-            new PersistenceError({
-                operation: "persistRecentWorkspacePaths",
-                message: getUnknownCauseMessage(
-                    error,
-                    "Could not write recent workspace storage.",
-                ),
-            }),
-    });
 }

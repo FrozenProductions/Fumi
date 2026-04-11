@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import {
     DEFAULT_EXECUTOR_KIND,
@@ -6,18 +5,13 @@ import {
     getExecutorPorts,
 } from "../../constants/workspace/executor";
 import {
-    attachExecutorEffect,
-    detachExecutorEffect,
-    executeExecutorScriptEffect,
-    getExecutorStatusEffect,
-    subscribeToExecutorMessagesEffect,
-    subscribeToExecutorStatusChangedEffect,
+    attachExecutor,
+    detachExecutor,
+    executeExecutorScript,
+    getExecutorStatus,
+    subscribeToExecutorMessages,
+    subscribeToExecutorStatusChanged,
 } from "../../lib/platform/executor";
-import {
-    interruptFiber,
-    runFork,
-    runPromise,
-} from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import {
     getExecutorPortRangeErrorMessage,
@@ -33,6 +27,36 @@ import type {
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
 } from "./useWorkspaceExecutor.type";
+
+type AsyncUnsubscribe = () => void;
+
+function manageAsyncSubscription(
+    start: () => Promise<AsyncUnsubscribe>,
+    onError: (error: unknown) => void,
+): () => void {
+    let isDisposed = false;
+    let unsubscribe: AsyncUnsubscribe | null = null;
+
+    void start()
+        .then((nextUnsubscribe) => {
+            if (isDisposed) {
+                nextUnsubscribe();
+                return;
+            }
+
+            unsubscribe = nextUnsubscribe;
+        })
+        .catch((error: unknown) => {
+            if (!isDisposed) {
+                onError(error);
+            }
+        });
+
+    return () => {
+        isDisposed = true;
+        unsubscribe?.();
+    };
+}
 
 export function useWorkspaceExecutor({
     activeTabContent,
@@ -68,6 +92,82 @@ export function useWorkspaceExecutor({
     );
 
     useEffect(() => {
+        let isCancelled = false;
+
+        void (async () => {
+            try {
+                const status = await getExecutorStatus();
+
+                if (!isCancelled) {
+                    applyExecutorStatus(status);
+                }
+            } catch (error) {
+                if (!isCancelled) {
+                    setErrorMessage(
+                        getErrorMessage(
+                            error,
+                            "Could not restore the executor status.",
+                        ),
+                    );
+                }
+            }
+        })();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        return manageAsyncSubscription(
+            () =>
+                subscribeToExecutorStatusChanged(
+                    (status: ExecutorStatusPayload) => {
+                        const wasAttached = wasAttachedRef.current;
+                        applyExecutorStatus(status);
+
+                        if (wasAttached && !status.isAttached) {
+                            setErrorMessage("Executor connection closed.");
+                        } else if (status.isAttached) {
+                            setErrorMessage(null);
+                        }
+
+                        if (status.isAttached) {
+                            setDidRecentAttachFail(false);
+                        }
+                    },
+                ),
+            (error) => {
+                setErrorMessage(
+                    getErrorMessage(
+                        error,
+                        "Could not subscribe to executor status changes.",
+                    ),
+                );
+            },
+        );
+    }, []);
+
+    useEffect(() => {
+        return manageAsyncSubscription(
+            () =>
+                subscribeToExecutorMessages((payload) => {
+                    if (payload.messageType === "error") {
+                        console.error("[Executor Error]", payload.message);
+                    }
+                }),
+            (error) => {
+                console.error(
+                    getErrorMessage(
+                        error,
+                        "Could not subscribe to executor messages.",
+                    ),
+                );
+            },
+        );
+    }, []);
+
+    useEffect(() => {
         if (!didRecentAttachFail) {
             return;
         }
@@ -80,112 +180,6 @@ export function useWorkspaceExecutor({
             window.clearTimeout(timeoutId);
         };
     }, [didRecentAttachFail]);
-
-    useEffect(() => {
-        const fiber = runFork(
-            getExecutorStatusEffect().pipe(
-                Effect.match({
-                    onSuccess: (status) => {
-                        applyExecutorStatus(status);
-                    },
-                    onFailure: (error) => {
-                        setErrorMessage(
-                            getErrorMessage(
-                                error,
-                                "Could not restore the executor status.",
-                            ),
-                        );
-                    },
-                }),
-            ),
-        );
-
-        return () => {
-            void interruptFiber(fiber);
-        };
-    }, []);
-
-    useEffect(() => {
-        const fiber = runFork(
-            Effect.matchEffect(
-                Effect.scoped(
-                    Effect.acquireRelease(
-                        subscribeToExecutorStatusChangedEffect(
-                            (status: ExecutorStatusPayload) => {
-                                const wasAttached = wasAttachedRef.current;
-                                applyExecutorStatus(status);
-
-                                if (wasAttached && !status.isAttached) {
-                                    setErrorMessage(
-                                        "Executor connection closed.",
-                                    );
-                                } else if (status.isAttached) {
-                                    setErrorMessage(null);
-                                }
-
-                                if (status.isAttached) {
-                                    setDidRecentAttachFail(false);
-                                }
-                            },
-                        ),
-                        (unsubscribe) => Effect.sync(() => unsubscribe()),
-                    ).pipe(Effect.flatMap(() => Effect.never)),
-                ),
-                {
-                    onSuccess: () => Effect.void,
-                    onFailure: (error) =>
-                        Effect.sync(() => {
-                            setErrorMessage(
-                                getErrorMessage(
-                                    error,
-                                    "Could not subscribe to executor status changes.",
-                                ),
-                            );
-                        }),
-                },
-            ),
-        );
-
-        return () => {
-            void interruptFiber(fiber);
-        };
-    }, []);
-
-    useEffect(() => {
-        const fiber = runFork(
-            Effect.matchEffect(
-                Effect.scoped(
-                    Effect.acquireRelease(
-                        subscribeToExecutorMessagesEffect((payload) => {
-                            if (payload.messageType === "error") {
-                                console.error(
-                                    "[Executor Error]",
-                                    payload.message,
-                                );
-                            }
-                        }),
-                        (unsubscribe) => Effect.sync(() => unsubscribe()),
-                    ).pipe(Effect.flatMap(() => Effect.never)),
-                ),
-                {
-                    onSuccess: () => Effect.void,
-                    onFailure: (error) =>
-                        Effect.sync(() => {
-                            console.error(
-                                getErrorMessage(
-                                    error,
-                                    "Could not subscribe to executor messages.",
-                                ),
-                            );
-                        }),
-                },
-            ),
-        );
-
-        return () => {
-            void interruptFiber(fiber);
-        };
-    }, []);
 
     const updatePort = (value: string): void => {
         const nextPort = normalizeExecutorPort(value, availablePorts);
@@ -229,60 +223,36 @@ export function useWorkspaceExecutor({
             setDidRecentAttachFail(false);
             setErrorMessage(null);
 
-            await runPromise(
-                attachExecutorEffect(parsedPort).pipe(
-                    Effect.match({
-                        onSuccess: (status) => {
-                            applyExecutorStatus(status);
-                            setErrorMessage(null);
-                        },
-                        onFailure: (error) => {
-                            console.error(
-                                getErrorMessage(
-                                    error,
-                                    "Could not attach to the executor.",
-                                ),
-                            );
-                            setDidRecentAttachFail(true);
-                            setErrorMessage(null);
-                        },
-                    }),
-                    Effect.ensuring(
-                        Effect.sync(() => {
-                            setIsBusy(false);
-                        }),
-                    ),
-                ),
-            );
+            try {
+                const status = await attachExecutor(parsedPort);
+                applyExecutorStatus(status);
+                setErrorMessage(null);
+            } catch (error) {
+                console.error(
+                    getErrorMessage(error, "Could not attach to the executor."),
+                );
+                setDidRecentAttachFail(true);
+                setErrorMessage(null);
+            } finally {
+                setIsBusy(false);
+            }
 
             return;
         }
 
         setIsBusy(true);
 
-        await runPromise(
-            detachExecutorEffect().pipe(
-                Effect.match({
-                    onSuccess: (status) => {
-                        applyExecutorStatus(status);
-                        setErrorMessage(null);
-                    },
-                    onFailure: (error) => {
-                        setErrorMessage(
-                            getErrorMessage(
-                                error,
-                                "Could not detach from the executor.",
-                            ),
-                        );
-                    },
-                }),
-                Effect.ensuring(
-                    Effect.sync(() => {
-                        setIsBusy(false);
-                    }),
-                ),
-            ),
-        );
+        try {
+            const status = await detachExecutor();
+            applyExecutorStatus(status);
+            setErrorMessage(null);
+        } catch (error) {
+            setErrorMessage(
+                getErrorMessage(error, "Could not detach from the executor."),
+            );
+        } finally {
+            setIsBusy(false);
+        }
     };
 
     const executeActiveTab = async (): Promise<void> => {
@@ -307,28 +277,16 @@ export function useWorkspaceExecutor({
 
         setIsBusy(true);
 
-        await runPromise(
-            executeExecutorScriptEffect(activeTabContent).pipe(
-                Effect.match({
-                    onSuccess: () => {
-                        setErrorMessage(null);
-                    },
-                    onFailure: (error) => {
-                        setErrorMessage(
-                            getErrorMessage(
-                                error,
-                                "Could not execute the active script.",
-                            ),
-                        );
-                    },
-                }),
-                Effect.ensuring(
-                    Effect.sync(() => {
-                        setIsBusy(false);
-                    }),
-                ),
-            ),
-        );
+        try {
+            await executeExecutorScript(activeTabContent);
+            setErrorMessage(null);
+        } catch (error) {
+            setErrorMessage(
+                getErrorMessage(error, "Could not execute the active script."),
+            );
+        } finally {
+            setIsBusy(false);
+        }
     };
 
     return {

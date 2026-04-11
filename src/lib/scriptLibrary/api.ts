@@ -1,90 +1,23 @@
-import { Effect, Schema } from "effect";
 import {
     RSCRIPTS_API_BASE_URL,
     SCRIPT_LIBRARY_PAGE_SIZE,
 } from "../../constants/scriptLibrary/scriptLibrary";
 import type {
+    RscriptsGame,
+    RscriptsListResponse,
     RscriptsListScript,
+    RscriptsScriptDetailResponse,
     RscriptsUser,
     ScriptLibraryEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
 } from "../../lib/scriptLibrary/scriptLibrary.type";
-import { copyTextToClipboardEffect } from "../platform/clipboard";
-import { runPromise } from "../shared/effectRuntime";
+import { copyTextToClipboard } from "../platform/clipboard";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { decodeUnknownWithSchema } from "../shared/schema";
-import { combineAbortSignals } from "./abort";
+import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
 import type { ScriptLibraryCachedSession, ScriptLibraryPage } from "./api.type";
 import { ScriptLibraryError } from "./errors";
 import { matchesScriptLibraryFilters } from "./scriptLibrary";
-
-const RscriptsUserSchema = Schema.Struct({
-    _id: Schema.optional(Schema.String),
-    username: Schema.optionalWith(Schema.String, { nullable: true }),
-    image: Schema.optionalWith(Schema.String, { nullable: true }),
-    verified: Schema.optional(Schema.Boolean),
-});
-
-const RscriptsGameSchema = Schema.Struct({
-    _id: Schema.optional(Schema.String),
-    title: Schema.optionalWith(Schema.String, { nullable: true }),
-    gameLogo: Schema.optionalWith(Schema.String, { nullable: true }),
-    imgurl: Schema.optionalWith(Schema.String, { nullable: true }),
-    gameLink: Schema.optionalWith(Schema.String, { nullable: true }),
-});
-
-const RscriptsListScriptSchema = Schema.Struct({
-    _id: Schema.String,
-    title: Schema.optionalWith(Schema.String, { nullable: true }),
-    views: Schema.optional(Schema.Number),
-    private: Schema.optional(Schema.Boolean),
-    likes: Schema.optional(Schema.Number),
-    dislikes: Schema.optional(Schema.Number),
-    slug: Schema.optionalWith(Schema.String, { nullable: true }),
-    keySystem: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-    mobileReady: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-    lastUpdated: Schema.optionalWith(Schema.String, { nullable: true }),
-    createdAt: Schema.optionalWith(Schema.String, { nullable: true }),
-    discord: Schema.optionalWith(Schema.String, { nullable: true }),
-    paid: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-    description: Schema.optionalWith(Schema.String, { nullable: true }),
-    image: Schema.optionalWith(Schema.String, { nullable: true }),
-    rawScript: Schema.optionalWith(Schema.String, { nullable: true }),
-    unpatched: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-    creator: Schema.optionalWith(Schema.String, { nullable: true }),
-    user: Schema.optionalWith(
-        Schema.Union(RscriptsUserSchema, Schema.Array(RscriptsUserSchema)),
-        { nullable: true },
-    ),
-    game: Schema.optionalWith(RscriptsGameSchema, { nullable: true }),
-});
-
-const RscriptsListResponseSchema = Schema.Struct({
-    scripts: Schema.optional(Schema.Array(RscriptsListScriptSchema)),
-    info: Schema.optional(
-        Schema.Struct({
-            currentPage: Schema.optional(Schema.Number),
-            maxPages: Schema.optional(Schema.Number),
-        }),
-    ),
-});
-
-const RscriptsScriptDetailResponseSchema = Schema.Struct({
-    success: Schema.optionalWith(
-        Schema.Struct({
-            rawScript: Schema.optionalWith(Schema.String, { nullable: true }),
-        }),
-        { nullable: true },
-    ),
-    script: Schema.optionalWith(
-        Schema.Struct({
-            rawScript: Schema.optionalWith(Schema.String, { nullable: true }),
-        }),
-        { nullable: true },
-    ),
-    error: Schema.optional(Schema.String),
-});
 
 function createScriptLibraryError(
     operation: string,
@@ -95,6 +28,287 @@ function createScriptLibraryError(
         operation,
         message: getUnknownCauseMessage(error, fallbackMessage),
     });
+}
+
+function createInvalidScriptLibraryResponseError(
+    operation: string,
+): ScriptLibraryError {
+    return new ScriptLibraryError({
+        operation,
+        message: `Unexpected response shape for ${operation}.`,
+    });
+}
+
+function readOptionalString(
+    value: Record<string, unknown>,
+    key: string,
+    operation: string,
+): string | undefined {
+    const candidate = value[key];
+
+    if (candidate === undefined) {
+        return undefined;
+    }
+
+    if (!isString(candidate)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return candidate;
+}
+
+function readOptionalNullableString(
+    value: Record<string, unknown>,
+    key: string,
+    operation: string,
+): string | null | undefined {
+    const candidate = value[key];
+
+    if (candidate === undefined || candidate === null) {
+        return candidate;
+    }
+
+    if (!isString(candidate)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return candidate;
+}
+
+function readOptionalNumber(
+    value: Record<string, unknown>,
+    key: string,
+    operation: string,
+): number | undefined {
+    const candidate = value[key];
+
+    if (candidate === undefined) {
+        return undefined;
+    }
+
+    if (!isNumber(candidate)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return candidate;
+}
+
+function readOptionalBoolean(
+    value: Record<string, unknown>,
+    key: string,
+    operation: string,
+): boolean | undefined {
+    const candidate = value[key];
+
+    if (candidate === undefined) {
+        return undefined;
+    }
+
+    if (!isBoolean(candidate)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return candidate;
+}
+
+function readOptionalNullableBoolean(
+    value: Record<string, unknown>,
+    key: string,
+    operation: string,
+): boolean | null | undefined {
+    const candidate = value[key];
+
+    if (candidate === undefined || candidate === null) {
+        return candidate;
+    }
+
+    if (!isBoolean(candidate)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return candidate;
+}
+
+function parseRscriptsUser(value: unknown, operation: string): RscriptsUser {
+    if (!isRecord(value)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return {
+        _id: readOptionalString(value, "_id", operation),
+        username: readOptionalNullableString(value, "username", operation),
+        image: readOptionalNullableString(value, "image", operation),
+        verified: readOptionalBoolean(value, "verified", operation),
+    };
+}
+
+function parseRscriptsGame(value: unknown, operation: string): RscriptsGame {
+    if (!isRecord(value)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return {
+        _id: readOptionalString(value, "_id", operation),
+        title: readOptionalNullableString(value, "title", operation),
+        gameLogo: readOptionalNullableString(value, "gameLogo", operation),
+        imgurl: readOptionalNullableString(value, "imgurl", operation),
+        gameLink: readOptionalNullableString(value, "gameLink", operation),
+    };
+}
+
+function parseRscriptsUserField(
+    value: unknown,
+    operation: string,
+): RscriptsUser | RscriptsUser[] | null | undefined {
+    if (value === undefined || value === null) {
+        return value;
+    }
+
+    if (Array.isArray(value)) {
+        return value.map((entry) => parseRscriptsUser(entry, operation));
+    }
+
+    return parseRscriptsUser(value, operation);
+}
+
+function parseRscriptsListScript(
+    value: unknown,
+    operation: string,
+): RscriptsListScript {
+    if (!isRecord(value) || !isString(value._id)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    const game = value.game;
+    const user = value.user;
+
+    return {
+        _id: value._id,
+        title: readOptionalNullableString(value, "title", operation),
+        views: readOptionalNumber(value, "views", operation),
+        private: readOptionalBoolean(value, "private", operation),
+        likes: readOptionalNumber(value, "likes", operation),
+        dislikes: readOptionalNumber(value, "dislikes", operation),
+        slug: readOptionalNullableString(value, "slug", operation),
+        keySystem: readOptionalNullableBoolean(value, "keySystem", operation),
+        mobileReady: readOptionalNullableBoolean(
+            value,
+            "mobileReady",
+            operation,
+        ),
+        lastUpdated: readOptionalNullableString(
+            value,
+            "lastUpdated",
+            operation,
+        ),
+        createdAt: readOptionalNullableString(value, "createdAt", operation),
+        discord: readOptionalNullableString(value, "discord", operation),
+        paid: readOptionalNullableBoolean(value, "paid", operation),
+        description: readOptionalNullableString(
+            value,
+            "description",
+            operation,
+        ),
+        image: readOptionalNullableString(value, "image", operation),
+        rawScript: readOptionalNullableString(value, "rawScript", operation),
+        unpatched: readOptionalNullableBoolean(value, "unpatched", operation),
+        creator: readOptionalNullableString(value, "creator", operation),
+        user: parseRscriptsUserField(user, operation),
+        game:
+            game === undefined || game === null
+                ? game
+                : parseRscriptsGame(game, operation),
+    };
+}
+
+function parseRscriptsListResponse(
+    value: unknown,
+    operation: string,
+): RscriptsListResponse {
+    if (!isRecord(value)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    const scripts = value.scripts;
+    const info = value.info;
+
+    return {
+        scripts:
+            scripts === undefined
+                ? undefined
+                : Array.isArray(scripts)
+                  ? scripts.map((script) =>
+                        parseRscriptsListScript(script, operation),
+                    )
+                  : (() => {
+                        throw createInvalidScriptLibraryResponseError(
+                            operation,
+                        );
+                    })(),
+        info:
+            info === undefined
+                ? undefined
+                : isRecord(info)
+                  ? {
+                        currentPage: readOptionalNumber(
+                            info,
+                            "currentPage",
+                            operation,
+                        ),
+                        maxPages: readOptionalNumber(
+                            info,
+                            "maxPages",
+                            operation,
+                        ),
+                    }
+                  : (() => {
+                        throw createInvalidScriptLibraryResponseError(
+                            operation,
+                        );
+                    })(),
+    };
+}
+
+function parseRawScriptContainer(
+    value: unknown,
+    operation: string,
+): { rawScript?: string | null } | null {
+    if (value === undefined) {
+        return null;
+    }
+
+    if (value === null) {
+        return null;
+    }
+
+    if (!isRecord(value)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return {
+        rawScript: readOptionalNullableString(value, "rawScript", operation),
+    };
+}
+
+function parseRscriptsScriptDetailResponse(
+    value: unknown,
+    operation: string,
+): RscriptsScriptDetailResponse {
+    if (!isRecord(value)) {
+        throw createInvalidScriptLibraryResponseError(operation);
+    }
+
+    return {
+        success:
+            value.success === undefined
+                ? undefined
+                : parseRawScriptContainer(value.success, operation),
+        script:
+            value.script === undefined
+                ? undefined
+                : parseRawScriptContainer(value.script, operation),
+        error: readOptionalString(value, "error", operation),
+    };
 }
 
 function toPositiveNumber(value: unknown, fallbackValue: number): number {
@@ -165,141 +379,108 @@ function getDetailRawScriptUrl(data: {
     );
 }
 
-function fetchResponseEffect(
+async function fetchResponse(
     url: string,
     operation: string,
     options?: {
         signal?: AbortSignal;
     },
-): Effect.Effect<Response, ScriptLibraryError> {
-    return Effect.tryPromise({
-        try: (effectSignal) => {
-            const { signal, cleanup } = combineAbortSignals(
-                effectSignal,
-                options?.signal,
-            );
-
-            return fetch(url, { signal }).finally(() => {
-                cleanup();
-            });
-        },
-        catch: (error) =>
-            createScriptLibraryError(
-                operation,
-                error,
-                `Could not complete ${operation}.`,
-            ),
-    });
+): Promise<Response> {
+    try {
+        return await fetch(url, { signal: options?.signal });
+    } catch (error) {
+        throw createScriptLibraryError(
+            operation,
+            error,
+            `Could not complete ${operation}.`,
+        );
+    }
 }
 
-function fetchJsonResponseEffect<A, I>(
+async function fetchJsonResponse<T>(
     url: string,
-    schema: Schema.Schema<A, I, never>,
     operation: string,
+    parseValue: (value: unknown, parseOperation: string) => T,
     options?: {
         signal?: AbortSignal;
     },
-): Effect.Effect<A, ScriptLibraryError> {
-    return fetchResponseEffect(url, operation, options).pipe(
-        Effect.flatMap((response) => {
-            if (!response.ok) {
-                return Effect.fail(
-                    new ScriptLibraryError({
-                        operation,
-                        message: `${operation} failed with status ${response.status}.`,
-                    }),
-                );
-            }
+): Promise<T> {
+    const response = await fetchResponse(url, operation, options);
 
-            return Effect.tryPromise({
-                try: () => response.json(),
-                catch: (error) =>
-                    createScriptLibraryError(
-                        operation,
-                        error,
-                        `Could not decode ${operation} JSON.`,
-                    ),
-            }).pipe(
-                Effect.flatMap((value) =>
-                    decodeUnknownWithSchema(
-                        schema,
-                        value,
-                        () =>
-                            new ScriptLibraryError({
-                                operation,
-                                message: `Unexpected response shape for ${operation}.`,
-                            }),
-                    ),
-                ),
-            );
-        }),
-    );
+    if (!response.ok) {
+        throw new ScriptLibraryError({
+            operation,
+            message: `${operation} failed with status ${response.status}.`,
+        });
+    }
+
+    let value: unknown;
+
+    try {
+        value = await response.json();
+    } catch (error) {
+        throw createScriptLibraryError(
+            operation,
+            error,
+            `Could not decode ${operation} JSON.`,
+        );
+    }
+
+    return parseValue(value, operation);
 }
 
-function fetchTextResponseEffect(
+async function fetchTextResponse(
     url: string,
     operation: string,
     options?: {
         signal?: AbortSignal;
     },
-): Effect.Effect<string, ScriptLibraryError> {
-    return fetchResponseEffect(url, operation, options).pipe(
-        Effect.flatMap((response) => {
-            if (!response.ok) {
-                return Effect.fail(
-                    new ScriptLibraryError({
-                        operation,
-                        message: `${operation} failed with status ${response.status}.`,
-                    }),
-                );
-            }
+): Promise<string> {
+    const response = await fetchResponse(url, operation, options);
 
-            return Effect.tryPromise({
-                try: () => response.text(),
-                catch: (error) =>
-                    createScriptLibraryError(
-                        operation,
-                        error,
-                        `Could not read ${operation} text.`,
-                    ),
-            });
-        }),
-    );
+    if (!response.ok) {
+        throw new ScriptLibraryError({
+            operation,
+            message: `${operation} failed with status ${response.status}.`,
+        });
+    }
+
+    try {
+        return await response.text();
+    } catch (error) {
+        throw createScriptLibraryError(
+            operation,
+            error,
+            `Could not read ${operation} text.`,
+        );
+    }
 }
 
-function fetchRawScriptTextEffect(
+async function fetchRawScriptText(
     script: ScriptLibraryEntry,
     signal?: AbortSignal,
-): Effect.Effect<string, ScriptLibraryError> {
-    return Effect.gen(function* () {
-        let rawScriptUrl = script.rawScript;
+): Promise<string> {
+    let rawScriptUrl = script.rawScript;
 
-        if (!rawScriptUrl) {
-            const detailData = yield* fetchJsonResponseEffect(
-                `${RSCRIPTS_API_BASE_URL}/script?id=${script._id}`,
-                RscriptsScriptDetailResponseSchema,
-                "fetchScriptDetail",
-                { signal },
-            );
-
-            rawScriptUrl = getDetailRawScriptUrl(detailData);
-        }
-
-        if (!rawScriptUrl) {
-            return yield* Effect.fail(
-                new ScriptLibraryError({
-                    operation: "fetchScriptText",
-                    message: "Raw script URL is unavailable.",
-                }),
-            );
-        }
-
-        return yield* fetchTextResponseEffect(
-            rawScriptUrl,
-            "fetchRawScriptText",
+    if (!rawScriptUrl) {
+        const detailData = await fetchJsonResponse(
+            `${RSCRIPTS_API_BASE_URL}/script?id=${script._id}`,
+            "fetchScriptDetail",
+            parseRscriptsScriptDetailResponse,
             { signal },
         );
-    });
+
+        rawScriptUrl = getDetailRawScriptUrl(detailData);
+    }
+
+    if (!rawScriptUrl) {
+        throw new ScriptLibraryError({
+            operation: "fetchScriptText",
+            message: "Raw script URL is unavailable.",
+        });
+    }
+
+    return fetchTextResponse(rawScriptUrl, "fetchRawScriptText", { signal });
 }
 
 export function createScriptLibraryCachedSession(): ScriptLibraryCachedSession {
@@ -334,22 +515,10 @@ export async function fetchScriptsPage(
     orderBy: ScriptLibrarySort,
     signal: AbortSignal,
 ): Promise<ScriptLibraryPage> {
-    return runPromise(
-        fetchScriptsPageEffect(session, query, page, orderBy, signal),
-    );
-}
-
-export function fetchScriptsPageEffect(
-    session: ScriptLibraryCachedSession,
-    query: string,
-    page: number,
-    orderBy: ScriptLibrarySort,
-    signal: AbortSignal,
-): Effect.Effect<ScriptLibraryPage, ScriptLibraryError> {
     const cachedPage = session.pages.get(page);
 
     if (cachedPage) {
-        return Effect.succeed(cachedPage);
+        return cachedPage;
     }
 
     const params = new URLSearchParams();
@@ -361,29 +530,26 @@ export function fetchScriptsPageEffect(
         params.set("q", query);
     }
 
-    return fetchJsonResponseEffect(
+    const data = await fetchJsonResponse(
         `${RSCRIPTS_API_BASE_URL}/scripts?${params.toString()}`,
-        RscriptsListResponseSchema,
         "fetchScriptsPage",
+        parseRscriptsListResponse,
         { signal },
-    ).pipe(
-        Effect.map((data) => {
-            const currentPage = toPositiveNumber(data.info?.currentPage, page);
-            const maxPages = toPositiveNumber(data.info?.maxPages, currentPage);
-            const normalizedPage = {
-                scripts: Array.isArray(data.scripts)
-                    ? data.scripts.map(normalizeScript)
-                    : [],
-                currentPage,
-                maxPages,
-            };
-
-            session.pages.set(currentPage, normalizedPage);
-            session.maxPages = maxPages;
-
-            return normalizedPage;
-        }),
     );
+    const currentPage = toPositiveNumber(data.info?.currentPage, page);
+    const maxPages = toPositiveNumber(data.info?.maxPages, currentPage);
+    const normalizedPage = {
+        scripts: Array.isArray(data.scripts)
+            ? data.scripts.map(normalizeScript)
+            : [],
+        currentPage,
+        maxPages,
+    };
+
+    session.pages.set(currentPage, normalizedPage);
+    session.maxPages = maxPages;
+
+    return normalizedPage;
 }
 
 export async function fetchFilteredScriptsPage(
@@ -398,113 +564,67 @@ export async function fetchFilteredScriptsPage(
     canGoNext: boolean;
     maxPages: number | null;
 }> {
-    return runPromise(
-        fetchFilteredScriptsPageEffect(
+    const startIndex = (page - 1) * SCRIPT_LIBRARY_PAGE_SIZE;
+    const endIndex = startIndex + SCRIPT_LIBRARY_PAGE_SIZE;
+    const filteredScripts: ScriptLibraryEntry[] = [];
+    let sourcePage = 1;
+    let maxSourcePages = session.maxPages ?? Number.POSITIVE_INFINITY;
+
+    while (sourcePage <= maxSourcePages && filteredScripts.length <= endIndex) {
+        const currentPage = await fetchScriptsPage(
             session,
             query,
-            page,
-            filters,
+            sourcePage,
             orderBy,
             signal,
-        ),
-    );
-}
+        );
 
-export function fetchFilteredScriptsPageEffect(
-    session: ScriptLibraryCachedSession,
-    query: string,
-    page: number,
-    filters: ScriptLibraryFilters,
-    orderBy: ScriptLibrarySort,
-    signal: AbortSignal,
-): Effect.Effect<
-    {
-        scripts: ScriptLibraryEntry[];
-        canGoNext: boolean;
-        maxPages: number | null;
-    },
-    ScriptLibraryError
-> {
-    return Effect.gen(function* () {
-        const startIndex = (page - 1) * SCRIPT_LIBRARY_PAGE_SIZE;
-        const endIndex = startIndex + SCRIPT_LIBRARY_PAGE_SIZE;
-        const filteredScripts: ScriptLibraryEntry[] = [];
-        let sourcePage = 1;
-        let maxSourcePages = session.maxPages ?? Number.POSITIVE_INFINITY;
+        maxSourcePages = currentPage.maxPages;
 
-        while (
-            sourcePage <= maxSourcePages &&
-            filteredScripts.length <= endIndex
-        ) {
-            const currentPage = yield* fetchScriptsPageEffect(
-                session,
-                query,
-                sourcePage,
-                orderBy,
-                signal,
-            );
-
-            maxSourcePages = currentPage.maxPages;
-
-            for (const script of currentPage.scripts) {
-                if (matchesScriptLibraryFilters(script, filters)) {
-                    filteredScripts.push(script);
-                }
+        for (const script of currentPage.scripts) {
+            if (matchesScriptLibraryFilters(script, filters)) {
+                filteredScripts.push(script);
             }
-
-            sourcePage += 1;
         }
 
-        const sourceExhausted = sourcePage > maxSourcePages;
+        sourcePage += 1;
+    }
 
-        return {
-            scripts: filteredScripts.slice(startIndex, endIndex),
-            canGoNext: filteredScripts.length > endIndex,
-            maxPages: sourceExhausted
-                ? Math.max(
-                      1,
-                      Math.ceil(
-                          filteredScripts.length / SCRIPT_LIBRARY_PAGE_SIZE,
-                      ),
-                  )
-                : null,
-        };
-    });
+    const sourceExhausted = sourcePage > maxSourcePages;
+
+    return {
+        scripts: filteredScripts.slice(startIndex, endIndex),
+        canGoNext: filteredScripts.length > endIndex,
+        maxPages: sourceExhausted
+            ? Math.max(
+                  1,
+                  Math.ceil(filteredScripts.length / SCRIPT_LIBRARY_PAGE_SIZE),
+              )
+            : null,
+    };
 }
 
 export async function fetchScriptText(
     script: ScriptLibraryEntry,
-): Promise<string> {
-    return runPromise(fetchScriptTextEffect(script));
-}
-
-export function fetchScriptTextEffect(
-    script: ScriptLibraryEntry,
     signal?: AbortSignal,
-): Effect.Effect<string, ScriptLibraryError> {
-    return fetchRawScriptTextEffect(script, signal);
+): Promise<string> {
+    return fetchRawScriptText(script, signal);
 }
 
 export async function copyScriptToClipboard(
     script: ScriptLibraryEntry,
 ): Promise<void> {
-    return runPromise(copyScriptToClipboardEffect(script));
-}
+    const scriptText = await fetchScriptText(script);
 
-export function copyScriptToClipboardEffect(
-    script: ScriptLibraryEntry,
-): Effect.Effect<void, ScriptLibraryError> {
-    return fetchScriptTextEffect(script).pipe(
-        Effect.flatMap((scriptText) =>
-            copyTextToClipboardEffect(scriptText).pipe(
-                Effect.mapError(
-                    (error) =>
-                        new ScriptLibraryError({
-                            operation: "copyScriptToClipboard",
-                            message: error.message,
-                        }),
-                ),
+    try {
+        await copyTextToClipboard(scriptText);
+    } catch (error) {
+        throw new ScriptLibraryError({
+            operation: "copyScriptToClipboard",
+            message: getUnknownCauseMessage(
+                error,
+                "Could not copy the script to the clipboard.",
             ),
-        ),
-    );
+        });
+    }
 }

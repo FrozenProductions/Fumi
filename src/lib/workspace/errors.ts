@@ -1,9 +1,10 @@
-import { Schema } from "effect";
+import {
+    OperationError,
+    type OperationErrorOptions,
+} from "../shared/operationError";
 
-export class PersistenceError extends Schema.TaggedError<PersistenceError>()(
-    "PersistenceError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class PersistenceError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("PersistenceError", options);
+    }
+}

@@ -1,8 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Effect } from "effect";
-import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { WindowShellError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
@@ -43,19 +41,19 @@ function notifyListeners(listeners: Set<() => void>): void {
     }
 }
 
-function listenWindowEventEffect(
+async function listenWindowEvent(
     event: string,
     handler: () => void,
-): Effect.Effect<() => void, WindowShellError> {
-    return Effect.tryPromise({
-        try: () => listen(event, handler),
-        catch: (error) =>
-            createWindowShellError(
-                "initializeWindowShell",
-                error,
-                `Could not subscribe to ${event}.`,
-            ),
-    });
+): Promise<() => void> {
+    try {
+        return await listen(event, handler);
+    } catch (error) {
+        throw createWindowShellError(
+            "initializeWindowShell",
+            error,
+            `Could not subscribe to ${event}.`,
+        );
+    }
 }
 
 export function initializeWindowShell(): Promise<void> {
@@ -67,65 +65,51 @@ export function initializeWindowShell(): Promise<void> {
         return initializationPromise;
     }
 
-    initializationPromise = runPromise(initializeWindowShellEffect()).catch(
-        (error) => {
-            initializationPromise = null;
-            throw error;
-        },
-    );
+    initializationPromise = (async () => {
+        await Promise.all([
+            listenWindowEvent(OPEN_SETTINGS_EVENT, () => {
+                notifyListeners(openSettingsListeners);
+            }),
+            listenWindowEvent(CHECK_FOR_UPDATES_EVENT, () => {
+                notifyListeners(checkForUpdatesListeners);
+            }),
+            listenWindowEvent(PREPARE_FOR_EXIT_EVENT, () => {
+                isPreparingToExitState = true;
+                notifyListeners(prepareForExitListeners);
+            }),
+            listen<number>(REQUEST_EXIT_GUARD_SYNC_EVENT, (event) => {
+                const syncId = Number(event.payload);
 
-    return initializationPromise;
-}
+                if (!Number.isInteger(syncId) || syncId <= 0) {
+                    return;
+                }
 
-export function initializeWindowShellEffect(): Effect.Effect<
-    void,
-    WindowShellError
-> {
-    if (!isTauriEnvironment()) {
-        return Effect.void;
-    }
-
-    return Effect.all([
-        listenWindowEventEffect(OPEN_SETTINGS_EVENT, () => {
-            notifyListeners(openSettingsListeners);
-        }),
-        listenWindowEventEffect(CHECK_FOR_UPDATES_EVENT, () => {
-            notifyListeners(checkForUpdatesListeners);
-        }),
-        listenWindowEventEffect(PREPARE_FOR_EXIT_EVENT, () => {
-            isPreparingToExitState = true;
-            notifyListeners(prepareForExitListeners);
-        }),
-        Effect.tryPromise({
-            try: () =>
-                listen<number>(REQUEST_EXIT_GUARD_SYNC_EVENT, (event) => {
-                    const syncId = Number(event.payload);
-
-                    if (!Number.isInteger(syncId) || syncId <= 0) {
-                        return;
-                    }
-
-                    for (const listener of exitGuardSyncListeners) {
-                        listener(syncId);
-                    }
-                }),
-            catch: (error) =>
-                createWindowShellError(
+                for (const listener of exitGuardSyncListeners) {
+                    listener(syncId);
+                }
+            }).catch((error) => {
+                throw createWindowShellError(
                     "initializeWindowShell",
                     error,
                     `Could not subscribe to ${REQUEST_EXIT_GUARD_SYNC_EVENT}.`,
-                ),
-        }),
-        listenWindowEventEffect(ZOOM_IN_EVENT, () => {
-            notifyListeners(zoomInListeners);
-        }),
-        listenWindowEventEffect(ZOOM_OUT_EVENT, () => {
-            notifyListeners(zoomOutListeners);
-        }),
-        listenWindowEventEffect(ZOOM_RESET_EVENT, () => {
-            notifyListeners(zoomResetListeners);
-        }),
-    ]).pipe(Effect.asVoid);
+                );
+            }),
+            listenWindowEvent(ZOOM_IN_EVENT, () => {
+                notifyListeners(zoomInListeners);
+            }),
+            listenWindowEvent(ZOOM_OUT_EVENT, () => {
+                notifyListeners(zoomOutListeners);
+            }),
+            listenWindowEvent(ZOOM_RESET_EVENT, () => {
+                notifyListeners(zoomResetListeners);
+            }),
+        ]);
+    })().catch((error) => {
+        initializationPromise = null;
+        throw error;
+    });
+
+    return initializationPromise;
 }
 
 export function isPreparingToExit(): boolean {
@@ -195,202 +179,143 @@ export function subscribeToZoomResetRequested(
 }
 
 export async function startCurrentWindowDragging(): Promise<void> {
-    return runPromise(startCurrentWindowDraggingEffect());
-}
-
-export function startCurrentWindowDraggingEffect(): Effect.Effect<
-    void,
-    WindowShellError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.tryPromise({
-        try: () => getCurrentWindow().startDragging(),
-        catch: (error) =>
-            createWindowShellError(
-                "startCurrentWindowDragging",
-                error,
-                "Could not start dragging the current window.",
-            ),
-    });
+    try {
+        await getCurrentWindow().startDragging();
+    } catch (error) {
+        throw createWindowShellError(
+            "startCurrentWindowDragging",
+            error,
+            "Could not start dragging the current window.",
+        );
+    }
 }
 
 export async function toggleCurrentWindowMaximize(): Promise<boolean> {
-    return runPromise(toggleCurrentWindowMaximizeEffect());
-}
-
-export function toggleCurrentWindowMaximizeEffect(): Effect.Effect<
-    boolean,
-    WindowShellError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(false);
+        return false;
     }
 
-    return Effect.tryPromise({
-        try: async () => {
-            const currentWindow = getCurrentWindow();
+    try {
+        const currentWindow = getCurrentWindow();
 
-            await currentWindow.toggleMaximize();
+        await currentWindow.toggleMaximize();
 
-            return currentWindow.isMaximized();
-        },
-        catch: (error) =>
-            createWindowShellError(
-                "toggleCurrentWindowMaximize",
-                error,
-                "Could not toggle the current window state.",
-            ),
-    });
+        return await currentWindow.isMaximized();
+    } catch (error) {
+        throw createWindowShellError(
+            "toggleCurrentWindowMaximize",
+            error,
+            "Could not toggle the current window state.",
+        );
+    }
 }
 
 export async function minimizeCurrentWindow(): Promise<void> {
-    return runPromise(minimizeCurrentWindowEffect());
-}
-
-export function minimizeCurrentWindowEffect(): Effect.Effect<
-    void,
-    WindowShellError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.tryPromise({
-        try: () => getCurrentWindow().minimize(),
-        catch: (error) =>
-            createWindowShellError(
-                "minimizeCurrentWindow",
-                error,
-                "Could not minimize the current window.",
-            ),
-    });
+    try {
+        await getCurrentWindow().minimize();
+    } catch (error) {
+        throw createWindowShellError(
+            "minimizeCurrentWindow",
+            error,
+            "Could not minimize the current window.",
+        );
+    }
 }
 
 export async function closeCurrentWindow(): Promise<void> {
-    return runPromise(closeCurrentWindowEffect());
-}
-
-export function closeCurrentWindowEffect(): Effect.Effect<
-    void,
-    WindowShellError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.tryPromise({
-        try: () => getCurrentWindow().close(),
-        catch: (error) =>
-            createWindowShellError(
-                "closeCurrentWindow",
-                error,
-                "Could not close the current window.",
-            ),
-    });
+    try {
+        await getCurrentWindow().close();
+    } catch (error) {
+        throw createWindowShellError(
+            "closeCurrentWindow",
+            error,
+            "Could not close the current window.",
+        );
+    }
 }
 
 export async function readCurrentWindowMaximizedState(): Promise<boolean> {
-    return runPromise(readCurrentWindowMaximizedStateEffect());
-}
-
-export function readCurrentWindowMaximizedStateEffect(): Effect.Effect<
-    boolean,
-    WindowShellError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(false);
+        return false;
     }
 
-    return Effect.tryPromise({
-        try: () => getCurrentWindow().isMaximized(),
-        catch: (error) =>
-            createWindowShellError(
-                "readCurrentWindowMaximizedState",
-                error,
-                "Could not read the current window state.",
-            ),
-    });
+    try {
+        return await getCurrentWindow().isMaximized();
+    } catch (error) {
+        throw createWindowShellError(
+            "readCurrentWindowMaximizedState",
+            error,
+            "Could not read the current window state.",
+        );
+    }
 }
 
 export async function subscribeToCurrentWindowResize(
     listener: () => void,
 ): Promise<() => void> {
-    return runPromise(subscribeToCurrentWindowResizeEffect(listener));
-}
-
-export function subscribeToCurrentWindowResizeEffect(
-    listener: () => void,
-): Effect.Effect<() => void, WindowShellError> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(() => undefined);
+        return () => undefined;
     }
 
-    return Effect.tryPromise({
-        try: () =>
-            getCurrentWindow().onResized(() => {
-                listener();
-            }),
-        catch: (error) =>
-            createWindowShellError(
-                "subscribeToCurrentWindowResize",
-                error,
-                "Could not subscribe to current window resizes.",
-            ),
-    });
+    try {
+        return await getCurrentWindow().onResized(() => {
+            listener();
+        });
+    } catch (error) {
+        throw createWindowShellError(
+            "subscribeToCurrentWindowResize",
+            error,
+            "Could not subscribe to current window resizes.",
+        );
+    }
 }
 
 export async function completeExitPreparation(): Promise<void> {
-    return runPromise(completeExitPreparationEffect());
-}
-
-export function completeExitPreparationEffect(): Effect.Effect<
-    void,
-    WindowShellError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.tryPromise({
-        try: () => invoke<void>("complete_exit_preparation"),
-        catch: (error) =>
-            createWindowShellError(
-                "completeExitPreparation",
-                error,
-                "Could not complete exit preparation.",
-            ),
-    });
+    try {
+        await invoke<void>("complete_exit_preparation");
+    } catch (error) {
+        throw createWindowShellError(
+            "completeExitPreparation",
+            error,
+            "Could not complete exit preparation.",
+        );
+    }
 }
 
 export async function resolveExitGuardSync(
     syncId: number,
     shouldGuardExit: boolean,
 ): Promise<void> {
-    return runPromise(resolveExitGuardSyncEffect(syncId, shouldGuardExit));
-}
-
-export function resolveExitGuardSyncEffect(
-    syncId: number,
-    shouldGuardExit: boolean,
-): Effect.Effect<void, WindowShellError> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return;
     }
 
-    return Effect.tryPromise({
-        try: () =>
-            invoke<void>("resolve_exit_guard_sync", {
-                syncId,
-                shouldGuardExit,
-            }),
-        catch: (error) =>
-            createWindowShellError(
-                "resolveExitGuardSync",
-                error,
-                "Could not resolve the exit guard state.",
-            ),
-    });
+    try {
+        await invoke<void>("resolve_exit_guard_sync", {
+            syncId,
+            shouldGuardExit,
+        });
+    } catch (error) {
+        throw createWindowShellError(
+            "resolveExitGuardSync",
+            error,
+            "Could not resolve the exit guard state.",
+        );
+    }
 }

@@ -1,49 +1,40 @@
-import { Schema } from "effect";
+import {
+    OperationError,
+    type OperationErrorOptions,
+} from "../shared/operationError";
 
-export class PlatformOperationError extends Schema.TaggedError<PlatformOperationError>()(
-    "PlatformOperationError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class PlatformOperationError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("PlatformOperationError", options);
+    }
+}
 
-export class WindowShellError extends Schema.TaggedError<WindowShellError>()(
-    "WindowShellError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class WindowShellError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("WindowShellError", options);
+    }
+}
 
-export class WorkspaceCommandError extends Schema.TaggedError<WorkspaceCommandError>()(
-    "WorkspaceCommandError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class WorkspaceCommandError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("WorkspaceCommandError", options);
+    }
+}
 
-export class ExecutorCommandError extends Schema.TaggedError<ExecutorCommandError>()(
-    "ExecutorCommandError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class ExecutorCommandError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("ExecutorCommandError", options);
+    }
+}
 
-export class AccountsCommandError extends Schema.TaggedError<AccountsCommandError>()(
-    "AccountsCommandError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class AccountsCommandError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("AccountsCommandError", options);
+    }
+}
 
-export class UpdaterError extends Schema.TaggedError<UpdaterError>()(
-    "UpdaterError",
-    {
-        operation: Schema.String,
-        message: Schema.String,
-    },
-) {}
+export class UpdaterError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("UpdaterError", options);
+    }
+}

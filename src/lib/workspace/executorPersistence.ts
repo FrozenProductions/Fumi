@@ -1,8 +1,8 @@
-import { Schema } from "effect";
 import {
     MACSPLOIT_EXECUTOR_PORTS,
     OPIUMWARE_EXECUTOR_PORTS,
 } from "../../constants/workspace/executor";
+import { isNumber, isRecord } from "../shared/validation";
 import type { ExecutorKind } from "./workspace.type";
 
 const EXECUTOR_PORTS_STORAGE_KEY = "fumi-executor-ports";
@@ -11,11 +11,6 @@ type PersistedExecutorPorts = {
     macsploit: number;
     opiumware: number;
 };
-
-const PersistedExecutorPortsSchema = Schema.Struct({
-    macsploit: Schema.Number,
-    opiumware: Schema.Number,
-});
 
 function createDefaultPersistedExecutorPorts(): PersistedExecutorPorts {
     return {
@@ -34,11 +29,18 @@ function logExecutorPersistenceFailure(
 function parsePersistedExecutorPorts(
     value: unknown,
 ): PersistedExecutorPorts | null {
-    const decodeResult = Schema.decodeUnknownEither(
-        PersistedExecutorPortsSchema,
-    )(value);
+    if (
+        !isRecord(value) ||
+        !isNumber(value.macsploit) ||
+        !isNumber(value.opiumware)
+    ) {
+        return null;
+    }
 
-    return decodeResult._tag === "Right" ? decodeResult.right : null;
+    return {
+        macsploit: value.macsploit,
+        opiumware: value.opiumware,
+    };
 }
 
 function readPersistedExecutorPorts(): PersistedExecutorPorts {

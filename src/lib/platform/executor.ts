@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Effect, Schema } from "effect";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
@@ -10,9 +9,8 @@ import type {
     ExecutorMessagePayload,
     ExecutorStatusPayload,
 } from "../../lib/workspace/workspace.type";
-import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { decodeUnknownWithSchema } from "../shared/schema";
+import { isBoolean, isNumber, isRecord } from "../shared/validation";
 import { ExecutorCommandError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 
@@ -29,18 +27,6 @@ const DEFAULT_EXECUTOR_STATUS: ExecutorStatusPayload = {
 const DESKTOP_SHELL_REQUIRED_ERROR =
     "Executor commands require the Tauri desktop shell.";
 
-const ExecutorKindSchema = Schema.Literal(
-    "macsploit",
-    "opiumware",
-    "unsupported",
-);
-const ExecutorStatusPayloadSchema = Schema.Struct({
-    executorKind: ExecutorKindSchema,
-    availablePorts: Schema.Array(Schema.Number),
-    port: Schema.Number,
-    isAttached: Schema.Boolean,
-});
-
 function createExecutorCommandError(
     operation: string,
     error: unknown,
@@ -52,63 +38,79 @@ function createExecutorCommandError(
     });
 }
 
-function invokeExecutorCommandEffect<A, I>(
-    command: string,
-    schema: Schema.Schema<A, I, never>,
+function createInvalidExecutorResponseError(
     operation: string,
+): ExecutorCommandError {
+    return new ExecutorCommandError({
+        operation,
+        message: `Unexpected response shape for ${operation}.`,
+    });
+}
+
+function parseExecutorStatusPayload(
+    value: unknown,
+    operation: string,
+): ExecutorStatusPayload {
+    if (!isRecord(value) || !Array.isArray(value.availablePorts)) {
+        throw createInvalidExecutorResponseError(operation);
+    }
+
+    if (
+        (value.executorKind !== "macsploit" &&
+            value.executorKind !== "opiumware" &&
+            value.executorKind !== "unsupported") ||
+        !value.availablePorts.every((port) => isNumber(port)) ||
+        !isNumber(value.port) ||
+        !isBoolean(value.isAttached)
+    ) {
+        throw createInvalidExecutorResponseError(operation);
+    }
+
+    return {
+        executorKind: value.executorKind,
+        availablePorts: value.availablePorts,
+        port: value.port,
+        isAttached: value.isAttached,
+    };
+}
+
+async function invokeExecutorCommand<T>(
+    command: string,
+    operation: string,
+    parseValue: (value: unknown, parseOperation: string) => T,
     args?: Record<string, unknown>,
-): Effect.Effect<A, ExecutorCommandError> {
-    return Effect.tryPromise({
-        try: () => invoke<unknown>(command, args),
-        catch: (error) =>
-            createExecutorCommandError(
-                operation,
-                error,
-                `Could not complete ${operation}.`,
-            ),
-    }).pipe(
-        Effect.flatMap((value) =>
-            decodeUnknownWithSchema(
-                schema,
-                value,
-                () =>
-                    new ExecutorCommandError({
-                        operation,
-                        message: `Unexpected response shape for ${operation}.`,
-                    }),
-            ),
-        ),
-    );
+): Promise<T> {
+    try {
+        const value = await invoke<unknown>(command, args);
+        return parseValue(value, operation);
+    } catch (error) {
+        if (error instanceof ExecutorCommandError) {
+            throw error;
+        }
+
+        throw createExecutorCommandError(
+            operation,
+            error,
+            `Could not complete ${operation}.`,
+        );
+    }
 }
 
 export function getExecutorStatus(): Promise<ExecutorStatusPayload> {
-    return runPromise(getExecutorStatusEffect());
-}
-
-export function getExecutorStatusEffect(): Effect.Effect<
-    ExecutorStatusPayload,
-    ExecutorCommandError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(DEFAULT_EXECUTOR_STATUS);
+        return Promise.resolve(DEFAULT_EXECUTOR_STATUS);
     }
 
-    return invokeExecutorCommandEffect(
+    return invokeExecutorCommand(
         "get_executor_status",
-        ExecutorStatusPayloadSchema,
         "getExecutorStatus",
+        parseExecutorStatusPayload,
     );
 }
 
 export function attachExecutor(port: number): Promise<ExecutorStatusPayload> {
-    return runPromise(attachExecutorEffect(port));
-}
-
-export function attachExecutorEffect(
-    port: number,
-): Effect.Effect<ExecutorStatusPayload, ExecutorCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new ExecutorCommandError({
                 operation: "attachExecutor",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -116,10 +118,10 @@ export function attachExecutorEffect(
         );
     }
 
-    return invokeExecutorCommandEffect(
+    return invokeExecutorCommand(
         "attach_executor",
-        ExecutorStatusPayloadSchema,
         "attachExecutor",
+        parseExecutorStatusPayload,
         {
             port,
         },
@@ -127,15 +129,8 @@ export function attachExecutorEffect(
 }
 
 export function detachExecutor(): Promise<ExecutorStatusPayload> {
-    return runPromise(detachExecutorEffect());
-}
-
-export function detachExecutorEffect(): Effect.Effect<
-    ExecutorStatusPayload,
-    ExecutorCommandError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new ExecutorCommandError({
                 operation: "detachExecutor",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -143,22 +138,16 @@ export function detachExecutorEffect(): Effect.Effect<
         );
     }
 
-    return invokeExecutorCommandEffect(
+    return invokeExecutorCommand(
         "detach_executor",
-        ExecutorStatusPayloadSchema,
         "detachExecutor",
+        parseExecutorStatusPayload,
     );
 }
 
 export function executeExecutorScript(script: string): Promise<void> {
-    return runPromise(executeExecutorScriptEffect(script));
-}
-
-export function executeExecutorScriptEffect(
-    script: string,
-): Effect.Effect<void, ExecutorCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new ExecutorCommandError({
                 operation: "executeExecutorScript",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -166,73 +155,52 @@ export function executeExecutorScriptEffect(
         );
     }
 
-    return Effect.tryPromise({
-        try: () =>
-            invoke<void>("execute_executor_script", {
-                script,
-            }),
-        catch: (error) =>
-            createExecutorCommandError(
-                "executeExecutorScript",
-                error,
-                "Could not execute the active script.",
-            ),
+    return invoke<void>("execute_executor_script", {
+        script,
+    }).catch((error) => {
+        throw createExecutorCommandError(
+            "executeExecutorScript",
+            error,
+            "Could not execute the active script.",
+        );
     });
 }
 
 export function subscribeToExecutorMessages(
     listener: (payload: ExecutorMessagePayload) => void,
 ): Promise<() => void> {
-    return runPromise(subscribeToExecutorMessagesEffect(listener));
-}
-
-export function subscribeToExecutorMessagesEffect(
-    listener: (payload: ExecutorMessagePayload) => void,
-): Effect.Effect<() => void, ExecutorCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(() => undefined);
+        return Promise.resolve(() => undefined);
     }
 
-    return Effect.tryPromise({
-        try: () =>
-            listen<ExecutorMessagePayload>(EXECUTOR_MESSAGE_EVENT, (event) => {
-                listener(event.payload);
-            }),
-        catch: (error) =>
-            createExecutorCommandError(
-                "subscribeToExecutorMessages",
-                error,
-                "Could not subscribe to executor messages.",
-            ),
+    return listen<ExecutorMessagePayload>(EXECUTOR_MESSAGE_EVENT, (event) => {
+        listener(event.payload);
+    }).catch((error) => {
+        throw createExecutorCommandError(
+            "subscribeToExecutorMessages",
+            error,
+            "Could not subscribe to executor messages.",
+        );
     });
 }
 
 export function subscribeToExecutorStatusChanged(
     listener: (payload: ExecutorStatusPayload) => void,
 ): Promise<() => void> {
-    return runPromise(subscribeToExecutorStatusChangedEffect(listener));
-}
-
-export function subscribeToExecutorStatusChangedEffect(
-    listener: (payload: ExecutorStatusPayload) => void,
-): Effect.Effect<() => void, ExecutorCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(() => undefined);
+        return Promise.resolve(() => undefined);
     }
 
-    return Effect.tryPromise({
-        try: () =>
-            listen<ExecutorStatusPayload>(
-                EXECUTOR_STATUS_CHANGED_EVENT,
-                (event) => {
-                    listener(event.payload);
-                },
-            ),
-        catch: (error) =>
-            createExecutorCommandError(
-                "subscribeToExecutorStatusChanged",
-                error,
-                "Could not subscribe to executor status changes.",
-            ),
+    return listen<ExecutorStatusPayload>(
+        EXECUTOR_STATUS_CHANGED_EVENT,
+        (event) => {
+            listener(event.payload);
+        },
+    ).catch((error) => {
+        throw createExecutorCommandError(
+            "subscribeToExecutorStatusChanged",
+            error,
+            "Could not subscribe to executor status changes.",
+        );
     });
 }

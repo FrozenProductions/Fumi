@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Effect } from "effect";
 import type {
     WorkspaceBootstrapResponse,
     WorkspaceCursorState,
@@ -8,7 +7,6 @@ import type {
     WorkspaceTabSnapshot,
     WorkspaceTabState,
 } from "../../lib/workspace/workspace.type";
-import { runPromise } from "../shared/effectRuntime";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { WorkspaceCommandError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
@@ -27,54 +25,47 @@ function createWorkspaceCommandError(
     });
 }
 
-function invokeWorkspaceCommandEffect<T>(
+async function invokeWorkspaceCommand<T>(
     command: string,
     operation: string,
     args?: Record<string, unknown>,
-): Effect.Effect<T, WorkspaceCommandError> {
-    return Effect.tryPromise({
-        try: () => invoke<T>(command, args),
-        catch: (error) =>
-            createWorkspaceCommandError(
-                operation,
-                error,
-                `Could not complete ${operation}.`,
-            ),
-    });
+): Promise<T> {
+    try {
+        return await invoke<T>(command, args);
+    } catch (error) {
+        throw createWorkspaceCommandError(
+            operation,
+            error,
+            `Could not complete ${operation}.`,
+        );
+    }
 }
 
-function invokeWorkspaceVoidCommandEffect(
+async function invokeWorkspaceVoidCommand(
     command: string,
     operation: string,
     args?: Record<string, unknown>,
-): Effect.Effect<void, WorkspaceCommandError> {
-    return Effect.tryPromise({
-        try: () => invoke<void>(command, args),
-        catch: (error) =>
-            createWorkspaceCommandError(
-                operation,
-                error,
-                `Could not complete ${operation}.`,
-            ),
-    });
+): Promise<void> {
+    try {
+        await invoke<void>(command, args);
+    } catch (error) {
+        throw createWorkspaceCommandError(
+            operation,
+            error,
+            `Could not complete ${operation}.`,
+        );
+    }
 }
 
 export function bootstrapWorkspace(): Promise<WorkspaceBootstrapResponse> {
-    return runPromise(bootstrapWorkspaceEffect());
-}
-
-function bootstrapWorkspaceEffect(): Effect.Effect<
-    WorkspaceBootstrapResponse,
-    WorkspaceCommandError
-> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed({
+        return Promise.resolve({
             lastWorkspacePath: null,
             workspace: null,
         });
     }
 
-    return invokeWorkspaceCommandEffect<WorkspaceBootstrapResponse>(
+    return invokeWorkspaceCommand<WorkspaceBootstrapResponse>(
         "bootstrap_workspace",
         "bootstrapWorkspace",
     );
@@ -83,14 +74,8 @@ function bootstrapWorkspaceEffect(): Effect.Effect<
 export function openWorkspace(
     workspacePath: string,
 ): Promise<WorkspaceSnapshot> {
-    return runPromise(openWorkspaceEffect(workspacePath));
-}
-
-function openWorkspaceEffect(
-    workspacePath: string,
-): Effect.Effect<WorkspaceSnapshot, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "openWorkspace",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -98,7 +83,7 @@ function openWorkspaceEffect(
         );
     }
 
-    return invokeWorkspaceCommandEffect<WorkspaceSnapshot>(
+    return invokeWorkspaceCommand<WorkspaceSnapshot>(
         "open_workspace",
         "openWorkspace",
         {
@@ -110,17 +95,11 @@ function openWorkspaceEffect(
 export function refreshWorkspace(
     workspacePath: string,
 ): Promise<WorkspaceSnapshot | null> {
-    return runPromise(refreshWorkspaceEffect(workspacePath));
-}
-
-function refreshWorkspaceEffect(
-    workspacePath: string,
-): Effect.Effect<WorkspaceSnapshot | null, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.succeed(null);
+        return Promise.resolve(null);
     }
 
-    return invokeWorkspaceCommandEffect<WorkspaceSnapshot | null>(
+    return invokeWorkspaceCommand<WorkspaceSnapshot | null>(
         "refresh_workspace",
         "refreshWorkspace",
         {
@@ -134,16 +113,8 @@ export function createWorkspaceFile(options: {
     fileName?: string;
     initialContent?: string;
 }): Promise<WorkspaceTabSnapshot> {
-    return runPromise(createWorkspaceFileEffect(options));
-}
-
-function createWorkspaceFileEffect(options: {
-    workspacePath: string;
-    fileName?: string;
-    initialContent?: string;
-}): Effect.Effect<WorkspaceTabSnapshot, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "createWorkspaceFile",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -151,7 +122,7 @@ function createWorkspaceFileEffect(options: {
         );
     }
 
-    return invokeWorkspaceCommandEffect<WorkspaceTabSnapshot>(
+    return invokeWorkspaceCommand<WorkspaceTabSnapshot>(
         "create_workspace_file",
         "createWorkspaceFile",
         options,
@@ -164,17 +135,8 @@ export function saveWorkspaceFile(options: {
     content: string;
     cursor: WorkspaceCursorState;
 }): Promise<void> {
-    return runPromise(saveWorkspaceFileEffect(options));
-}
-
-function saveWorkspaceFileEffect(options: {
-    workspacePath: string;
-    tabId: string;
-    content: string;
-    cursor: WorkspaceCursorState;
-}): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "saveWorkspaceFile",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -182,7 +144,7 @@ function saveWorkspaceFileEffect(options: {
         );
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "save_workspace_file",
         "saveWorkspaceFile",
         options,
@@ -194,16 +156,8 @@ export function renameWorkspaceFile(options: {
     tabId: string;
     fileName: string;
 }): Promise<WorkspaceTabState> {
-    return runPromise(renameWorkspaceFileEffect(options));
-}
-
-export function renameWorkspaceFileEffect(options: {
-    workspacePath: string;
-    tabId: string;
-    fileName: string;
-}): Effect.Effect<WorkspaceTabState, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "renameWorkspaceFile",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -211,7 +165,7 @@ export function renameWorkspaceFileEffect(options: {
         );
     }
 
-    return invokeWorkspaceCommandEffect<WorkspaceTabState>(
+    return invokeWorkspaceCommand<WorkspaceTabState>(
         "rename_workspace_file",
         "renameWorkspaceFile",
         options,
@@ -222,15 +176,8 @@ export function deleteWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;
 }): Promise<void> {
-    return runPromise(deleteWorkspaceFileEffect(options));
-}
-
-export function deleteWorkspaceFileEffect(options: {
-    workspacePath: string;
-    tabId: string;
-}): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "deleteWorkspaceFile",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -238,7 +185,7 @@ export function deleteWorkspaceFileEffect(options: {
         );
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "delete_workspace_file",
         "deleteWorkspaceFile",
         options,
@@ -252,21 +199,11 @@ export function persistWorkspaceState(options: {
     tabs: WorkspaceTabState[];
     archivedTabs: WorkspaceTabState[];
 }): Promise<void> {
-    return runPromise(persistWorkspaceStateEffect(options));
-}
-
-export function persistWorkspaceStateEffect(options: {
-    workspacePath: string;
-    activeTabId: string | null;
-    splitView: WorkspaceSplitView | null;
-    tabs: WorkspaceTabState[];
-    archivedTabs: WorkspaceTabState[];
-}): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return Promise.resolve();
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "persist_workspace_state",
         "persistWorkspaceState",
         options,
@@ -277,15 +214,8 @@ export function restoreArchivedWorkspaceTab(options: {
     workspacePath: string;
     tabId: string;
 }): Promise<WorkspaceTabSnapshot> {
-    return runPromise(restoreArchivedWorkspaceTabEffect(options));
-}
-
-export function restoreArchivedWorkspaceTabEffect(options: {
-    workspacePath: string;
-    tabId: string;
-}): Effect.Effect<WorkspaceTabSnapshot, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "restoreArchivedWorkspaceTab",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -293,7 +223,7 @@ export function restoreArchivedWorkspaceTabEffect(options: {
         );
     }
 
-    return invokeWorkspaceCommandEffect<WorkspaceTabSnapshot>(
+    return invokeWorkspaceCommand<WorkspaceTabSnapshot>(
         "restore_archived_workspace_tab",
         "restoreArchivedWorkspaceTab",
         options,
@@ -303,14 +233,8 @@ export function restoreArchivedWorkspaceTabEffect(options: {
 export function restoreAllArchivedWorkspaceTabs(options: {
     workspacePath: string;
 }): Promise<void> {
-    return runPromise(restoreAllArchivedWorkspaceTabsEffect(options));
-}
-
-export function restoreAllArchivedWorkspaceTabsEffect(options: {
-    workspacePath: string;
-}): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "restoreAllArchivedWorkspaceTabs",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -318,7 +242,7 @@ export function restoreAllArchivedWorkspaceTabsEffect(options: {
         );
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "restore_all_archived_workspace_tabs",
         "restoreAllArchivedWorkspaceTabs",
         options,
@@ -330,16 +254,8 @@ export function deleteArchivedWorkspaceTab(options: {
     tabId: string;
     fileName: string;
 }): Promise<void> {
-    return runPromise(deleteArchivedWorkspaceTabEffect(options));
-}
-
-export function deleteArchivedWorkspaceTabEffect(options: {
-    workspacePath: string;
-    tabId: string;
-    fileName: string;
-}): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "deleteArchivedWorkspaceTab",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -347,7 +263,7 @@ export function deleteArchivedWorkspaceTabEffect(options: {
         );
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "delete_archived_workspace_tab",
         "deleteArchivedWorkspaceTab",
         options,
@@ -357,14 +273,8 @@ export function deleteArchivedWorkspaceTabEffect(options: {
 export function deleteAllArchivedWorkspaceTabs(options: {
     workspacePath: string;
 }): Promise<void> {
-    return runPromise(deleteAllArchivedWorkspaceTabsEffect(options));
-}
-
-export function deleteAllArchivedWorkspaceTabsEffect(options: {
-    workspacePath: string;
-}): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.fail(
+        return Promise.reject(
             new WorkspaceCommandError({
                 operation: "deleteAllArchivedWorkspaceTabs",
                 message: DESKTOP_SHELL_REQUIRED_ERROR,
@@ -372,7 +282,7 @@ export function deleteAllArchivedWorkspaceTabsEffect(options: {
         );
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "delete_all_archived_workspace_tabs",
         "deleteAllArchivedWorkspaceTabs",
         options,
@@ -382,17 +292,11 @@ export function deleteAllArchivedWorkspaceTabsEffect(options: {
 export function setWorkspaceUnsavedChanges(
     hasUnsavedChanges: boolean,
 ): Promise<void> {
-    return runPromise(setWorkspaceUnsavedChangesEffect(hasUnsavedChanges));
-}
-
-export function setWorkspaceUnsavedChangesEffect(
-    hasUnsavedChanges: boolean,
-): Effect.Effect<void, WorkspaceCommandError> {
     if (!isTauriEnvironment()) {
-        return Effect.void;
+        return Promise.resolve();
     }
 
-    return invokeWorkspaceVoidCommandEffect(
+    return invokeWorkspaceVoidCommand(
         "set_workspace_unsaved_changes",
         "setWorkspaceUnsavedChanges",
         {

@@ -1,19 +1,17 @@
-import { Effect } from "effect";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
     AppUpdaterStatus,
 } from "../../lib/app/app.type";
-import { confirmActionEffect } from "../../lib/platform/dialog";
+import { confirmAction } from "../../lib/platform/dialog";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
 import {
-    checkForAppUpdateEffect,
-    downloadAndInstallAppUpdateEffect,
-    relaunchAppEffect,
+    checkForAppUpdate,
+    downloadAndInstallAppUpdate,
+    relaunchApp,
 } from "../../lib/platform/updater";
 import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window";
-import { runPromise } from "../../lib/shared/effectRuntime";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { useAppStore } from "./useAppStore";
 import type {
@@ -53,37 +51,31 @@ export function useAppUpdater(): UseAppUpdaterResult {
                 return;
             }
 
-            if (options?.shouldPrompt === false) {
-                await runPromise(relaunchAppEffect());
-                return;
-            }
+            try {
+                if (options?.shouldPrompt === false) {
+                    await relaunchApp();
+                    return;
+                }
 
-            await runPromise(
-                Effect.gen(function* () {
-                    const shouldRelaunch = yield* confirmActionEffect(
-                        `Fumi v${updateMetadata.version} is ready to install. Restart now?`,
-                    );
+                const shouldRelaunch = await confirmAction(
+                    `Fumi v${updateMetadata.version} is ready to install. Restart now?`,
+                );
 
-                    if (!shouldRelaunch) {
-                        setStatus("readyToRestart");
-                        return;
-                    }
+                if (!shouldRelaunch) {
+                    setStatus("readyToRestart");
+                    return;
+                }
 
-                    yield* relaunchAppEffect();
-                }).pipe(
-                    Effect.catchAll((error) =>
-                        Effect.sync(() => {
-                            setStatus("error");
-                            setErrorMessage(
-                                getErrorMessage(
-                                    error,
-                                    `Unable to restart Fumi for v${updateMetadata.version}.`,
-                                ),
-                            );
-                        }),
+                await relaunchApp();
+            } catch (error) {
+                setStatus("error");
+                setErrorMessage(
+                    getErrorMessage(
+                        error,
+                        `Unable to restart Fumi for v${updateMetadata.version}.`,
                     ),
-                ),
-            );
+                );
+            }
         },
         [],
     );
@@ -100,58 +92,50 @@ export function useAppUpdater(): UseAppUpdaterResult {
                 return;
             }
 
-            await runPromise(
-                Effect.gen(function* () {
-                    if (options?.shouldConfirmBeforeDownload !== false) {
-                        const shouldInstall = yield* confirmActionEffect(
-                            `Download and install Fumi v${updateMetadata.version} now?`,
-                        );
-
-                        if (!shouldInstall) {
-                            return;
-                        }
-                    }
-
-                    setStatus("downloading");
-                    setErrorMessage(null);
-                    setDownloadProgress(null);
-
-                    yield* downloadAndInstallAppUpdateEffect(
-                        updateMetadata,
-                        (nextProgress) => {
-                            setDownloadProgress(nextProgress);
-                            setStatus(
-                                nextProgress.phase === "finished"
-                                    ? "installing"
-                                    : "downloading",
-                            );
-                        },
+            try {
+                if (options?.shouldConfirmBeforeDownload !== false) {
+                    const shouldInstall = await confirmAction(
+                        `Download and install Fumi v${updateMetadata.version} now?`,
                     );
 
-                    setDownloadProgress(null);
-                    setStatus("readyToRestart");
-
-                    if (options?.shouldPromptAfterInstall === false) {
+                    if (!shouldInstall) {
                         return;
                     }
+                }
 
-                    yield* Effect.promise(() =>
-                        requestRelaunchToApplyUpdate(updateMetadata),
-                    );
-                }).pipe(
-                    Effect.catchAll((error) =>
-                        Effect.sync(() => {
-                            setStatus("error");
-                            setErrorMessage(
-                                getErrorMessage(
-                                    error,
-                                    `Unable to install Fumi v${updateMetadata.version}.`,
-                                ),
-                            );
-                        }),
+                setStatus("downloading");
+                setErrorMessage(null);
+                setDownloadProgress(null);
+
+                await downloadAndInstallAppUpdate(
+                    updateMetadata,
+                    (nextProgress) => {
+                        setDownloadProgress(nextProgress);
+                        setStatus(
+                            nextProgress.phase === "finished"
+                                ? "installing"
+                                : "downloading",
+                        );
+                    },
+                );
+
+                setDownloadProgress(null);
+                setStatus("readyToRestart");
+
+                if (options?.shouldPromptAfterInstall === false) {
+                    return;
+                }
+
+                await requestRelaunchToApplyUpdate(updateMetadata);
+            } catch (error) {
+                setStatus("error");
+                setErrorMessage(
+                    getErrorMessage(
+                        error,
+                        `Unable to install Fumi v${updateMetadata.version}.`,
                     ),
-                ),
-            );
+                );
+            }
         },
         [requestRelaunchToApplyUpdate],
     );
@@ -188,53 +172,44 @@ export function useAppUpdater(): UseAppUpdaterResult {
             setErrorMessage(null);
             setDownloadProgress(null);
 
-            await runPromise(
-                checkForAppUpdateEffect().pipe(
-                    Effect.match({
-                        onSuccess: (nextUpdate) => {
-                            hasScheduledStartupRetryRef.current = false;
+            try {
+                const nextUpdate = await checkForAppUpdate();
+                hasScheduledStartupRetryRef.current = false;
 
-                            if (!nextUpdate) {
-                                setAvailableUpdate(null);
-                                setStatus("upToDate");
-                                return;
-                            }
+                if (!nextUpdate) {
+                    setAvailableUpdate(null);
+                    setStatus("upToDate");
+                    return;
+                }
 
-                            setAvailableUpdate(nextUpdate);
-                            setStatus("available");
+                setAvailableUpdate(nextUpdate);
+                setStatus("available");
 
-                            if (
-                                options?.shouldAutoUpdate &&
-                                isAutoUpdateEnabled
-                            ) {
-                                void installUpdate(nextUpdate, {
-                                    shouldConfirmBeforeDownload: false,
-                                    shouldPromptAfterInstall: true,
-                                });
-                            }
-                        },
-                        onFailure: (error) => {
-                            const nextErrorMessage = getErrorMessage(
-                                error,
-                                "Unable to check for updates right now.",
-                            );
+                if (options?.shouldAutoUpdate && isAutoUpdateEnabled) {
+                    void installUpdate(nextUpdate, {
+                        shouldConfirmBeforeDownload: false,
+                        shouldPromptAfterInstall: true,
+                    });
+                }
+            } catch (error) {
+                const nextErrorMessage = getErrorMessage(
+                    error,
+                    "Unable to check for updates right now.",
+                );
 
-                            if (options?.isSilent) {
-                                setStatus("idle");
+                if (options?.isSilent) {
+                    setStatus("idle");
 
-                                if (options.shouldRetryOnFailure) {
-                                    scheduleStartupRetry();
-                                }
+                    if (options?.shouldRetryOnFailure) {
+                        scheduleStartupRetry();
+                    }
 
-                                return;
-                            }
+                    return;
+                }
 
-                            setStatus("error");
-                            setErrorMessage(nextErrorMessage);
-                        },
-                    }),
-                ),
-            );
+                setStatus("error");
+                setErrorMessage(nextErrorMessage);
+            }
         },
         [
             clearStartupRetry,
