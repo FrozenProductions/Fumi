@@ -53,9 +53,9 @@ export type WorkspaceStoreActions = {
 
 export type WorkspaceStore = WorkspaceStoreState & WorkspaceStoreActions;
 
-type WorkspaceStoreSet = Parameters<StateCreator<WorkspaceStore>>[0];
-type WorkspaceStoreGet = Parameters<StateCreator<WorkspaceStore>>[1];
-type WorkspaceStoreApi = Parameters<StateCreator<WorkspaceStore>>[2];
+export type WorkspaceStoreSet = Parameters<StateCreator<WorkspaceStore>>[0];
+export type WorkspaceStoreGet = Parameters<StateCreator<WorkspaceStore>>[1];
+export type WorkspaceStoreApi = Parameters<StateCreator<WorkspaceStore>>[2];
 
 export type WorkspaceLifecycleSlice = Pick<
     WorkspaceStoreActions,
@@ -66,18 +66,26 @@ export type WorkspaceLifecycleSlice = Pick<
     | "openWorkspacePath"
 >;
 
-export type WorkspaceTabSlice = Pick<
+export type WorkspaceFileSlice = Pick<
     WorkspaceStoreActions,
     | "createWorkspaceFile"
     | "addWorkspaceScriptTab"
     | "duplicateWorkspaceTab"
-    | "archiveWorkspaceTab"
     | "deleteWorkspaceTab"
+    | "renameWorkspaceTab"
+>;
+
+export type WorkspaceArchiveSlice = Pick<
+    WorkspaceStoreActions,
+    | "archiveWorkspaceTab"
     | "restoreArchivedWorkspaceTab"
     | "restoreAllArchivedWorkspaceTabs"
     | "deleteArchivedWorkspaceTab"
     | "deleteAllArchivedWorkspaceTabs"
-    | "renameWorkspaceTab"
+>;
+
+export type WorkspaceLayoutSlice = Pick<
+    WorkspaceStoreActions,
     | "selectWorkspaceTab"
     | "reorderWorkspaceTab"
     | "openWorkspaceTabInPane"
@@ -87,6 +95,10 @@ export type WorkspaceTabSlice = Pick<
     | "focusWorkspacePane"
     | "closeWorkspaceSplitView"
 >;
+
+export type WorkspaceTabSlice = WorkspaceFileSlice &
+    WorkspaceArchiveSlice &
+    WorkspaceLayoutSlice;
 
 export type WorkspaceEditorSlice = Pick<
     WorkspaceStoreActions,

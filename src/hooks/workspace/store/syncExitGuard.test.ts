@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { createWorkspaceExitGuardSync } from "./syncExitGuard";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
 const mocks = vi.hoisted(() => ({
@@ -45,13 +46,12 @@ async function flushAsyncWork(): Promise<void> {
 
 describe("syncWorkspaceExitGuard", () => {
     afterEach(() => {
-        vi.resetModules();
         vi.restoreAllMocks();
         mocks.setWorkspaceUnsavedChanges.mockReset();
     });
 
     it("only syncs when the derived guard state changes", async () => {
-        const { syncWorkspaceExitGuard } = await import("./syncExitGuard");
+        const syncWorkspaceExitGuard = createWorkspaceExitGuardSync();
 
         mocks.setWorkspaceUnsavedChanges.mockResolvedValue(undefined);
 
@@ -74,7 +74,7 @@ describe("syncWorkspaceExitGuard", () => {
     });
 
     it("ignores stale failures and retries after the latest failure", async () => {
-        const { syncWorkspaceExitGuard } = await import("./syncExitGuard");
+        const syncWorkspaceExitGuard = createWorkspaceExitGuardSync();
         const errorSpy = vi
             .spyOn(console, "error")
             .mockImplementation(() => undefined);

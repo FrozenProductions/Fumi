@@ -30,13 +30,14 @@ import type {
     WorkspaceStoreSliceCreator,
 } from "./workspaceStore.type";
 
-let hasBootstrappedWorkspaceSession = false;
-let bootstrapWorkspacePromise: Promise<void> | null = null;
-let latestWorkspaceRefreshRequestId = 0;
-
 export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
     WorkspaceLifecycleSlice
 > = (set, get) => {
+    const lifecycleRuntime = {
+        bootstrapWorkspacePromise: null as Promise<void> | null,
+        hasBootstrappedWorkspaceSession: false,
+        latestWorkspaceRefreshRequestId: 0,
+    };
     const persistCurrentWorkspaceBeforeSwitch = async (): Promise<boolean> => {
         const { workspace, persistWorkspaceState } = get();
 
@@ -72,16 +73,16 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
     return {
         bootstrapWorkspaceSession: async (): Promise<void> => {
-            if (hasBootstrappedWorkspaceSession) {
+            if (lifecycleRuntime.hasBootstrappedWorkspaceSession) {
                 return;
             }
 
-            if (bootstrapWorkspacePromise) {
-                return bootstrapWorkspacePromise;
+            if (lifecycleRuntime.bootstrapWorkspacePromise) {
+                return lifecycleRuntime.bootstrapWorkspacePromise;
             }
 
             if (!isTauriEnvironment()) {
-                hasBootstrappedWorkspaceSession = true;
+                lifecycleRuntime.hasBootstrappedWorkspaceSession = true;
                 markWorkspacePersistedSignature(null);
                 set({
                     workspace: null,
@@ -92,7 +93,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 return;
             }
 
-            bootstrapWorkspacePromise = (async () => {
+            lifecycleRuntime.bootstrapWorkspacePromise = (async () => {
                 try {
                     const bootstrapResponse = await bootstrapWorkspace();
                     const nextWorkspace = bootstrapResponse.workspace
@@ -128,13 +129,13 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                         isHydrated: true,
                     });
                 } finally {
-                    hasBootstrappedWorkspaceSession = true;
-                    bootstrapWorkspacePromise = null;
+                    lifecycleRuntime.hasBootstrappedWorkspaceSession = true;
+                    lifecycleRuntime.bootstrapWorkspacePromise = null;
                     set({ isBootstrapping: false });
                 }
             })();
 
-            return bootstrapWorkspacePromise;
+            return lifecycleRuntime.bootstrapWorkspacePromise;
         },
         persistWorkspaceState: async (): Promise<boolean> => {
             const { workspace } = get();
@@ -175,7 +176,8 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 return;
             }
 
-            const requestId = ++latestWorkspaceRefreshRequestId;
+            const requestId =
+                ++lifecycleRuntime.latestWorkspaceRefreshRequestId;
             const requestedWorkspacePath = currentWorkspace.workspacePath;
 
             try {
@@ -184,7 +186,8 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 );
 
                 if (
-                    requestId !== latestWorkspaceRefreshRequestId ||
+                    requestId !==
+                        lifecycleRuntime.latestWorkspaceRefreshRequestId ||
                     !isMatchingWorkspacePath(
                         get().workspace,
                         requestedWorkspacePath,
@@ -254,7 +257,8 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 }
             } catch (error) {
                 if (
-                    requestId !== latestWorkspaceRefreshRequestId ||
+                    requestId !==
+                        lifecycleRuntime.latestWorkspaceRefreshRequestId ||
                     !isMatchingWorkspacePath(
                         get().workspace,
                         requestedWorkspacePath,

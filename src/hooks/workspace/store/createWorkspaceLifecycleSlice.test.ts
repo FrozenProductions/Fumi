@@ -160,7 +160,6 @@ async function createLifecycleStore(initialWorkspace?: WorkspaceSession) {
 
 describe("createWorkspaceLifecycleSlice", () => {
     afterEach(() => {
-        vi.resetModules();
         vi.restoreAllMocks();
         mocks.markWorkspacePersistedSignature.mockReset();
         mocks.openWorkspace.mockReset();

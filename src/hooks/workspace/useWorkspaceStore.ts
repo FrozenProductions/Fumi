@@ -3,7 +3,7 @@ import { readRecentWorkspacePaths } from "../../lib/workspace/persistence";
 import { createWorkspaceEditorSlice } from "./store/createWorkspaceEditorSlice";
 import { createWorkspaceLifecycleSlice } from "./store/createWorkspaceLifecycleSlice";
 import { createWorkspaceTabSlice } from "./store/createWorkspaceTabSlice";
-import { syncWorkspaceExitGuard } from "./store/syncExitGuard";
+import { createWorkspaceExitGuardSync } from "./store/syncExitGuard";
 import type { WorkspaceStore } from "./store/workspaceStore.type";
 
 export {
@@ -30,4 +30,4 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get, store) => {
     return workspaceStore;
 });
 
-useWorkspaceStore.subscribe(syncWorkspaceExitGuard);
+useWorkspaceStore.subscribe(createWorkspaceExitGuardSync());

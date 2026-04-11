@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { create } from "zustand";
 import { DEFAULT_SCRIPT_LIBRARY_FILTERS } from "../../constants/scriptLibrary/scriptLibrary";
 import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.type";
@@ -40,6 +40,10 @@ function createTestScriptLibraryStore() {
 }
 
 describe("useScriptLibraryStore favorites", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it("adds a normalized favorite once and removes it on the next toggle", () => {
         const useTestStore = createTestScriptLibraryStore();
         const script = createScriptLibraryEntry();
@@ -108,5 +112,37 @@ describe("useScriptLibraryStore favorites", () => {
                 _id: "script-1",
             }),
         ]);
+    });
+
+    it("keeps copied-link timers isolated per store instance", () => {
+        vi.useFakeTimers();
+
+        const firstStore = createTestScriptLibraryStore();
+        const secondStore = createTestScriptLibraryStore();
+
+        firstStore.getState().activateCopiedLink("script-1");
+        secondStore.getState().activateCopiedLink("script-2");
+
+        vi.advanceTimersByTime(2000);
+
+        expect(firstStore.getState().copiedLinkId).toBeNull();
+        expect(secondStore.getState().copiedLinkId).toBeNull();
+    });
+
+    it("keeps copied-script and added-script timers isolated per store instance", () => {
+        vi.useFakeTimers();
+
+        const firstStore = createTestScriptLibraryStore();
+        const secondStore = createTestScriptLibraryStore();
+
+        firstStore.getState().activateCopiedScript("script-1");
+        secondStore.getState().activateAddedScript("script-2");
+
+        vi.advanceTimersByTime(2000);
+
+        expect(firstStore.getState().copiedScriptId).toBeNull();
+        expect(secondStore.getState().addedScriptId).toBeNull();
+        expect(firstStore.getState().addedScriptId).toBeNull();
+        expect(secondStore.getState().copiedScriptId).toBeNull();
     });
 });

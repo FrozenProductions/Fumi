@@ -2,31 +2,38 @@ import { setWorkspaceUnsavedChanges } from "../../../lib/platform/workspace";
 import { selectWorkspaceShouldGuardExit } from "./selectors";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
-let lastRequestedWorkspaceExitGuard: boolean | null = null;
-let latestWorkspaceExitGuardRequestId = 0;
+export type WorkspaceExitGuardSync = (state: WorkspaceStore) => void;
 
-export function syncWorkspaceExitGuard(state: WorkspaceStore): void {
-    const shouldGuardExit = selectWorkspaceShouldGuardExit(state);
+export function createWorkspaceExitGuardSync(): WorkspaceExitGuardSync {
+    let lastRequestedWorkspaceExitGuard: boolean | null = null;
+    let latestWorkspaceExitGuardRequestId = 0;
 
-    if (shouldGuardExit === lastRequestedWorkspaceExitGuard) {
-        return;
-    }
+    return (state: WorkspaceStore): void => {
+        const shouldGuardExit = selectWorkspaceShouldGuardExit(state);
 
-    lastRequestedWorkspaceExitGuard = shouldGuardExit;
-    const requestId = ++latestWorkspaceExitGuardRequestId;
+        if (shouldGuardExit === lastRequestedWorkspaceExitGuard) {
+            return;
+        }
 
-    void setWorkspaceUnsavedChanges(shouldGuardExit)
-        .then(() => {
-            if (requestId !== latestWorkspaceExitGuardRequestId) {
-                return;
-            }
-        })
-        .catch((error) => {
-            if (requestId !== latestWorkspaceExitGuardRequestId) {
-                return;
-            }
+        lastRequestedWorkspaceExitGuard = shouldGuardExit;
+        const requestId = ++latestWorkspaceExitGuardRequestId;
 
-            lastRequestedWorkspaceExitGuard = null;
-            console.error("Failed to sync the workspace exit guard.", error);
-        });
+        void setWorkspaceUnsavedChanges(shouldGuardExit)
+            .then(() => {
+                if (requestId !== latestWorkspaceExitGuardRequestId) {
+                    return;
+                }
+            })
+            .catch((error) => {
+                if (requestId !== latestWorkspaceExitGuardRequestId) {
+                    return;
+                }
+
+                lastRequestedWorkspaceExitGuard = null;
+                console.error(
+                    "Failed to sync the workspace exit guard.",
+                    error,
+                );
+            });
+    };
 }
