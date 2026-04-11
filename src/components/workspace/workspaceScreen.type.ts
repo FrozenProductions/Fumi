@@ -16,7 +16,6 @@ export type WorkspaceScreenProps = {
 
 export type WorkspaceActionsButtonProps = {
     executor: UseWorkspaceExecutorResult;
-    isRobloxRunning: boolean;
     isLaunching: boolean;
     onLaunchRoblox: () => Promise<void>;
     isKillingRoblox: boolean;

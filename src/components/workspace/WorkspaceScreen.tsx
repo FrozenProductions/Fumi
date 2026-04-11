@@ -1,5 +1,6 @@
 import { type DragDropEventHandlers, DragDropProvider } from "@dnd-kit/react";
 import { Add01Icon, FolderOpenIcon } from "@hugeicons/core-free-icons";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import {
     type ReactElement,
     useCallback,
@@ -12,7 +13,10 @@ import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCo
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
 import type { RobloxProcessInfo } from "../../lib/accounts/accounts.type";
-import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
+import {
+    getAppHotkeyBinding,
+    getAppHotkeyShortcutLabel,
+} from "../../lib/app/hotkeys";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import {
     killRobloxProcess,
@@ -20,6 +24,8 @@ import {
     launchRoblox,
     listRobloxProcesses,
 } from "../../lib/platform/accounts";
+import { confirmAction } from "../../lib/platform/dialog";
+import { isTauriEnvironment } from "../../lib/platform/runtime";
 import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
@@ -48,6 +54,9 @@ export function WorkspaceScreen({
 }: WorkspaceScreenProps): ReactElement {
     const appTheme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
+    const isCommandPaletteOpen = useAppStore(
+        (state) => state.isCommandPaletteOpen,
+    );
     const editorSettings = useAppStore((state) => state.editorSettings);
     const middleClickTabAction = useAppStore(
         (state) => state.workspaceSettings.middleClickTabAction,
@@ -90,12 +99,17 @@ export function WorkspaceScreen({
     } = session.editorActions;
     const executorState = executor.state;
 
-    const [isRobloxRunning, setIsRobloxRunning] = useState(false);
     const [robloxProcesses, setRobloxProcesses] = useState<
         readonly RobloxProcessInfo[]
     >([]);
     const [isLaunching, setIsLaunching] = useState(false);
     const [isKillingRoblox, setIsKillingRoblox] = useState(false);
+    const isDesktopShell = isTauriEnvironment();
+    const launchRobloxHotkey = getAppHotkeyBinding(
+        "LAUNCH_ROBLOX",
+        hotkeyBindings,
+    );
+    const killRobloxHotkey = getAppHotkeyBinding("KILL_ROBLOX", hotkeyBindings);
 
     useEffect(() => {
         let isMounted = true;
@@ -105,7 +119,6 @@ export function WorkspaceScreen({
                 const processes = await listRobloxProcesses();
                 if (isMounted) {
                     setRobloxProcesses(processes);
-                    setIsRobloxRunning(processes.length > 0);
                 }
             } catch {}
         }
@@ -148,6 +161,40 @@ export function WorkspaceScreen({
     const handleKillRobloxProcess = async (pid: number): Promise<void> => {
         await killRobloxProcess(pid);
     };
+
+    const handleConfirmKillRoblox = async (): Promise<void> => {
+        const shouldKillRoblox = await confirmAction(
+            "Attempt to close Roblox?",
+        );
+
+        if (!shouldKillRoblox) {
+            return;
+        }
+
+        await handleKillRoblox();
+    };
+
+    useHotkey(
+        launchRobloxHotkey,
+        () => {
+            void handleLaunchRoblox();
+        },
+        {
+            enabled: isDesktopShell && !isCommandPaletteOpen && !isLaunching,
+        },
+    );
+
+    useHotkey(
+        killRobloxHotkey,
+        () => {
+            void handleConfirmKillRoblox();
+        },
+        {
+            enabled:
+                isDesktopShell && !isCommandPaletteOpen && !isKillingRoblox,
+        },
+    );
+
     const activeEditorMode = activeTab
         ? getEditorModeForFileName(activeTab.fileName)
         : "text";
@@ -542,7 +589,6 @@ export function WorkspaceScreen({
                             <div className="pointer-events-none absolute bottom-5 right-5 z-20">
                                 <WorkspaceActionsButton
                                     executor={executor}
-                                    isRobloxRunning={isRobloxRunning}
                                     isLaunching={isLaunching}
                                     onLaunchRoblox={handleLaunchRoblox}
                                     isKillingRoblox={isKillingRoblox}

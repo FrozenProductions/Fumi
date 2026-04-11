@@ -7,6 +7,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
@@ -16,7 +17,6 @@ type ConfirmAction = "kill" | `kill-pid-${number}`;
 
 export function WorkspaceActionsButton({
     executor,
-    isRobloxRunning,
     isLaunching,
     onLaunchRoblox,
     isKillingRoblox,
@@ -25,6 +25,7 @@ export function WorkspaceActionsButton({
     onKillRobloxProcess,
 }: WorkspaceActionsButtonProps): ReactElement {
     const theme = useAppStore((state) => state.theme);
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isDark = theme === "dark";
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -45,6 +46,14 @@ export function WorkspaceActionsButton({
     const canOpenMenu = isDesktopShell;
 
     const hasProcesses = robloxProcesses.length > 0;
+    const launchRobloxShortcutLabel = getAppHotkeyShortcutLabel(
+        "LAUNCH_ROBLOX",
+        hotkeyBindings,
+    );
+    const killRobloxShortcutLabel = getAppHotkeyShortcutLabel(
+        "KILL_ROBLOX",
+        hotkeyBindings,
+    );
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent): void {
@@ -188,13 +197,7 @@ export function WorkspaceActionsButton({
         if (isKillingRoblox) {
             return "Killing Roblox processes…";
         }
-        if (killIsConfirming) {
-            return "Click again to confirm — this will close all Roblox instances";
-        }
-        if (!isRobloxRunning) {
-            return "Attempt to close Roblox even if it is not currently running";
-        }
-        return "Kill all running Roblox processes";
+        return "Attempt to close roblox";
     }
 
     function renderProcessRows(): ReactElement[] {
@@ -332,7 +335,11 @@ export function WorkspaceActionsButton({
                     </div>
                     <div className="flex flex-col gap-0.5">
                         {/* Launch Roblox */}
-                        <AppTooltip content={getLaunchTooltip()} side="left">
+                        <AppTooltip
+                            content={getLaunchTooltip()}
+                            shortcut={launchRobloxShortcutLabel}
+                            side="left"
+                        >
                             <button
                                 type="button"
                                 role="menuitem"
@@ -360,7 +367,11 @@ export function WorkspaceActionsButton({
                         </AppTooltip>
 
                         {/* Kill all Roblox */}
-                        <AppTooltip content={getKillTooltip()} side="left">
+                        <AppTooltip
+                            content={getKillTooltip()}
+                            shortcut={killRobloxShortcutLabel}
+                            side="left"
+                        >
                             <button
                                 type="button"
                                 role="menuitem"

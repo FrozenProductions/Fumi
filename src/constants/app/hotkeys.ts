@@ -21,6 +21,8 @@ export const APP_HOTKEY_ACTIONS = [
     "FOCUS_WORKSPACE_LEFT_PANE",
     "FOCUS_WORKSPACE_RIGHT_PANE",
     "RESET_WORKSPACE_SPLIT_VIEW",
+    "LAUNCH_ROBLOX",
+    "KILL_ROBLOX",
     "OPEN_WORKSPACE_SCREEN",
     "OPEN_SCRIPT_LIBRARY",
     "OPEN_ACCOUNTS",
@@ -187,6 +189,24 @@ export const APP_HOTKEY_DEFINITIONS = {
             mod: true,
             ctrl: true,
         },
+        groupLabel: "Workspace",
+        isEditable: true,
+        isVisibleInSettings: true,
+    },
+    LAUNCH_ROBLOX: {
+        label: "Launch Roblox",
+        description:
+            "Launch a Roblox client from the workspace screen in the desktop app.",
+        defaultBinding: "Mod+Shift+L",
+        groupLabel: "Workspace",
+        isEditable: true,
+        isVisibleInSettings: true,
+    },
+    KILL_ROBLOX: {
+        label: "Kill Roblox",
+        description:
+            "Terminate running Roblox clients from the workspace screen in the desktop app.",
+        defaultBinding: "Mod+Shift+K",
         groupLabel: "Workspace",
         isEditable: true,
         isVisibleInSettings: true,
