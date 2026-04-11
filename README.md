@@ -47,7 +47,6 @@ Primary stack information comes from [package.json](./package.json) and [src-tau
 | Motion utilities          | `tailwindcss-motion`                            | `1.1.1`             |
 | Formatting / linting      | Biome                                           | `2.0.6`             |
 | State management          | Zustand                                         | `5.0.12`            |
-| Effects / runtime helpers | Effect                                          | `3.21.0`            |
 | Hotkeys                   | `@tanstack/react-hotkeys`                       | `0.4.2`             |
 | Drag and drop             | `@dnd-kit/react`                                | `0.3.2`             |
 | Editor                    | Ace / React Ace                                 | `1.43.4` / `14.0.1` |
