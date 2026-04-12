@@ -24,11 +24,13 @@ type OutlineGroup = {
 
 type OutlineEntry =
     | {
+          id: string;
           count: number;
           title: string;
           type: "group";
       }
     | {
+          id: string;
           symbol: LuauFileSymbol;
           title: string;
           type: "symbol";
@@ -187,6 +189,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
         for (const group of groups) {
             result.push({
+                id: `group-${group.title}`,
                 count: group.symbols.length,
                 title: group.title,
                 type: "group",
@@ -198,6 +201,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
             for (const symbol of group.symbols) {
                 result.push({
+                    id: `symbol-${symbol.kind}-${symbol.label}-${symbol.declarationStart}`,
                     symbol,
                     title: group.title,
                     type: "symbol",
@@ -207,15 +211,22 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
         return result;
     }, [expandedGroups, groups]);
-    const rowVirtualizer = useVirtualizer({
-        count: entries.length,
-        estimateSize: (index) =>
-            entries[index]?.type === "group"
-                ? WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT
-                : WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT,
-        getScrollElement: () => scrollRef.current,
-        overscan: WORKSPACE_OUTLINE_VIRTUAL_OVERSCAN,
-    });
+
+    const virtualizerOptions = useMemo(
+        () => ({
+            count: entries.length,
+            estimateSize: (index: number) => {
+                const entry = entries[index];
+                return entry?.type === "group"
+                    ? WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT
+                    : WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT;
+            },
+            getScrollElement: () => scrollRef.current,
+            overscan: WORKSPACE_OUTLINE_VIRTUAL_OVERSCAN,
+        }),
+        [entries.length, entries],
+    );
+    const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
     return (
         <aside className="flex h-full w-full min-w-0 flex-col bg-fumi-50">
@@ -241,7 +252,8 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
                             return (
                                 <div
-                                    key={getOutlineEntryKey(entry)}
+                                    key={entry.id}
+                                    data-index={virtualItem.index}
                                     className="absolute left-0 top-0 w-full px-2"
                                     ref={rowVirtualizer.measureElement}
                                     style={{
@@ -291,11 +303,3 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
         </aside>
     );
 });
-
-function getOutlineEntryKey(entry: OutlineEntry): string {
-    if (entry.type === "group") {
-        return `group-${entry.title}`;
-    }
-
-    return `symbol-${entry.symbol.kind}-${entry.symbol.label}-${entry.symbol.declarationStart}`;
-}
