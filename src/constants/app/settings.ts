@@ -65,6 +65,7 @@ export const DEFAULT_APP_EDITOR_SETTINGS = {
     intellisenseWidth: "large",
     isOutlinePanelVisible: true,
     outlinePanelWidth: WORKSPACE_OUTLINE_PANEL_DEFAULT_WIDTH,
+    outlineExpandedGroups: { Functions: true, Locals: true, Globals: true },
 } as const satisfies AppEditorSettings;
 
 export const DEFAULT_APP_UPDATER_SETTINGS = {

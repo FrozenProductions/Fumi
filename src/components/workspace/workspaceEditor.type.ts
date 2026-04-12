@@ -31,6 +31,8 @@ export type WorkspaceEditorProps = {
     isOutlinePanelVisible: boolean;
     luauSymbols: LuauFileSymbol[];
     outlinePanelWidth: number;
+    outlineExpandedGroups: Record<string, boolean>;
+    onToggleExpandedGroup: (title: string) => void;
     onActiveTabLuauChange: (change: WorkspaceOutlineChange | null) => void;
     onFocusPane: (pane: WorkspacePaneId) => void;
     onSetOutlinePanelWidth: (width: number) => void;

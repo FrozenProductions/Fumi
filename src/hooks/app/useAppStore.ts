@@ -244,6 +244,17 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setOutlineExpandedGroups: (patch) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        outlineExpandedGroups: {
+                            ...state.editorSettings.outlineExpandedGroups,
+                            ...patch,
+                        },
+                    },
+                }));
+            },
             setMiddleClickTabAction: (action) => {
                 set((state) => ({
                     workspaceSettings: {

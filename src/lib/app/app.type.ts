@@ -72,6 +72,7 @@ export type AppEditorSettings = {
     intellisenseWidth: AppIntellisenseWidth;
     isOutlinePanelVisible: boolean;
     outlinePanelWidth: number;
+    outlineExpandedGroups: Record<string, boolean>;
 };
 
 export type AppUpdaterSettings = {

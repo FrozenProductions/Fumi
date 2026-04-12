@@ -78,6 +78,8 @@ export function WorkspaceEditor({
     isOutlinePanelVisible,
     luauSymbols,
     outlinePanelWidth,
+    outlineExpandedGroups,
+    onToggleExpandedGroup,
     onActiveTabLuauChange,
     onFocusPane,
     onSetOutlinePanelWidth,
@@ -475,6 +477,8 @@ export function WorkspaceEditor({
                     <WorkspaceOutlinePanel
                         symbols={luauSymbols}
                         onSelectSymbol={handleSelectSymbol}
+                        expandedGroups={outlineExpandedGroups}
+                        onToggleExpandedGroup={onToggleExpandedGroup}
                     />
                 </div>
             ) : null}

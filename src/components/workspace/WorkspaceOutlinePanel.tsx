@@ -1,13 +1,6 @@
 import { ArrowDown01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-    memo,
-    type ReactElement,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { memo, type ReactElement, useMemo, useRef } from "react";
 import {
     WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT,
     WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT,
@@ -136,6 +129,8 @@ const OutlineGroupRow = memo(function OutlineGroupRow({
 export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     symbols,
     onSelectSymbol,
+    expandedGroups,
+    onToggleExpandedGroup,
 }: WorkspaceOutlinePanelProps): ReactElement {
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const groups = useMemo<OutlineGroup[]>(() => {
@@ -169,20 +164,6 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
         return result;
     }, [symbols]);
-    const [expandedGroups, setExpandedGroups] = useState<
-        Record<string, boolean>
-    >({});
-
-    useEffect(() => {
-        setExpandedGroups((currentState) =>
-            Object.fromEntries(
-                groups.map((group) => [
-                    group.title,
-                    currentState[group.title] ?? true,
-                ]),
-            ),
-        );
-    }, [groups]);
 
     const entries = useMemo<OutlineEntry[]>(() => {
         const result: OutlineEntry[] = [];
@@ -269,15 +250,8 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                                                 true
                                             }
                                             onToggle={() => {
-                                                setExpandedGroups(
-                                                    (currentState) => ({
-                                                        ...currentState,
-                                                        [entry.title]: !(
-                                                            currentState[
-                                                                entry.title
-                                                            ] ?? true
-                                                        ),
-                                                    }),
+                                                onToggleExpandedGroup(
+                                                    entry.title,
                                                 );
                                             }}
                                             title={entry.title}

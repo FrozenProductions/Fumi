@@ -73,6 +73,9 @@ export function WorkspaceScreen({
         (state) => state.clearRenameCurrentTabRequest,
     );
     const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
+    const setOutlineExpandedGroups = useAppStore(
+        (state) => state.setOutlineExpandedGroups,
+    );
     const persistWorkspaceState = useWorkspaceStore(
         (state) => state.persistWorkspaceState,
     );
@@ -639,6 +642,16 @@ export function WorkspaceScreen({
                                 outlinePanelWidth={
                                     editorSettings.outlinePanelWidth
                                 }
+                                outlineExpandedGroups={
+                                    editorSettings.outlineExpandedGroups
+                                }
+                                onToggleExpandedGroup={(title) => {
+                                    setOutlineExpandedGroups({
+                                        [title]:
+                                            !editorSettings
+                                                .outlineExpandedGroups[title],
+                                    });
+                                }}
                                 onActiveTabLuauChange={
                                     handleActiveTabLuauChange
                                 }
