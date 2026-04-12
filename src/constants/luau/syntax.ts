@@ -20,12 +20,7 @@ export const LUAU_CONTROL_KEYWORDS = [
     "while",
 ] as const;
 
-export const LUAU_DECLARATION_KEYWORDS = [
-    "as",
-    "export",
-    "type",
-    "typeof",
-] as const;
+export const LUAU_DECLARATION_KEYWORDS = ["as", "export", "typeof"] as const;
 
 export const LUAU_BUILTIN_TYPES = [
     "any",

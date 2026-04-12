@@ -40,10 +40,6 @@ function getSymbolIcon(kind: LuauFileSymbol["kind"]): string {
             return "ƒ";
         case "constant":
             return "C";
-        case "class":
-            return "⚙";
-        case "type":
-            return "T";
         case "datatype":
             return "D";
         case "enum":
@@ -67,10 +63,6 @@ function getSymbolColor(kind: LuauFileSymbol["kind"]): string {
             return "text-fumi-700";
         case "constant":
             return "text-fumi-500";
-        case "class":
-            return "text-fumi-800";
-        case "type":
-            return "text-fumi-600";
         default:
             return "text-fumi-600";
     }

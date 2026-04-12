@@ -57,7 +57,6 @@ pub(crate) enum LuauScanMode {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub(crate) enum LuauSymbolKind {
-    Class,
     Constant,
     Datatype,
     Enum,
@@ -66,5 +65,4 @@ pub(crate) enum LuauSymbolKind {
     Library,
     Namespace,
     Service,
-    Type,
 }

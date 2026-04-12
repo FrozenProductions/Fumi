@@ -490,11 +490,6 @@ class LuauSymbolScanner {
                 continue;
             }
 
-            if (this.matchKeyword("type")) {
-                this.parseTypeDeclaration(scope, currentFunctionScope);
-                continue;
-            }
-
             if (this.canStartBareAssignment()) {
                 this.parseBareAssignment();
                 continue;
@@ -916,64 +911,6 @@ class LuauSymbolScanner {
         if (this.isCurrentKeyword("end")) {
             this.consumeEndKeyword();
         }
-    }
-
-    private parseTypeDeclaration(
-        scope: ScopeFrame,
-        currentFunctionScope: ScopeFrame | null,
-    ): void {
-        if (this.mode === "functions") {
-            this.skipSimpleStatement();
-            return;
-        }
-
-        const isTypeFunction = this.matchKeyword("function");
-        const nameToken = this.current();
-
-        if (!nameToken || nameToken.type !== "identifier") {
-            this.skipSimpleStatement();
-            return;
-        }
-
-        this.index += 1;
-
-        while (this.matchSymbol("<")) {
-            this.skipBalancedTypeParameters("<", ">");
-        }
-
-        if (isTypeFunction) {
-            if (this.matchSymbol("(")) {
-                this.parseFunctionParameters();
-            }
-        } else {
-            while (
-                this.current() &&
-                !(
-                    this.current()?.type === "symbol" &&
-                    this.current()?.value === "="
-                ) &&
-                this.current()?.type !== "newline"
-            ) {
-                this.index += 1;
-            }
-        }
-
-        this.skipSimpleStatement();
-
-        this.addSymbol({
-            label: nameToken.value,
-            kind: "type",
-            detail: "type alias",
-            declaration: {
-                start: nameToken.start,
-                end: nameToken.end,
-            },
-            isLexical: true,
-            ownerFunction: currentFunctionScope,
-            scope,
-            docSummary: "Type alias declared in the current file.",
-            visibleStart: nameToken.end,
-        });
     }
 
     private matchSymbol(symbol: string): boolean {

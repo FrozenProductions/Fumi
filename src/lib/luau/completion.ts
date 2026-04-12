@@ -40,7 +40,6 @@ const LUAU_KEYWORD_DOCS: Record<string, string> = {
         "Skip the rest of the current loop iteration and continue with the next one.",
     function: "Define a function body.",
     local: "Declare a local variable or function.",
-    type: "Declare a Luau type alias.",
     typeof: "Capture the inferred type of an expression for use in type annotations.",
 };
 
@@ -224,7 +223,7 @@ const LUAU_ROOT_COMPLETIONS: LuauCompletionItem[] = dedupeCompletionItems([
     })),
     ...LUAU_BUILTIN_TYPES.map((typeName) => ({
         label: typeName,
-        kind: "type" as const,
+        kind: "datatype" as const,
         detail: "builtin type",
         doc: {
             summary:

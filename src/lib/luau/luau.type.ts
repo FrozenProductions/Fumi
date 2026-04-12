@@ -1,5 +1,4 @@
 export type LuauSymbolKind =
-    | "class"
     | "constant"
     | "datatype"
     | "enum"
@@ -7,8 +6,7 @@ export type LuauSymbolKind =
     | "keyword"
     | "library"
     | "namespace"
-    | "service"
-    | "type";
+    | "service";
 
 export type LuauDocEntry = {
     summary: string;

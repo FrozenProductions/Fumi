@@ -6,7 +6,7 @@ import type {
 } from "./outline.type";
 
 const STRUCTURAL_TEXT_PATTERN =
-    /\b(local|function|type|export|for|while|repeat|until|if|elseif|else|do|end)\b|[={}()[\]]/u;
+    /\b(local|function|export|for|while|repeat|until|if|elseif|else|do|end)\b|[={}()[\]]/u;
 
 export function getWorkspaceOutlineCacheHit(
     cache: Map<string, WorkspaceOutlineCacheEntry>,

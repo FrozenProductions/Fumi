@@ -351,11 +351,6 @@ impl<'content> LuauSymbolScanner<'content> {
                 continue;
             }
 
-            if self.match_keyword("type") {
-                self.parse_type_declaration(scope.clone(), current_function_scope.clone());
-                continue;
-            }
-
             if self.can_start_bare_assignment() {
                 self.parse_bare_assignment();
                 continue;
@@ -883,65 +878,6 @@ impl<'content> LuauSymbolScanner<'content> {
         }
     }
 
-    fn parse_type_declaration(&mut self, scope: SharedScope, current_function_scope: Option<SharedScope>) {
-        if self.mode == LuauScanMode::Functions {
-            self.skip_simple_statement();
-            return;
-        }
-
-        let is_type_function = self.match_keyword("function");
-        let Some(name_token) = self.current().cloned() else {
-            self.skip_simple_statement();
-            return;
-        };
-
-        if name_token.kind != TokenKind::Identifier {
-            self.skip_simple_statement();
-            return;
-        }
-
-        self.index += 1;
-
-        while self.match_symbol("<") {
-            self.skip_balanced_type_parameters("<", ">");
-        }
-
-        if is_type_function {
-            if self.match_symbol("(") {
-                let _ = self.parse_function_parameters();
-            }
-        } else {
-            while let Some(token) = self.current() {
-                if (token.kind == TokenKind::Symbol && token.value == "=")
-                    || token.kind == TokenKind::Newline
-                {
-                    break;
-                }
-
-                self.index += 1;
-            }
-        }
-
-        self.skip_simple_statement();
-
-        self.add_symbol(
-            TokenBoundary {
-                start: name_token.start,
-                end: name_token.end,
-            },
-            "type alias",
-            "Type alias declared in the current file.",
-            true,
-            LuauSymbolKind::Type,
-            name_token.value,
-            current_function_scope,
-            scope,
-            None,
-            None,
-            Some(name_token.end),
-        );
-    }
-
     fn skip_balanced_type_parameters(&mut self, open_symbol: &str, close_symbol: &str) {
         let mut depth = 1usize;
 
@@ -1416,20 +1352,18 @@ mod tests {
     }
 
     #[test]
-    fn scans_locals_globals_and_type_aliases() {
+    fn scans_locals_and_globals() {
         let analysis = scan(
-            "local foo = 1\nvalue = foo\ntype Bar = { value: number }\n",
+            "local foo = 1\nvalue = foo\n",
             LuauScanMode::Full,
         );
 
         let local_symbol = find_symbol(&analysis, "foo");
         let global_symbol = find_symbol(&analysis, "value");
-        let type_symbol = find_symbol(&analysis, "Bar");
 
         assert!(local_symbol.is_lexical);
         assert!(!global_symbol.is_lexical);
         assert_eq!(global_symbol.detail, "global variable");
-        assert_eq!(type_symbol.kind, LuauSymbolKind::Type);
     }
 
     #[test]

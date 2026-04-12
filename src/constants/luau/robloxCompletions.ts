@@ -53,7 +53,7 @@ export const ROBLOX_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
     ),
     createItem(
         "Instance",
-        "class",
+        "namespace",
         "namespace",
         "Core Roblox instance constructor namespace.",
         ROBLOX_DOC_SOURCE,
