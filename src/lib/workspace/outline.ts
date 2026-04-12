@@ -171,6 +171,26 @@ export function incrementallyUpdateWorkspaceOutline({
     };
 }
 
+export function getWorkspaceLineNumberFromOffset(
+    content: string,
+    offset: number,
+): number {
+    if (!Number.isInteger(offset) || offset <= 0) {
+        return 1;
+    }
+
+    const clampedOffset = Math.min(offset, content.length);
+    let lineNumber = 1;
+
+    for (let index = 0; index < clampedOffset; index += 1) {
+        if (content[index] === "\n") {
+            lineNumber += 1;
+        }
+    }
+
+    return lineNumber;
+}
+
 function getOffsetFromPoint(
     content: string,
     point: {

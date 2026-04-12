@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import type { LuauFileSymbol } from "../luau/luau.type";
 import type { LuauFileAnalysis } from "../luau/symbolScanner.type";
 import {
+    getWorkspaceLineNumberFromOffset,
     getWorkspaceOutlineCacheHit,
     incrementallyUpdateWorkspaceOutline,
     storeWorkspaceOutlineCacheEntry,
@@ -182,5 +183,32 @@ describe("workspace outline incremental updates", () => {
         });
 
         expect(nextAnalysis).toBeNull();
+    });
+});
+
+describe("getWorkspaceLineNumberFromOffset", () => {
+    it("maps a declaration offset to a 1-based editor line", () => {
+        const content = [
+            "local one = 1",
+            "local two = 2",
+            "local function target()",
+            "end",
+        ].join("\n");
+
+        expect(
+            getWorkspaceLineNumberFromOffset(
+                content,
+                content.indexOf("target"),
+            ),
+        ).toBe(3);
+    });
+
+    it("clamps invalid or oversized offsets to a valid line number", () => {
+        const content = "first\nsecond\nthird";
+
+        expect(getWorkspaceLineNumberFromOffset(content, -1)).toBe(1);
+        expect(
+            getWorkspaceLineNumberFromOffset(content, content.length + 100),
+        ).toBe(3);
     });
 });

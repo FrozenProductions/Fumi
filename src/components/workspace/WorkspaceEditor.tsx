@@ -23,6 +23,7 @@ import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
 import type { LuauFileSymbol } from "../../lib/luau/luau.type";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
+import { getWorkspaceLineNumberFromOffset } from "../../lib/workspace/outline";
 import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
 import { AppCodeCompletion } from "./AppCodeCompletion";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
@@ -111,10 +112,13 @@ export function WorkspaceEditor({
 
     const handleSelectSymbol = useCallback(
         (symbol: LuauFileSymbol): void => {
-            const lineNumber = symbol.declarationStart + 1;
+            const lineNumber = getWorkspaceLineNumberFromOffset(
+                activeTab?.content ?? "",
+                symbol.declarationStart,
+            );
             goToLine(lineNumber);
         },
-        [goToLine],
+        [activeTab?.content, goToLine],
     );
 
     const { isDropTarget: isLeftDropTarget, ref: leftDropRef } = useDroppable({
