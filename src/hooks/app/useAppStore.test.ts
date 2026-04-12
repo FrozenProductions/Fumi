@@ -79,3 +79,43 @@ describe("useAppStore hotkeyBindings", () => {
         expect(useAppStore.getState().hotkeyBindings).toEqual({});
     });
 });
+
+describe("useAppStore editorSettings", () => {
+    beforeEach(() => {
+        useAppStore.setState((state) => ({
+            editorSettings: {
+                ...state.editorSettings,
+                isOutlinePanelVisible: true,
+                outlinePanelWidth: 256,
+            },
+        }));
+    });
+
+    it("toggles the outline panel visibility", () => {
+        useAppStore.getState().toggleOutlinePanel();
+
+        expect(
+            useAppStore.getState().editorSettings.isOutlinePanelVisible,
+        ).toBe(false);
+
+        useAppStore.getState().toggleOutlinePanel();
+
+        expect(
+            useAppStore.getState().editorSettings.isOutlinePanelVisible,
+        ).toBe(true);
+    });
+
+    it("stores outline panel width within the allowed bounds", () => {
+        useAppStore.getState().setOutlinePanelWidth(320);
+
+        expect(useAppStore.getState().editorSettings.outlinePanelWidth).toBe(
+            320,
+        );
+
+        useAppStore.getState().setOutlinePanelWidth(100);
+
+        expect(useAppStore.getState().editorSettings.outlinePanelWidth).toBe(
+            200,
+        );
+    });
+});

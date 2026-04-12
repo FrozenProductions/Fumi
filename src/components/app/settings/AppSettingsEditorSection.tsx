@@ -30,6 +30,7 @@ export function AppSettingsEditorSection(): ReactElement {
     const setMiddleClickTabAction = useAppStore(
         (state) => state.setMiddleClickTabAction,
     );
+    const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
 
     const handleFontSizeChange = (value: string): void => {
         setEditorFontSize(Number(value));
@@ -55,6 +56,10 @@ export function AppSettingsEditorSection(): ReactElement {
         value: AppMiddleClickTabAction,
     ): void => {
         setMiddleClickTabAction(value);
+    };
+
+    const handleOutlinePanelToggle = (): void => {
+        toggleOutlinePanel();
     };
 
     return (
@@ -95,6 +100,23 @@ export function AppSettingsEditorSection(): ReactElement {
                     options={APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS}
                     onChange={handleMiddleClickTabActionChange}
                     className="shrink-0"
+                />
+            </div>
+            <div className="flex items-center justify-between gap-6 py-4">
+                <div className="min-w-0">
+                    <p className="text-xs font-semibold text-fumi-900">
+                        Outline panel
+                    </p>
+                    <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
+                        Show a sidebar with functions, locals, and globals for
+                        Luau files.
+                    </p>
+                </div>
+                <AppSettingsToggle
+                    label=""
+                    description=""
+                    isEnabled={editorSettings.isOutlinePanelVisible}
+                    onChange={handleOutlinePanelToggle}
                 />
             </div>
             <AppSettingsToggle

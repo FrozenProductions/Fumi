@@ -26,10 +26,14 @@ export type WorkspaceEditorProps = {
     tabs: WorkspaceTab[];
     splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
+    isOutlinePanelVisible: boolean;
+    outlinePanelWidth: number;
     onFocusPane: (pane: WorkspacePaneId) => void;
+    onSetOutlinePanelWidth: (width: number) => void;
     onResizeSplitPreview: (splitRatio: number) => void;
     onResizeSplitCommit: (splitRatio: number) => void;
     onResizeSplitCancel: () => void;
+    goToLine: (lineNumber: number) => boolean;
 } & Pick<
     UseWorkspaceCodeCompletionResult,
     | "acceptCompletion"

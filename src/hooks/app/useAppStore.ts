@@ -17,6 +17,7 @@ import {
     isAppTheme,
     normalizeAppIntellisenseWidth,
     normalizeAppMiddleClickTabAction,
+    normalizeAppOutlinePanelWidth,
 } from "../../lib/app/store";
 import type { AppStore, AppStoreState } from "./appStore.type";
 
@@ -235,11 +236,28 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setOutlinePanelWidth: (width) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        outlinePanelWidth: normalizeAppOutlinePanelWidth(width),
+                    },
+                }));
+            },
             setMiddleClickTabAction: (action) => {
                 set((state) => ({
                     workspaceSettings: {
                         ...state.workspaceSettings,
                         middleClickTabAction: action,
+                    },
+                }));
+            },
+            toggleOutlinePanel: () => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        isOutlinePanelVisible:
+                            !state.editorSettings.isOutlinePanelVisible,
                     },
                 }));
             },
@@ -269,6 +287,9 @@ export const useAppStore = create<AppStore>()(
                 const intellisenseWidth = normalizeAppIntellisenseWidth(
                     persistedAppState.editorSettings?.intellisenseWidth,
                 );
+                const outlinePanelWidth = normalizeAppOutlinePanelWidth(
+                    persistedAppState.editorSettings?.outlinePanelWidth,
+                );
                 const middleClickTabAction = normalizeAppMiddleClickTabAction(
                     persistedAppState.workspaceSettings?.middleClickTabAction,
                 );
@@ -288,6 +309,7 @@ export const useAppStore = create<AppStore>()(
                         ...currentState.editorSettings,
                         ...persistedAppState.editorSettings,
                         intellisenseWidth,
+                        outlinePanelWidth,
                     },
                     workspaceSettings: {
                         ...currentState.workspaceSettings,

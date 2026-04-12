@@ -45,7 +45,11 @@ export function App(): ReactElement {
     const requestRenameCurrentTab = useAppStore(
         (state) => state.requestRenameCurrentTab,
     );
+    const isOutlinePanelVisible = useAppStore(
+        (state) => state.editorSettings.isOutlinePanelVisible,
+    );
     const toggleSidebar = useAppStore((state) => state.toggleSidebar);
+    const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
     const setTheme = useAppStore((state) => state.setTheme);
     const setZoomPercent = useAppStore((state) => state.setZoomPercent);
@@ -146,7 +150,9 @@ export function App(): ReactElement {
                     onOpenScriptLibrary={handleOpenScriptLibrary}
                     onOpenAccounts={handleOpenAccounts}
                     onToggleSidebar={toggleSidebar}
+                    onToggleOutlinePanel={toggleOutlinePanel}
                     onOpenSettings={handleOpenSettings}
+                    isOutlinePanelVisible={isOutlinePanelVisible}
                     onSetTheme={setTheme}
                     onZoomIn={handleZoomIn}
                     onZoomOut={handleZoomOut}

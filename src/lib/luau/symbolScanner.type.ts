@@ -17,6 +17,8 @@ export type LuauFileAnalysis = {
     symbols: LuauFileSymbol[];
 };
 
+export type LuauScanMode = "full" | "functions";
+
 export type PendingLuauFileSymbol = Omit<
     LuauFileSymbol,
     | "ownerFunctionEnd"

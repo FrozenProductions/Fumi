@@ -51,7 +51,8 @@ export type AppHotkeyAction =
     | "KILL_ROBLOX"
     | "OPEN_WORKSPACE_SCREEN"
     | "OPEN_SCRIPT_LIBRARY"
-    | "OPEN_ACCOUNTS";
+    | "OPEN_ACCOUNTS"
+    | "TOGGLE_OUTLINE_PANEL";
 
 export type AppHotkeyBinding = RegisterableHotkey;
 export type AppHotkeyBindings = Partial<
@@ -69,6 +70,8 @@ export type AppEditorSettings = {
     isIntellisenseEnabled: boolean;
     intellisensePriority: AppIntellisensePriority;
     intellisenseWidth: AppIntellisenseWidth;
+    isOutlinePanelVisible: boolean;
+    outlinePanelWidth: number;
 };
 
 export type AppUpdaterSettings = {

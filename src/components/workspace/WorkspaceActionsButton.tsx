@@ -1,6 +1,7 @@
 import {
     ArrowDown01Icon,
     Cancel01Icon,
+    FileCodeIcon,
     Logout01Icon,
     PlayIcon,
     RocketIcon,
@@ -21,11 +22,17 @@ export function WorkspaceActionsButton({
     onLaunchRoblox,
     isKillingRoblox,
     onKillRoblox,
+    isOutlinePanelVisible,
+    onToggleOutlinePanel,
     robloxProcesses,
     onKillRobloxProcess,
 }: WorkspaceActionsButtonProps): ReactElement {
     const theme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
+    const toggleOutlinePanelShortcutLabel = getAppHotkeyShortcutLabel(
+        "TOGGLE_OUTLINE_PANEL",
+        hotkeyBindings,
+    );
     const isDark = theme === "dark";
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -139,6 +146,12 @@ export function WorkspaceActionsButton({
         } else {
             startConfirm(confirmKey);
         }
+    }
+
+    function handleToggleOutlinePanelClick(): void {
+        clearPendingConfirm();
+        setIsDropdownOpen(false);
+        onToggleOutlinePanel();
     }
 
     const containerClass = isDark
@@ -334,6 +347,38 @@ export function WorkspaceActionsButton({
                         More Actions
                     </div>
                     <div className="flex flex-col gap-0.5">
+                        <AppTooltip
+                            content={
+                                isOutlinePanelVisible
+                                    ? "Hide the outline panel"
+                                    : "Show the outline panel"
+                            }
+                            shortcut={toggleOutlinePanelShortcutLabel}
+                            side="left"
+                        >
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={handleToggleOutlinePanelClick}
+                                className={`app-select-none flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                    isDark
+                                        ? "text-fumi-200 hover:bg-fumi-700"
+                                        : "text-fumi-700 hover:bg-fumi-100"
+                                }`}
+                            >
+                                <AppIcon
+                                    icon={FileCodeIcon}
+                                    className="size-3.5 shrink-0 -translate-y-[0.5px]"
+                                    strokeWidth={2.5}
+                                />
+                                <span>
+                                    {isOutlinePanelVisible
+                                        ? "Hide outline panel"
+                                        : "Show outline panel"}
+                                </span>
+                            </button>
+                        </AppTooltip>
+
                         {/* Launch Roblox */}
                         <AppTooltip
                             content={getLaunchTooltip()}

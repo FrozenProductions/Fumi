@@ -34,6 +34,7 @@ export type UseWorkspaceCodeCompletionResult = {
     createHandleEditorLoad: (tabId: string) => (editor: unknown) => void;
     createHandleScroll: (tabId: string) => (editor: unknown) => void;
     acceptCompletion: (completionIndex: number) => void;
+    goToLine: (lineNumber: number) => boolean;
 };
 
 export type UpdateWorkspaceCompletionPopupOptions = {

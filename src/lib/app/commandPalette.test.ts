@@ -177,6 +177,7 @@ function createCommandPaletteOptions(
             openWorkspaceScreen: "Mod+Shift+W",
             openScriptLibrary: "Mod+Shift+S",
             resetWorkspaceSplitView: "Ctrl+Mod+0",
+            toggleOutlinePanel: "Mod+Shift+O",
             toggleSidebar: "Mod+B",
             toggleWorkspaceSplitView: "Mod+\\",
         },
@@ -185,7 +186,9 @@ function createCommandPaletteOptions(
         onOpenScriptLibrary: vi.fn(),
         onOpenAccounts: vi.fn(),
         onOpenSettings: vi.fn(),
+        isOutlinePanelVisible: true,
         onToggleSidebar: vi.fn(),
+        onToggleOutlinePanel: vi.fn(),
         onSetTheme: vi.fn(),
         onZoomIn: vi.fn(),
         onZoomOut: vi.fn(),
@@ -713,7 +716,7 @@ describe("getCommandCommandPaletteItems", () => {
             }),
         );
 
-        expect(noWorkspaceItems).toHaveLength(14);
+        expect(noWorkspaceItems).toHaveLength(15);
         expect(noWorkspaceItems.map((item) => item.id)).toEqual(
             expect.arrayContaining([
                 "command-open-workspace-screen",
@@ -724,6 +727,7 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-launch-roblox",
                 "command-kill-roblox",
                 "command-sidebar",
+                "command-outline-panel",
                 "command-zoom-in",
                 "command-zoom-out",
                 "command-zoom-reset",
@@ -1037,6 +1041,7 @@ describe("getCommandCommandPaletteItems", () => {
                     openWorkspaceScreen: "Mod+Shift+W",
                     openScriptLibrary: "Mod+Shift+S",
                     resetWorkspaceSplitView: "Ctrl+Mod+0",
+                    toggleOutlinePanel: "Mod+Shift+O",
                     toggleSidebar: "Mod+J",
                     toggleWorkspaceSplitView: "Mod+\\",
                 },

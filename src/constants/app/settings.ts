@@ -12,6 +12,7 @@ import {
     MIN_PAGE_ZOOM,
     PAGE_ZOOM_STEP,
 } from "../window/window";
+import { WORKSPACE_OUTLINE_PANEL_DEFAULT_WIDTH } from "../workspace/outline";
 import type {
     AppIntellisensePriorityOption,
     AppIntellisenseWidthOption,
@@ -62,6 +63,8 @@ export const DEFAULT_APP_EDITOR_SETTINGS = {
     isIntellisenseEnabled: true,
     intellisensePriority: "balanced",
     intellisenseWidth: "large",
+    isOutlinePanelVisible: true,
+    outlinePanelWidth: WORKSPACE_OUTLINE_PANEL_DEFAULT_WIDTH,
 } as const satisfies AppEditorSettings;
 
 export const DEFAULT_APP_UPDATER_SETTINGS = {

@@ -23,6 +23,7 @@
         "@hugeicons/core-free-icons": "^4.0.0",
         "@hugeicons/react": "^1.1.6",
         "@tanstack/react-hotkeys": "^0.4.2",
+        "@tanstack/react-virtual": "^3.13.23",
         "@tauri-apps/api": "^2.8.0",
         "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
         "@tauri-apps/plugin-dialog": "2.6.0",

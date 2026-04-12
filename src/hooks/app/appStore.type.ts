@@ -60,7 +60,9 @@ export type AppStoreActions = {
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
     setEditorIntellisenseWidth: (width: AppIntellisenseWidth) => void;
+    setOutlinePanelWidth: (width: number) => void;
     setMiddleClickTabAction: (action: AppMiddleClickTabAction) => void;
+    toggleOutlinePanel: () => void;
 };
 
 export type AppStore = AppStoreState & AppStoreActions;

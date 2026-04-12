@@ -74,6 +74,10 @@ export function getAppCommandPaletteHotkeyLabels(
             "RESET_WORKSPACE_SPLIT_VIEW",
             hotkeyBindings,
         ),
+        toggleOutlinePanel: getAppHotkeyShortcutLabel(
+            "TOGGLE_OUTLINE_PANEL",
+            hotkeyBindings,
+        ),
         toggleSidebar: getAppHotkeyShortcutLabel(
             "TOGGLE_SIDEBAR",
             hotkeyBindings,
@@ -96,7 +100,9 @@ export function getAppCommandPaletteResults({
     onOpenScriptLibrary,
     onOpenAccounts,
     onToggleSidebar,
+    onToggleOutlinePanel,
     onOpenSettings,
+    isOutlinePanelVisible,
     onSetTheme,
     onZoomIn,
     onZoomOut,
@@ -124,11 +130,13 @@ export function getAppCommandPaletteResults({
         onOpenAccounts,
         onOpenSettings,
         onToggleSidebar,
+        onToggleOutlinePanel,
         onSetTheme,
         onZoomIn,
         onZoomOut,
         onZoomReset,
         onRequestRenameCurrentTab,
+        isOutlinePanelVisible,
     });
     const workspaceItems = getWorkspaceCommandPaletteItems(workspaceSession);
     const goToLineItems = getGoToLineCommandPaletteItems({

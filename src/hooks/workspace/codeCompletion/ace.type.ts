@@ -22,5 +22,13 @@ export type AceSessionWithMode = Ace.EditSession & {
 
 export type AceChangeDelta = {
     action?: "insert" | "remove";
+    end?: {
+        column: number;
+        row: number;
+    };
     lines?: string[];
+    start?: {
+        column: number;
+        row: number;
+    };
 };

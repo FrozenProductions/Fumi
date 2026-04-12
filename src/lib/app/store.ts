@@ -6,6 +6,10 @@ import {
     DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
 } from "../../constants/app/settings";
 import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
+import {
+    WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
+    WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
+} from "../../constants/workspace/outline";
 import type {
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
@@ -68,4 +72,15 @@ export function normalizeAppMiddleClickTabAction(
         APP_MIDDLE_CLICK_TAB_ACTIONS.includes(value as AppMiddleClickTabAction)
         ? (value as AppMiddleClickTabAction)
         : DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION;
+}
+
+export function normalizeAppOutlinePanelWidth(value: unknown): number {
+    if (!Number.isFinite(value)) {
+        return DEFAULT_APP_EDITOR_SETTINGS.outlinePanelWidth;
+    }
+
+    return Math.min(
+        WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
+        Math.max(WORKSPACE_OUTLINE_PANEL_MIN_WIDTH, Number(value)),
+    );
 }

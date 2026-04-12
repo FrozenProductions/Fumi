@@ -26,6 +26,7 @@ export const APP_HOTKEY_ACTIONS = [
     "OPEN_WORKSPACE_SCREEN",
     "OPEN_SCRIPT_LIBRARY",
     "OPEN_ACCOUNTS",
+    "TOGGLE_OUTLINE_PANEL",
 ] as const satisfies AppHotkeyAction[];
 
 export const APP_HOTKEY_DEFINITIONS = {
@@ -232,6 +233,15 @@ export const APP_HOTKEY_DEFINITIONS = {
         description: "Jump to the accounts screen.",
         defaultBinding: "Mod+Shift+A",
         groupLabel: "Navigation",
+        isEditable: true,
+        isVisibleInSettings: true,
+    },
+    TOGGLE_OUTLINE_PANEL: {
+        label: "Toggle outline panel",
+        description:
+            "Show or hide the outline panel that displays functions, locals, and globals.",
+        defaultBinding: "Mod+Shift+O",
+        groupLabel: "Workspace",
         isEditable: true,
         isVisibleInSettings: true,
     },

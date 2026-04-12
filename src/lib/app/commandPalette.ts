@@ -90,11 +90,13 @@ export function getCommandCommandPaletteItems({
     onOpenAccounts,
     onOpenSettings,
     onToggleSidebar,
+    onToggleOutlinePanel,
     onSetTheme,
     onZoomIn,
     onZoomOut,
     onZoomReset,
     onRequestRenameCurrentTab,
+    isOutlinePanelVisible,
 }: GetCommandPaletteCommandItemsOptions): AppCommandPaletteItem[] {
     const { activeTab, workspace } = workspaceSession.state;
     const { openWorkspaceDirectory, createWorkspaceFile } =
@@ -217,6 +219,24 @@ export function getCommandCommandPaletteItems({
             meta: hotkeyLabels.toggleSidebar,
             keywords: "sidebar navigation toggle panel",
             onSelect: onToggleSidebar,
+        },
+        {
+            id: "command-outline-panel",
+            label: isOutlinePanelVisible
+                ? "Hide outline panel"
+                : "Show outline panel",
+            description: activeTab
+                ? "Toggle the editor outline panel for the current workspace tab."
+                : "Open a workspace tab to use the outline panel.",
+            icon: CommandIcon,
+            meta: hotkeyLabels.toggleOutlinePanel,
+            keywords:
+                "outline panel symbols functions locals globals toggle sidebar",
+            isDisabled: !activeTab,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                onToggleOutlinePanel();
+            },
         },
         {
             id: "command-zoom-in",

@@ -293,5 +293,6 @@ export function useWorkspaceCodeCompletion({
         createHandleEditorLoad,
         createHandleScroll,
         acceptCompletion,
+        goToLine,
     };
 }

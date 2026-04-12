@@ -24,7 +24,9 @@ export type GetCommandPaletteCommandItemsOptions = {
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
     onOpenSettings: () => void;
+    isOutlinePanelVisible: boolean;
     onToggleSidebar: () => void;
+    onToggleOutlinePanel: () => void;
     onSetTheme: (theme: AppTheme) => void;
     onZoomIn: () => void;
     onZoomOut: () => void;
@@ -47,7 +49,9 @@ export type AppCommandPaletteControllerOptions = {
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
     onToggleSidebar: () => void;
+    onToggleOutlinePanel: () => void;
     onOpenSettings: () => void;
+    isOutlinePanelVisible: boolean;
     onSetTheme: (theme: AppTheme) => void;
     onZoomIn: () => void;
     onZoomOut: () => void;
@@ -108,6 +112,7 @@ export type AppCommandPaletteHotkeyLabels = {
     openScriptLibrary: string;
     resetWorkspaceSplitView: string;
     toggleSidebar: string;
+    toggleOutlinePanel: string;
     toggleWorkspaceSplitView: string;
 };
 
@@ -123,7 +128,9 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "onOpenScriptLibrary"
     | "onOpenAccounts"
     | "onToggleSidebar"
+    | "onToggleOutlinePanel"
     | "onOpenSettings"
+    | "isOutlinePanelVisible"
     | "onSetTheme"
     | "onZoomIn"
     | "onZoomOut"

@@ -1,6 +1,7 @@
 import type { LuauSymbolKind } from "./luau.type";
 import type {
     LuauFileAnalysis,
+    LuauScanMode,
     LuauToken,
     PendingLuauFileSymbol,
     ScopeFrame,
@@ -227,12 +228,14 @@ class LuauSymbolScanner {
     private readonly content: string;
     private readonly functionScopes: ScopeFrame[] = [];
     private index = 0;
+    private readonly mode: LuauScanMode;
     private readonly pendingSymbols: PendingLuauFileSymbol[] = [];
     private readonly rootScope: ScopeFrame;
     private readonly tokens: LuauToken[];
 
-    public constructor(content: string) {
+    public constructor(content: string, mode: LuauScanMode) {
         this.content = content;
+        this.mode = mode;
         this.tokens = tokenizeLuau(content);
         this.rootScope = {
             start: 0,
@@ -346,6 +349,11 @@ class LuauSymbolScanner {
     }
 
     private parseBareAssignment(): void {
+        if (this.mode === "functions") {
+            this.skipSimpleStatement();
+            return;
+        }
+
         const identifierToken = this.current();
 
         if (!identifierToken || identifierToken.type !== "identifier") {
@@ -554,6 +562,10 @@ class LuauSymbolScanner {
             (loopScope) => {
                 loopScope.start = loopScopeStart;
 
+                if (this.mode === "functions") {
+                    return;
+                }
+
                 for (const binding of bindings) {
                     this.addSymbol({
                         label: binding.label,
@@ -641,6 +653,10 @@ class LuauSymbolScanner {
             functionScope,
             (scope) => {
                 scope.start = functionScopeStart;
+
+                if (this.mode === "functions") {
+                    return;
+                }
 
                 for (const parameter of parameterTokens) {
                     this.addSymbol({
@@ -832,6 +848,11 @@ class LuauSymbolScanner {
         scope: ScopeFrame,
         currentFunctionScope: ScopeFrame | null,
     ): void {
+        if (this.mode === "functions") {
+            this.skipSimpleStatement();
+            return;
+        }
+
         const bindings = this.parseBindings();
         const visibleStart = this.current()?.start ?? this.content.length;
 
@@ -901,6 +922,11 @@ class LuauSymbolScanner {
         scope: ScopeFrame,
         currentFunctionScope: ScopeFrame | null,
     ): void {
+        if (this.mode === "functions") {
+            this.skipSimpleStatement();
+            return;
+        }
+
         const isTypeFunction = this.matchKeyword("function");
         const nameToken = this.current();
 
@@ -1157,18 +1183,27 @@ class LuauSymbolScanner {
 }
 
 let lastScannedContent = "";
+let lastScannedMode: LuauScanMode = "full";
 let lastScannedAnalysis: LuauFileAnalysis = {
     functionScopes: [],
     symbols: [],
 };
 
-export function scanLuauFileAnalysis(content: string): LuauFileAnalysis {
-    if (content === lastScannedContent) {
+export function scanLuauFileAnalysis(
+    content: string,
+    options?: {
+        mode?: LuauScanMode;
+    },
+): LuauFileAnalysis {
+    const mode = options?.mode ?? "full";
+
+    if (content === lastScannedContent && mode === lastScannedMode) {
         return lastScannedAnalysis;
     }
 
-    const scanner = new LuauSymbolScanner(content);
+    const scanner = new LuauSymbolScanner(content, mode);
     lastScannedContent = content;
+    lastScannedMode = mode;
     lastScannedAnalysis = scanner.scan();
     return lastScannedAnalysis;
 }

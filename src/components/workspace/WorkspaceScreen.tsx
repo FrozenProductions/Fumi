@@ -58,6 +58,9 @@ export function WorkspaceScreen({
         (state) => state.isCommandPaletteOpen,
     );
     const editorSettings = useAppStore((state) => state.editorSettings);
+    const setOutlinePanelWidth = useAppStore(
+        (state) => state.setOutlinePanelWidth,
+    );
     const middleClickTabAction = useAppStore(
         (state) => state.workspaceSettings.middleClickTabAction,
     );
@@ -67,6 +70,7 @@ export function WorkspaceScreen({
     const clearRenameCurrentTabRequest = useAppStore(
         (state) => state.clearRenameCurrentTabRequest,
     );
+    const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
     const persistWorkspaceState = useWorkspaceStore(
         (state) => state.persistWorkspaceState,
     );
@@ -110,6 +114,10 @@ export function WorkspaceScreen({
         hotkeyBindings,
     );
     const killRobloxHotkey = getAppHotkeyBinding("KILL_ROBLOX", hotkeyBindings);
+    const toggleOutlinePanelHotkey = getAppHotkeyBinding(
+        "TOGGLE_OUTLINE_PANEL",
+        hotkeyBindings,
+    );
 
     useEffect(() => {
         let isMounted = true;
@@ -195,6 +203,16 @@ export function WorkspaceScreen({
         },
     );
 
+    useHotkey(
+        toggleOutlinePanelHotkey,
+        () => {
+            toggleOutlinePanel();
+        },
+        {
+            enabled: !isCommandPaletteOpen,
+        },
+    );
+
     const activeEditorMode = activeTab
         ? getEditorModeForFileName(activeTab.fileName)
         : "text";
@@ -213,6 +231,7 @@ export function WorkspaceScreen({
         createHandleScroll,
         handleCompletionHover,
         searchPanel,
+        goToLine,
     } = useWorkspaceCodeCompletion({
         activeEditorMode,
         activeTabId: activeTab?.id ?? null,
@@ -581,10 +600,18 @@ export function WorkspaceScreen({
                                 createHandleEditorLoad={createHandleEditorLoad}
                                 createHandleScroll={createHandleScroll}
                                 handleCompletionHover={handleCompletionHover}
+                                isOutlinePanelVisible={
+                                    editorSettings.isOutlinePanelVisible
+                                }
+                                outlinePanelWidth={
+                                    editorSettings.outlinePanelWidth
+                                }
                                 onFocusPane={focusWorkspacePane}
+                                onSetOutlinePanelWidth={setOutlinePanelWidth}
                                 onResizeSplitPreview={handleResizeSplitPreview}
                                 onResizeSplitCommit={handleResizeSplitCommit}
                                 onResizeSplitCancel={handleResizeSplitCancel}
+                                goToLine={goToLine}
                             />
                             <div className="pointer-events-none absolute bottom-5 right-5 z-20">
                                 <WorkspaceActionsButton
@@ -593,6 +620,10 @@ export function WorkspaceScreen({
                                     onLaunchRoblox={handleLaunchRoblox}
                                     isKillingRoblox={isKillingRoblox}
                                     onKillRoblox={handleKillRoblox}
+                                    isOutlinePanelVisible={
+                                        editorSettings.isOutlinePanelVisible
+                                    }
+                                    onToggleOutlinePanel={toggleOutlinePanel}
                                     robloxProcesses={robloxProcesses}
                                     onKillRobloxProcess={
                                         handleKillRobloxProcess

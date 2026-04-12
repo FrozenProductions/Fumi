@@ -11,13 +11,23 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
+import {
+    WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
+    WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
+} from "../../constants/workspace/outline";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../constants/workspace/workspace";
+import type { AceChangeDelta } from "../../hooks/workspace/codeCompletion/ace.type";
+import { useWorkspaceOutline } from "../../hooks/workspace/useWorkspaceOutline";
+import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
+import type { LuauFileSymbol } from "../../lib/luau/luau.type";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
+import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
 import { AppCodeCompletion } from "./AppCodeCompletion";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
+import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
 import type { WorkspaceEditorProps } from "./workspaceEditor.type";
 
 const SPLIT_DROP_LEFT_ID = "workspace-split-left";
@@ -66,17 +76,58 @@ export function WorkspaceEditor({
     createHandleEditorLoad,
     createHandleScroll,
     handleCompletionHover,
+    isOutlinePanelVisible,
+    outlinePanelWidth,
     onFocusPane,
+    onSetOutlinePanelWidth,
     onResizeSplitPreview,
     onResizeSplitCommit,
     onResizeSplitCancel,
+    goToLine,
 }: WorkspaceEditorProps): ReactElement {
     const [isAceReady, setIsAceReady] = useState(false);
     const [AceEditorComponent, setAceEditorComponent] =
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
+    const latestOutlineChangeRef = useRef<WorkspaceOutlineChange | null>(null);
+    const latestOutlineChangeTabIdRef = useRef<string | null>(activeTabId);
+    const [outlinePanelPreviewWidth, setOutlinePanelPreviewWidth] = useState<
+        number | null
+    >(null);
+    const outlineResizeCleanupRef = useRef<(() => void) | null>(null);
     const splitResizeCleanupRef = useRef<(() => void) | null>(null);
+
+    if (latestOutlineChangeTabIdRef.current !== activeTabId) {
+        latestOutlineChangeTabIdRef.current = activeTabId;
+        latestOutlineChangeRef.current = null;
+    }
+
+    const activeTab = tabs.find((tab) => tab.id === activeTabId) ?? null;
+    const activeEditorMode = activeTab
+        ? getEditorModeForFileName(activeTab.fileName)
+        : "text";
+    const {
+        canRefreshFullSymbols,
+        isShowingFunctionsOnly,
+        refreshFullSymbols,
+        symbols,
+    } = useWorkspaceOutline(
+        activeTab,
+        isOutlinePanelVisible,
+        latestOutlineChangeRef.current,
+    );
+    const isOutlinePanelSupported = activeEditorMode === "luau";
+    const resolvedOutlinePanelWidth =
+        outlinePanelPreviewWidth ?? outlinePanelWidth;
+
+    const handleSelectSymbol = useCallback(
+        (symbol: LuauFileSymbol): void => {
+            const lineNumber = symbol.declarationStart + 1;
+            goToLine(lineNumber);
+        },
+        [goToLine],
+    );
 
     const { isDropTarget: isLeftDropTarget, ref: leftDropRef } = useDroppable({
         id: SPLIT_DROP_LEFT_ID,
@@ -225,9 +276,89 @@ export function WorkspaceEditor({
 
     useEffect(() => {
         return () => {
+            outlineResizeCleanupRef.current?.();
             splitResizeCleanupRef.current?.();
         };
     }, []);
+
+    const handleOutlineResizePointerDown = useCallback(
+        (event: ReactPointerEvent<HTMLButtonElement>): void => {
+            if (!editorContainerRef.current) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const container = editorContainerRef.current;
+            const pointerTarget = event.currentTarget;
+            const rect = container.getBoundingClientRect();
+
+            if (rect.width <= 0) {
+                return;
+            }
+
+            pointerTarget.setPointerCapture(event.pointerId);
+            document.body.style.cursor = "col-resize";
+            document.body.style.userSelect = "none";
+
+            const maxWidth = Math.min(
+                WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
+                Math.max(
+                    WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
+                    rect.width - WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
+                ),
+            );
+
+            const clampOutlineWidth = (width: number): number =>
+                Math.min(
+                    maxWidth,
+                    Math.max(WORKSPACE_OUTLINE_PANEL_MIN_WIDTH, width),
+                );
+
+            const getWidth = (clientX: number): number =>
+                clampOutlineWidth(rect.right - clientX);
+
+            const restoreBodyStyles = (): void => {
+                document.body.style.cursor = "";
+                document.body.style.userSelect = "";
+            };
+
+            const cleanup = (): void => {
+                window.removeEventListener("pointermove", handlePointerMove);
+                window.removeEventListener("pointerup", handlePointerUp);
+                window.removeEventListener(
+                    "pointercancel",
+                    handlePointerCancel,
+                );
+                restoreBodyStyles();
+                outlineResizeCleanupRef.current = null;
+            };
+
+            const handlePointerMove = (moveEvent: PointerEvent): void => {
+                setOutlinePanelPreviewWidth(getWidth(moveEvent.clientX));
+            };
+
+            const handlePointerUp = (upEvent: PointerEvent): void => {
+                const nextWidth = getWidth(upEvent.clientX);
+                cleanup();
+                setOutlinePanelPreviewWidth(null);
+                onSetOutlinePanelWidth(nextWidth);
+            };
+
+            const handlePointerCancel = (): void => {
+                cleanup();
+                setOutlinePanelPreviewWidth(null);
+            };
+
+            outlineResizeCleanupRef.current = cleanup;
+            setOutlinePanelPreviewWidth(getWidth(event.clientX));
+            window.addEventListener("pointermove", handlePointerMove);
+            window.addEventListener("pointerup", handlePointerUp);
+            window.addEventListener("pointercancel", handlePointerCancel);
+        },
+        [onSetOutlinePanelWidth],
+    );
 
     return (
         <div className="flex min-h-0 flex-1 overflow-hidden bg-fumi-50">
@@ -274,6 +405,9 @@ export function WorkspaceEditor({
 
                 {AceEditorComponent && aceRuntime
                     ? tabs.map((tab) => {
+                          const editorChangeHandler = createHandleEditorChange(
+                              tab.id,
+                          );
                           const layoutClass = getTabLayoutClass(tab.id);
                           const isPrimaryPane =
                               isSplit && tab.id === primaryTabId;
@@ -309,9 +443,17 @@ export function WorkspaceEditor({
                                       height="100%"
                                       value={tab.content}
                                       onLoad={createHandleEditorLoad(tab.id)}
-                                      onChange={createHandleEditorChange(
-                                          tab.id,
-                                      )}
+                                      onChange={(
+                                          value: string,
+                                          delta?: AceChangeDelta,
+                                      ) => {
+                                          if (tab.id === activeTabId) {
+                                              latestOutlineChangeRef.current =
+                                                  normalizeOutlineChange(delta);
+                                          }
+
+                                          editorChangeHandler(value, delta);
+                                      }}
                                       onCursorChange={createHandleCursorChange(
                                           tab.id,
                                       )}
@@ -346,6 +488,50 @@ export function WorkspaceEditor({
                     <WorkspaceEditorSearchPanel searchPanel={searchPanel} />
                 </div>
             </div>
+            {isOutlinePanelVisible && isOutlinePanelSupported ? (
+                <div
+                    className="relative flex h-full shrink-0 border-l border-fumi-200 bg-fumi-50"
+                    style={{
+                        width: `${resolvedOutlinePanelWidth}px`,
+                    }}
+                >
+                    <button
+                        type="button"
+                        aria-label="Resize outline panel"
+                        className="absolute inset-y-0 left-0 z-30 w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent focus-visible:outline-none"
+                        onPointerDown={handleOutlineResizePointerDown}
+                    >
+                        <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-fumi-200" />
+                    </button>
+                    <WorkspaceOutlinePanel
+                        canRefreshFullSymbols={canRefreshFullSymbols}
+                        isShowingFunctionsOnly={isShowingFunctionsOnly}
+                        onRefreshFullSymbols={refreshFullSymbols}
+                        symbols={symbols}
+                        onSelectSymbol={handleSelectSymbol}
+                    />
+                </div>
+            ) : null}
         </div>
     );
+}
+
+function normalizeOutlineChange(
+    delta?: AceChangeDelta,
+): WorkspaceOutlineChange | null {
+    if (
+        !delta?.action ||
+        !delta.start ||
+        !delta.end ||
+        !Array.isArray(delta.lines)
+    ) {
+        return null;
+    }
+
+    return {
+        action: delta.action,
+        end: delta.end,
+        lines: delta.lines,
+        start: delta.start,
+    };
 }
