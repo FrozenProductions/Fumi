@@ -84,6 +84,7 @@ function createWorkspaceSession(
             openWorkspacePath: vi.fn().mockResolvedValue(undefined),
             createWorkspaceFile: vi.fn().mockResolvedValue(undefined),
             addWorkspaceScriptTab: vi.fn().mockResolvedValue(false),
+            importDroppedWorkspaceFiles: vi.fn().mockResolvedValue(false),
             ...overrides.workspaceActions,
         },
         tabActions: {

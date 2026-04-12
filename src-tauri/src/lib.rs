@@ -49,6 +49,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             workspace::commands::session::bootstrap_workspace,
             workspace::commands::session::open_workspace,
             workspace::commands::session::refresh_workspace,
+            workspace::commands::files::import_workspace_file,
             workspace::commands::files::create_workspace_file,
             workspace::commands::files::save_workspace_file,
             workspace::commands::files::rename_workspace_file,

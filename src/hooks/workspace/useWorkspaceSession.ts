@@ -25,6 +25,9 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const addWorkspaceScriptTab = useWorkspaceStore(
         (state) => state.addWorkspaceScriptTab,
     );
+    const importDroppedWorkspaceFiles = useWorkspaceStore(
+        (state) => state.importDroppedWorkspaceFiles,
+    );
     const duplicateWorkspaceTab = useWorkspaceStore(
         (state) => state.duplicateWorkspaceTab,
     );
@@ -106,6 +109,7 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
             openWorkspacePath,
             createWorkspaceFile,
             addWorkspaceScriptTab,
+            importDroppedWorkspaceFiles,
         },
         tabActions: {
             duplicateWorkspaceTab,

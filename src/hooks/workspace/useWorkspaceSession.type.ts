@@ -6,6 +6,7 @@ type UseWorkspaceSessionStoreFields = Pick<
     | "archiveWorkspaceTab"
     | "addWorkspaceScriptTab"
     | "createWorkspaceFile"
+    | "importDroppedWorkspaceFiles"
     | "deleteAllArchivedWorkspaceTabs"
     | "deleteArchivedWorkspaceTab"
     | "deleteWorkspaceTab"
@@ -46,6 +47,7 @@ export type WorkspaceSessionWorkspaceActions = Pick<
     UseWorkspaceSessionStoreFields,
     | "addWorkspaceScriptTab"
     | "createWorkspaceFile"
+    | "importDroppedWorkspaceFiles"
     | "openWorkspaceDirectory"
     | "openWorkspacePath"
 >;

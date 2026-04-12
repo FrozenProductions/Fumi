@@ -12,8 +12,14 @@ const mocks = vi.hoisted(() => {
         string,
         (event: { payload?: unknown }) => void
     >();
+    let dragDropHandler:
+        | ((event: { payload: { type: string; paths?: string[] } }) => void)
+        | null = null;
 
     return {
+        get dragDropHandler() {
+            return dragDropHandler;
+        },
         eventHandlers,
         invoke: vi.fn(),
         isTauriEnvironment: vi.fn(() => true),
@@ -36,6 +42,16 @@ const mocks = vi.hoisted(() => {
             }),
             startDragging: vi.fn().mockResolvedValue(undefined),
             toggleMaximize: vi.fn().mockResolvedValue(undefined),
+            onDragDropEvent: vi.fn(
+                async (
+                    listener: (event: {
+                        payload: { type: string; paths?: string[] };
+                    }) => void,
+                ) => {
+                    dragDropHandler = listener;
+                    return vi.fn();
+                },
+            ),
         },
     };
 });
@@ -73,6 +89,7 @@ describe("initializeWindowShell", () => {
         mocks.window.isMaximized.mockResolvedValue(false);
         mocks.window.minimize.mockClear();
         mocks.window.onResized.mockClear();
+        mocks.window.onDragDropEvent.mockClear();
         mocks.window.startDragging.mockClear();
         mocks.window.toggleMaximize.mockClear();
     });
@@ -93,6 +110,7 @@ describe("initializeWindowShell", () => {
         await windowModule.initializeWindowShell();
 
         expect(mocks.listen).toHaveBeenCalledTimes(7);
+        expect(mocks.window.onDragDropEvent).toHaveBeenCalledTimes(1);
         expect(windowModule.isPreparingToExit()).toBe(false);
 
         mocks.eventHandlers.get("app://prepare-for-exit")?.({
@@ -112,6 +130,75 @@ describe("initializeWindowShell", () => {
 
         expect(handleExitGuardSync).toHaveBeenCalledOnce();
         expect(handleExitGuardSync).toHaveBeenCalledWith(3);
+    });
+
+    it("forwards only dropped file paths to dropped-file subscribers", async () => {
+        const windowModule = await loadWindowModule();
+        const handleDroppedFiles = vi.fn();
+
+        windowModule.subscribeToDroppedFiles(handleDroppedFiles);
+
+        await windowModule.initializeWindowShell();
+
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "over",
+            },
+        });
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "drop",
+                paths: ["", "/tmp/alpha.lua", "/tmp/beta.luau"],
+            },
+        });
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "leave",
+            },
+        });
+
+        expect(handleDroppedFiles).toHaveBeenCalledTimes(1);
+        expect(handleDroppedFiles).toHaveBeenCalledWith([
+            "/tmp/alpha.lua",
+            "/tmp/beta.luau",
+        ]);
+    });
+
+    it("forwards native file-drag hover state to hover subscribers", async () => {
+        const windowModule = await loadWindowModule();
+        const handleHoverState = vi.fn();
+
+        windowModule.subscribeToDroppedFilesHover(handleHoverState);
+
+        await windowModule.initializeWindowShell();
+
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "enter",
+                paths: ["/tmp/alpha.lua"],
+            },
+        });
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "over",
+            },
+        });
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "leave",
+            },
+        });
+        mocks.dragDropHandler?.({
+            payload: {
+                type: "drop",
+                paths: ["/tmp/alpha.lua"],
+            },
+        });
+
+        expect(handleHoverState).toHaveBeenNthCalledWith(1, true);
+        expect(handleHoverState).toHaveBeenNthCalledWith(2, true);
+        expect(handleHoverState).toHaveBeenNthCalledWith(3, false);
+        expect(handleHoverState).toHaveBeenNthCalledWith(4, false);
     });
 
     it("forwards exit guard resolution to the backend command", async () => {

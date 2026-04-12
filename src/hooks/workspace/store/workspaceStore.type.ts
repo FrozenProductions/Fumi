@@ -24,6 +24,7 @@ export type WorkspaceStoreActions = {
         fileName: string,
         content: string,
     ) => Promise<boolean>;
+    importDroppedWorkspaceFiles: (filePaths: string[]) => Promise<boolean>;
     duplicateWorkspaceTab: (tabId: string) => Promise<void>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
     deleteWorkspaceTab: (tabId: string) => Promise<void>;
@@ -70,6 +71,7 @@ export type WorkspaceFileSlice = Pick<
     WorkspaceStoreActions,
     | "createWorkspaceFile"
     | "addWorkspaceScriptTab"
+    | "importDroppedWorkspaceFiles"
     | "duplicateWorkspaceTab"
     | "deleteWorkspaceTab"
     | "renameWorkspaceTab"

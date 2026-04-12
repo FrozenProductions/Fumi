@@ -4,9 +4,9 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use anyhow::{Context, Result};
 #[cfg(test)]
 use anyhow::{anyhow, bail};
+use anyhow::{Context, Result};
 
 const FILE_MAGIC: &[u8; 4] = b"cook";
 const PAGE_MAGIC: u32 = 0x0000_0100;

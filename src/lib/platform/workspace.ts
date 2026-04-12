@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+    DroppedWorkspaceScriptDraft,
     WorkspaceBootstrapResponse,
     WorkspaceCursorState,
     WorkspaceSnapshot,
@@ -125,6 +126,25 @@ export function createWorkspaceFile(options: {
     return invokeWorkspaceCommand<WorkspaceTabSnapshot>(
         "create_workspace_file",
         "createWorkspaceFile",
+        options,
+    );
+}
+
+export function importWorkspaceFile(options: {
+    filePath: string;
+}): Promise<DroppedWorkspaceScriptDraft> {
+    if (!isTauriEnvironment()) {
+        return Promise.reject(
+            new WorkspaceCommandError({
+                operation: "importWorkspaceFile",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeWorkspaceCommand<DroppedWorkspaceScriptDraft>(
+        "import_workspace_file",
+        "importWorkspaceFile",
         options,
     );
 }

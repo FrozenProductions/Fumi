@@ -93,6 +93,13 @@ pub struct WorkspaceBootstrapResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DroppedWorkspaceScriptDraft {
+    pub file_name: String,
+    pub content: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(super) struct StoredAppState {
     pub(super) last_workspace_path: Option<String>,
 }

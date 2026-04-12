@@ -1,15 +1,18 @@
 import type { ReactElement } from "react";
 import { AppCommandPalette } from "../components/app/AppCommandPalette";
+import { AppDragDropOverlay } from "../components/app/AppDragDropOverlay";
 import { AppSidebar } from "../components/app/AppSidebar";
 import { AppTopbar } from "../components/app/AppTopbar";
 import { APP_TITLE } from "../constants/app/app";
 import { APP_ZOOM_DEFAULT, APP_ZOOM_STEP } from "../constants/app/settings";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
+import { useAppDragDrop } from "../hooks/app/useAppDragDrop";
 import { useAppShellLifecycle } from "../hooks/app/useAppShellLifecycle";
 import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
 import { useAppUpdater } from "../hooks/app/useAppUpdater";
 import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
+import { useWorkspaceDroppedFiles } from "../hooks/workspace/useWorkspaceDroppedFiles";
 import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
@@ -20,8 +23,10 @@ import {
 
 export function App(): ReactElement {
     useWorkspaceStoreLifecycle();
+    useWorkspaceDroppedFiles();
     useAppThemeSync();
     useAppZoomSync();
+    const { isDragActive } = useAppDragDrop();
     const isSidebarOpen = useAppStore((state) => state.isSidebarOpen);
     const isCommandPaletteOpen = useAppStore(
         (state) => state.isCommandPaletteOpen,
@@ -85,6 +90,7 @@ export function App(): ReactElement {
 
     return (
         <AppHotkeysProvider workspaceSession={workspaceSession}>
+            <AppDragDropOverlay isVisible={isDragActive} />
             <div className="relative flex h-screen flex-col overflow-hidden rounded-[0.95rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-shell)]">
                 <AppTopbar
                     title={APP_TITLE}

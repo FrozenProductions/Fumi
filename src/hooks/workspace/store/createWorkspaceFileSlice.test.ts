@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
     confirmAction: vi.fn(),
     createWorkspaceFile: vi.fn(),
     deleteWorkspaceFile: vi.fn(),
+    importWorkspaceFile: vi.fn(),
     markWorkspacePersistedSignature: vi.fn(),
     renameWorkspaceFile: vi.fn(),
 }));
@@ -16,6 +17,7 @@ vi.mock("../../../lib/platform/dialog", () => ({
 vi.mock("../../../lib/platform/workspace", () => ({
     createWorkspaceFile: mocks.createWorkspaceFile,
     deleteWorkspaceFile: mocks.deleteWorkspaceFile,
+    importWorkspaceFile: mocks.importWorkspaceFile,
     renameWorkspaceFile: mocks.renameWorkspaceFile,
 }));
 
@@ -33,7 +35,9 @@ vi.mock("../../../lib/workspace/persistence", async () => {
     };
 });
 
-function createWorkspaceStoreState(): WorkspaceStore {
+function createWorkspaceStoreState(
+    overrides: Partial<WorkspaceStore> = {},
+): WorkspaceStore {
     return {
         workspace: {
             workspacePath: "/workspace/current",
@@ -67,6 +71,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
         openWorkspacePath: vi.fn(),
         createWorkspaceFile: vi.fn(),
         addWorkspaceScriptTab: vi.fn(),
+        importDroppedWorkspaceFiles: vi.fn(),
         duplicateWorkspaceTab: vi.fn(),
         archiveWorkspaceTab: vi.fn(),
         deleteWorkspaceTab: vi.fn(),
@@ -89,15 +94,16 @@ function createWorkspaceStoreState(): WorkspaceStore {
         updateActiveTabScrollTop: vi.fn(),
         setErrorMessage: vi.fn(),
         clearErrorMessage: vi.fn(),
+        ...overrides,
     };
 }
 
-async function createFileStore() {
+async function createFileStore(overrides: Partial<WorkspaceStore> = {}) {
     const { createWorkspaceFileSlice } = await import(
         "./createWorkspaceFileSlice"
     );
 
-    let state = createWorkspaceStoreState();
+    let state = createWorkspaceStoreState(overrides);
 
     const setState = (
         value:
@@ -134,6 +140,7 @@ describe("createWorkspaceFileSlice", () => {
         mocks.confirmAction.mockReset();
         mocks.createWorkspaceFile.mockReset();
         mocks.deleteWorkspaceFile.mockReset();
+        mocks.importWorkspaceFile.mockReset();
         mocks.markWorkspacePersistedSignature.mockReset();
         mocks.renameWorkspaceFile.mockReset();
     });
@@ -159,5 +166,182 @@ describe("createWorkspaceFileSlice", () => {
         expect(mocks.markWorkspacePersistedSignature).toHaveBeenCalledWith(
             "signature:/workspace/current",
         );
+    });
+
+    it("imports dropped lua files in order and activates the last imported tab", async () => {
+        const store = await createFileStore();
+
+        mocks.importWorkspaceFile
+            .mockResolvedValueOnce({
+                fileName: "beta.lua",
+                content: "print('beta')",
+            })
+            .mockResolvedValueOnce({
+                fileName: "gamma.luau",
+                content: "print('gamma')",
+            });
+        mocks.createWorkspaceFile
+            .mockResolvedValueOnce({
+                id: "tab-2",
+                fileName: "beta.lua",
+                content: "print('beta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            })
+            .mockResolvedValueOnce({
+                id: "tab-3",
+                fileName: "gamma.luau",
+                content: "print('gamma')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            });
+
+        await expect(
+            store
+                .getState()
+                .importDroppedWorkspaceFiles([
+                    "/tmp/beta.lua",
+                    "/tmp/gamma.luau",
+                ]),
+        ).resolves.toBe(true);
+
+        expect(mocks.importWorkspaceFile).toHaveBeenNthCalledWith(1, {
+            filePath: "/tmp/beta.lua",
+        });
+        expect(mocks.importWorkspaceFile).toHaveBeenNthCalledWith(2, {
+            filePath: "/tmp/gamma.luau",
+        });
+        expect(mocks.createWorkspaceFile).toHaveBeenNthCalledWith(1, {
+            workspacePath: "/workspace/current",
+            fileName: "beta.lua",
+            initialContent: "print('beta')",
+        });
+        expect(mocks.createWorkspaceFile).toHaveBeenNthCalledWith(2, {
+            workspacePath: "/workspace/current",
+            fileName: "gamma.luau",
+            initialContent: "print('gamma')",
+        });
+        expect(store.getState().workspace?.activeTabId).toBe("tab-3");
+        expect(store.getState().errorMessage).toBeNull();
+    });
+
+    it("sets an error when dropped scripts are imported without an open workspace", async () => {
+        const store = await createFileStore({
+            workspace: null,
+        });
+
+        await expect(
+            store.getState().importDroppedWorkspaceFiles(["/tmp/beta.lua"]),
+        ).resolves.toBe(false);
+
+        expect(store.getState().errorMessage).toBe(
+            "Choose a workspace before importing dropped scripts.",
+        );
+        expect(mocks.importWorkspaceFile).not.toHaveBeenCalled();
+    });
+
+    it("sets an error when no dropped files have a supported luau extension", async () => {
+        const store = await createFileStore();
+
+        await expect(
+            store
+                .getState()
+                .importDroppedWorkspaceFiles([
+                    "/tmp/notes.txt",
+                    "/tmp/archive.json",
+                ]),
+        ).resolves.toBe(false);
+
+        expect(store.getState().errorMessage).toBe(
+            "Drop one or more .lua or .luau files to import them into the workspace.",
+        );
+        expect(mocks.importWorkspaceFile).not.toHaveBeenCalled();
+    });
+
+    it("stops importing after the first import command failure", async () => {
+        const store = await createFileStore();
+
+        mocks.importWorkspaceFile
+            .mockResolvedValueOnce({
+                fileName: "beta.lua",
+                content: "print('beta')",
+            })
+            .mockRejectedValueOnce(new Error("Could not read file."));
+        mocks.createWorkspaceFile.mockResolvedValueOnce({
+            id: "tab-2",
+            fileName: "beta.lua",
+            content: "print('beta')",
+            isDirty: false,
+            cursor: {
+                line: 0,
+                column: 0,
+                scrollTop: 0,
+            },
+        });
+
+        await expect(
+            store
+                .getState()
+                .importDroppedWorkspaceFiles([
+                    "/tmp/beta.lua",
+                    "/tmp/gamma.luau",
+                    "/tmp/delta.lua",
+                ]),
+        ).resolves.toBe(false);
+
+        expect(mocks.importWorkspaceFile).toHaveBeenCalledTimes(2);
+        expect(mocks.createWorkspaceFile).toHaveBeenCalledTimes(1);
+        expect(store.getState().errorMessage).toBe("Could not read file.");
+        expect(store.getState().workspace?.activeTabId).toBe("tab-2");
+    });
+
+    it("stops importing after the first add-tab failure", async () => {
+        const store = await createFileStore();
+
+        mocks.importWorkspaceFile
+            .mockResolvedValueOnce({
+                fileName: "beta.lua",
+                content: "print('beta')",
+            })
+            .mockResolvedValueOnce({
+                fileName: "gamma.lua",
+                content: "print('gamma')",
+            });
+        mocks.createWorkspaceFile
+            .mockResolvedValueOnce({
+                id: "tab-2",
+                fileName: "beta.lua",
+                content: "print('beta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            })
+            .mockRejectedValueOnce(new Error("Create failed."));
+
+        await expect(
+            store
+                .getState()
+                .importDroppedWorkspaceFiles([
+                    "/tmp/beta.lua",
+                    "/tmp/gamma.lua",
+                    "/tmp/delta.lua",
+                ]),
+        ).resolves.toBe(false);
+
+        expect(mocks.importWorkspaceFile).toHaveBeenCalledTimes(2);
+        expect(mocks.createWorkspaceFile).toHaveBeenCalledTimes(2);
+        expect(store.getState().errorMessage).toBe("Create failed.");
+        expect(store.getState().workspace?.activeTabId).toBe("tab-2");
     });
 });

@@ -74,6 +74,11 @@ export type WorkspaceBootstrapResponse = {
     workspace: WorkspaceSnapshot | null;
 };
 
+export type DroppedWorkspaceScriptDraft = {
+    fileName: string;
+    content: string;
+};
+
 export type WorkspaceTab = WorkspaceTabSnapshot & {
     savedContent: string;
 };

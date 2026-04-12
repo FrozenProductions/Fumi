@@ -1,8 +1,10 @@
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
+import { isLuauFileName } from "../../../lib/luau/fileType";
 import { confirmAction } from "../../../lib/platform/dialog";
 import {
     createWorkspaceFile as createWorkspaceFileCommand,
     deleteWorkspaceFile as deleteWorkspaceFileCommand,
+    importWorkspaceFile as importWorkspaceFileCommand,
     renameWorkspaceFile as renameWorkspaceFileCommand,
 } from "../../../lib/platform/workspace";
 import { buildDuplicateWorkspaceTabDraft } from "../../../lib/workspace/duplicate";
@@ -32,6 +34,12 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
         setWorkspaceError,
         updateWorkspaceForPath,
     } = createWorkspaceStoreSupport(set, get);
+    const getDroppedFileName = (filePath: string): string => {
+        const normalizedPath = filePath.replace(/\\/g, "/");
+        return normalizedPath.split("/").pop() ?? normalizedPath;
+    };
+    const isSupportedDroppedScriptPath = (filePath: string): boolean =>
+        isLuauFileName(getDroppedFileName(filePath));
 
     return {
         createWorkspaceFile: async (): Promise<void> => {
@@ -100,6 +108,57 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                 );
                 return false;
             }
+        },
+        importDroppedWorkspaceFiles: async (
+            filePaths: string[],
+        ): Promise<boolean> => {
+            const { addWorkspaceScriptTab, workspace } = get();
+
+            if (!workspace) {
+                set({
+                    errorMessage:
+                        "Choose a workspace before importing dropped scripts.",
+                });
+                return false;
+            }
+
+            const validFilePaths = filePaths.filter(
+                isSupportedDroppedScriptPath,
+            );
+
+            if (validFilePaths.length === 0) {
+                set({
+                    errorMessage:
+                        "Drop one or more .lua or .luau files to import them into the workspace.",
+                });
+                return false;
+            }
+
+            for (const filePath of validFilePaths) {
+                try {
+                    const droppedScript = await importWorkspaceFileCommand({
+                        filePath,
+                    });
+                    const didAdd = await addWorkspaceScriptTab(
+                        droppedScript.fileName,
+                        droppedScript.content,
+                    );
+
+                    if (!didAdd) {
+                        return false;
+                    }
+                } catch (error) {
+                    setWorkspaceError(
+                        error,
+                        "Failed to import dropped workspace file.",
+                        `Could not import ${getDroppedFileName(filePath)} into the current workspace.`,
+                    );
+                    return false;
+                }
+            }
+
+            set({ errorMessage: null });
+            return true;
         },
         duplicateWorkspaceTab: async (tabId: string): Promise<void> => {
             const { workspace } = get();

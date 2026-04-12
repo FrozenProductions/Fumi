@@ -65,6 +65,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
         openWorkspacePath: vi.fn(),
         createWorkspaceFile: vi.fn(),
         addWorkspaceScriptTab: vi.fn(),
+        importDroppedWorkspaceFiles: vi.fn(),
         duplicateWorkspaceTab: vi.fn(),
         archiveWorkspaceTab: vi.fn(),
         deleteWorkspaceTab: vi.fn(),

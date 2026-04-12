@@ -8,7 +8,7 @@ function getFileExtension(fileName: string): string {
     return fileName.slice(lastDotIndex).toLowerCase();
 }
 
-function isLuauFileName(fileName: string): boolean {
+export function isLuauFileName(fileName: string): boolean {
     const extension = getFileExtension(fileName);
 
     return extension === ".lua" || extension === ".luau";

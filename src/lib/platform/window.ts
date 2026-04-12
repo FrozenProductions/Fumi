@@ -20,6 +20,8 @@ const openSettingsListeners = new Set<() => void>();
 const checkForUpdatesListeners = new Set<() => void>();
 const prepareForExitListeners = new Set<() => void>();
 const exitGuardSyncListeners = new Set<(syncId: number) => void>();
+const droppedFilesHoverListeners = new Set<(isHovering: boolean) => void>();
+const droppedFilesListeners = new Set<(filePaths: readonly string[]) => void>();
 const zoomInListeners = new Set<() => void>();
 const zoomOutListeners = new Set<() => void>();
 const zoomResetListeners = new Set<() => void>();
@@ -52,6 +54,55 @@ async function listenWindowEvent(
             "initializeWindowShell",
             error,
             `Could not subscribe to ${event}.`,
+        );
+    }
+}
+
+async function listenDroppedFilesEvent(): Promise<() => void> {
+    try {
+        return await getCurrentWindow().onDragDropEvent((event) => {
+            if (
+                event.payload.type === "enter" ||
+                event.payload.type === "over"
+            ) {
+                for (const listener of droppedFilesHoverListeners) {
+                    listener(true);
+                }
+                return;
+            }
+
+            if (event.payload.type === "leave") {
+                for (const listener of droppedFilesHoverListeners) {
+                    listener(false);
+                }
+                return;
+            }
+
+            if (event.payload.type !== "drop") {
+                return;
+            }
+
+            for (const listener of droppedFilesHoverListeners) {
+                listener(false);
+            }
+
+            const filePaths = event.payload.paths.filter(
+                (filePath): filePath is string => filePath.trim().length > 0,
+            );
+
+            if (filePaths.length === 0) {
+                return;
+            }
+
+            for (const listener of droppedFilesListeners) {
+                listener(filePaths);
+            }
+        });
+    } catch (error) {
+        throw createWindowShellError(
+            "initializeWindowShell",
+            error,
+            "Could not subscribe to dropped files.",
         );
     }
 }
@@ -103,6 +154,7 @@ export function initializeWindowShell(): Promise<void> {
             listenWindowEvent(ZOOM_RESET_EVENT, () => {
                 notifyListeners(zoomResetListeners);
             }),
+            listenDroppedFilesEvent(),
         ]);
     })().catch((error) => {
         initializationPromise = null;
@@ -149,6 +201,26 @@ export function subscribeToExitGuardSyncRequested(
 
     return () => {
         exitGuardSyncListeners.delete(listener);
+    };
+}
+
+export function subscribeToDroppedFiles(
+    listener: (filePaths: readonly string[]) => void,
+): () => void {
+    droppedFilesListeners.add(listener);
+
+    return () => {
+        droppedFilesListeners.delete(listener);
+    };
+}
+
+export function subscribeToDroppedFilesHover(
+    listener: (isHovering: boolean) => void,
+): () => void {
+    droppedFilesHoverListeners.add(listener);
+
+    return () => {
+        droppedFilesHoverListeners.delete(listener);
     };
 }
 
