@@ -38,7 +38,6 @@ import {
     TAB_BAR_SENSORS,
 } from "../../lib/workspace/tabBar";
 import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
-import { WorkspaceActionsButton } from "./WorkspaceActionsButton";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
@@ -675,24 +674,20 @@ export function WorkspaceScreen({
                                 onResizeSplitCommit={handleResizeSplitCommit}
                                 onResizeSplitCancel={handleResizeSplitCancel}
                                 goToLine={goToLine}
+                                workspaceActionsButton={{
+                                    executor,
+                                    isLaunching,
+                                    onLaunchRoblox: handleLaunchRoblox,
+                                    isKillingRoblox,
+                                    onKillRoblox: handleKillRoblox,
+                                    isOutlinePanelVisible:
+                                        editorSettings.isOutlinePanelVisible,
+                                    onToggleOutlinePanel: toggleOutlinePanel,
+                                    robloxProcesses,
+                                    onKillRobloxProcess:
+                                        handleKillRobloxProcess,
+                                }}
                             />
-                            <div className="pointer-events-none absolute bottom-5 right-5 z-20">
-                                <WorkspaceActionsButton
-                                    executor={executor}
-                                    isLaunching={isLaunching}
-                                    onLaunchRoblox={handleLaunchRoblox}
-                                    isKillingRoblox={isKillingRoblox}
-                                    onKillRoblox={handleKillRoblox}
-                                    isOutlinePanelVisible={
-                                        editorSettings.isOutlinePanelVisible
-                                    }
-                                    onToggleOutlinePanel={toggleOutlinePanel}
-                                    robloxProcesses={robloxProcesses}
-                                    onKillRobloxProcess={
-                                        handleKillRobloxProcess
-                                    }
-                                />
-                            </div>
                         </div>
                     ) : (
                         <WorkspaceMessageState

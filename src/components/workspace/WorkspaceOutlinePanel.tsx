@@ -1,6 +1,5 @@
 import {
     ArrowDown01Icon,
-    ArrowRight01Icon,
     CollapseIcon,
     ExpandIcon,
 } from "@hugeicons/core-free-icons";
@@ -122,9 +121,10 @@ const OutlineGroupRow = memo(function OutlineGroupRow({
             onClick={onToggle}
         >
             <AppIcon
-                icon={isExpanded ? ArrowDown01Icon : ArrowRight01Icon}
+                icon={ArrowDown01Icon}
                 size={10}
                 strokeWidth={2.5}
+                className={`transition-transform duration-200 ${isExpanded ? "" : "-rotate-90"}`}
             />
             <span>{title}</span>
             <span className="ml-auto text-fumi-400">{count}</span>

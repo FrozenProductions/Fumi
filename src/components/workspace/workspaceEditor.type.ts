@@ -12,6 +12,7 @@ import type {
     WorkspaceSplitView,
     WorkspaceTab,
 } from "../../lib/workspace/workspace.type";
+import type { WorkspaceActionsButtonProps } from "./workspaceScreen.type";
 
 export type AppCodeCompletionProps = {
     items: LuauCompletionItem[];
@@ -29,6 +30,7 @@ export type WorkspaceEditorProps = {
     splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
     isOutlinePanelVisible: boolean;
+    workspaceActionsButton: WorkspaceActionsButtonProps;
     luauSymbols: LuauFileSymbol[];
     outlinePanelWidth: number;
     outlineExpandedGroups: Record<string, boolean>;

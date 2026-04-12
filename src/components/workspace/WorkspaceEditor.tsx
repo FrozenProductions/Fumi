@@ -26,6 +26,7 @@ import type { AceEditorComponent } from "../../lib/workspace/editor.type";
 import { getWorkspaceLineNumberFromOffset } from "../../lib/workspace/outline";
 import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
 import { AppCodeCompletion } from "./AppCodeCompletion";
+import { WorkspaceActionsButton } from "./WorkspaceActionsButton";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
 import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
 import type { WorkspaceEditorProps } from "./workspaceEditor.type";
@@ -90,6 +91,7 @@ export function WorkspaceEditor({
     onResizeSplitCommit,
     onResizeSplitCancel,
     goToLine,
+    workspaceActionsButton,
 }: WorkspaceEditorProps): ReactElement {
     const [isAceReady, setIsAceReady] = useState(false);
     const [AceEditorComponent, setAceEditorComponent] =
@@ -337,10 +339,11 @@ export function WorkspaceEditor({
     );
 
     return (
-        <div className="flex min-h-0 flex-1 overflow-hidden bg-fumi-50">
+        <div className="relative flex min-h-0 flex-1 bg-fumi-50">
+            {/* Overflow container for editor content only */}
             <div
                 ref={editorContainerRef}
-                className="relative flex min-h-0 flex-1"
+                className="relative flex min-h-0 flex-1 overflow-hidden"
             >
                 {!isAceReady ? (
                     <div className="flex h-full w-full items-center justify-center bg-fumi-50 text-xs font-semibold uppercase tracking-[0.16em] text-fumi-400">
@@ -464,14 +467,21 @@ export function WorkspaceEditor({
                 <div className="pointer-events-none absolute right-4 top-4 z-20">
                     <WorkspaceEditorSearchPanel searchPanel={searchPanel} />
                 </div>
+
+                {/* Actions button — rendered inside editor so it paints after the
+                outline panel overlay and naturally stacks above it at z-40. */}
+                <div className="pointer-events-none absolute bottom-5 right-5 z-40">
+                    <WorkspaceActionsButton {...workspaceActionsButton} />
+                </div>
             </div>
+
+            {/* Outline panel — positioned as sibling of overflow container */}
             {isOutlinePanelVisible && isOutlinePanelSupported ? (
                 <div
-                    className="relative flex h-full shrink-0 border-l border-fumi-200 bg-fumi-50"
-                    style={{
-                        width: `${resolvedOutlinePanelWidth}px`,
-                    }}
+                    className="absolute top-0 bottom-0 right-0 z-30 flex min-w-0 overflow-hidden border-l border-fumi-200 bg-fumi-50"
+                    style={{ width: `${resolvedOutlinePanelWidth}px` }}
                 >
+                    {/* Resize handle */}
                     <button
                         type="button"
                         aria-label="Resize outline panel"
@@ -480,14 +490,16 @@ export function WorkspaceEditor({
                     >
                         <span className="absolute inset-y-0 left-1/2 w-[1px] -translate-x-1/2 bg-fumi-200" />
                     </button>
-                    <WorkspaceOutlinePanel
-                        symbols={luauSymbols}
-                        onSelectSymbol={handleSelectSymbol}
-                        expandedGroups={outlineExpandedGroups}
-                        onToggleExpandedGroup={onToggleExpandedGroup}
-                        onExpandAllGroups={onExpandAllGroups}
-                        onCollapseAllGroups={onCollapseAllGroups}
-                    />
+                    <div className="flex h-full min-w-0 flex-1">
+                        <WorkspaceOutlinePanel
+                            symbols={luauSymbols}
+                            onSelectSymbol={handleSelectSymbol}
+                            expandedGroups={outlineExpandedGroups}
+                            onToggleExpandedGroup={onToggleExpandedGroup}
+                            onExpandAllGroups={onExpandAllGroups}
+                            onCollapseAllGroups={onCollapseAllGroups}
+                        />
+                    </div>
                 </div>
             ) : null}
         </div>
