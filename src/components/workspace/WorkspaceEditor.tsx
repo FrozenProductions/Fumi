@@ -267,41 +267,25 @@ export function WorkspaceEditor({
 
     const handleOutlineResizePointerDown = useCallback(
         (event: ReactPointerEvent<HTMLButtonElement>): void => {
-            if (!editorContainerRef.current) {
-                return;
-            }
-
             event.preventDefault();
             event.stopPropagation();
 
-            const container = editorContainerRef.current;
             const pointerTarget = event.currentTarget;
-            const rect = container.getBoundingClientRect();
-
-            if (rect.width <= 0) {
-                return;
-            }
+            const startX = event.clientX;
+            const initialOutlineWidth = outlinePanelWidth;
 
             pointerTarget.setPointerCapture(event.pointerId);
             document.body.style.cursor = "col-resize";
             document.body.style.userSelect = "none";
 
-            const maxWidth = Math.min(
-                WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
-                Math.max(
-                    WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
-                    rect.width - WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
-                ),
-            );
-
             const clampOutlineWidth = (width: number): number =>
                 Math.min(
-                    maxWidth,
+                    WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
                     Math.max(WORKSPACE_OUTLINE_PANEL_MIN_WIDTH, width),
                 );
 
             const getWidth = (clientX: number): number =>
-                clampOutlineWidth(rect.right - clientX);
+                clampOutlineWidth(initialOutlineWidth + (startX - clientX));
 
             const restoreBodyStyles = (): void => {
                 document.body.style.cursor = "";
@@ -341,7 +325,7 @@ export function WorkspaceEditor({
             window.addEventListener("pointerup", handlePointerUp);
             window.addEventListener("pointercancel", handlePointerCancel);
         },
-        [onSetOutlinePanelWidth],
+        [onSetOutlinePanelWidth, outlinePanelWidth],
     );
 
     return (
@@ -370,7 +354,7 @@ export function WorkspaceEditor({
                             className="absolute bottom-0 top-0 z-40 w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent focus-visible:outline-none"
                             onPointerDown={handleSplitResizePointerDown}
                         >
-                            <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-fumi-200" />
+                            <span className="absolute inset-y-0 left-1/2 w-[1px] -translate-x-1/2 bg-fumi-200" />
                         </button>
                     </>
                 ) : null}
@@ -486,7 +470,7 @@ export function WorkspaceEditor({
                         className="absolute inset-y-0 left-0 z-30 w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent focus-visible:outline-none"
                         onPointerDown={handleOutlineResizePointerDown}
                     >
-                        <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-fumi-200" />
+                        <span className="absolute inset-y-0 left-1/2 w-[1px] -translate-x-1/2 bg-fumi-200" />
                     </button>
                     <WorkspaceOutlinePanel
                         symbols={luauSymbols}
