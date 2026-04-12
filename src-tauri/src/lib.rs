@@ -5,6 +5,7 @@ mod dialog;
 mod events;
 mod executor;
 mod lifecycle;
+mod luau;
 mod menu;
 mod state;
 mod workspace;
@@ -46,6 +47,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             executor::commands::reattach_executor,
             executor::commands::execute_executor_script,
             executor::commands::update_executor_setting,
+            luau::scan_luau_file_analysis,
             workspace::commands::session::bootstrap_workspace,
             workspace::commands::session::open_workspace,
             workspace::commands::session::refresh_workspace,

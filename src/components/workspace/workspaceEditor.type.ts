@@ -3,8 +3,10 @@ import type { AppTheme } from "../../lib/app/app.type";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
+    LuauFileSymbol,
 } from "../../lib/luau/luau.type";
 import type { WorkspaceEditorSearchController } from "../../lib/workspace/editorSearch.type";
+import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
 import type {
     WorkspacePaneId,
     WorkspaceSplitView,
@@ -27,7 +29,9 @@ export type WorkspaceEditorProps = {
     splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
     isOutlinePanelVisible: boolean;
+    luauSymbols: LuauFileSymbol[];
     outlinePanelWidth: number;
+    onActiveTabLuauChange: (change: WorkspaceOutlineChange | null) => void;
     onFocusPane: (pane: WorkspacePaneId) => void;
     onSetOutlinePanelWidth: (width: number) => void;
     onResizeSplitPreview: (splitRatio: number) => void;

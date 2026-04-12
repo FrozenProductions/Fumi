@@ -3,6 +3,7 @@ import type {
     AppIntellisenseWidth,
 } from "../../../lib/app/app.type";
 import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
+import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner.type";
 import type { WorkspaceEditorSearchController } from "../../../lib/workspace/editorSearch.type";
 import type {
     WorkspaceCursorState,
@@ -12,6 +13,7 @@ import type { AceChangeDelta } from "./ace.type";
 
 export type UseWorkspaceCodeCompletionOptions = {
     activeEditorMode: string;
+    activeLuauAnalysis: LuauFileAnalysis | null;
     activeTabId: string | null;
     tabs: WorkspaceTab[];
     isIntellisenseEnabled: boolean;

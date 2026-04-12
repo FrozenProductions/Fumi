@@ -17,7 +17,6 @@ import {
 } from "../../constants/workspace/outline";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../constants/workspace/workspace";
 import type { AceChangeDelta } from "../../hooks/workspace/codeCompletion/ace.type";
-import { useWorkspaceOutline } from "../../hooks/workspace/useWorkspaceOutline";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
@@ -77,7 +76,9 @@ export function WorkspaceEditor({
     createHandleScroll,
     handleCompletionHover,
     isOutlinePanelVisible,
+    luauSymbols,
     outlinePanelWidth,
+    onActiveTabLuauChange,
     onFocusPane,
     onSetOutlinePanelWidth,
     onResizeSplitPreview,
@@ -90,33 +91,16 @@ export function WorkspaceEditor({
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
-    const latestOutlineChangeRef = useRef<WorkspaceOutlineChange | null>(null);
-    const latestOutlineChangeTabIdRef = useRef<string | null>(activeTabId);
     const [outlinePanelPreviewWidth, setOutlinePanelPreviewWidth] = useState<
         number | null
     >(null);
     const outlineResizeCleanupRef = useRef<(() => void) | null>(null);
     const splitResizeCleanupRef = useRef<(() => void) | null>(null);
 
-    if (latestOutlineChangeTabIdRef.current !== activeTabId) {
-        latestOutlineChangeTabIdRef.current = activeTabId;
-        latestOutlineChangeRef.current = null;
-    }
-
     const activeTab = tabs.find((tab) => tab.id === activeTabId) ?? null;
     const activeEditorMode = activeTab
         ? getEditorModeForFileName(activeTab.fileName)
         : "text";
-    const {
-        canRefreshFullSymbols,
-        isShowingFunctionsOnly,
-        refreshFullSymbols,
-        symbols,
-    } = useWorkspaceOutline(
-        activeTab,
-        isOutlinePanelVisible,
-        latestOutlineChangeRef.current,
-    );
     const isOutlinePanelSupported = activeEditorMode === "luau";
     const resolvedOutlinePanelWidth =
         outlinePanelPreviewWidth ?? outlinePanelWidth;
@@ -448,8 +432,9 @@ export function WorkspaceEditor({
                                           delta?: AceChangeDelta,
                                       ) => {
                                           if (tab.id === activeTabId) {
-                                              latestOutlineChangeRef.current =
-                                                  normalizeOutlineChange(delta);
+                                              onActiveTabLuauChange(
+                                                  normalizeOutlineChange(delta),
+                                              );
                                           }
 
                                           editorChangeHandler(value, delta);
@@ -504,10 +489,7 @@ export function WorkspaceEditor({
                         <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-fumi-200" />
                     </button>
                     <WorkspaceOutlinePanel
-                        canRefreshFullSymbols={canRefreshFullSymbols}
-                        isShowingFunctionsOnly={isShowingFunctionsOnly}
-                        onRefreshFullSymbols={refreshFullSymbols}
-                        symbols={symbols}
+                        symbols={luauSymbols}
                         onSelectSymbol={handleSelectSymbol}
                     />
                 </div>

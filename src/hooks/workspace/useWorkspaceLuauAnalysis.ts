@@ -1,19 +1,15 @@
 import {
     startTransition,
-    useCallback,
     useDeferredValue,
     useEffect,
     useMemo,
     useRef,
     useState,
 } from "react";
-import {
-    WORKSPACE_OUTLINE_LARGE_FILE_CHAR_THRESHOLD,
-    WORKSPACE_OUTLINE_SCAN_IDLE_TIMEOUT_MS,
-} from "../../constants/workspace/outline";
+import { WORKSPACE_OUTLINE_SCAN_IDLE_TIMEOUT_MS } from "../../constants/workspace/outline";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
-import { scanLuauFileAnalysis } from "../../lib/luau/symbolScanner";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
+import { scanLuauFileAnalysis } from "../../lib/platform/luau";
 import { hashString } from "../../lib/shared/hash";
 import {
     getWorkspaceOutlineCacheHit,
@@ -23,36 +19,32 @@ import {
 import type {
     WorkspaceOutlineCacheEntry,
     WorkspaceOutlineChange,
-    WorkspaceOutlineScanMode,
 } from "../../lib/workspace/outline.type";
 import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
-import type { UseWorkspaceOutlineResult } from "./useWorkspaceOutline.type";
+import type { UseWorkspaceLuauAnalysisResult } from "./useWorkspaceLuauAnalysis.type";
 
-export function useWorkspaceOutline(
+export function useWorkspaceLuauAnalysis(
     activeTab: WorkspaceTab | null,
     isEnabled: boolean,
     change: WorkspaceOutlineChange | null,
-): UseWorkspaceOutlineResult {
-    const [symbols, setSymbols] = useState<
-        UseWorkspaceOutlineResult["symbols"]
-    >([]);
-    const [manualFullScanHash, setManualFullScanHash] = useState<string | null>(
-        null,
-    );
+): UseWorkspaceLuauAnalysisResult {
+    const [analysis, setAnalysis] = useState<LuauFileAnalysis | null>(null);
     const cacheRef = useRef<Map<string, WorkspaceOutlineCacheEntry>>(new Map());
     const previousActiveTabIdRef = useRef<string | null>(null);
     const previousAnalysisRef = useRef<{
         analysis: LuauFileAnalysis;
         content: string;
         contentHash: string;
-        mode: WorkspaceOutlineScanMode;
+        tabId: string;
+    } | null>(null);
+    const requestSequenceRef = useRef(0);
+    const latestScanTargetRef = useRef<{
+        contentHash: string;
         tabId: string;
     } | null>(null);
     const activeTabId = activeTab?.id ?? null;
     const activeFileName = activeTab?.fileName ?? null;
     const activeContent = activeTab?.content ?? "";
-    const isLargeFile =
-        activeContent.length >= WORKSPACE_OUTLINE_LARGE_FILE_CHAR_THRESHOLD;
     const deferredContent = useDeferredValue(activeContent);
     const outlineContent =
         previousActiveTabIdRef.current === activeTabId
@@ -62,45 +54,25 @@ export function useWorkspaceOutline(
         () => hashString(outlineContent),
         [outlineContent],
     );
-    const scanMode: WorkspaceOutlineScanMode =
-        isLargeFile && manualFullScanHash !== outlineContentHash
-            ? "functions"
-            : "full";
-
-    const refreshFullSymbols = useCallback((): void => {
-        setManualFullScanHash(hashString(activeContent));
-    }, [activeContent]);
 
     useEffect(() => {
         previousActiveTabIdRef.current = activeTabId;
     }, [activeTabId]);
 
     useEffect(() => {
-        if (!isLargeFile) {
-            setManualFullScanHash(null);
-            return;
-        }
-
-        const activeContentHash = hashString(activeContent);
-
-        if (manualFullScanHash === activeContentHash) {
-            return;
-        }
-
-        setManualFullScanHash(null);
-    }, [activeContent, isLargeFile, manualFullScanHash]);
-
-    useEffect(() => {
         if (!activeTabId || !activeFileName) {
             previousAnalysisRef.current = null;
-            setSymbols([]);
+            latestScanTargetRef.current = null;
+            setAnalysis(null);
             return;
         }
 
         const editorMode = getEditorModeForFileName(activeFileName);
 
         if (!isEnabled || editorMode !== "luau") {
-            setSymbols([]);
+            previousAnalysisRef.current = null;
+            latestScanTargetRef.current = null;
+            setAnalysis(null);
             return;
         }
 
@@ -110,22 +82,21 @@ export function useWorkspaceOutline(
             activeFileName,
             outlineContentHash,
             outlineContent.length,
-            scanMode,
         );
 
         if (cachedEntry) {
             previousAnalysisRef.current = {
-                analysis: {
-                    functionScopes: [],
-                    symbols: cachedEntry.symbols,
-                },
+                analysis: cachedEntry.analysis,
                 content: outlineContent,
                 contentHash: outlineContentHash,
-                mode: scanMode,
+                tabId: activeTabId,
+            };
+            latestScanTargetRef.current = {
+                contentHash: outlineContentHash,
                 tabId: activeTabId,
             };
             startTransition(() => {
-                setSymbols(cachedEntry.symbols);
+                setAnalysis(cachedEntry.analysis);
             });
             return;
         }
@@ -135,35 +106,41 @@ export function useWorkspaceOutline(
         if (
             previousAnalysis &&
             previousAnalysis.tabId === activeTabId &&
-            previousAnalysis.mode === scanMode &&
             previousAnalysis.contentHash !== outlineContentHash &&
             change
         ) {
             const nextAnalysis = incrementallyUpdateWorkspaceOutline({
                 change,
-                mode: scanMode,
                 nextContent: outlineContent,
                 previousAnalysis: previousAnalysis.analysis,
                 previousContent: previousAnalysis.content,
             });
 
             if (nextAnalysis) {
-                storeWorkspaceOutlineCacheEntry(cacheRef.current, activeTabId, {
+                const cacheEntry: WorkspaceOutlineCacheEntry = {
+                    analysis: nextAnalysis,
                     contentHash: outlineContentHash,
                     contentLength: outlineContent.length,
                     fileName: activeFileName,
-                    mode: scanMode,
-                    symbols: nextAnalysis.symbols,
-                });
+                };
+
+                storeWorkspaceOutlineCacheEntry(
+                    cacheRef.current,
+                    activeTabId,
+                    cacheEntry,
+                );
                 previousAnalysisRef.current = {
                     analysis: nextAnalysis,
                     content: outlineContent,
                     contentHash: outlineContentHash,
-                    mode: scanMode,
+                    tabId: activeTabId,
+                };
+                latestScanTargetRef.current = {
+                    contentHash: outlineContentHash,
                     tabId: activeTabId,
                 };
                 startTransition(() => {
-                    setSymbols(nextAnalysis.symbols);
+                    setAnalysis(nextAnalysis);
                 });
                 return;
             }
@@ -172,49 +149,77 @@ export function useWorkspaceOutline(
         let isCancelled = false;
         let idleCallbackId: number | null = null;
         let timeoutId: number | null = null;
+        const requestId = requestSequenceRef.current + 1;
+
+        requestSequenceRef.current = requestId;
+        latestScanTargetRef.current = {
+            contentHash: outlineContentHash,
+            tabId: activeTabId,
+        };
 
         const runScan = (): void => {
             if (isCancelled) {
                 return;
             }
 
-            try {
-                const analysis = scanLuauFileAnalysis(outlineContent, {
-                    mode: scanMode,
-                });
+            void scanLuauFileAnalysis({
+                content: outlineContent,
+            })
+                .then((nextAnalysis) => {
+                    if (
+                        isCancelled ||
+                        requestSequenceRef.current !== requestId
+                    ) {
+                        return;
+                    }
 
-                if (isCancelled) {
-                    return;
-                }
+                    const latestScanTarget = latestScanTargetRef.current;
 
-                storeWorkspaceOutlineCacheEntry(cacheRef.current, activeTabId, {
-                    contentHash: outlineContentHash,
-                    contentLength: outlineContent.length,
-                    fileName: activeFileName,
-                    mode: scanMode,
-                    symbols: analysis.symbols,
-                });
-                previousAnalysisRef.current = {
-                    analysis,
-                    content: outlineContent,
-                    contentHash: outlineContentHash,
-                    mode: scanMode,
-                    tabId: activeTabId,
-                };
+                    if (
+                        !latestScanTarget ||
+                        latestScanTarget.tabId !== activeTabId ||
+                        latestScanTarget.contentHash !== outlineContentHash
+                    ) {
+                        return;
+                    }
 
-                startTransition(() => {
-                    setSymbols(analysis.symbols);
-                });
-            } catch {
-                if (isCancelled) {
-                    return;
-                }
+                    const cacheEntry: WorkspaceOutlineCacheEntry = {
+                        analysis: nextAnalysis,
+                        contentHash: outlineContentHash,
+                        contentLength: outlineContent.length,
+                        fileName: activeFileName,
+                    };
 
-                previousAnalysisRef.current = null;
-                startTransition(() => {
-                    setSymbols([]);
+                    storeWorkspaceOutlineCacheEntry(
+                        cacheRef.current,
+                        activeTabId,
+                        cacheEntry,
+                    );
+                    previousAnalysisRef.current = {
+                        analysis: nextAnalysis,
+                        content: outlineContent,
+                        contentHash: outlineContentHash,
+                        tabId: activeTabId,
+                    };
+
+                    startTransition(() => {
+                        setAnalysis(nextAnalysis);
+                    });
+                })
+                .catch(() => {
+                    if (
+                        isCancelled ||
+                        requestSequenceRef.current !== requestId
+                    ) {
+                        return;
+                    }
+
+                    previousAnalysisRef.current = null;
+                    latestScanTargetRef.current = null;
+                    startTransition(() => {
+                        setAnalysis(null);
+                    });
                 });
-            }
         };
 
         if (typeof window.requestIdleCallback === "function") {
@@ -246,13 +251,10 @@ export function useWorkspaceOutline(
         isEnabled,
         outlineContent,
         outlineContentHash,
-        scanMode,
     ]);
 
     return {
-        canRefreshFullSymbols: isLargeFile && scanMode !== "full",
-        isShowingFunctionsOnly: isLargeFile && scanMode === "functions",
-        refreshFullSymbols,
-        symbols,
+        analysis,
+        symbols: analysis?.symbols ?? [],
     };
 }

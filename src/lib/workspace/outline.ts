@@ -14,7 +14,6 @@ export function getWorkspaceOutlineCacheHit(
     fileName: string,
     contentHash: string,
     contentLength: number,
-    mode: WorkspaceOutlineCacheEntry["mode"],
 ): WorkspaceOutlineCacheEntry | null {
     const entry = cache.get(tabId);
 
@@ -25,8 +24,7 @@ export function getWorkspaceOutlineCacheHit(
     if (
         entry.fileName !== fileName ||
         entry.contentHash !== contentHash ||
-        entry.contentLength !== contentLength ||
-        entry.mode !== mode
+        entry.contentLength !== contentLength
     ) {
         return null;
     }

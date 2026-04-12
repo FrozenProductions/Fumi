@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
 import { useAppStore } from "../app/useAppStore";
 import {
     bindWorkspaceEditorShortcuts,
@@ -17,6 +18,7 @@ import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
 
 export function useWorkspaceCodeCompletion({
     activeEditorMode,
+    activeLuauAnalysis,
     activeTabId,
     tabs,
     isIntellisenseEnabled,
@@ -30,6 +32,9 @@ export function useWorkspaceCodeCompletion({
     const editorByTabIdRef = useRef(new Map<string, AceEditorInstance>());
     const suppressNextPassiveCompletionRef = useRef(false);
     const activeTabIdRef = useRef<string | null>(activeTabId);
+    const activeLuauAnalysisRef = useRef<LuauFileAnalysis | null>(
+        activeLuauAnalysis,
+    );
     const tabsByIdRef = useRef(
         new Map(tabs.map((tab) => [tab.id, tab] as const)),
     );
@@ -39,6 +44,7 @@ export function useWorkspaceCodeCompletion({
     const goToLineRequest = useAppStore((state) => state.goToLineRequest);
 
     activeTabIdRef.current = activeTabId;
+    activeLuauAnalysisRef.current = activeLuauAnalysis;
     tabsByIdRef.current = new Map(tabs.map((tab) => [tab.id, tab] as const));
 
     const getActiveEditor = useCallback((): AceEditorInstance | null => {
@@ -48,6 +54,10 @@ export function useWorkspaceCodeCompletion({
 
         return editorByTabIdRef.current.get(activeTabIdRef.current) ?? null;
     }, []);
+    const getActiveLuauAnalysis = useCallback(
+        (): LuauFileAnalysis | null => activeLuauAnalysisRef.current,
+        [],
+    );
 
     const {
         acceptCompletion,
@@ -58,6 +68,7 @@ export function useWorkspaceCodeCompletion({
     } = useWorkspaceCompletionPopup({
         activeEditorMode,
         getActiveEditor,
+        getActiveLuauAnalysis,
         isIntellisenseEnabled,
         intellisensePriority,
         intellisenseWidth,

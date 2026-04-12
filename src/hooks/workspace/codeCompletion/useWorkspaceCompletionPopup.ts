@@ -70,6 +70,7 @@ function shiftCompletionSelection(
 export function useWorkspaceCompletionPopup({
     activeEditorMode,
     getActiveEditor,
+    getActiveLuauAnalysis,
     isIntellisenseEnabled,
     intellisensePriority,
     intellisenseWidth,
@@ -98,6 +99,7 @@ export function useWorkspaceCompletionPopup({
 
             const cursor = editor.getCursorPosition();
             const query = getLuauCompletionQuery({
+                analysis: getActiveLuauAnalysis(),
                 content: editor.getValue(),
                 row: cursor.row,
                 column: cursor.column,
@@ -136,6 +138,7 @@ export function useWorkspaceCompletionPopup({
         [
             activeEditorMode,
             getActiveEditor,
+            getActiveLuauAnalysis,
             intellisensePriority,
             intellisenseWidth,
             isCompletionExplicit,

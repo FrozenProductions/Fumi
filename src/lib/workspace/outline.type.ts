@@ -1,14 +1,10 @@
-import type { LuauFileSymbol } from "../luau/luau.type";
 import type { LuauFileAnalysis } from "../luau/symbolScanner.type";
 
-export type WorkspaceOutlineScanMode = "full" | "functions";
-
 export type WorkspaceOutlineCacheEntry = {
+    analysis: LuauFileAnalysis;
     contentHash: string;
     contentLength: number;
     fileName: string;
-    mode: WorkspaceOutlineScanMode;
-    symbols: LuauFileSymbol[];
 };
 
 export type WorkspaceOutlinePoint = {
@@ -25,7 +21,6 @@ export type WorkspaceOutlineChange = {
 
 export type WorkspaceIncrementalOutlineUpdateOptions = {
     change: WorkspaceOutlineChange;
-    mode: WorkspaceOutlineScanMode;
     nextContent: string;
     previousAnalysis: LuauFileAnalysis;
     previousContent: string;

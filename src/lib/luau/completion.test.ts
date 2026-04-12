@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vite-plus/test";
 import { getLuauCompletionQuery, shouldOpenLuauCompletion } from "./completion";
 import type { LuauCompletionQuery } from "./completion.type";
+import { EMPTY_LUAU_FILE_ANALYSIS } from "./symbolScanner.type";
 
-function getCompletionQuery(content: string): LuauCompletionQuery {
+function getCompletionQuery(
+    content: string,
+    analysis = EMPTY_LUAU_FILE_ANALYSIS,
+): LuauCompletionQuery {
     return getLuauCompletionQuery({
+        analysis,
         column: content.length,
         content,
         priority: "balanced",
@@ -81,5 +86,34 @@ describe("shouldOpenLuauCompletion", () => {
         };
 
         expect(shouldOpenLuauCompletion(query, true)).toBe(true);
+    });
+
+    it("includes visible file symbols from precomputed analysis", () => {
+        const query = getCompletionQuery("fo", {
+            functionScopes: [],
+            symbols: [
+                {
+                    label: "foo",
+                    kind: "constant",
+                    detail: "local variable",
+                    declarationStart: 0,
+                    declarationEnd: 3,
+                    isLexical: true,
+                    ownerFunctionStart: null,
+                    ownerFunctionEnd: null,
+                    scopeStart: 0,
+                    scopeEnd: 2,
+                    visibleStart: 0,
+                    visibleEnd: 2,
+                    doc: {
+                        summary: "Local variable declared in the current file.",
+                        source: "Current File",
+                    },
+                    score: 2000,
+                },
+            ],
+        });
+
+        expect(query.items.map((item) => item.label)).toContain("foo");
     });
 });

@@ -29,7 +29,7 @@ import type {
     LuauCompletionItem,
     LuauFileSymbol,
 } from "../../lib/luau/luau.type";
-import { scanLuauFileAnalysis } from "../../lib/luau/symbolScanner";
+import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
 import type { LuauCompletionQuery } from "./completion.type";
 
 const MAX_LUAU_COMPLETION_ITEMS = 6;
@@ -310,10 +310,13 @@ function filterCompletions(
 }
 
 function getVisibleFileCompletionItems(
-    content: string,
+    analysis: LuauFileAnalysis | null,
     cursorIndex: number,
 ): LuauCompletionItem[] {
-    const analysis = scanLuauFileAnalysis(content);
+    if (!analysis) {
+        return [];
+    }
+
     const currentFunctionOwner = getInnermostFunctionOwner(
         analysis.functionScopes,
         cursorIndex,
@@ -327,12 +330,13 @@ function getVisibleFileCompletionItems(
 }
 
 export function getLuauCompletionQuery(options: {
+    analysis: LuauFileAnalysis | null;
     column: number;
     content: string;
     priority: AppIntellisensePriority;
     row: number;
 }): LuauCompletionQuery {
-    const { column, content, priority, row } = options;
+    const { analysis, column, content, priority, row } = options;
     const line = getLineAtRow(content, row);
     const beforeCursor = line.slice(0, column);
     const namespacedMatch = beforeCursor.match(
@@ -359,7 +363,7 @@ export function getLuauCompletionQuery(options: {
     const prefix = rootPrefixMatch?.[1] ?? "";
     const cursorIndex = getAbsoluteIndexForPosition(content, row, column);
     const visibleFileItems = getVisibleFileCompletionItems(
-        content,
+        analysis,
         cursorIndex,
     );
     const rootItems = dedupeCompletionItems([

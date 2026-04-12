@@ -64,13 +64,13 @@ function getSymbolIcon(kind: LuauFileSymbol["kind"]): string {
 function getSymbolColor(kind: LuauFileSymbol["kind"]): string {
     switch (kind) {
         case "function":
-            return "text-purple-600";
+            return "text-fumi-700";
         case "constant":
-            return "text-blue-600";
+            return "text-fumi-500";
         case "class":
-            return "text-orange-600";
+            return "text-fumi-800";
         case "type":
-            return "text-teal-600";
+            return "text-fumi-600";
         default:
             return "text-fumi-600";
     }
@@ -140,9 +140,6 @@ const OutlineGroupRow = memo(function OutlineGroupRow({
 });
 
 export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
-    canRefreshFullSymbols,
-    isShowingFunctionsOnly,
-    onRefreshFullSymbols,
     symbols,
     onSelectSymbol,
 }: WorkspaceOutlinePanelProps): ReactElement {
@@ -234,22 +231,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-fumi-600">
                     Outline panel
                 </h2>
-                {canRefreshFullSymbols ? (
-                    <button
-                        type="button"
-                        className="rounded-[0.45rem] border border-fumi-200 bg-fumi-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-fumi-700 transition-colors hover:border-fumi-300 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
-                        onClick={onRefreshFullSymbols}
-                    >
-                        Load all
-                    </button>
-                ) : null}
             </div>
-            {isShowingFunctionsOnly ? (
-                <div className="border-b border-fumi-200 bg-fumi-100/80 px-3 py-2 text-[11px] leading-5 text-fumi-600">
-                    Large file mode keeps functions live. Refresh to load locals
-                    and globals for the current snapshot.
-                </div>
-            ) : null}
             <div ref={scrollRef} className="flex-1 overflow-y-auto py-2">
                 {entries.length > 0 ? (
                     <div

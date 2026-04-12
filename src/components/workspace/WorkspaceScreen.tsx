@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
+import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
 import type { RobloxProcessInfo } from "../../lib/accounts/accounts.type";
@@ -26,6 +27,7 @@ import {
 } from "../../lib/platform/accounts";
 import { confirmAction } from "../../lib/platform/dialog";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
+import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
 import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
@@ -216,6 +218,22 @@ export function WorkspaceScreen({
     const activeEditorMode = activeTab
         ? getEditorModeForFileName(activeTab.fileName)
         : "text";
+    const activeTabId = activeTab?.id ?? null;
+    const [latestLuauChangeState, setLatestLuauChangeState] = useState<{
+        change: WorkspaceOutlineChange | null;
+        tabId: string;
+    } | null>(null);
+    const latestLuauChange =
+        activeTabId && latestLuauChangeState?.tabId === activeTabId
+            ? latestLuauChangeState.change
+            : null;
+    const { analysis: activeLuauAnalysis, symbols: luauSymbols } =
+        useWorkspaceLuauAnalysis(
+            activeTab,
+            editorSettings.isIntellisenseEnabled ||
+                editorSettings.isOutlinePanelVisible,
+            latestLuauChange,
+        );
     const renameState = useWorkspaceTabRename({
         workspace,
         renameWorkspaceTab,
@@ -234,7 +252,8 @@ export function WorkspaceScreen({
         goToLine,
     } = useWorkspaceCodeCompletion({
         activeEditorMode,
-        activeTabId: activeTab?.id ?? null,
+        activeLuauAnalysis,
+        activeTabId,
         tabs: workspace?.tabs ?? [],
         isIntellisenseEnabled: editorSettings.isIntellisenseEnabled,
         intellisensePriority: editorSettings.intellisensePriority,
@@ -244,6 +263,19 @@ export function WorkspaceScreen({
         updateActiveTabCursor,
         updateActiveTabScrollTop,
     });
+    const handleActiveTabLuauChange = useCallback(
+        (change: WorkspaceOutlineChange | null): void => {
+            if (!activeTabId) {
+                return;
+            }
+
+            setLatestLuauChangeState({
+                change,
+                tabId: activeTabId,
+            });
+        },
+        [activeTabId],
+    );
 
     const splitView = workspace?.splitView ?? null;
     const [previewTabs, setPreviewTabs] = useState(workspace?.tabs ?? []);
@@ -603,8 +635,12 @@ export function WorkspaceScreen({
                                 isOutlinePanelVisible={
                                     editorSettings.isOutlinePanelVisible
                                 }
+                                luauSymbols={luauSymbols}
                                 outlinePanelWidth={
                                     editorSettings.outlinePanelWidth
+                                }
+                                onActiveTabLuauChange={
+                                    handleActiveTabLuauChange
                                 }
                                 onFocusPane={focusWorkspacePane}
                                 onSetOutlinePanelWidth={setOutlinePanelWidth}
