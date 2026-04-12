@@ -80,7 +80,7 @@ export function AppSettingsScreen({
                 </div>
 
                 <div className="flex min-w-0 flex-1 flex-col overflow-auto bg-fumi-50 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex max-w-4xl flex-1 flex-col px-10 py-2.5">
+                    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-10 py-2.5">
                         {renderSectionContent()}
                     </div>
                 </div>
