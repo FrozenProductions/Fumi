@@ -652,6 +652,20 @@ export function WorkspaceScreen({
                                                 .outlineExpandedGroups[title],
                                     });
                                 }}
+                                onExpandAllGroups={(titles) => {
+                                    setOutlineExpandedGroups(
+                                        Object.fromEntries(
+                                            titles.map((t) => [t, true]),
+                                        ),
+                                    );
+                                }}
+                                onCollapseAllGroups={(titles) => {
+                                    setOutlineExpandedGroups(
+                                        Object.fromEntries(
+                                            titles.map((t) => [t, false]),
+                                        ),
+                                    );
+                                }}
                                 onActiveTabLuauChange={
                                     handleActiveTabLuauChange
                                 }

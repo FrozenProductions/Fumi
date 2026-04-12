@@ -80,6 +80,8 @@ export function WorkspaceEditor({
     outlinePanelWidth,
     outlineExpandedGroups,
     onToggleExpandedGroup,
+    onExpandAllGroups,
+    onCollapseAllGroups,
     onActiveTabLuauChange,
     onFocusPane,
     onSetOutlinePanelWidth,
@@ -479,6 +481,8 @@ export function WorkspaceEditor({
                         onSelectSymbol={handleSelectSymbol}
                         expandedGroups={outlineExpandedGroups}
                         onToggleExpandedGroup={onToggleExpandedGroup}
+                        onExpandAllGroups={onExpandAllGroups}
+                        onCollapseAllGroups={onCollapseAllGroups}
                     />
                 </div>
             ) : null}

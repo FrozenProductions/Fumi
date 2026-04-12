@@ -1,4 +1,9 @@
-import { ArrowDown01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import {
+    ArrowDown01Icon,
+    ArrowRight01Icon,
+    CollapseIcon,
+    ExpandIcon,
+} from "@hugeicons/core-free-icons";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { memo, type ReactElement, useMemo, useRef } from "react";
 import {
@@ -8,6 +13,7 @@ import {
 } from "../../constants/workspace/outline";
 import type { LuauFileSymbol } from "../../lib/luau/luau.type";
 import { AppIcon } from "../app/AppIcon";
+import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceOutlinePanelProps } from "./workspaceOutlinePanel.type";
 
 type OutlineGroup = {
@@ -76,7 +82,7 @@ const OutlineSymbolRow = memo(function OutlineSymbolRow({
     return (
         <button
             type="button"
-            className="group flex h-[26px] w-full items-center gap-2 rounded px-2 py-1 text-left text-xs hover:bg-fumi-100 focus-visible:bg-fumi-100 focus-visible:outline-none"
+            className="group flex h-[26px] w-full items-center gap-2 rounded px-2 py-1 text-left text-xs transition-colors duration-150 ease-out hover:bg-fumi-100 focus-visible:bg-fumi-100 focus-visible:outline-none"
             onClick={() => {
                 onSelectSymbol(symbol);
             }}
@@ -112,7 +118,7 @@ const OutlineGroupRow = memo(function OutlineGroupRow({
     return (
         <button
             type="button"
-            className="flex h-[30px] w-full items-center gap-1 px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-fumi-500 hover:text-fumi-700 focus-visible:outline-none"
+            className="flex h-[30px] w-full items-center gap-1 px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-fumi-500 transition-colors duration-150 ease-out hover:text-fumi-700 focus-visible:outline-none"
             onClick={onToggle}
         >
             <AppIcon
@@ -131,6 +137,8 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     onSelectSymbol,
     expandedGroups,
     onToggleExpandedGroup,
+    onExpandAllGroups,
+    onCollapseAllGroups,
 }: WorkspaceOutlinePanelProps): ReactElement {
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const groups = useMemo<OutlineGroup[]>(() => {
@@ -164,6 +172,8 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
         return result;
     }, [symbols]);
+
+    const groupTitles = useMemo(() => groups.map((g) => g.title), [groups]);
 
     const entries = useMemo<OutlineEntry[]>(() => {
         const result: OutlineEntry[] = [];
@@ -210,13 +220,50 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
     return (
-        <aside className="flex h-full w-full min-w-0 flex-col bg-fumi-50">
+        <aside className="flex h-full w-full min-w-0 flex-col bg-fumi-50 transition-colors duration-200">
             <div className="flex items-center justify-between gap-3 border-b border-fumi-200 px-3 py-2">
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-fumi-600">
                     Outline panel
                 </h2>
+                <div className="flex items-center gap-1">
+                    <AppTooltip content="Expand all" side="top">
+                        <button
+                            type="button"
+                            className="flex h-6 w-6 items-center justify-center rounded text-fumi-500 transition-colors duration-150 ease-out hover:bg-fumi-100 hover:text-fumi-700 focus-visible:bg-fumi-100 focus-visible:outline-none"
+                            aria-label="Expand all groups"
+                            onClick={() => {
+                                onExpandAllGroups(groupTitles);
+                            }}
+                        >
+                            <AppIcon
+                                icon={ExpandIcon}
+                                size={14}
+                                strokeWidth={2.5}
+                            />
+                        </button>
+                    </AppTooltip>
+                    <AppTooltip content="Collapse all" side="top">
+                        <button
+                            type="button"
+                            className="flex h-6 w-6 items-center justify-center rounded text-fumi-500 transition-colors duration-150 ease-out hover:bg-fumi-100 hover:text-fumi-700 focus-visible:bg-fumi-100 focus-visible:outline-none"
+                            aria-label="Collapse all groups"
+                            onClick={() => {
+                                onCollapseAllGroups(groupTitles);
+                            }}
+                        >
+                            <AppIcon
+                                icon={CollapseIcon}
+                                size={14}
+                                strokeWidth={2.5}
+                            />
+                        </button>
+                    </AppTooltip>
+                </div>
             </div>
-            <div ref={scrollRef} className="flex-1 overflow-y-auto py-2">
+            <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto scroll-smooth py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
                 {entries.length > 0 ? (
                     <div
                         className="relative w-full"

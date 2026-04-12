@@ -33,6 +33,8 @@ export type WorkspaceEditorProps = {
     outlinePanelWidth: number;
     outlineExpandedGroups: Record<string, boolean>;
     onToggleExpandedGroup: (title: string) => void;
+    onExpandAllGroups: (titles: string[]) => void;
+    onCollapseAllGroups: (titles: string[]) => void;
     onActiveTabLuauChange: (change: WorkspaceOutlineChange | null) => void;
     onFocusPane: (pane: WorkspacePaneId) => void;
     onSetOutlinePanelWidth: (width: number) => void;

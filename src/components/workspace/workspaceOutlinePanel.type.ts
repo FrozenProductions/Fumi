@@ -5,4 +5,6 @@ export type WorkspaceOutlinePanelProps = {
     onSelectSymbol: (symbol: LuauFileSymbol) => void;
     expandedGroups: Record<string, boolean>;
     onToggleExpandedGroup: (title: string) => void;
+    onExpandAllGroups: (titles: string[]) => void;
+    onCollapseAllGroups: (titles: string[]) => void;
 };
