@@ -192,11 +192,29 @@ describe("readRecentWorkspacePaths error handling", () => {
 });
 
 describe("persistRecentWorkspacePaths", () => {
-    it("writes the provided paths to local storage", async () => {
+    it("warns when local storage rejects a write", () => {
+        const warnSpy = vi
+            .spyOn(console, "warn")
+            .mockImplementation(() => undefined);
+        const setItem = vi.fn(() => {
+            throw new Error("disk full");
+        });
+
+        Object.defineProperty(globalThis, "localStorage", {
+            configurable: true,
+            writable: true,
+            value: {
+                ...createLocalStorageMock(),
+                setItem,
+            } satisfies Storage,
+        });
+
         persistRecentWorkspacePaths(["/workspace/one", "/workspace/two"]);
 
-        expect(
-            globalThis.localStorage.getItem(RECENT_WORKSPACE_STORAGE_KEY),
-        ).toBe(JSON.stringify(["/workspace/one", "/workspace/two"]));
+        expect(setItem).toHaveBeenCalledWith(
+            RECENT_WORKSPACE_STORAGE_KEY,
+            JSON.stringify(["/workspace/one", "/workspace/two"]),
+        );
+        expect(warnSpy).toHaveBeenCalledOnce();
     });
 });

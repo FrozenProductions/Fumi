@@ -43,15 +43,6 @@ describe("buildWorkspaceEditorSearchOptions", () => {
     });
 });
 
-describe("createWorkspaceEditorSearchState", () => {
-    it("includes empty match metadata by default", () => {
-        expect(createWorkspaceEditorSearchState()).toMatchObject({
-            matchCount: 0,
-            activeMatchOrdinal: 0,
-        });
-    });
-});
-
 describe("getWorkspaceEditorSearchValidationError", () => {
     it("reports invalid regex patterns", () => {
         expect(

@@ -103,12 +103,16 @@ describe("app hotkey resolution", () => {
         expect(getAppHotkeySettingsActions()).not.toContain("OPEN_SETTINGS");
     });
 
-    it("formats resolved labels for display", () => {
+    it("resolves customized bindings with the formatted shortcut label", () => {
         expect(
             getResolvedAppHotkey("OPEN_COMMAND_PALETTE", {
                 OPEN_COMMAND_PALETTE: "Mod+K",
-            }).shortcutLabel,
-        ).toBeTruthy();
+            }),
+        ).toMatchObject({
+            binding: "Mod+K",
+            isCustomized: true,
+            shortcutLabel: formatForDisplay("Mod+K"),
+        });
     });
 });
 
