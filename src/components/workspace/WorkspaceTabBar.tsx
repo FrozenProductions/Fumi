@@ -284,7 +284,6 @@ export function WorkspaceTabBar({
                 >
                     {isSplit && secondaryTabs.length > 0 ? (
                         <div className="relative flex items-stretch">
-                            {/* Primary tab section — all tabs except secondary */}
                             <div
                                 style={primarySectionStyle}
                                 className="min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -313,7 +312,6 @@ export function WorkspaceTabBar({
                                 })}
                             </div>
 
-                            {/* Divider centered on the full tab bar width to match the editor split */}
                             <div
                                 style={dividerStyle}
                                 className={[
@@ -324,7 +322,6 @@ export function WorkspaceTabBar({
                                 ].join(" ")}
                             />
 
-                            {/* Secondary tab section */}
                             <div
                                 style={secondarySectionStyle}
                                 className={[
@@ -391,7 +388,6 @@ export function WorkspaceTabBar({
                 onCloseSplitView={onCloseSplitView}
             />
 
-            {/* Controls: tab list dropdown + new file button */}
             <div
                 ref={tabListDropdownRef}
                 className="absolute inset-y-0 right-0 z-20 flex items-center gap-1 bg-fumi-100 px-2 py-1.5"

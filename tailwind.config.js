@@ -26,12 +26,24 @@ export default {
                     "0%": { opacity: "0", transform: "translateX(-4px)" },
                     "100%": { opacity: "1", transform: "translateX(0)" },
                 },
+                "slide-in-from-right": {
+                    "0%": { opacity: "0", transform: "translateX(100%)" },
+                    "100%": { opacity: "1", transform: "translateX(0)" },
+                },
+                "slide-out-to-right": {
+                    "0%": { opacity: "1", transform: "translateX(0)" },
+                    "100%": { opacity: "0", transform: "translateX(100%)" },
+                },
             },
             animation: {
                 "fade-in":
                     "fade-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
                 "slide-in":
                     "slide-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
+                "slide-in-from-right":
+                    "slide-in-from-right 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
+                "slide-out-to-right":
+                    "slide-out-to-right 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
             },
         },
     },

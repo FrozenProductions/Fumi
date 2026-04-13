@@ -185,7 +185,6 @@ export function WorkspaceEditorSearchPanel({
         <div
             className={`pointer-events-auto w-[18rem] rounded-[0.85rem] border border-fumi-200 bg-fumi-50/95 p-1.5 shadow-[var(--shadow-app-floating)] backdrop-blur motion-reduce:animate-none motion-reduce:transform-none ${panelMotionClassName}`}
         >
-            {/* ROW 1: Search Input */}
             <div className="flex items-center gap-1.5">
                 <AppTooltip content="Toggle replace mode">
                     <button
@@ -247,7 +246,6 @@ export function WorkspaceEditorSearchPanel({
                 </AppTooltip>
             </div>
 
-            {/* ROW 2: Replace Input (Collapsible) */}
             {isReplaceExpanded ? (
                 <div className="mt-1 flex items-center gap-1.5 motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[10%] motion-safe:motion-duration-[140ms] motion-safe:motion-ease-out-cubic">
                     <div className="w-7 shrink-0" />
@@ -340,7 +338,6 @@ export function WorkspaceEditorSearchPanel({
                 </div>
             ) : null}
 
-            {/* ROW 3: Modifiers and Navigation */}
             <div className="mt-1.5 flex items-center justify-end gap-2 pr-0.5">
                 <div className="flex flex-wrap items-center gap-0.5">
                     <AppTooltip content="Match Case">

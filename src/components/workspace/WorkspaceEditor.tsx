@@ -340,7 +340,6 @@ export function WorkspaceEditor({
 
     return (
         <div className="relative flex min-h-0 flex-1 bg-fumi-50">
-            {/* Overflow container for editor content only */}
             <div
                 ref={editorContainerRef}
                 className="relative flex min-h-0 flex-1 overflow-hidden"
@@ -351,7 +350,6 @@ export function WorkspaceEditor({
                     </div>
                 ) : null}
 
-                {/* Split divider */}
                 {isSplit ? (
                     <>
                         <div
@@ -370,7 +368,6 @@ export function WorkspaceEditor({
                     </>
                 ) : null}
 
-                {/* Split drop zones — registered as dnd-kit droppables */}
                 <WorkspaceSplitDropZone
                     alignment="left"
                     dropRef={leftDropRef}
@@ -468,20 +465,27 @@ export function WorkspaceEditor({
                     <WorkspaceEditorSearchPanel searchPanel={searchPanel} />
                 </div>
 
-                {/* Actions button — rendered inside editor so it paints after the
-                outline panel overlay and naturally stacks above it at z-40. */}
-                <div className="pointer-events-none absolute bottom-5 right-5 z-40">
+                <div
+                    className="pointer-events-none absolute bottom-5 z-40 transition-[right] duration-200"
+                    style={{
+                        right: isOutlinePanelVisible
+                            ? `${resolvedOutlinePanelWidth + 20}px`
+                            : "20px",
+                    }}
+                >
                     <WorkspaceActionsButton {...workspaceActionsButton} />
                 </div>
             </div>
 
-            {/* Outline panel — positioned as sibling of overflow container */}
-            {isOutlinePanelVisible && isOutlinePanelSupported ? (
+            {isOutlinePanelSupported ? (
                 <div
-                    className="absolute top-0 bottom-0 right-0 z-30 flex min-w-0 overflow-hidden border-l border-fumi-200 bg-fumi-50"
+                    className={`absolute top-0 bottom-0 right-0 z-30 flex min-w-0 overflow-hidden border-l border-fumi-200 bg-fumi-50 transition-[opacity,transform] duration-300 ease-in-out ${
+                        isOutlinePanelVisible
+                            ? "pointer-events-auto translate-x-0 opacity-100"
+                            : "pointer-events-none translate-x-full opacity-0"
+                    }`}
                     style={{ width: `${resolvedOutlinePanelWidth}px` }}
                 >
-                    {/* Resize handle */}
                     <button
                         type="button"
                         aria-label="Resize outline panel"

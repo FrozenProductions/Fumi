@@ -379,7 +379,6 @@ export function WorkspaceActionsButton({
                             </button>
                         </AppTooltip>
 
-                        {/* Launch Roblox */}
                         <AppTooltip
                             content={getLaunchTooltip()}
                             shortcut={launchRobloxShortcutLabel}
@@ -411,7 +410,6 @@ export function WorkspaceActionsButton({
                             </button>
                         </AppTooltip>
 
-                        {/* Kill all Roblox */}
                         <AppTooltip
                             content={getKillTooltip()}
                             shortcut={killRobloxShortcutLabel}
@@ -454,7 +452,6 @@ export function WorkspaceActionsButton({
                         </AppTooltip>
                     </div>
 
-                    {/* Process list */}
                     {hasProcesses ? (
                         <div className="animate-fade-in">
                             <div
