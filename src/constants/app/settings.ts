@@ -66,6 +66,7 @@ export const DEFAULT_APP_EDITOR_SETTINGS = {
     isOutlinePanelVisible: true,
     outlinePanelWidth: WORKSPACE_OUTLINE_PANEL_DEFAULT_WIDTH,
     outlineExpandedGroups: { Functions: true, Locals: true, Globals: true },
+    outlineSearchQuery: "",
 } as const satisfies AppEditorSettings;
 
 export const DEFAULT_APP_UPDATER_SETTINGS = {

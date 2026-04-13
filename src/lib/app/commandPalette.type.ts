@@ -1,4 +1,4 @@
-import type { ChangeEvent, KeyboardEvent, MouseEvent, RefObject } from "react";
+import type { KeyboardEvent, MouseEvent, RefObject } from "react";
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
@@ -81,7 +81,7 @@ export type AppCommandPaletteHandlers = {
     commitSelection: (item: AppCommandPaletteItem) => void;
     handleBackdropMouseDown: (event: MouseEvent<HTMLDivElement>) => void;
     handleHoverItem: (index: number) => void;
-    handleInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    handleInputChange: (query: string) => void;
     handleInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
     handleScopeSelect: (
         nextScope: Exclude<AppCommandPaletteScope, "tabs">,

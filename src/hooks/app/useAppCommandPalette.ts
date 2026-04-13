@@ -1,5 +1,4 @@
 import {
-    type ChangeEvent,
     type KeyboardEvent,
     type MouseEvent,
     startTransition,
@@ -234,12 +233,9 @@ export function useAppCommandPalette({
         [onClose],
     );
 
-    const handleInputChange = useCallback(
-        (event: ChangeEvent<HTMLInputElement>): void => {
-            setQuery(event.target.value);
-        },
-        [],
-    );
+    const handleInputChange = useCallback((nextQuery: string): void => {
+        setQuery(nextQuery);
+    }, []);
 
     const handleInputKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>): void => {

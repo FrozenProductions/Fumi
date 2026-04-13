@@ -73,6 +73,7 @@ export type AppEditorSettings = {
     isOutlinePanelVisible: boolean;
     outlinePanelWidth: number;
     outlineExpandedGroups: Record<string, boolean>;
+    outlineSearchQuery: string;
 };
 
 export type AppUpdaterSettings = {

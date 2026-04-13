@@ -255,6 +255,14 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setOutlineSearchQuery: (query) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        outlineSearchQuery: query,
+                    },
+                }));
+            },
             setMiddleClickTabAction: (action) => {
                 set((state) => ({
                     workspaceSettings: {

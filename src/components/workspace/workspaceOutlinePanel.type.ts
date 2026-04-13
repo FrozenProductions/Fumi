@@ -7,4 +7,6 @@ export type WorkspaceOutlinePanelProps = {
     onToggleExpandedGroup: (title: string) => void;
     onExpandAllGroups: (titles: string[]) => void;
     onCollapseAllGroups: (titles: string[]) => void;
+    outlineSearchQuery: string;
+    onOutlineSearchQueryChange: (query: string) => void;
 };

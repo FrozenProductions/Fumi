@@ -75,6 +75,9 @@ export function WorkspaceScreen({
     const setOutlineExpandedGroups = useAppStore(
         (state) => state.setOutlineExpandedGroups,
     );
+    const setOutlineSearchQuery = useAppStore(
+        (state) => state.setOutlineSearchQuery,
+    );
     const persistWorkspaceState = useWorkspaceStore(
         (state) => state.persistWorkspaceState,
     );
@@ -665,6 +668,12 @@ export function WorkspaceScreen({
                                         ),
                                     );
                                 }}
+                                outlineSearchQuery={
+                                    editorSettings.outlineSearchQuery
+                                }
+                                onOutlineSearchQueryChange={
+                                    setOutlineSearchQuery
+                                }
                                 onActiveTabLuauChange={
                                     handleActiveTabLuauChange
                                 }

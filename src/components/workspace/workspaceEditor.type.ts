@@ -34,9 +34,11 @@ export type WorkspaceEditorProps = {
     luauSymbols: LuauFileSymbol[];
     outlinePanelWidth: number;
     outlineExpandedGroups: Record<string, boolean>;
+    outlineSearchQuery: string;
     onToggleExpandedGroup: (title: string) => void;
     onExpandAllGroups: (titles: string[]) => void;
     onCollapseAllGroups: (titles: string[]) => void;
+    onOutlineSearchQueryChange: (query: string) => void;
     onActiveTabLuauChange: (change: WorkspaceOutlineChange | null) => void;
     onFocusPane: (pane: WorkspacePaneId) => void;
     onSetOutlinePanelWidth: (width: number) => void;

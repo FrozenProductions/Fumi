@@ -62,6 +62,7 @@ export type AppStoreActions = {
     setEditorIntellisenseWidth: (width: AppIntellisenseWidth) => void;
     setOutlinePanelWidth: (width: number) => void;
     setOutlineExpandedGroups: (patch: Record<string, boolean>) => void;
+    setOutlineSearchQuery: (query: string) => void;
     setMiddleClickTabAction: (action: AppMiddleClickTabAction) => void;
     toggleOutlinePanel: () => void;
 };

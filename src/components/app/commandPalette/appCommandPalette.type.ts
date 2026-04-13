@@ -1,4 +1,4 @@
-import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
+import type { KeyboardEvent, RefObject } from "react";
 import type {
     AppCommandPaletteItem,
     AppCommandPaletteMode,
@@ -12,7 +12,7 @@ export type AppCommandPaletteInputRowProps = {
     scope: AppCommandPaletteScope;
     scopeLabels: Record<AppCommandPaletteScope, string>;
     scopePlaceholders: Record<AppCommandPaletteScope, string>;
-    onInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    onInputChange: (query: string) => void;
     onInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
     onScopeSelect: (scope: Exclude<AppCommandPaletteScope, "tabs">) => void;
 };

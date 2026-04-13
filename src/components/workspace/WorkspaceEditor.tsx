@@ -81,9 +81,11 @@ export function WorkspaceEditor({
     luauSymbols,
     outlinePanelWidth,
     outlineExpandedGroups,
+    outlineSearchQuery,
     onToggleExpandedGroup,
     onExpandAllGroups,
     onCollapseAllGroups,
+    onOutlineSearchQueryChange,
     onActiveTabLuauChange,
     onFocusPane,
     onSetOutlinePanelWidth,
@@ -502,6 +504,10 @@ export function WorkspaceEditor({
                             onToggleExpandedGroup={onToggleExpandedGroup}
                             onExpandAllGroups={onExpandAllGroups}
                             onCollapseAllGroups={onCollapseAllGroups}
+                            outlineSearchQuery={outlineSearchQuery}
+                            onOutlineSearchQueryChange={
+                                onOutlineSearchQueryChange
+                            }
                         />
                     </div>
                 </div>

@@ -11,14 +11,11 @@ import {
     WORKSPACE_OUTLINE_VIRTUAL_OVERSCAN,
 } from "../../constants/workspace/outline";
 import type { LuauFileSymbol } from "../../lib/luau/luau.type";
+import { searchWorkspaceOutlineGroups } from "../../lib/workspace/outlineSearch";
 import { AppIcon } from "../app/AppIcon";
+import { AppSearchField } from "../app/AppSearchField";
 import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceOutlinePanelProps } from "./workspaceOutlinePanel.type";
-
-type OutlineGroup = {
-    symbols: LuauFileSymbol[];
-    title: string;
-};
 
 type OutlineEntry =
     | {
@@ -139,46 +136,25 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     onToggleExpandedGroup,
     onExpandAllGroups,
     onCollapseAllGroups,
+    outlineSearchQuery,
+    onOutlineSearchQueryChange,
 }: WorkspaceOutlinePanelProps): ReactElement {
     const scrollRef = useRef<HTMLDivElement | null>(null);
-    const groups = useMemo<OutlineGroup[]>(() => {
-        const functions: LuauFileSymbol[] = [];
-        const locals: LuauFileSymbol[] = [];
-        const globals: LuauFileSymbol[] = [];
+    const searchRef = useRef<HTMLInputElement | null>(null);
 
-        for (const symbol of symbols) {
-            if (symbol.kind === "function" || symbol.kind === "namespace") {
-                functions.push(symbol);
-            } else if (symbol.isLexical) {
-                locals.push(symbol);
-            } else {
-                globals.push(symbol);
-            }
-        }
+    const filteredGroups = useMemo(() => {
+        return searchWorkspaceOutlineGroups(symbols, outlineSearchQuery);
+    }, [outlineSearchQuery, symbols]);
 
-        const result: OutlineGroup[] = [];
-
-        if (functions.length > 0) {
-            result.push({ title: "Functions", symbols: functions });
-        }
-
-        if (locals.length > 0) {
-            result.push({ title: "Locals", symbols: locals });
-        }
-
-        if (globals.length > 0) {
-            result.push({ title: "Globals", symbols: globals });
-        }
-
-        return result;
-    }, [symbols]);
-
-    const groupTitles = useMemo(() => groups.map((g) => g.title), [groups]);
+    const groupTitles = useMemo(
+        () => filteredGroups.map((g) => g.title),
+        [filteredGroups],
+    );
 
     const entries = useMemo<OutlineEntry[]>(() => {
         const result: OutlineEntry[] = [];
 
-        for (const group of groups) {
+        for (const group of filteredGroups) {
             result.push({
                 id: `group-${group.title}`,
                 count: group.symbols.length,
@@ -201,7 +177,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
         }
 
         return result;
-    }, [expandedGroups, groups]);
+    }, [expandedGroups, filteredGroups]);
 
     const virtualizerOptions = useMemo(
         () => ({
@@ -215,17 +191,27 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
             getScrollElement: () => scrollRef.current,
             overscan: WORKSPACE_OUTLINE_VIRTUAL_OVERSCAN,
         }),
-        [entries.length, entries],
+        [entries],
     );
     const rowVirtualizer = useVirtualizer(virtualizerOptions);
 
+    const isQueryActive = outlineSearchQuery.trim().length > 0;
+
     return (
         <aside className="flex h-full w-full min-w-0 flex-col bg-fumi-50 transition-colors duration-200">
-            <div className="flex items-center justify-between gap-3 border-b border-fumi-200 px-3 py-2">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-fumi-600">
-                    Outline panel
-                </h2>
-                <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 border-b border-fumi-200 px-3 py-2">
+                <AppSearchField
+                    inputRef={searchRef}
+                    className="flex-1"
+                    value={outlineSearchQuery}
+                    onChange={onOutlineSearchQueryChange}
+                    isClearable
+                    placeholder="Filter symbols"
+                    ariaLabel="Filter symbols in outline"
+                    inputClassName="h-7 w-full min-w-0 rounded-[0.45rem] border border-fumi-200 bg-fumi-100 px-2 text-[11px] font-medium text-fumi-800 placeholder:text-fumi-400 outline-none transition-[border-color,box-shadow] focus:border-fumi-600 focus:bg-fumi-50 focus:ring-1 focus:ring-fumi-600"
+                    clearButtonClassName="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-fumi-400 transition-colors hover:text-fumi-700 focus-visible:outline-none"
+                />
+                <div className="flex shrink-0 items-center gap-0.5">
                     <AppTooltip content="Expand all" side="top">
                         <button
                             type="button"
@@ -316,7 +302,9 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                 ) : (
                     <div className="flex h-full items-center justify-center px-4 text-center">
                         <p className="text-xs text-fumi-400">
-                            No symbols found in this file
+                            {isQueryActive
+                                ? `No symbols matching "${outlineSearchQuery.trim()}"`
+                                : "No symbols found in this file"}
                         </p>
                     </div>
                 )}
