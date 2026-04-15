@@ -38,7 +38,6 @@ import type {
     AppCommandPaletteItem,
     AppSidebarItem,
     AppSidebarPosition,
-    AppTheme,
 } from "../../lib/app/app.type";
 import {
     getCommandCommandPaletteItems,
@@ -161,7 +160,6 @@ function createCommandPaletteOptions(
         workspaceExecutor: createWorkspaceExecutor(),
         isSidebarOpen: false,
         activeSidebarItem: "workspace" satisfies AppSidebarItem,
-        theme: "light" satisfies AppTheme,
         sidebarPosition: "left" satisfies AppSidebarPosition,
         hotkeyLabels: {
             activateGoToLine: "Mod+Shift+\\",
@@ -185,6 +183,7 @@ function createCommandPaletteOptions(
             toggleSidebarPosition: "",
         },
         onActivateGoToLineMode: vi.fn(),
+        onActivateThemeMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
         onOpenScriptLibrary: vi.fn(),
         onOpenAccounts: vi.fn(),
@@ -192,7 +191,6 @@ function createCommandPaletteOptions(
         isOutlinePanelVisible: true,
         onToggleSidebar: vi.fn(),
         onToggleOutlinePanel: vi.fn(),
-        onSetTheme: vi.fn(),
         onSetSidebarPosition: vi.fn(),
         onZoomIn: vi.fn(),
         onZoomOut: vi.fn(),
@@ -716,11 +714,10 @@ describe("getCommandCommandPaletteItems", () => {
             createCommandPaletteOptions({
                 workspaceSession: createWorkspaceSession(),
                 activeSidebarItem: "workspace",
-                theme: "light",
             }),
         );
 
-        expect(noWorkspaceItems).toHaveLength(15);
+        expect(noWorkspaceItems).toHaveLength(14);
         expect(noWorkspaceItems.map((item) => item.id)).toEqual(
             expect.arrayContaining([
                 "command-open-workspace-screen",
@@ -735,9 +732,7 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-zoom-in",
                 "command-zoom-out",
                 "command-zoom-reset",
-                "command-theme-system",
-                "command-theme-light",
-                "command-theme-dark",
+                "command-change-theme",
             ]),
         );
 
@@ -750,10 +745,9 @@ describe("getCommandCommandPaletteItems", () => {
             meta: "Current",
         });
         expect(
-            noWorkspaceItems.find((item) => item.id === "command-theme-light"),
+            noWorkspaceItems.find((item) => item.id === "command-change-theme"),
         ).toMatchObject({
-            isDisabled: true,
-            meta: "Current",
+            closeOnSelect: false,
         });
         expect(
             noWorkspaceItems.some((item) => item.id === "command-execute-tab"),
@@ -766,10 +760,10 @@ describe("getCommandCommandPaletteItems", () => {
         const deleteWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const openWorkspaceTabInPane = vi.fn();
         const onActivateGoToLineMode = vi.fn();
+        const onActivateThemeMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
         const onOpenAccounts = vi.fn();
         const onOpenSettings = vi.fn();
-        const onSetTheme = vi.fn();
         const onRequestRenameCurrentTab = vi.fn();
 
         const workspaceSession = createWorkspaceSession({
@@ -817,12 +811,11 @@ describe("getCommandCommandPaletteItems", () => {
                 }),
                 isSidebarOpen: true,
                 activeSidebarItem: "script-library",
-                theme: "dark",
                 onActivateGoToLineMode,
+                onActivateThemeMode,
                 onOpenWorkspaceScreen,
                 onOpenAccounts,
                 onOpenSettings,
-                onSetTheme,
                 onRequestRenameCurrentTab,
             }),
         );
@@ -831,9 +824,7 @@ describe("getCommandCommandPaletteItems", () => {
             expect.arrayContaining([
                 "command-open-accounts",
                 "command-settings",
-                "command-theme-system",
-                "command-theme-light",
-                "command-theme-dark",
+                "command-change-theme",
                 "command-create-file",
                 "command-execute-tab",
                 "command-goto-line",
@@ -854,8 +845,7 @@ describe("getCommandCommandPaletteItems", () => {
 
         getCommand("command-open-accounts").onSelect();
         getCommand("command-settings").onSelect();
-        getCommand("command-theme-system").onSelect();
-        getCommand("command-theme-light").onSelect();
+        getCommand("command-change-theme").onSelect();
         getCommand("command-execute-tab").onSelect();
         getCommand("command-goto-line").onSelect();
         getCommand("command-rename-tab").onSelect();
@@ -866,8 +856,7 @@ describe("getCommandCommandPaletteItems", () => {
 
         expect(onOpenAccounts).toHaveBeenCalledOnce();
         expect(onOpenSettings).toHaveBeenCalledOnce();
-        expect(onSetTheme).toHaveBeenNthCalledWith(1, "system");
-        expect(onSetTheme).toHaveBeenNthCalledWith(2, "light");
+        expect(onActivateThemeMode).toHaveBeenCalledOnce();
         expect(executeActiveTab).toHaveBeenCalledOnce();
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
@@ -891,9 +880,8 @@ describe("getCommandCommandPaletteItems", () => {
             isDisabled: true,
             meta: "Current",
         });
-        expect(getCommand("command-theme-dark")).toMatchObject({
-            isDisabled: true,
-            meta: "Current",
+        expect(getCommand("command-change-theme")).toMatchObject({
+            closeOnSelect: false,
         });
     });
 

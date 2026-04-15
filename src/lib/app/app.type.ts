@@ -4,7 +4,7 @@ import type { RegisterableHotkey } from "@tanstack/hotkeys";
 export type AppIconGlyph = IconSvgElement;
 
 export type AppCommandPaletteScope = "tabs" | "commands" | "workspaces";
-export type AppCommandPaletteMode = "goto-line";
+export type AppCommandPaletteMode = "goto-line" | "theme";
 export type AppCommandPaletteViewMode = "default" | AppCommandPaletteMode;
 
 export type AppCommandPaletteItem = {

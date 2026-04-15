@@ -4,6 +4,7 @@ import {
     getCommandCommandPaletteItems,
     getGoToLineCommandPaletteItems,
     getTabCommandPaletteItems,
+    getThemeCommandPaletteItems,
     getWorkspaceCommandPaletteItems,
 } from "./commandPalette";
 import type {
@@ -118,6 +119,7 @@ export function getAppCommandPaletteResults({
     scope,
     normalizedQuery,
     onActivateGoToLineMode,
+    onActivateThemeMode,
 }: GetAppCommandPaletteResultsOptions) {
     const tabItems = getTabCommandPaletteItems(workspaceSession);
     const commandItems = getCommandCommandPaletteItems({
@@ -125,17 +127,16 @@ export function getAppCommandPaletteResults({
         workspaceExecutor,
         isSidebarOpen,
         activeSidebarItem,
-        theme,
         sidebarPosition,
         hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
         onActivateGoToLineMode,
+        onActivateThemeMode,
         onOpenWorkspaceScreen,
         onOpenScriptLibrary,
         onOpenAccounts,
         onOpenSettings,
         onToggleSidebar,
         onToggleOutlinePanel,
-        onSetTheme,
         onSetSidebarPosition,
         onZoomIn,
         onZoomOut,
@@ -149,9 +150,17 @@ export function getAppCommandPaletteResults({
         goToLineNumber,
         onGoToLine,
     });
+    const themeItems = getThemeCommandPaletteItems({
+        currentTheme: theme,
+        onSetTheme,
+    });
 
     if (mode === "goto-line") {
         return goToLineItems;
+    }
+
+    if (mode === "theme") {
+        return themeItems;
     }
 
     const scopedItems =

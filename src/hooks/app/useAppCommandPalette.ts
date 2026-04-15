@@ -114,6 +114,18 @@ export function useAppCommandPalette({
 
         scheduleInputFocus({ shouldSelect: true });
     }, [currentLineNumber, scheduleInputFocus]);
+
+    const activateThemeMode = useCallback((): void => {
+        startTransition(() => {
+            setMode("theme");
+            setScope("commands");
+            setQuery("");
+            setActiveResultIndex(0);
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
     const results = getAppCommandPaletteResults({
         workspaceSession,
         workspaceExecutor,
@@ -142,6 +154,7 @@ export function useAppCommandPalette({
         scope,
         normalizedQuery,
         onActivateGoToLineMode: activateGoToLineMode,
+        onActivateThemeMode: activateThemeMode,
     });
 
     useEffect(() => {
@@ -281,7 +294,7 @@ export function useAppCommandPalette({
                     return;
                 }
 
-                if (mode === "goto-line") {
+                if (mode === "goto-line" || mode === "theme") {
                     setMode("default");
                     setScope("commands");
                     setActiveResultIndex(0);

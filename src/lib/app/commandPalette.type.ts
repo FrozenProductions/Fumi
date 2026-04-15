@@ -18,10 +18,10 @@ export type GetCommandPaletteCommandItemsOptions = {
     workspaceExecutor: UseWorkspaceExecutorResult;
     isSidebarOpen: boolean;
     activeSidebarItem: AppSidebarItem;
-    theme: AppTheme;
     sidebarPosition: AppSidebarPosition;
     hotkeyLabels: AppCommandPaletteHotkeyLabels;
     onActivateGoToLineMode: () => void;
+    onActivateThemeMode: () => void;
     onOpenWorkspaceScreen: () => void;
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
@@ -29,7 +29,6 @@ export type GetCommandPaletteCommandItemsOptions = {
     isOutlinePanelVisible: boolean;
     onToggleSidebar: () => void;
     onToggleOutlinePanel: () => void;
-    onSetTheme: (theme: AppTheme) => void;
     onSetSidebarPosition: (position: AppSidebarPosition) => void;
     onZoomIn: () => void;
     onZoomOut: () => void;
@@ -152,12 +151,18 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     scope: AppCommandPaletteScope;
     normalizedQuery: string;
     onActivateGoToLineMode: () => void;
+    onActivateThemeMode: () => void;
 };
 
 export type GetGoToLineCommandPaletteItemsOptions = {
     activeTab: WorkspaceTab | null;
     goToLineNumber: number | null;
     onGoToLine: (lineNumber: number) => void;
+};
+
+export type GetThemeCommandPaletteItemsOptions = {
+    currentTheme: AppTheme;
+    onSetTheme: (theme: AppTheme) => void;
 };
 
 export type WorkspaceCommandPaletteItem = AppCommandPaletteItem;
