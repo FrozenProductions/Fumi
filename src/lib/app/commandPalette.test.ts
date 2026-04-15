@@ -37,6 +37,7 @@ import type {
 import type {
     AppCommandPaletteItem,
     AppSidebarItem,
+    AppSidebarPosition,
     AppTheme,
 } from "../../lib/app/app.type";
 import {
@@ -161,6 +162,7 @@ function createCommandPaletteOptions(
         isSidebarOpen: false,
         activeSidebarItem: "workspace" satisfies AppSidebarItem,
         theme: "light" satisfies AppTheme,
+        sidebarPosition: "left" satisfies AppSidebarPosition,
         hotkeyLabels: {
             activateGoToLine: "Mod+Shift+\\",
             archiveWorkspaceTab: "Mod+W",
@@ -180,6 +182,7 @@ function createCommandPaletteOptions(
             toggleOutlinePanel: "Mod+Shift+O",
             toggleSidebar: "Mod+B",
             toggleWorkspaceSplitView: "Mod+\\",
+            toggleSidebarPosition: "",
         },
         onActivateGoToLineMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
@@ -190,6 +193,7 @@ function createCommandPaletteOptions(
         onToggleSidebar: vi.fn(),
         onToggleOutlinePanel: vi.fn(),
         onSetTheme: vi.fn(),
+        onSetSidebarPosition: vi.fn(),
         onZoomIn: vi.fn(),
         onZoomOut: vi.fn(),
         onZoomReset: vi.fn(),
@@ -1044,6 +1048,7 @@ describe("getCommandCommandPaletteItems", () => {
                     toggleOutlinePanel: "Mod+Shift+O",
                     toggleSidebar: "Mod+J",
                     toggleWorkspaceSplitView: "Mod+\\",
+                    toggleSidebarPosition: "",
                 },
             }),
         );

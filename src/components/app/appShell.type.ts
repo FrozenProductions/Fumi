@@ -2,7 +2,11 @@ import type {
     WorkspaceExecutorActions,
     WorkspaceExecutorState,
 } from "../../hooks/workspace/useWorkspaceExecutor.type";
-import type { AppIconGlyph, AppSidebarItem } from "../../lib/app/app.type";
+import type {
+    AppIconGlyph,
+    AppSidebarItem,
+    AppSidebarPosition,
+} from "../../lib/app/app.type";
 import type { AppCommandPaletteControllerOptions } from "../../lib/app/commandPalette.type";
 
 export type AppCommandPaletteProps = AppCommandPaletteControllerOptions;
@@ -18,6 +22,7 @@ export type AppCommandPaletteScopeButtonProps = {
 
 export type AppSidebarProps = {
     isOpen: boolean;
+    position: AppSidebarPosition;
     activeItem: AppSidebarItem;
     showsSettingsUpdateIndicator: boolean;
     onSelectItem: (item: AppSidebarItem) => void;

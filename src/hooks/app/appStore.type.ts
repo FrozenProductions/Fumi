@@ -10,6 +10,7 @@ import type {
     AppMiddleClickTabAction,
     AppRenameCurrentTabRequest,
     AppSidebarItem,
+    AppSidebarPosition,
     AppTheme,
     AppUpdaterSettings,
     AppWorkspaceSettings,
@@ -31,6 +32,7 @@ export type AppStoreState = {
     editorSettings: AppEditorSettings;
     updaterSettings: AppUpdaterSettings;
     workspaceSettings: AppWorkspaceSettings;
+    sidebarPosition: AppSidebarPosition;
 };
 
 export type AppStoreActions = {
@@ -64,6 +66,7 @@ export type AppStoreActions = {
     setOutlineExpandedGroups: (patch: Record<string, boolean>) => void;
     setOutlineSearchQuery: (query: string) => void;
     setMiddleClickTabAction: (action: AppMiddleClickTabAction) => void;
+    setSidebarPosition: (position: AppSidebarPosition) => void;
     toggleOutlinePanel: () => void;
 };
 

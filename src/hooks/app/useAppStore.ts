@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import {
     APP_ZOOM_DEFAULT,
     DEFAULT_APP_EDITOR_SETTINGS,
+    DEFAULT_APP_SIDEBAR_POSITION,
     DEFAULT_APP_THEME,
     DEFAULT_APP_UPDATER_SETTINGS,
     DEFAULT_APP_WORKSPACE_SETTINGS,
@@ -14,6 +15,7 @@ import {
 import {
     clampAppZoomPercent,
     isAppSidebarItem,
+    isAppSidebarPosition,
     isAppTheme,
     normalizeAppIntellisenseWidth,
     normalizeAppMiddleClickTabAction,
@@ -39,6 +41,7 @@ export const useAppStore = create<AppStore>()(
             editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
             updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
             workspaceSettings: DEFAULT_APP_WORKSPACE_SETTINGS,
+            sidebarPosition: DEFAULT_APP_SIDEBAR_POSITION,
             openSidebar: () => {
                 set({ isSidebarOpen: true });
             },
@@ -271,6 +274,9 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setSidebarPosition: (position) => {
+                set({ sidebarPosition: position });
+            },
             toggleOutlinePanel: () => {
                 set((state) => ({
                     editorSettings: {
@@ -312,6 +318,11 @@ export const useAppStore = create<AppStore>()(
                 const middleClickTabAction = normalizeAppMiddleClickTabAction(
                     persistedAppState.workspaceSettings?.middleClickTabAction,
                 );
+                const sidebarPosition = isAppSidebarPosition(
+                    persistedAppState.sidebarPosition,
+                )
+                    ? persistedAppState.sidebarPosition
+                    : currentState.sidebarPosition;
 
                 return {
                     ...currentState,
@@ -320,6 +331,7 @@ export const useAppStore = create<AppStore>()(
                     zoomPercent,
                     theme,
                     hotkeyBindings,
+                    sidebarPosition,
                     updaterSettings: {
                         ...currentState.updaterSettings,
                         ...persistedAppState.updaterSettings,
@@ -346,6 +358,7 @@ export const useAppStore = create<AppStore>()(
                 updaterSettings: state.updaterSettings,
                 editorSettings: state.editorSettings,
                 workspaceSettings: state.workspaceSettings,
+                sidebarPosition: state.sidebarPosition,
             }),
         },
     ),

@@ -9,6 +9,7 @@ import {
     APP_VERSION,
 } from "../../../constants/app/app";
 import {
+    APP_SIDEBAR_POSITION_OPTIONS,
     APP_THEME_OPTIONS,
     APP_ZOOM_MAX,
     APP_ZOOM_MIN,
@@ -36,6 +37,8 @@ export function AppSettingsGeneralSection({
     const { zoomPercent, setZoomPercent } = useAppZoom();
     const theme = useAppStore((state) => state.theme);
     const setTheme = useAppStore((state) => state.setTheme);
+    const sidebarPosition = useAppStore((state) => state.sidebarPosition);
+    const setSidebarPosition = useAppStore((state) => state.setSidebarPosition);
     const isAutoUpdateEnabled = useAppStore(
         (state) => state.updaterSettings.isAutoUpdateEnabled,
     );
@@ -262,6 +265,22 @@ export function AppSettingsGeneralSection({
                     value={theme}
                     options={APP_THEME_OPTIONS}
                     onChange={setTheme}
+                    className="shrink-0"
+                />
+            </div>
+            <div className="flex items-center justify-between gap-6 py-4">
+                <div className="min-w-0">
+                    <p className="text-xs font-semibold text-fumi-900">
+                        Sidebar position
+                    </p>
+                    <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
+                        Change the position of the sidebar and outline panel.
+                    </p>
+                </div>
+                <AppSelect
+                    value={sidebarPosition}
+                    options={APP_SIDEBAR_POSITION_OPTIONS}
+                    onChange={setSidebarPosition}
                     className="shrink-0"
                 />
             </div>

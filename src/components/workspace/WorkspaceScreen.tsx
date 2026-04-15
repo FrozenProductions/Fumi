@@ -78,6 +78,7 @@ export function WorkspaceScreen({
     const setOutlineSearchQuery = useAppStore(
         (state) => state.setOutlineSearchQuery,
     );
+    const sidebarPosition = useAppStore((state) => state.sidebarPosition);
     const persistWorkspaceState = useWorkspaceStore(
         (state) => state.persistWorkspaceState,
     );
@@ -640,6 +641,7 @@ export function WorkspaceScreen({
                                 isOutlinePanelVisible={
                                     editorSettings.isOutlinePanelVisible
                                 }
+                                sidebarPosition={sidebarPosition}
                                 luauSymbols={luauSymbols}
                                 outlinePanelWidth={
                                     editorSettings.outlinePanelWidth

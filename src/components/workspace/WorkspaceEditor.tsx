@@ -78,6 +78,7 @@ export function WorkspaceEditor({
     createHandleScroll,
     handleCompletionHover,
     isOutlinePanelVisible,
+    sidebarPosition,
     luauSymbols,
     outlinePanelWidth,
     outlineExpandedGroups,
@@ -296,8 +297,13 @@ export function WorkspaceEditor({
                     Math.max(WORKSPACE_OUTLINE_PANEL_MIN_WIDTH, width),
                 );
 
-            const getWidth = (clientX: number): number =>
-                clampOutlineWidth(initialOutlineWidth + (startX - clientX));
+            const getWidth = (clientX: number): number => {
+                const delta =
+                    sidebarPosition === "right"
+                        ? startX - clientX
+                        : clientX - startX;
+                return clampOutlineWidth(initialOutlineWidth + delta);
+            };
 
             const restoreBodyStyles = (): void => {
                 document.body.style.cursor = "";
@@ -337,7 +343,7 @@ export function WorkspaceEditor({
             window.addEventListener("pointerup", handlePointerUp);
             window.addEventListener("pointercancel", handlePointerCancel);
         },
-        [onSetOutlinePanelWidth, outlinePanelWidth],
+        [onSetOutlinePanelWidth, outlinePanelWidth, sidebarPosition],
     );
 
     return (
@@ -468,12 +474,24 @@ export function WorkspaceEditor({
                 </div>
 
                 <div
-                    className="pointer-events-none absolute bottom-5 z-40 transition-[right] duration-200"
-                    style={{
-                        right: isOutlinePanelVisible
-                            ? `${resolvedOutlinePanelWidth + 20}px`
-                            : "20px",
-                    }}
+                    className={`pointer-events-none absolute bottom-5 z-40 ${
+                        sidebarPosition === "right"
+                            ? "left-5 transition-[left] duration-200"
+                            : "right-5 transition-[right] duration-200"
+                    }`}
+                    style={
+                        sidebarPosition === "right"
+                            ? {
+                                  left: isOutlinePanelVisible
+                                      ? `${resolvedOutlinePanelWidth + 20}px`
+                                      : "20px",
+                              }
+                            : {
+                                  right: isOutlinePanelVisible
+                                      ? `${resolvedOutlinePanelWidth + 20}px`
+                                      : "20px",
+                              }
+                    }
                 >
                     <WorkspaceActionsButton {...workspaceActionsButton} />
                 </div>
@@ -481,17 +499,27 @@ export function WorkspaceEditor({
 
             {isOutlinePanelSupported ? (
                 <div
-                    className={`absolute top-0 bottom-0 right-0 z-30 flex min-w-0 overflow-hidden border-l border-fumi-200 bg-fumi-50 transition-[opacity,transform] duration-300 ease-in-out ${
+                    className={`absolute top-0 bottom-0 z-30 flex min-w-0 overflow-hidden border-fumi-200 bg-fumi-50 transition-[opacity,transform] duration-300 ease-in-out ${
+                        sidebarPosition === "right"
+                            ? "left-0 border-r"
+                            : "right-0 border-l"
+                    } ${
                         isOutlinePanelVisible
                             ? "pointer-events-auto translate-x-0 opacity-100"
-                            : "pointer-events-none translate-x-full opacity-0"
+                            : sidebarPosition === "right"
+                              ? "pointer-events-none -translate-x-full opacity-0"
+                              : "pointer-events-none translate-x-full opacity-0"
                     }`}
                     style={{ width: `${resolvedOutlinePanelWidth}px` }}
                 >
                     <button
                         type="button"
                         aria-label="Resize outline panel"
-                        className="absolute inset-y-0 left-0 z-30 w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent focus-visible:outline-none"
+                        className={`absolute inset-y-0 z-30 w-3 cursor-col-resize touch-none bg-transparent focus-visible:outline-none ${
+                            sidebarPosition === "right"
+                                ? "right-0 translate-x-1/2"
+                                : "left-0 -translate-x-1/2"
+                        }`}
                         onPointerDown={handleOutlineResizePointerDown}
                     >
                         <span className="absolute inset-y-0 left-1/2 w-[1px] -translate-x-1/2 bg-fumi-200" />

@@ -48,6 +48,8 @@ export function App(): ReactElement {
     const isOutlinePanelVisible = useAppStore(
         (state) => state.editorSettings.isOutlinePanelVisible,
     );
+    const sidebarPosition = useAppStore((state) => state.sidebarPosition);
+    const setSidebarPosition = useAppStore((state) => state.setSidebarPosition);
     const toggleSidebar = useAppStore((state) => state.toggleSidebar);
     const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
@@ -113,14 +115,17 @@ export function App(): ReactElement {
                     }
                 />
                 <div className="flex min-h-0 flex-1 bg-fumi-50">
-                    <AppSidebar
-                        isOpen={isSidebarOpen}
-                        activeItem={activeSidebarItem}
-                        showsSettingsUpdateIndicator={
-                            showsSettingsUpdateIndicator
-                        }
-                        onSelectItem={selectSidebarItem}
-                    />
+                    {sidebarPosition === "left" ? (
+                        <AppSidebar
+                            isOpen={isSidebarOpen}
+                            position={sidebarPosition}
+                            activeItem={activeSidebarItem}
+                            showsSettingsUpdateIndicator={
+                                showsSettingsUpdateIndicator
+                            }
+                            onSelectItem={selectSidebarItem}
+                        />
+                    ) : null}
                     <main className="min-w-0 flex-1 bg-fumi-50">
                         <div
                             key={activeSidebarItem}
@@ -134,6 +139,17 @@ export function App(): ReactElement {
                             )}
                         </div>
                     </main>
+                    {sidebarPosition === "right" ? (
+                        <AppSidebar
+                            isOpen={isSidebarOpen}
+                            position={sidebarPosition}
+                            activeItem={activeSidebarItem}
+                            showsSettingsUpdateIndicator={
+                                showsSettingsUpdateIndicator
+                            }
+                            onSelectItem={selectSidebarItem}
+                        />
+                    ) : null}
                 </div>
                 <AppCommandPalette
                     isOpen={isCommandPaletteOpen}
@@ -144,6 +160,7 @@ export function App(): ReactElement {
                     isSidebarOpen={isSidebarOpen}
                     activeSidebarItem={activeSidebarItem}
                     theme={theme}
+                    sidebarPosition={sidebarPosition}
                     onClose={closeCommandPalette}
                     onGoToLine={requestGoToLine}
                     onOpenWorkspaceScreen={handleOpenWorkspaceScreen}
@@ -154,6 +171,7 @@ export function App(): ReactElement {
                     onOpenSettings={handleOpenSettings}
                     isOutlinePanelVisible={isOutlinePanelVisible}
                     onSetTheme={setTheme}
+                    onSetSidebarPosition={setSidebarPosition}
                     onZoomIn={handleZoomIn}
                     onZoomOut={handleZoomOut}
                     onZoomReset={handleZoomReset}

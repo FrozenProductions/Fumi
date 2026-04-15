@@ -11,6 +11,7 @@ import type { AppSidebarProps } from "./appShell.type";
 
 export function AppSidebar({
     isOpen,
+    position,
     activeItem,
     showsSettingsUpdateIndicator,
     onSelectItem,
@@ -35,12 +36,16 @@ export function AppSidebar({
         settings: getAppHotkeyShortcutLabel("OPEN_SETTINGS", hotkeyBindings),
     } as const;
 
+    const borderClass =
+        position === "left"
+            ? "border-r border-fumi-200"
+            : "border-l border-fumi-200";
+    const tooltipSide = position === "left" ? "right" : "left";
+
     return (
         <aside
             className={`app-select-none relative z-40 shrink-0 overflow-hidden bg-fumi-100 transition-[width,border-color] duration-300 ease-in-out ${
-                isOpen
-                    ? "w-14 border-r border-fumi-200"
-                    : "w-0 border-r border-transparent"
+                isOpen ? `w-14 ${borderClass}` : "w-0 border-transparent"
             }`}
         >
             <div className="flex h-full w-14 flex-col items-center justify-between py-3">
@@ -62,9 +67,11 @@ export function AppSidebar({
                         }}
                     />
                     <div
-                        className={`absolute left-0 top-0 h-5 w-1 rounded-r-full bg-fumi-600 transition-[transform,opacity] duration-300 ease-in-out ${
-                            isNavigationItemActive ? "opacity-100" : "opacity-0"
-                        }`}
+                        className={`absolute top-0 h-5 w-1 bg-fumi-600 transition-[transform,opacity] duration-300 ease-in-out ${
+                            position === "left"
+                                ? "left-0 rounded-r-full"
+                                : "right-0 rounded-l-full"
+                        } ${isNavigationItemActive ? "opacity-100" : "opacity-0"}`}
                         style={{
                             transform: `translateY(${activeIndicatorOffset + 10}px)`,
                         }}
@@ -76,7 +83,7 @@ export function AppSidebar({
                             <AppTooltip
                                 key={id}
                                 content={label}
-                                side="right"
+                                side={tooltipSide}
                                 shortcut={shortcutLabels[id]}
                             >
                                 <button
@@ -111,7 +118,7 @@ export function AppSidebar({
                 >
                     <AppTooltip
                         content={APP_SETTINGS_SIDEBAR_ITEM.label}
-                        side="right"
+                        side={tooltipSide}
                         shortcut={shortcutLabels.settings}
                     >
                         <button

@@ -90,6 +90,8 @@ export type AppSidebarItem =
     | "accounts"
     | "settings";
 
+export type AppSidebarPosition = "left" | "right";
+
 export type AppSidebarNavigationItem = {
     id: AppSidebarItem;
     label: string;

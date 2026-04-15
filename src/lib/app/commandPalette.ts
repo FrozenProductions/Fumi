@@ -83,6 +83,7 @@ export function getCommandCommandPaletteItems({
     isSidebarOpen,
     activeSidebarItem,
     theme,
+    sidebarPosition,
     hotkeyLabels,
     onActivateGoToLineMode,
     onOpenWorkspaceScreen,
@@ -92,6 +93,7 @@ export function getCommandCommandPaletteItems({
     onToggleSidebar,
     onToggleOutlinePanel,
     onSetTheme,
+    onSetSidebarPosition,
     onZoomIn,
     onZoomOut,
     onZoomReset,
@@ -296,6 +298,22 @@ export function getCommandCommandPaletteItems({
             isDisabled: theme === "dark",
             onSelect: () => {
                 onSetTheme("dark");
+            },
+        },
+        {
+            id: "command-sidebar-position",
+            label:
+                sidebarPosition === "left"
+                    ? "Set sidebar position: Right"
+                    : "Set sidebar position: Left",
+            description: "Toggle the sidebar and outline panel position.",
+            icon: CommandIcon,
+            meta: hotkeyLabels.toggleSidebarPosition,
+            keywords: "sidebar position move toggle left right outline panel",
+            onSelect: () => {
+                onSetSidebarPosition(
+                    sidebarPosition === "left" ? "right" : "left",
+                );
             },
         },
     ];

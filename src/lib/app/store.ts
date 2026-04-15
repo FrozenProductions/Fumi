@@ -4,6 +4,7 @@ import {
     APP_ZOOM_MIN,
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
+    DEFAULT_APP_SIDEBAR_POSITION,
 } from "../../constants/app/settings";
 import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
 import {
@@ -14,12 +15,14 @@ import type {
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
     AppSidebarItem,
+    AppSidebarPosition,
     AppTheme,
 } from "./app.type";
 
 const APP_THEMES = ["system", "light", "dark"] as const;
 const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
 const APP_MIDDLE_CLICK_TAB_ACTIONS = ["archive", "delete"] as const;
+const APP_SIDEBAR_POSITIONS = ["left", "right"] as const;
 
 export function clampAppZoomPercent(zoomPercent: number): number {
     if (!Number.isFinite(zoomPercent)) {
@@ -38,6 +41,21 @@ export function isAppSidebarItem(value: unknown): value is AppSidebarItem {
 
 export function isAppTheme(value: unknown): value is AppTheme {
     return typeof value === "string" && APP_THEMES.includes(value as AppTheme);
+}
+
+export function isAppSidebarPosition(
+    value: unknown,
+): value is AppSidebarPosition {
+    return (
+        typeof value === "string" &&
+        APP_SIDEBAR_POSITIONS.includes(value as AppSidebarPosition)
+    );
+}
+
+export function normalizeAppSidebarPosition(
+    value: unknown,
+): AppSidebarPosition {
+    return isAppSidebarPosition(value) ? value : DEFAULT_APP_SIDEBAR_POSITION;
 }
 
 export function normalizeAppIntellisenseWidth(

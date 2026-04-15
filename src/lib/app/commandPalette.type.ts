@@ -8,6 +8,7 @@ import type {
     AppCommandPaletteViewMode,
     AppHotkeyBindings,
     AppSidebarItem,
+    AppSidebarPosition,
     AppTheme,
 } from "../../lib/app/app.type";
 import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
@@ -18,6 +19,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     isSidebarOpen: boolean;
     activeSidebarItem: AppSidebarItem;
     theme: AppTheme;
+    sidebarPosition: AppSidebarPosition;
     hotkeyLabels: AppCommandPaletteHotkeyLabels;
     onActivateGoToLineMode: () => void;
     onOpenWorkspaceScreen: () => void;
@@ -28,6 +30,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     onToggleSidebar: () => void;
     onToggleOutlinePanel: () => void;
     onSetTheme: (theme: AppTheme) => void;
+    onSetSidebarPosition: (position: AppSidebarPosition) => void;
     onZoomIn: () => void;
     onZoomOut: () => void;
     onZoomReset: () => void;
@@ -43,6 +46,7 @@ export type AppCommandPaletteControllerOptions = {
     isSidebarOpen: boolean;
     activeSidebarItem: AppSidebarItem;
     theme: AppTheme;
+    sidebarPosition: AppSidebarPosition;
     onClose: () => void;
     onGoToLine: (lineNumber: number) => void;
     onOpenWorkspaceScreen: () => void;
@@ -53,6 +57,7 @@ export type AppCommandPaletteControllerOptions = {
     onOpenSettings: () => void;
     isOutlinePanelVisible: boolean;
     onSetTheme: (theme: AppTheme) => void;
+    onSetSidebarPosition: (position: AppSidebarPosition) => void;
     onZoomIn: () => void;
     onZoomOut: () => void;
     onZoomReset: () => void;
@@ -114,6 +119,7 @@ export type AppCommandPaletteHotkeyLabels = {
     toggleSidebar: string;
     toggleOutlinePanel: string;
     toggleWorkspaceSplitView: string;
+    toggleSidebarPosition: string;
 };
 
 export type GetAppCommandPaletteResultsOptions = Pick<
@@ -123,6 +129,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "isSidebarOpen"
     | "activeSidebarItem"
     | "theme"
+    | "sidebarPosition"
     | "onGoToLine"
     | "onOpenWorkspaceScreen"
     | "onOpenScriptLibrary"
@@ -132,6 +139,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "onOpenSettings"
     | "isOutlinePanelVisible"
     | "onSetTheme"
+    | "onSetSidebarPosition"
     | "onZoomIn"
     | "onZoomOut"
     | "onZoomReset"

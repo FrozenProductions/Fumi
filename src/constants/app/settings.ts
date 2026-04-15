@@ -2,6 +2,7 @@ import type {
     AppEditorSettings,
     AppMiddleClickTabAction,
     AppSettingsSection,
+    AppSidebarPosition,
     AppTheme,
     AppUpdaterSettings,
     AppWorkspaceSettings,
@@ -18,6 +19,7 @@ import type {
     AppIntellisenseWidthOption,
     AppMiddleClickTabActionOption,
     AppSettingsSectionOption,
+    AppSidebarPositionOption,
     AppThemeOption,
 } from "./settings.type";
 
@@ -54,9 +56,15 @@ export const APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS = [
     { value: "delete", label: "Delete" },
 ] as const satisfies AppMiddleClickTabActionOption[];
 
+export const APP_SIDEBAR_POSITION_OPTIONS = [
+    { value: "left", label: "Left" },
+    { value: "right", label: "Right" },
+] as const satisfies AppSidebarPositionOption[];
+
 export const DEFAULT_APP_THEME = "system" satisfies AppTheme;
 export const DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION =
     "archive" satisfies AppMiddleClickTabAction;
+export const DEFAULT_APP_SIDEBAR_POSITION = "left" satisfies AppSidebarPosition;
 
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,

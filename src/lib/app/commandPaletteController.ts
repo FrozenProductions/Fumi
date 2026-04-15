@@ -74,18 +74,19 @@ export function getAppCommandPaletteHotkeyLabels(
             "RESET_WORKSPACE_SPLIT_VIEW",
             hotkeyBindings,
         ),
-        toggleOutlinePanel: getAppHotkeyShortcutLabel(
-            "TOGGLE_OUTLINE_PANEL",
-            hotkeyBindings,
-        ),
         toggleSidebar: getAppHotkeyShortcutLabel(
             "TOGGLE_SIDEBAR",
+            hotkeyBindings,
+        ),
+        toggleOutlinePanel: getAppHotkeyShortcutLabel(
+            "TOGGLE_OUTLINE_PANEL",
             hotkeyBindings,
         ),
         toggleWorkspaceSplitView: getAppHotkeyShortcutLabel(
             "TOGGLE_WORKSPACE_SPLIT_VIEW",
             hotkeyBindings,
         ),
+        toggleSidebarPosition: "",
     };
 }
 
@@ -95,6 +96,7 @@ export function getAppCommandPaletteResults({
     isSidebarOpen,
     activeSidebarItem,
     theme,
+    sidebarPosition,
     onGoToLine,
     onOpenWorkspaceScreen,
     onOpenScriptLibrary,
@@ -104,6 +106,7 @@ export function getAppCommandPaletteResults({
     onOpenSettings,
     isOutlinePanelVisible,
     onSetTheme,
+    onSetSidebarPosition,
     onZoomIn,
     onZoomOut,
     onZoomReset,
@@ -123,6 +126,7 @@ export function getAppCommandPaletteResults({
         isSidebarOpen,
         activeSidebarItem,
         theme,
+        sidebarPosition,
         hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
         onActivateGoToLineMode,
         onOpenWorkspaceScreen,
@@ -132,6 +136,7 @@ export function getAppCommandPaletteResults({
         onToggleSidebar,
         onToggleOutlinePanel,
         onSetTheme,
+        onSetSidebarPosition,
         onZoomIn,
         onZoomOut,
         onZoomReset,

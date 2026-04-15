@@ -3,6 +3,7 @@ import type {
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
     AppSettingsSection,
+    AppSidebarPosition,
     AppTheme,
 } from "../../lib/app/app.type";
 
@@ -28,5 +29,10 @@ export type AppIntellisenseWidthOption = {
 
 export type AppMiddleClickTabActionOption = {
     value: AppMiddleClickTabAction;
+    label: string;
+};
+
+export type AppSidebarPositionOption = {
+    value: AppSidebarPosition;
     label: string;
 };

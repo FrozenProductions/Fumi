@@ -1,5 +1,5 @@
 import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/codeCompletion/workspaceCodeCompletion.type";
-import type { AppTheme } from "../../lib/app/app.type";
+import type { AppSidebarPosition, AppTheme } from "../../lib/app/app.type";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
@@ -30,6 +30,7 @@ export type WorkspaceEditorProps = {
     splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
     isOutlinePanelVisible: boolean;
+    sidebarPosition: AppSidebarPosition;
     workspaceActionsButton: WorkspaceActionsButtonProps;
     luauSymbols: LuauFileSymbol[];
     outlinePanelWidth: number;
