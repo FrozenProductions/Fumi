@@ -49,17 +49,20 @@ export function AutomaticExecutionSidebar({
     const SCRIPT_ROW_GEOMETRY_CLASS = [
         "[--automatic-execution-script-row-radius:0.65rem]",
         "[--automatic-execution-script-action-vertical-inset:0.4rem]",
+        "[--automatic-execution-script-action-left-inset:0.35rem]",
         "[--automatic-execution-script-action-right-inset:0.14rem]",
         "[--automatic-execution-script-action-button-size:1rem]",
         "[--automatic-execution-script-action-button-gap:0.125rem]",
-        "[--automatic-execution-script-actions-rail-width:calc(var(--automatic-execution-script-action-button-size)*2+var(--automatic-execution-script-action-button-gap)+var(--automatic-execution-script-action-right-inset))]",
+        "[--automatic-execution-script-actions-rail-width:calc(var(--automatic-execution-script-action-left-inset)+var(--automatic-execution-script-action-button-size)*2+var(--automatic-execution-script-action-button-gap)+var(--automatic-execution-script-action-right-inset))]",
+        "[--automatic-execution-script-content-clearance-width:calc(2.5rem-var(--automatic-execution-script-action-left-inset))]",
+        "[--automatic-execution-script-content-reserve-width:calc(var(--automatic-execution-script-actions-rail-width)+var(--automatic-execution-script-content-clearance-width))]",
     ].join(" ");
     const SCRIPT_ROW_RADIUS_CLASS =
         "rounded-[var(--automatic-execution-script-row-radius)]";
     const ACTIONS_RAIL_WIDTH_CLASS =
         "w-[var(--automatic-execution-script-actions-rail-width)]";
     const CONTENT_PADDING_RIGHT_CLASS =
-        "pr-[calc(var(--automatic-execution-script-actions-rail-width)+2.5rem)]";
+        "pr-[var(--automatic-execution-script-content-reserve-width)]";
     const ACTION_BUTTON_SIZE_CLASS =
         "size-[var(--automatic-execution-script-action-button-size)]";
     const ACTION_BUTTON_RADIUS_CLASS =
@@ -390,7 +393,7 @@ export function AutomaticExecutionSidebar({
                                 )}
 
                                 <div
-                                    className={`pointer-events-none absolute inset-y-0 right-0 flex items-center justify-end gap-[var(--automatic-execution-script-action-button-gap)] py-[var(--automatic-execution-script-action-vertical-inset)] pr-[var(--automatic-execution-script-action-right-inset)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 ${ACTIONS_RAIL_WIDTH_CLASS}`}
+                                    className={`pointer-events-none absolute inset-y-0 right-0 flex items-center justify-end gap-[var(--automatic-execution-script-action-button-gap)] py-[var(--automatic-execution-script-action-vertical-inset)] pl-[var(--automatic-execution-script-action-left-inset)] pr-[var(--automatic-execution-script-action-right-inset)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 ${ACTIONS_RAIL_WIDTH_CLASS}`}
                                 >
                                     <AppTooltip content="Rename">
                                         <AppIconButton
