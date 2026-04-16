@@ -2,6 +2,7 @@ import {
     Add01Icon,
     Delete02Icon,
     File02Icon,
+    FolderOpenIcon,
     PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
 import type {
@@ -24,7 +25,9 @@ import { AppTooltip } from "../app/AppTooltip";
 type AutomaticExecutionSidebarProps = {
     scripts: AutomaticExecutionScript[];
     activeScriptId: string | null;
+    resolvedPath: string | null;
     onCreateScript: () => void;
+    onOpenInFinder: () => void;
     onSelectScript: (scriptId: string) => void;
     onRenameScript: (
         scriptId: string,
@@ -36,7 +39,9 @@ type AutomaticExecutionSidebarProps = {
 export function AutomaticExecutionSidebar({
     scripts,
     activeScriptId,
+    resolvedPath,
     onCreateScript,
+    onOpenInFinder,
     onSelectScript,
     onRenameScript,
     onDeleteScript,
@@ -219,6 +224,8 @@ export function AutomaticExecutionSidebar({
         };
     }, [hasRenameError]);
 
+    const canOpenInFinder = resolvedPath !== null;
+
     return (
         <aside className="flex w-[14.5rem] shrink-0 flex-col border-r border-fumi-200 bg-fumi-100">
             <div className="border-b border-fumi-200 px-3 py-2.5">
@@ -226,18 +233,41 @@ export function AutomaticExecutionSidebar({
                     <p className="min-w-0 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                         Automatic Execution
                     </p>
-                    <AppTooltip content="Create new script">
-                        <AppIconButton
-                            ariaLabel="Create automatic execution script"
-                            onClick={onCreateScript}
+                    <div className="flex items-center gap-1">
+                        <AppTooltip
+                            content={
+                                canOpenInFinder
+                                    ? "Open in Finder"
+                                    : "Automatic execution folder is unavailable"
+                            }
                         >
-                            <AppIcon
-                                icon={Add01Icon}
-                                size={16}
-                                strokeWidth={2.2}
-                            />
-                        </AppIconButton>
-                    </AppTooltip>
+                            <AppIconButton
+                                ariaLabel="Open automatic execution folder in Finder"
+                                onClick={onOpenInFinder}
+                                disabled={!canOpenInFinder}
+                                className="size-7 rounded-[0.55rem] disabled:pointer-events-none disabled:opacity-50"
+                            >
+                                <AppIcon
+                                    icon={FolderOpenIcon}
+                                    size={14}
+                                    strokeWidth={2.2}
+                                />
+                            </AppIconButton>
+                        </AppTooltip>
+                        <AppTooltip content="Create new script">
+                            <AppIconButton
+                                ariaLabel="Create automatic execution script"
+                                onClick={onCreateScript}
+                                className="size-7 rounded-[0.55rem]"
+                            >
+                                <AppIcon
+                                    icon={Add01Icon}
+                                    size={15}
+                                    strokeWidth={2.2}
+                                />
+                            </AppIconButton>
+                        </AppTooltip>
+                    </div>
                 </div>
             </div>
 

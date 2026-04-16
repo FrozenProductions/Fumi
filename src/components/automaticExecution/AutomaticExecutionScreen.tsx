@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useAutomaticExecution } from "../../hooks/automaticExecution/useAutomaticExecution";
 import { confirmAction } from "../../lib/platform/dialog";
+import { openDirectoryPath } from "../../lib/platform/opener";
+import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { AutomaticExecutionEditor } from "./AutomaticExecutionEditor";
@@ -22,6 +24,7 @@ export function AutomaticExecutionScreen(): ReactElement {
         executorKind,
         isBootstrapping,
         isRefreshing,
+        resolvedPath,
         isSaving,
         scripts,
     } = automaticExecution.state;
@@ -32,6 +35,7 @@ export function AutomaticExecutionScreen(): ReactElement {
         renameScript,
         saveScript,
         selectScript,
+        setErrorMessage,
         updateActiveScriptContent,
         updateActiveScriptCursor,
     } = automaticExecution.actions;
@@ -62,6 +66,25 @@ export function AutomaticExecutionScreen(): ReactElement {
             }
 
             await deleteScript(executorKind, scriptId);
+        })();
+    };
+
+    const handleOpenInFinder = (): void => {
+        if (!resolvedPath) {
+            return;
+        }
+
+        void (async () => {
+            try {
+                await openDirectoryPath(resolvedPath);
+            } catch (error) {
+                setErrorMessage(
+                    getErrorMessage(
+                        error,
+                        "Could not open the automatic execution folder.",
+                    ),
+                );
+            }
         })();
     };
 
@@ -96,7 +119,9 @@ export function AutomaticExecutionScreen(): ReactElement {
             <AutomaticExecutionSidebar
                 scripts={scripts}
                 activeScriptId={activeScriptId}
+                resolvedPath={resolvedPath}
                 onCreateScript={handleCreateScript}
+                onOpenInFinder={handleOpenInFinder}
                 onSelectScript={handleSelectScript}
                 onRenameScript={handleRenameScript}
                 onDeleteScript={handleDeleteScript}

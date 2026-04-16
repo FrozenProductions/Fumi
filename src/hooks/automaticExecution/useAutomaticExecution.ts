@@ -44,6 +44,9 @@ export function useAutomaticExecution(): UseAutomaticExecutionResult {
     const clearErrorMessage = useAutomaticExecutionStore(
         (state) => state.clearErrorMessage,
     );
+    const setErrorMessage = useAutomaticExecutionStore(
+        (state) => state.setErrorMessage,
+    );
     const activeScript =
         scripts.find((script) => script.id === activeScriptId) ?? null;
     const hasUnsavedChanges = scripts.some(
@@ -70,6 +73,7 @@ export function useAutomaticExecution(): UseAutomaticExecutionResult {
             saveScript,
             renameScript,
             deleteScript,
+            setErrorMessage,
             updateActiveScriptContent,
             updateActiveScriptCursor,
         },
