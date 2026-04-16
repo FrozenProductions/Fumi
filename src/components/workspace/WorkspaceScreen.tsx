@@ -32,11 +32,7 @@ import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
 } from "../../lib/workspace/splitView";
-import {
-    reorderTabPreview,
-    TAB_BAR_MODIFIERS,
-    TAB_BAR_SENSORS,
-} from "../../lib/workspace/tabBar";
+import { TAB_BAR_MODIFIERS, TAB_BAR_SENSORS } from "../../lib/workspace/tabBar";
 import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
@@ -284,7 +280,6 @@ export function WorkspaceScreen({
     );
 
     const splitView = workspace?.splitView ?? null;
-    const [previewTabs, setPreviewTabs] = useState(workspace?.tabs ?? []);
     const [isTabDragActive, setIsTabDragActive] = useState(false);
     const [splitRatioPreview, setSplitRatioPreview] = useState<number | null>(
         null,
@@ -292,12 +287,7 @@ export function WorkspaceScreen({
     const [splitDropTarget, setSplitDropTarget] =
         useState<WorkspacePaneId | null>(null);
     const lastDropTargetTabIdRef = useRef<string | null>(null);
-    const lastPreviewTargetTabIdRef = useRef<string | null>(null);
     const draggedTabIdRef = useRef<string | null>(null);
-
-    useEffect(() => {
-        setPreviewTabs(workspace?.tabs ?? []);
-    }, [workspace?.tabs]);
 
     useEffect(() => {
         if (!splitView) {
@@ -324,13 +314,11 @@ export function WorkspaceScreen({
 
             if (targetId === "workspace-split-left") {
                 setSplitDropTarget("primary");
-                lastPreviewTargetTabIdRef.current = null;
                 return;
             }
 
             if (targetId === "workspace-split-right") {
                 setSplitDropTarget("secondary");
-                lastPreviewTargetTabIdRef.current = null;
                 return;
             }
 
@@ -340,20 +328,11 @@ export function WorkspaceScreen({
                 return;
             }
 
-            if (lastPreviewTargetTabIdRef.current === targetId) {
-                return;
-            }
-
             lastDropTargetTabIdRef.current = targetId;
-            lastPreviewTargetTabIdRef.current = targetId;
 
             if (!workspace) {
                 return;
             }
-
-            setPreviewTabs(
-                reorderTabPreview(workspace.tabs, draggedTabId, targetId),
-            );
         },
         [workspace],
     );
@@ -365,13 +344,8 @@ export function WorkspaceScreen({
             setIsTabDragActive(true);
             setSplitDropTarget(null);
             lastDropTargetTabIdRef.current = null;
-            lastPreviewTargetTabIdRef.current = null;
-
-            if (workspace) {
-                setPreviewTabs(workspace.tabs);
-            }
         },
-        [workspace],
+        [],
     );
 
     const handleDragEnd: DragDropEventHandlers["onDragEnd"] = useCallback(
@@ -382,13 +356,8 @@ export function WorkspaceScreen({
 
             const resolvedSplitTarget = splitDropTarget;
             setSplitDropTarget(null);
-            lastPreviewTargetTabIdRef.current = null;
-
             if (canceled || !draggedTabId) {
                 lastDropTargetTabIdRef.current = null;
-                if (workspace) {
-                    setPreviewTabs(workspace.tabs);
-                }
                 return;
             }
 
@@ -412,9 +381,6 @@ export function WorkspaceScreen({
                 typeof draggedTabId !== "string" ||
                 typeof targetTabId !== "string"
             ) {
-                if (workspace) {
-                    setPreviewTabs(workspace.tabs);
-                }
                 return;
             }
 
@@ -441,7 +407,6 @@ export function WorkspaceScreen({
             reorderWorkspaceTab,
             splitDropTarget,
             splitView,
-            workspace,
         ],
     );
 
@@ -581,7 +546,7 @@ export function WorkspaceScreen({
                         workspace={workspace}
                         splitView={resolvedSplitView}
                         renameState={renameState}
-                        previewTabs={previewTabs}
+                        previewTabs={workspace.tabs}
                         isTabDragActive={isTabDragActive}
                         splitDropTarget={splitDropTarget}
                         onCreateFile={handleCreateWorkspaceFile}
