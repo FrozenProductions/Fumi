@@ -26,6 +26,8 @@
         --color-editor-active-line-foreground: var(--color-fumi-700);
         --color-editor-selection: 193 95 60 / 0.14;
         --color-editor-selected-word-border: 193 95 60 / 0.18;
+        --color-editor-bracket-background: 193 95 60 / 0.16;
+        --color-editor-bracket-border: 193 95 60 / 0.28;
         --color-editor-cursor: var(--color-fumi-700);
         --color-editor-print-margin: var(--color-fumi-200);
         --color-editor-string: 47 125 87;
@@ -62,6 +64,8 @@
         --color-editor-active-line-foreground: 242 156 126;
         --color-editor-selection: 227 117 83 / 0.22;
         --color-editor-selected-word-border: 227 117 83 / 0.28;
+        --color-editor-bracket-background: 227 117 83 / 0.2;
+        --color-editor-bracket-border: 227 117 83 / 0.4;
         --color-editor-cursor: 255 212 198;
         --color-editor-print-margin: 54 57 61;
         --color-editor-string: 120 210 167;
@@ -136,6 +140,12 @@
 
     .workspace-ace-editor .ace_marker-layer .ace_selected-word {
         border: 1px solid rgb(var(--color-editor-selected-word-border));
+    }
+
+    .workspace-ace-editor.workspace-ace-editor .ace_marker-layer .ace_bracket {
+        margin: -1px 0 0 -1px;
+        border: 1px solid rgb(var(--color-editor-bracket-border));
+        background: rgb(var(--color-editor-bracket-background));
     }
 
     .workspace-ace-editor .ace_cursor {
