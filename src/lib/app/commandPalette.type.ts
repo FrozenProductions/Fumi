@@ -23,6 +23,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     onActivateGoToLineMode: () => void;
     onActivateThemeMode: () => void;
     onOpenWorkspaceScreen: () => void;
+    onOpenAutomaticExecution: () => void;
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
     onOpenSettings: () => void;
@@ -49,6 +50,7 @@ export type AppCommandPaletteControllerOptions = {
     onClose: () => void;
     onGoToLine: (lineNumber: number) => void;
     onOpenWorkspaceScreen: () => void;
+    onOpenAutomaticExecution: () => void;
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
     onToggleSidebar: () => void;
@@ -113,6 +115,7 @@ export type AppCommandPaletteHotkeyLabels = {
     openSettings: string;
     openWorkspaceDirectory: string;
     openWorkspaceScreen: string;
+    openAutomaticExecution: string;
     openScriptLibrary: string;
     resetWorkspaceSplitView: string;
     toggleSidebar: string;
@@ -131,6 +134,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "sidebarPosition"
     | "onGoToLine"
     | "onOpenWorkspaceScreen"
+    | "onOpenAutomaticExecution"
     | "onOpenScriptLibrary"
     | "onOpenAccounts"
     | "onToggleSidebar"

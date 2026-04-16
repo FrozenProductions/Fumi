@@ -1,5 +1,6 @@
 import {
     BookCopyIcon,
+    CommandIcon,
     FolderCodeIcon,
     Settings01Icon,
     UserMultiple02Icon,
@@ -12,6 +13,7 @@ import type {
 
 export const APP_SIDEBAR_ITEM_IDS = [
     "workspace",
+    "automatic-execution",
     "script-library",
     "accounts",
     "settings",
@@ -22,6 +24,11 @@ export const APP_SIDEBAR_ITEMS = [
         id: "workspace",
         label: "Workspace",
         icon: FolderCodeIcon,
+    },
+    {
+        id: "automatic-execution",
+        label: "Automatic Execution",
+        icon: CommandIcon,
     },
     {
         id: "script-library",

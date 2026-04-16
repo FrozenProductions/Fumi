@@ -1,3 +1,4 @@
+mod automatic_execution;
 mod accounts;
 pub(crate) mod binarycookies;
 mod command;
@@ -48,6 +49,13 @@ fn build_app() -> tauri::Result<tauri::App> {
             executor::commands::execute_executor_script,
             executor::commands::update_executor_setting,
             luau::scan_luau_file_analysis,
+            automatic_execution::commands::bootstrap_automatic_execution,
+            automatic_execution::commands::refresh_automatic_execution,
+            automatic_execution::commands::create_automatic_execution_script,
+            automatic_execution::commands::save_automatic_execution_script,
+            automatic_execution::commands::rename_automatic_execution_script,
+            automatic_execution::commands::delete_automatic_execution_script,
+            automatic_execution::commands::persist_automatic_execution_state,
             workspace::commands::session::bootstrap_workspace,
             workspace::commands::session::open_workspace,
             workspace::commands::session::refresh_workspace,
@@ -62,6 +70,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             workspace::commands::archive::delete_archived_workspace_tab,
             workspace::commands::archive::delete_all_archived_workspace_tabs,
             workspace::commands::set_workspace_unsaved_changes,
+            state::set_automatic_execution_unsaved_changes,
             dialog::show_confirmation_dialog,
             state::complete_exit_preparation,
             state::resolve_exit_guard_sync,

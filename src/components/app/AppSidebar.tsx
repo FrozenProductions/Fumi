@@ -28,6 +28,10 @@ export function AppSidebar({
             "OPEN_WORKSPACE_SCREEN",
             hotkeyBindings,
         ),
+        "automatic-execution": getAppHotkeyShortcutLabel(
+            "OPEN_AUTOMATIC_EXECUTION",
+            hotkeyBindings,
+        ),
         "script-library": getAppHotkeyShortcutLabel(
             "OPEN_SCRIPT_LIBRARY",
             hotkeyBindings,

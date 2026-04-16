@@ -7,14 +7,24 @@ import { APP_TITLE } from "../constants/app/app";
 import { APP_ZOOM_DEFAULT, APP_ZOOM_STEP } from "../constants/app/settings";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
 import { useAppDragDrop } from "../hooks/app/useAppDragDrop";
+import { useAppExitGuard } from "../hooks/app/useAppExitGuard";
 import { useAppShellLifecycle } from "../hooks/app/useAppShellLifecycle";
 import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
 import { useAppUpdater } from "../hooks/app/useAppUpdater";
 import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
+import { useAutomaticExecutionLifecycle } from "../hooks/automaticExecution/useAutomaticExecutionLifecycle";
+import {
+    selectAutomaticExecutionHasUnsavedChanges,
+    useAutomaticExecutionStore,
+} from "../hooks/automaticExecution/useAutomaticExecutionStore";
 import { useWorkspaceDroppedFiles } from "../hooks/workspace/useWorkspaceDroppedFiles";
 import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
+import {
+    selectWorkspaceHasUnsavedChanges,
+    useWorkspaceStore,
+} from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
 import {
     getAppTopbarWorkspaceContext,
@@ -59,15 +69,27 @@ export function App(): ReactElement {
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
     const workspaceSession = useWorkspaceSession();
-    const { activeTab, hasUnsavedChanges } = workspaceSession.state;
+    const { activeTab } = workspaceSession.state;
     const workspaceExecutor = useWorkspaceExecutor({
         activeTabContent: activeTab?.content ?? null,
     });
+    useAutomaticExecutionLifecycle(workspaceExecutor.state.executorKind);
+    const automaticExecutionHasUnsavedChanges = useAutomaticExecutionStore(
+        selectAutomaticExecutionHasUnsavedChanges,
+    );
+    const workspaceHasUnsavedChanges = useWorkspaceStore(
+        selectWorkspaceHasUnsavedChanges,
+    );
+    const hasUnsavedChanges =
+        workspaceHasUnsavedChanges || automaticExecutionHasUnsavedChanges;
     const handleOpenSettings = (): void => {
         selectSidebarItem("settings");
     };
     const handleOpenWorkspaceScreen = (): void => {
         selectSidebarItem("workspace");
+    };
+    const handleOpenAutomaticExecution = (): void => {
+        selectSidebarItem("automatic-execution");
     };
     const handleOpenScriptLibrary = (): void => {
         selectSidebarItem("script-library");
@@ -93,6 +115,7 @@ export function App(): ReactElement {
         hasUnsavedChanges,
         onOpenSettings: handleOpenSettings,
     });
+    useAppExitGuard();
 
     return (
         <AppHotkeysProvider workspaceSession={workspaceSession}>
@@ -164,6 +187,7 @@ export function App(): ReactElement {
                     onClose={closeCommandPalette}
                     onGoToLine={requestGoToLine}
                     onOpenWorkspaceScreen={handleOpenWorkspaceScreen}
+                    onOpenAutomaticExecution={handleOpenAutomaticExecution}
                     onOpenScriptLibrary={handleOpenScriptLibrary}
                     onOpenAccounts={handleOpenAccounts}
                     onToggleSidebar={toggleSidebar}

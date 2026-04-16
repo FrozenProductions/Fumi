@@ -5,6 +5,8 @@ use tauri::{command, State};
 #[derive(Debug, Default)]
 struct ShellState {
     has_workspace_unsaved_changes: bool,
+    has_automatic_execution_unsaved_changes: bool,
+    has_synced_unsaved_changes: bool,
     is_exit_in_progress: bool,
     is_frontend_ready_for_exit: bool,
     next_exit_guard_sync_request_id: u64,
@@ -24,7 +26,19 @@ impl AppRuntimeState {
     }
 
     pub fn set_workspace_unsaved_changes(&self, has_unsaved_changes: bool) {
-        self.lock().has_workspace_unsaved_changes = has_unsaved_changes;
+        let mut state = self.lock();
+        state.has_workspace_unsaved_changes = has_unsaved_changes;
+        state.has_synced_unsaved_changes =
+            state.has_workspace_unsaved_changes
+                || state.has_automatic_execution_unsaved_changes;
+    }
+
+    pub fn set_automatic_execution_unsaved_changes(&self, has_unsaved_changes: bool) {
+        let mut state = self.lock();
+        state.has_automatic_execution_unsaved_changes = has_unsaved_changes;
+        state.has_synced_unsaved_changes =
+            state.has_workspace_unsaved_changes
+                || state.has_automatic_execution_unsaved_changes;
     }
 
     pub fn next_exit_guard_sync_request_id(&self) -> u64 {
@@ -35,7 +49,7 @@ impl AppRuntimeState {
 
     pub fn resolve_exit_guard_sync(&self, sync_id: u64, should_guard_exit: bool) {
         let mut state = self.lock();
-        state.has_workspace_unsaved_changes = should_guard_exit;
+        state.has_synced_unsaved_changes = should_guard_exit;
         state.latest_completed_exit_guard_sync_id =
             state.latest_completed_exit_guard_sync_id.max(sync_id);
     }
@@ -48,7 +62,7 @@ impl AppRuntimeState {
     #[must_use]
     pub fn should_guard_exit(&self) -> bool {
         let state = self.lock();
-        state.has_workspace_unsaved_changes && !state.is_exit_in_progress
+        state.has_synced_unsaved_changes && !state.is_exit_in_progress
     }
 
     pub fn begin_exit(&self) {
@@ -100,6 +114,14 @@ impl AppRuntimeState {
 #[command]
 pub fn complete_exit_preparation(state: State<AppRuntimeState>) {
     state.mark_frontend_ready_for_exit();
+}
+
+#[command]
+pub fn set_automatic_execution_unsaved_changes(
+    state: State<AppRuntimeState>,
+    has_unsaved_changes: bool,
+) {
+    state.set_automatic_execution_unsaved_changes(has_unsaved_changes);
 }
 
 #[command]

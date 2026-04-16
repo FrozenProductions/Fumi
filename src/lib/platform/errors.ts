@@ -27,6 +27,12 @@ export class ExecutorCommandError extends OperationError {
     }
 }
 
+export class AutomaticExecutionCommandError extends OperationError {
+    constructor(options: OperationErrorOptions) {
+        super("AutomaticExecutionCommandError", options);
+    }
+}
+
 export class AccountsCommandError extends OperationError {
     constructor(options: OperationErrorOptions) {
         super("AccountsCommandError", options);
