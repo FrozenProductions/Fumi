@@ -188,6 +188,10 @@ export const useAutomaticExecutionStore = create<AutomaticExecutionStore>(
                         executorKind,
                     });
 
+                    if (get().executorKind !== executorKind) {
+                        return;
+                    }
+
                     set((state) => ({
                         activeScriptId: createdScript.id,
                         scripts: [
@@ -237,13 +241,14 @@ export const useAutomaticExecutionStore = create<AutomaticExecutionStore>(
                     return false;
                 }
 
+                const persistedContent = script.content;
                 set({ isSaving: true });
 
                 try {
                     await saveAutomaticExecutionScript({
                         executorKind,
                         scriptId,
-                        content: script.content,
+                        content: persistedContent,
                         cursor: script.cursor,
                     });
 
@@ -253,7 +258,7 @@ export const useAutomaticExecutionStore = create<AutomaticExecutionStore>(
                             item.id === scriptId
                                 ? {
                                       ...item,
-                                      savedContent: item.content,
+                                      savedContent: persistedContent,
                                   }
                                 : item,
                         ),

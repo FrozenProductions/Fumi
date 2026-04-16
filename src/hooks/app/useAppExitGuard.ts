@@ -80,6 +80,11 @@ export function useAppExitGuard(): void {
                             automaticExecutionExecutorKind,
                         );
                     }
+                } catch (error) {
+                    console.error(
+                        "Failed to persist state during exit preparation.",
+                        error,
+                    );
                 } finally {
                     await completeExitPreparation();
                 }

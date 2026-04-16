@@ -20,10 +20,6 @@ use super::models::{
     MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH,
 };
 
-const MACSPLOIT_AUTOMATIC_EXECUTION_PATH: &str =
-    "/Users/dayte/Documents/Macsploit Automatic Execution";
-const OPIUMWARE_AUTOMATIC_EXECUTION_PATH: &str = "/Users/dayte/Opiumware/autoexec";
-
 #[derive(Debug)]
 struct UnsupportedAutomaticExecutionError;
 
@@ -60,13 +56,32 @@ fn resolve_automatic_execution_path_at(
     }
 }
 
+fn resolve_home_directory() -> Result<PathBuf> {
+    let home_dir =
+        std::env::var_os("HOME").ok_or_else(|| anyhow!("failed to resolve the home directory"))?;
+
+    Ok(PathBuf::from(home_dir))
+}
+
+fn get_macsploit_automatic_execution_path(home_dir: &Path) -> PathBuf {
+    home_dir
+        .join("Documents")
+        .join("Macsploit Automatic Execution")
+}
+
+fn get_opiumware_automatic_execution_path(home_dir: &Path) -> PathBuf {
+    home_dir.join("Opiumware").join("autoexec")
+}
+
 pub(super) fn resolve_automatic_execution_path(
     executor_kind: ExecutorKind,
 ) -> Result<PathBuf> {
+    let home_dir = resolve_home_directory()?;
+
     resolve_automatic_execution_path_at(
         executor_kind,
-        MACSPLOIT_AUTOMATIC_EXECUTION_PATH,
-        OPIUMWARE_AUTOMATIC_EXECUTION_PATH,
+        get_macsploit_automatic_execution_path(&home_dir),
+        get_opiumware_automatic_execution_path(&home_dir),
     )
 }
 
@@ -389,8 +404,17 @@ pub(super) fn read_automatic_execution_metadata(
         read_json_file::<StoredAutomaticExecutionMetadata>(&metadata_path)?;
     let on_disk_file_names = read_disk_script_file_names(automatic_execution_path)?;
     let normalized_metadata =
-        normalize_automatic_execution_metadata(stored_metadata, &on_disk_file_names);
-    write_json_file(&metadata_path, &normalized_metadata)?;
+        normalize_automatic_execution_metadata(stored_metadata.clone(), &on_disk_file_names);
+    let normalized_stored_metadata = StoredAutomaticExecutionMetadata {
+        version: normalized_metadata.version,
+        active_script_id: normalized_metadata.active_script_id.clone(),
+        scripts: Some(normalized_metadata.scripts.clone()),
+    };
+
+    if stored_metadata.as_ref() != Some(&normalized_stored_metadata) {
+        write_json_file(&metadata_path, &normalized_metadata)?;
+    }
+
     Ok(normalized_metadata)
 }
 
@@ -406,6 +430,13 @@ pub(super) fn read_automatic_execution_snapshot(
     executor_kind: ExecutorKind,
 ) -> Result<AutomaticExecutionSnapshot> {
     let automatic_execution_path = resolve_automatic_execution_path(executor_kind)?;
+    read_automatic_execution_snapshot_at(&automatic_execution_path, executor_kind)
+}
+
+pub(super) fn read_automatic_execution_snapshot_at(
+    automatic_execution_path: &Path,
+    executor_kind: ExecutorKind,
+) -> Result<AutomaticExecutionSnapshot> {
     ensure_directory(&automatic_execution_path)?;
     let metadata = read_automatic_execution_metadata(&automatic_execution_path)?;
     let mut scripts = Vec::with_capacity(metadata.scripts.len());
@@ -704,6 +735,22 @@ mod tests {
     }
 
     #[test]
+    fn resolves_executor_paths_from_home_directory() -> anyhow::Result<()> {
+        let home_dir = PathBuf::from("/Users/example");
+
+        assert_eq!(
+            get_macsploit_automatic_execution_path(&home_dir),
+            PathBuf::from("/Users/example/Documents/Macsploit Automatic Execution")
+        );
+        assert_eq!(
+            get_opiumware_automatic_execution_path(&home_dir),
+            PathBuf::from("/Users/example/Opiumware/autoexec")
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn read_automatic_execution_metadata_creates_missing_directory() -> anyhow::Result<()> {
         let automatic_execution_dir = TestAutomaticExecutionDir::new("bootstrap");
         let metadata = read_automatic_execution_metadata(automatic_execution_dir.path())?;
@@ -815,9 +862,14 @@ mod tests {
             },
         )?;
 
-        let snapshot =
-            read_automatic_execution_snapshot(ExecutorKind::Macsploit).err();
-        assert!(snapshot.is_some() || snapshot.is_none());
+        let snapshot = read_automatic_execution_snapshot_at(
+            automatic_execution_dir.path(),
+            ExecutorKind::Macsploit,
+        )?;
+        assert_eq!(snapshot.resolved_path, automatic_execution_dir.path().display().to_string());
+        assert_eq!(snapshot.scripts.len(), 1);
+        assert_eq!(snapshot.scripts[0].file_name, "renamed.lua");
+        assert_eq!(snapshot.metadata.active_script_id, Some(created_script.id.clone()));
 
         fs::remove_file(&renamed_file)?;
         let cleaned_metadata = read_automatic_execution_metadata(automatic_execution_dir.path())?;

@@ -12,6 +12,7 @@ import type {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import { MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH } from "../../constants/automaticExecution/automaticExecution";
+import { clampAutomaticExecutionText } from "../../lib/automaticExecution/automaticExecution";
 import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
 import {
     buildWorkspaceFileName,
@@ -129,11 +130,20 @@ export function AutomaticExecutionSidebar({
         }
 
         setIsRenameSubmitting(true);
-        const didRename = await onRenameScript(
-            script.id,
-            buildWorkspaceFileName(nextBaseName, extension || ".lua"),
-        );
-        setIsRenameSubmitting(false);
+        let didRename = false;
+
+        try {
+            didRename = await onRenameScript(
+                script.id,
+                buildWorkspaceFileName(nextBaseName, extension),
+            );
+        } catch {
+            setHasRenameError(true);
+            focusRenameInput();
+            return;
+        } finally {
+            setIsRenameSubmitting(false);
+        }
 
         if (didRename) {
             resetRenameState();
@@ -152,7 +162,12 @@ export function AutomaticExecutionSidebar({
     const handleRenameInputChange = (
         event: ChangeEvent<HTMLInputElement>,
     ): void => {
-        setRenameValue(event.target.value);
+        setRenameValue(
+            clampAutomaticExecutionText(
+                event.target.value,
+                MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH,
+            ),
+        );
         setHasRenameError(false);
     };
 
@@ -277,8 +292,8 @@ export function AutomaticExecutionSidebar({
                         const { baseName } = splitWorkspaceFileName(
                             script.fileName,
                         );
-                        const displayBaseName = baseName.slice(
-                            0,
+                        const displayBaseName = clampAutomaticExecutionText(
+                            baseName,
                             MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH,
                         );
 
@@ -306,9 +321,6 @@ export function AutomaticExecutionSidebar({
                                                     ref={renameInputRef}
                                                     type="text"
                                                     value={renameValue}
-                                                    maxLength={
-                                                        MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH
-                                                    }
                                                     onBlur={() => {
                                                         handleRenameInputBlur(
                                                             script,

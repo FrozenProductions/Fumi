@@ -4,6 +4,17 @@ import type {
     AutomaticExecutionScriptState,
 } from "./automaticExecution.type";
 
+export function getAutomaticExecutionCharacterCount(value: string): number {
+    return Array.from(value).length;
+}
+
+export function clampAutomaticExecutionText(
+    value: string,
+    maxLength: number,
+): string {
+    return Array.from(value).slice(0, maxLength).join("");
+}
+
 export function buildAutomaticExecutionScript(
     script: AutomaticExecutionScriptSnapshot,
 ): AutomaticExecutionScript {

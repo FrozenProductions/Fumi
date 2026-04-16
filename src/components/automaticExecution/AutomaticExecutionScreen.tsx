@@ -106,12 +106,11 @@ export function AutomaticExecutionScreen(): ReactElement {
                 return;
             }
 
-            event.preventDefault();
-
-            if (!activeScript) {
+            if (!activeScript || isSaving) {
                 return;
             }
 
+            event.preventDefault();
             void saveScript(executorKind, activeScript.id);
         };
 
@@ -120,7 +119,7 @@ export function AutomaticExecutionScreen(): ReactElement {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [activeScript, executorKind, saveScript]);
+    }, [activeScript, executorKind, isSaving, saveScript]);
 
     return (
         <section className="flex h-full min-h-0 bg-fumi-50">

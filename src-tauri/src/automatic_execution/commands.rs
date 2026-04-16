@@ -291,17 +291,29 @@ pub fn persist_automatic_execution_state(
             .iter()
             .map(|script| script.file_name.clone())
             .collect::<HashSet<_>>();
-        let normalized_scripts = scripts
+        let mut existing_ids = existing_metadata
+            .scripts
+            .iter()
+            .map(|item| item.id.clone())
+            .collect::<HashSet<_>>();
+        let (persisted_scripts, dropped_scripts): (Vec<_>, Vec<_>) = scripts
             .into_iter()
-            .filter(|script| on_disk_file_names.contains(&script.file_name))
+            .partition(|script| on_disk_file_names.contains(&script.file_name));
+
+        for dropped_script in &dropped_scripts {
+            eprintln!(
+                "Skipping automatic execution metadata for missing script file: {}",
+                dropped_script.file_name
+            );
+        }
+
+        let normalized_scripts = persisted_scripts
+            .into_iter()
             .map(|script| AutomaticExecutionScriptState {
                 id: if script.id.trim().is_empty() {
-                    let existing_ids = existing_metadata
-                        .scripts
-                        .iter()
-                        .map(|item| item.id.clone())
-                        .collect::<HashSet<_>>();
-                    create_script_id(&existing_ids)
+                    let next_id = create_script_id(&existing_ids);
+                    existing_ids.insert(next_id.clone());
+                    next_id
                 } else {
                     script.id.trim().to_string()
                 },

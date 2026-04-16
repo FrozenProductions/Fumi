@@ -52,7 +52,7 @@ pub struct AutomaticExecutionSnapshot {
     pub scripts: Vec<AutomaticExecutionScriptSnapshot>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct StoredAutomaticExecutionMetadata {
     pub(super) version: u8,

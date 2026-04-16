@@ -35,6 +35,7 @@ export function AutomaticExecutionEditor({
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
     const editorRef = useRef<Ace.Editor | null>(null);
+    const appliedScriptIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -61,9 +62,15 @@ export function AutomaticExecutionEditor({
         const editor = editorRef.current;
 
         if (!editor || !script) {
+            appliedScriptIdRef.current = script?.id ?? null;
             return;
         }
 
+        if (appliedScriptIdRef.current === script.id) {
+            return;
+        }
+
+        appliedScriptIdRef.current = script.id;
         editor.selection.moveCursorTo(script.cursor.line, script.cursor.column);
         editor.clearSelection();
         editor.renderer.scrollToY(script.cursor.scrollTop);
@@ -130,6 +137,7 @@ export function AutomaticExecutionEditor({
                 }}
                 onLoad={(editor: Ace.Editor) => {
                     editorRef.current = editor;
+                    appliedScriptIdRef.current = script.id;
                     editor.selection.moveCursorTo(
                         script.cursor.line,
                         script.cursor.column,
