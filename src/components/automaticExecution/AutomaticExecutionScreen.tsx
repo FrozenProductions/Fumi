@@ -39,6 +39,14 @@ export function AutomaticExecutionScreen(): ReactElement {
         updateActiveScriptContent,
         updateActiveScriptCursor,
     } = automaticExecution.actions;
+    const hasUnsavedChanges =
+        activeScript?.content !== activeScript?.savedContent;
+    const isSaveDisabled = !activeScript || !hasUnsavedChanges || isSaving;
+    const saveButtonClassName = isSaving
+        ? "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-300 bg-fumi-100 px-3 text-xs font-semibold text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:cursor-progress"
+        : hasUnsavedChanges
+          ? "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-600 px-3 text-xs font-semibold text-white shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out hover:border-fumi-700 hover:bg-fumi-700 hover:shadow-md active:scale-[0.98] active:shadow-[inset_0_2px_4px_rgb(0_0_0_/_0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+          : "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-400 transition-[background-color,border-color,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:cursor-default";
 
     const handleCreateScript = (): void => {
         void createScript(executorKind);
@@ -180,7 +188,16 @@ export function AutomaticExecutionScreen(): ReactElement {
                                     </span>
                                 ) : null}
                             </div>
-                            <AppTooltip content="Save script" shortcut="⌘S">
+                            <AppTooltip
+                                content={
+                                    isSaving
+                                        ? "Saving script"
+                                        : hasUnsavedChanges
+                                          ? "Save script"
+                                          : "All changes saved"
+                                }
+                                shortcut="⌘S"
+                            >
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -189,14 +206,26 @@ export function AutomaticExecutionScreen(): ReactElement {
                                             activeScript.id,
                                         );
                                     }}
-                                    className="app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-200 bg-fumi-50 px-3 text-xs font-semibold text-fumi-700 transition-[background-color,border-color,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+                                    disabled={isSaveDisabled}
+                                    className={saveButtonClassName}
                                 >
                                     <AppIcon
-                                        icon={Tick01Icon}
+                                        icon={
+                                            isSaving
+                                                ? Loading02Icon
+                                                : Tick01Icon
+                                        }
                                         size={14}
                                         strokeWidth={2.5}
+                                        className={
+                                            isSaving ? "animate-spin" : ""
+                                        }
                                     />
-                                    Save
+                                    {isSaving
+                                        ? "Saving"
+                                        : hasUnsavedChanges
+                                          ? "Save"
+                                          : "Saved"}
                                 </button>
                             </AppTooltip>
                         </div>
