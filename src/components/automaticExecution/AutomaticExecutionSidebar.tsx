@@ -1,7 +1,6 @@
 import {
     Add01Icon,
     Delete02Icon,
-    File02Icon,
     FolderOpenIcon,
     PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
@@ -270,23 +269,6 @@ export function AutomaticExecutionSidebar({
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {scripts.length === 0 ? (
-                    <div className="rounded-[0.8rem] border border-dashed border-fumi-200 bg-fumi-50 px-3 py-4 text-center">
-                        <AppIcon
-                            icon={File02Icon}
-                            size={20}
-                            strokeWidth={2}
-                            className="mx-auto mb-2 text-fumi-400"
-                        />
-                        <p className="text-xs font-semibold text-fumi-700">
-                            No scripts yet
-                        </p>
-                        <p className="mt-1 text-[11px] leading-5 text-fumi-500">
-                            Create a script to start editing
-                        </p>
-                    </div>
-                ) : null}
-
                 <div className="flex flex-col gap-0.5">
                     {scripts.map((script) => {
                         const isActive = script.id === activeScriptId;
