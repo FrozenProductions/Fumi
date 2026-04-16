@@ -50,7 +50,7 @@ export function AutomaticExecutionSidebar({
         "[--automatic-execution-script-row-radius:0.65rem]",
         "[--automatic-execution-script-action-vertical-inset:0.4rem]",
         "[--automatic-execution-script-action-right-inset:0.14rem]",
-        "[--automatic-execution-script-action-button-size:1.25rem]",
+        "[--automatic-execution-script-action-button-size:1rem]",
         "[--automatic-execution-script-action-button-gap:0.125rem]",
         "[--automatic-execution-script-actions-rail-width:calc(var(--automatic-execution-script-action-button-size)*2+var(--automatic-execution-script-action-button-gap)+var(--automatic-execution-script-action-right-inset))]",
     ].join(" ");
@@ -58,10 +58,8 @@ export function AutomaticExecutionSidebar({
         "rounded-[var(--automatic-execution-script-row-radius)]";
     const ACTIONS_RAIL_WIDTH_CLASS =
         "w-[var(--automatic-execution-script-actions-rail-width)]";
-    const CONTENT_MAX_WIDTH_CLASS =
-        "max-w-[calc(100%-var(--automatic-execution-script-actions-rail-width))]";
     const CONTENT_PADDING_RIGHT_CLASS =
-        "pr-[calc(var(--automatic-execution-script-actions-rail-width)+0.45rem)]";
+        "pr-[calc(var(--automatic-execution-script-actions-rail-width)+2.5rem)]";
     const ACTION_BUTTON_SIZE_CLASS =
         "size-[var(--automatic-execution-script-action-button-size)]";
     const ACTION_BUTTON_RADIUS_CLASS =
@@ -315,50 +313,54 @@ export function AutomaticExecutionSidebar({
                             >
                                 {isRenaming ? (
                                     <div
-                                        className={`flex min-w-0 flex-1 items-center px-2.5 py-2 ${CONTENT_PADDING_RIGHT_CLASS} ${CONTENT_MAX_WIDTH_CLASS}`}
+                                        className={`flex min-w-0 flex-1 items-center px-2.5 py-2 ${CONTENT_PADDING_RIGHT_CLASS}`}
                                     >
-                                        <div className="relative inline-grid min-w-0 max-w-full flex-1">
-                                            <span className="invisible min-w-[1ch] overflow-hidden whitespace-pre text-clip pr-1 text-[0.8125rem] font-semibold tracking-[0.01em]">
-                                                {renameValue || " "}
+                                        <div className="inline-flex min-w-0 max-w-full items-center">
+                                            <div className="relative inline-grid min-w-0 max-w-full flex-1">
+                                                <span className="invisible min-w-[1ch] overflow-hidden whitespace-pre text-clip pr-1 text-[0.8125rem] font-semibold tracking-[0.01em]">
+                                                    {renameValue || " "}
+                                                </span>
+                                                <input
+                                                    ref={renameInputRef}
+                                                    type="text"
+                                                    value={renameValue}
+                                                    maxLength={
+                                                        MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH
+                                                    }
+                                                    onBlur={() => {
+                                                        handleRenameInputBlur(
+                                                            script,
+                                                        );
+                                                    }}
+                                                    onChange={
+                                                        handleRenameInputChange
+                                                    }
+                                                    onKeyDown={(event) => {
+                                                        handleRenameInputKeyDown(
+                                                            event,
+                                                            script,
+                                                        );
+                                                    }}
+                                                    aria-label={`Rename ${script.fileName}`}
+                                                    disabled={
+                                                        isRenameSubmitting
+                                                    }
+                                                    {...APP_TEXT_INPUT_PROPS}
+                                                    className="absolute inset-0 w-full min-w-0 border-none bg-transparent p-0 text-[0.8125rem] font-semibold tracking-[0.01em] text-fumi-600 outline-none placeholder:text-fumi-400 disabled:cursor-progress"
+                                                />
+                                            </div>
+                                            <span
+                                                aria-hidden="true"
+                                                className={[
+                                                    "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
+                                                    isDirty
+                                                        ? "ml-1 max-w-2 translate-y-0 opacity-100"
+                                                        : "ml-0 max-w-0 translate-y-1 opacity-0",
+                                                ].join(" ")}
+                                            >
+                                                <span className="size-2 rounded-full bg-amber-500" />
                                             </span>
-                                            <input
-                                                ref={renameInputRef}
-                                                type="text"
-                                                value={renameValue}
-                                                maxLength={
-                                                    MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH
-                                                }
-                                                onBlur={() => {
-                                                    handleRenameInputBlur(
-                                                        script,
-                                                    );
-                                                }}
-                                                onChange={
-                                                    handleRenameInputChange
-                                                }
-                                                onKeyDown={(event) => {
-                                                    handleRenameInputKeyDown(
-                                                        event,
-                                                        script,
-                                                    );
-                                                }}
-                                                aria-label={`Rename ${script.fileName}`}
-                                                disabled={isRenameSubmitting}
-                                                {...APP_TEXT_INPUT_PROPS}
-                                                className="absolute inset-0 w-full min-w-0 border-none bg-transparent p-0 text-[0.8125rem] font-semibold tracking-[0.01em] text-fumi-600 outline-none placeholder:text-fumi-400 disabled:cursor-progress"
-                                            />
                                         </div>
-                                        <span
-                                            aria-hidden="true"
-                                            className={[
-                                                "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
-                                                isDirty
-                                                    ? "ml-2 max-w-2 translate-y-0 opacity-100"
-                                                    : "ml-0 max-w-0 translate-y-1 opacity-0",
-                                            ].join(" ")}
-                                        >
-                                            <span className="size-2 rounded-full bg-amber-500" />
-                                        </span>
                                     </div>
                                 ) : (
                                     <button
@@ -366,28 +368,30 @@ export function AutomaticExecutionSidebar({
                                         onClick={() =>
                                             onSelectScript(script.id)
                                         }
-                                        className={`flex min-w-0 flex-1 items-center px-2.5 py-2 ${CONTENT_PADDING_RIGHT_CLASS} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${CONTENT_MAX_WIDTH_CLASS}`}
+                                        className={`flex min-w-0 flex-1 items-center px-2.5 py-2 ${CONTENT_PADDING_RIGHT_CLASS} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600`}
                                     >
-                                        <p
-                                            className={`truncate text-[0.8125rem] font-semibold tracking-[0.01em] ${
-                                                isActive
-                                                    ? "text-fumi-900"
-                                                    : "text-fumi-500"
-                                            }`}
-                                        >
-                                            {displayBaseName}
-                                        </p>
-                                        <span
-                                            aria-hidden="true"
-                                            className={[
-                                                "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
-                                                isDirty
-                                                    ? "ml-2 max-w-2 translate-y-0 opacity-100"
-                                                    : "ml-0 max-w-0 translate-y-1 opacity-0",
-                                            ].join(" ")}
-                                        >
-                                            <span className="size-2 rounded-full bg-amber-500" />
-                                        </span>
+                                        <div className="inline-flex min-w-0 max-w-full items-center">
+                                            <p
+                                                className={`min-w-0 truncate text-[0.8125rem] font-semibold tracking-[0.01em] ${
+                                                    isActive
+                                                        ? "text-fumi-900"
+                                                        : "text-fumi-500"
+                                                }`}
+                                            >
+                                                {displayBaseName}
+                                            </p>
+                                            <span
+                                                aria-hidden="true"
+                                                className={[
+                                                    "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
+                                                    isDirty
+                                                        ? "ml-1 max-w-2 translate-y-0 opacity-100"
+                                                        : "ml-0 max-w-0 translate-y-1 opacity-0",
+                                                ].join(" ")}
+                                            >
+                                                <span className="size-2 rounded-full bg-amber-500" />
+                                            </span>
+                                        </div>
                                     </button>
                                 )}
 
@@ -406,7 +410,7 @@ export function AutomaticExecutionSidebar({
                                         >
                                             <AppIcon
                                                 icon={PencilEdit02Icon}
-                                                size={12}
+                                                size={14}
                                                 strokeWidth={2.2}
                                             />
                                         </AppIconButton>
@@ -425,7 +429,7 @@ export function AutomaticExecutionSidebar({
                                         >
                                             <AppIcon
                                                 icon={Delete02Icon}
-                                                size={12}
+                                                size={14}
                                                 strokeWidth={2.2}
                                             />
                                         </AppIconButton>
