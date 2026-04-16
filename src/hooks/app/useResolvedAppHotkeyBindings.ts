@@ -33,6 +33,10 @@ export function useResolvedAppHotkeyBindings(): ResolvedAppHotkeyBindings {
             "OPEN_WORKSPACE_SCREEN",
             hotkeyBindings,
         ),
+        openAutomaticExecution: getAppHotkeyBinding(
+            "OPEN_AUTOMATIC_EXECUTION",
+            hotkeyBindings,
+        ),
         openScriptLibrary: getAppHotkeyBinding(
             "OPEN_SCRIPT_LIBRARY",
             hotkeyBindings,

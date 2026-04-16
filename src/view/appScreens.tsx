@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { AccountsScreen } from "../components/accounts/AccountsScreen";
 import { AppSettingsScreen } from "../components/app/AppSettingsScreen";
+import { AutomaticExecutionScreen } from "../components/automaticExecution/AutomaticExecutionScreen";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
 import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater.type";
@@ -47,6 +48,8 @@ export function renderActiveAppScreen(
                     executor={workspaceExecutor}
                 />
             );
+        case "automatic-execution":
+            return <AutomaticExecutionScreen />;
         case "script-library":
             return <ScriptLibraryScreen workspaceSession={workspaceSession} />;
         case "accounts":

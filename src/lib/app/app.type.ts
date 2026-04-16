@@ -50,6 +50,7 @@ export type AppHotkeyAction =
     | "LAUNCH_ROBLOX"
     | "KILL_ROBLOX"
     | "OPEN_WORKSPACE_SCREEN"
+    | "OPEN_AUTOMATIC_EXECUTION"
     | "OPEN_SCRIPT_LIBRARY"
     | "OPEN_ACCOUNTS"
     | "TOGGLE_OUTLINE_PANEL";
@@ -86,6 +87,7 @@ export type AppWorkspaceSettings = {
 
 export type AppSidebarItem =
     | "workspace"
+    | "automatic-execution"
     | "script-library"
     | "accounts"
     | "settings";

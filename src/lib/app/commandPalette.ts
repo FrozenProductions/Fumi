@@ -88,6 +88,7 @@ export function getCommandCommandPaletteItems({
     onActivateGoToLineMode,
     onActivateThemeMode,
     onOpenWorkspaceScreen,
+    onOpenAutomaticExecution,
     onOpenScriptLibrary,
     onOpenAccounts,
     onOpenSettings,
@@ -130,6 +131,19 @@ export function getCommandCommandPaletteItems({
             keywords: "workspace editor tabs files screen",
             isDisabled: activeSidebarItem === "workspace",
             onSelect: onOpenWorkspaceScreen,
+        },
+        {
+            id: "command-open-automatic-execution",
+            label: "Open Automatic Execution",
+            description: "Manage the executor autoexec folder.",
+            icon: CommandIcon,
+            meta: getCurrentStateMeta(
+                activeSidebarItem === "automatic-execution",
+                hotkeyLabels.openAutomaticExecution,
+            ),
+            keywords: "automatic execution autoexec startup executor scripts",
+            isDisabled: activeSidebarItem === "automatic-execution",
+            onSelect: onOpenAutomaticExecution,
         },
         {
             id: "command-open-script-library",

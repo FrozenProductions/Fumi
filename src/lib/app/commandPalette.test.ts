@@ -175,6 +175,7 @@ function createCommandPaletteOptions(
             openSettings: "Mod+,",
             openWorkspaceDirectory: "Mod+O",
             openWorkspaceScreen: "Mod+Shift+W",
+            openAutomaticExecution: "Mod+Shift+E",
             openScriptLibrary: "Mod+Shift+S",
             resetWorkspaceSplitView: "Ctrl+Mod+0",
             toggleOutlinePanel: "Mod+Shift+O",
@@ -185,6 +186,7 @@ function createCommandPaletteOptions(
         onActivateGoToLineMode: vi.fn(),
         onActivateThemeMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
+        onOpenAutomaticExecution: vi.fn(),
         onOpenScriptLibrary: vi.fn(),
         onOpenAccounts: vi.fn(),
         onOpenSettings: vi.fn(),
@@ -717,10 +719,11 @@ describe("getCommandCommandPaletteItems", () => {
             }),
         );
 
-        expect(noWorkspaceItems).toHaveLength(14);
+        expect(noWorkspaceItems).toHaveLength(15);
         expect(noWorkspaceItems.map((item) => item.id)).toEqual(
             expect.arrayContaining([
                 "command-open-workspace-screen",
+                "command-open-automatic-execution",
                 "command-open-script-library",
                 "command-open-accounts",
                 "command-settings",
@@ -1031,6 +1034,7 @@ describe("getCommandCommandPaletteItems", () => {
                     openSettings: "Mod+Alt+,",
                     openWorkspaceDirectory: "Mod+O",
                     openWorkspaceScreen: "Mod+Shift+W",
+                    openAutomaticExecution: "Mod+Shift+E",
                     openScriptLibrary: "Mod+Shift+S",
                     resetWorkspaceSplitView: "Ctrl+Mod+0",
                     toggleOutlinePanel: "Mod+Shift+O",

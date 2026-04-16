@@ -67,6 +67,10 @@ export function getAppCommandPaletteHotkeyLabels(
             "OPEN_WORKSPACE_SCREEN",
             hotkeyBindings,
         ),
+        openAutomaticExecution: getAppHotkeyShortcutLabel(
+            "OPEN_AUTOMATIC_EXECUTION",
+            hotkeyBindings,
+        ),
         openScriptLibrary: getAppHotkeyShortcutLabel(
             "OPEN_SCRIPT_LIBRARY",
             hotkeyBindings,
@@ -100,6 +104,7 @@ export function getAppCommandPaletteResults({
     sidebarPosition,
     onGoToLine,
     onOpenWorkspaceScreen,
+    onOpenAutomaticExecution,
     onOpenScriptLibrary,
     onOpenAccounts,
     onToggleSidebar,
@@ -132,6 +137,7 @@ export function getAppCommandPaletteResults({
         onActivateGoToLineMode,
         onActivateThemeMode,
         onOpenWorkspaceScreen,
+        onOpenAutomaticExecution,
         onOpenScriptLibrary,
         onOpenAccounts,
         onOpenSettings,

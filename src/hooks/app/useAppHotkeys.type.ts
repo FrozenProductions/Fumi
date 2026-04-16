@@ -19,6 +19,7 @@ export type ResolvedAppHotkeyBindings = {
     openWorkspaceDirectory: AppHotkeyBinding;
     toggleSidebar: AppHotkeyBinding;
     openWorkspaceScreen: AppHotkeyBinding;
+    openAutomaticExecution: AppHotkeyBinding;
     openScriptLibrary: AppHotkeyBinding;
     openAccounts: AppHotkeyBinding;
     createWorkspaceFile: AppHotkeyBinding;

@@ -1,19 +1,12 @@
 import { useEffect } from "react";
 import { WORKSPACE_REFRESH_INTERVAL_MS } from "../../constants/workspace/workspace";
 import {
-    completeExitPreparation,
-    resolveExitGuardSync,
-    subscribeToExitGuardSyncRequested,
-    subscribeToPrepareForExit,
-} from "../../lib/platform/window";
-import {
     getLastPersistedWorkspaceSignature,
     markWorkspacePersistedSignature,
 } from "../../lib/workspace/persistence";
 import {
     selectWorkspacePath,
     selectWorkspacePersistSignature,
-    selectWorkspaceShouldGuardExit,
     useWorkspaceStore,
 } from "./useWorkspaceStore";
 
@@ -102,33 +95,4 @@ export function useWorkspaceStoreLifecycle(): void {
             );
         };
     }, [refreshWorkspaceFromFilesystem, workspacePath]);
-
-    useEffect(() => {
-        return subscribeToPrepareForExit(() => {
-            void (async () => {
-                try {
-                    const didPersist = await persistWorkspaceState();
-
-                    if (didPersist) {
-                        markWorkspacePersistedSignature(
-                            selectWorkspacePersistSignature(
-                                useWorkspaceStore.getState(),
-                            ),
-                        );
-                    }
-                } finally {
-                    await completeExitPreparation();
-                }
-            })();
-        });
-    }, [persistWorkspaceState]);
-
-    useEffect(() => {
-        return subscribeToExitGuardSyncRequested((syncId) => {
-            void resolveExitGuardSync(
-                syncId,
-                selectWorkspaceShouldGuardExit(useWorkspaceStore.getState()),
-            );
-        });
-    }, []);
 }

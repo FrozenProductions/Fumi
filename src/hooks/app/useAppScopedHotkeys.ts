@@ -64,6 +64,16 @@ export function useAppScopedHotkeys({
     );
 
     useHotkey(
+        hotkeys.openAutomaticExecution,
+        () => {
+            selectSidebarItem("automatic-execution");
+        },
+        {
+            enabled: !isCommandPaletteOpen,
+        },
+    );
+
+    useHotkey(
         hotkeys.openScriptLibrary,
         () => {
             selectSidebarItem("script-library");
