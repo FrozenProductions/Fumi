@@ -220,7 +220,7 @@ export function AutomaticExecutionSidebar({
     }, [hasRenameError]);
 
     return (
-        <aside className="flex w-[15.5rem] shrink-0 flex-col border-r border-fumi-200 bg-fumi-100">
+        <aside className="flex w-[14.5rem] shrink-0 flex-col border-r border-fumi-200 bg-fumi-100">
             <div className="border-b border-fumi-200 px-3 py-2.5">
                 <div className="flex items-center justify-between gap-3">
                     <p className="min-w-0 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
