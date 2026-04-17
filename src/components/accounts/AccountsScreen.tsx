@@ -244,7 +244,7 @@ export function AccountsScreen(): ReactElement {
                                 }}
                                 rows={6}
                                 placeholder="Paste your .ROBLOSECURITY cookie"
-                                className="min-h-32 w-full resize-y rounded-[1rem] border border-fumi-200 bg-fumi-50 px-4 py-3 text-sm text-fumi-800 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-300 focus:ring-2 focus:ring-fumi-200"
+                                className="min-h-32 max-h-80 w-full resize-y rounded-[1rem] border border-fumi-200 bg-fumi-50 px-4 py-3 text-sm text-fumi-800 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-300 focus:ring-2 focus:ring-fumi-200"
                             />
                         </label>
 
