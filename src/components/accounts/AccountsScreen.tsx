@@ -89,7 +89,7 @@ export function AccountsScreen(): ReactElement {
                             </div>
                         </div>
                     ) : accounts.length === 0 ? (
-                        <div className="flex flex-1 items-center justify-center rounded-[1.35rem] border border-dashed border-fumi-300 bg-fumi-50/80 px-8 py-14 shadow-[var(--shadow-app-card)]">
+                        <div className="flex flex-1 items-center justify-center bg-fumi-50 px-8 py-14">
                             <div className="max-w-md text-center">
                                 <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                     No Accounts
@@ -216,8 +216,8 @@ export function AccountsScreen(): ReactElement {
             </div>
 
             {isAddModalOpen ? (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-fumi-900/20 px-4 backdrop-blur-sm">
-                    <div className="w-full max-w-lg rounded-[1.6rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-card)]">
+                <div className="absolute inset-0 z-10 flex items-center justify-center px-4">
+                    <div className="w-full max-w-lg rounded-[0.9rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-floating)]">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                             Add Account
                         </p>
