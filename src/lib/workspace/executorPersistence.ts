@@ -3,7 +3,8 @@ import {
     OPIUMWARE_EXECUTOR_PORTS,
 } from "../../constants/workspace/executor";
 import { isNumber, isRecord } from "../shared/validation";
-import type { ExecutorKind } from "./workspace.type";
+import { getExecutorPortsFromSummaries } from "./executor";
+import type { ExecutorKind, ExecutorPortSummary } from "./workspace.type";
 
 const EXECUTOR_PORTS_STORAGE_KEY = "fumi-executor-ports";
 
@@ -96,21 +97,22 @@ export function persistExecutorPort(
 
 export function resolvePersistedExecutorPort(options: {
     executorKind: ExecutorKind;
-    availablePorts: readonly number[];
+    availablePorts: readonly ExecutorPortSummary[];
     fallbackPort: number;
 }): number {
     const { executorKind, availablePorts, fallbackPort } = options;
+    const numericPorts = getExecutorPortsFromSummaries(availablePorts);
 
-    if (availablePorts.includes(fallbackPort)) {
+    if (numericPorts.includes(fallbackPort)) {
         if (executorKind === "unsupported") {
             return fallbackPort;
         }
 
         const persistedPort = readPersistedExecutorPorts()[executorKind];
-        return availablePorts.includes(persistedPort)
+        return numericPorts.includes(persistedPort)
             ? persistedPort
             : fallbackPort;
     }
 
-    return availablePorts[0] ?? fallbackPort;
+    return numericPorts[0] ?? fallbackPort;
 }

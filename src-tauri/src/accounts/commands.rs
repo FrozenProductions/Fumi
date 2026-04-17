@@ -34,13 +34,13 @@ pub fn delete_account(app: AppHandle, account_id: String) -> CommandResponse<()>
 }
 
 #[command]
-pub fn kill_roblox_processes() -> CommandResponse<()> {
-    run_command(kill_roblox_processes_operation)
+pub fn kill_roblox_processes(app: AppHandle) -> CommandResponse<()> {
+    run_command(|| kill_roblox_processes_operation(&app))
 }
 
 #[command]
-pub fn launch_roblox() -> CommandResponse<()> {
-    run_command(launch_roblox_operation)
+pub fn launch_roblox(app: AppHandle) -> CommandResponse<()> {
+    run_command(|| launch_roblox_operation(&app))
 }
 
 #[command]
@@ -49,6 +49,6 @@ pub fn list_roblox_processes() -> CommandResponse<Vec<RobloxProcessInfo>> {
 }
 
 #[command]
-pub fn kill_roblox_process(pid: u32) -> CommandResponse<()> {
-    run_command(|| kill_roblox_process_operation(pid))
+pub fn kill_roblox_process(app: AppHandle, pid: u32) -> CommandResponse<()> {
+    run_command(|| kill_roblox_process_operation(&app, pid))
 }

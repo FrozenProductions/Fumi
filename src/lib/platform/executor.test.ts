@@ -35,7 +35,12 @@ function createExecutorStatusPayload(
 ): Record<string, unknown> {
     return {
         executorKind: "opiumware",
-        availablePorts: [8392, 8393, 8394, 8395, 8396, 8397],
+        availablePorts: [8392, 8393, 8394, 8395, 8396, 8397].map((port) => ({
+            port,
+            boundAccountId: null,
+            boundAccountDisplayName: null,
+            isBoundToUnknownAccount: false,
+        })),
         port: 8394,
         isAttached: true,
         ...overrides,
@@ -139,7 +144,12 @@ describe("executor platform commands", () => {
             executorKind: "macsploit",
             availablePorts: [
                 5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
-            ],
+            ].map((port) => ({
+                port,
+                boundAccountId: null,
+                boundAccountDisplayName: null,
+                isBoundToUnknownAccount: false,
+            })),
             port: 5553,
             isAttached: false,
         });

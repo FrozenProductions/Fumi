@@ -7,6 +7,7 @@ export type AccountSummary = {
     displayName: string;
     avatarUrl: string | null;
     status: AccountStatus;
+    boundPort: number | null;
     lastLaunchedAt: number | null;
 };
 

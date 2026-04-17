@@ -2,7 +2,7 @@ pub(crate) mod commands;
 pub(crate) mod models;
 
 mod roblox;
-mod storage;
+pub(crate) mod storage;
 
 use anyhow::Result;
 use tauri::{AppHandle, Runtime};
@@ -27,25 +27,25 @@ pub(crate) fn launch_account<R: Runtime>(
     app: &AppHandle<R>,
     account_id: &str,
 ) -> Result<AccountSummary> {
-    storage::activate_account(app, account_id)
+    storage::launch_account(app, account_id)
 }
 
 pub(crate) fn delete_account<R: Runtime>(app: &AppHandle<R>, account_id: &str) -> Result<()> {
     storage::delete_account(app, account_id)
 }
 
-pub(crate) fn kill_roblox_processes() -> Result<()> {
-    storage::kill_roblox_processes()
+pub(crate) fn kill_roblox_processes<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
+    storage::kill_roblox_processes(app)
 }
 
-pub(crate) fn launch_roblox() -> Result<()> {
-    storage::launch_roblox_application(std::path::Path::new(storage::ROBLOX_APPLICATION_PATH))
+pub(crate) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
+    storage::launch_roblox(app)
 }
 
 pub(crate) fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {
     storage::list_roblox_processes()
 }
 
-pub(crate) fn kill_roblox_process(pid: u32) -> Result<()> {
-    storage::kill_roblox_process(pid)
+pub(crate) fn kill_roblox_process<R: Runtime>(app: &AppHandle<R>, pid: u32) -> Result<()> {
+    storage::kill_roblox_process(app, pid)
 }

@@ -13,12 +13,16 @@ use std::{
 
 use anyhow::{anyhow, Context, Result};
 use flate2::{write::ZlibEncoder, Compression};
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 
-use crate::events::{emit_executor_message, emit_executor_status_changed};
+use crate::{
+    accounts,
+    events::{emit_executor_message, emit_executor_status_changed},
+};
 
 pub use self::models::{
-    ExecutorKind, ExecutorMessagePayload, ExecutorMessageType, ExecutorStatusPayload,
+    ExecutorKind, ExecutorMessagePayload, ExecutorMessageType, ExecutorPortSummary,
+    ExecutorStatusPayload,
 };
 
 const LOCALHOST: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
@@ -38,6 +42,12 @@ const OPIUMWARE_SCRIPT_PREFIX: &str = "OpiumwareScript ";
 
 fn log_executor_debug(message: impl AsRef<str>) {
     eprintln!("[executor] {}", message.as_ref());
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ExecutorPortPool {
+    pub executor_kind: ExecutorKind,
+    pub ports: Vec<u16>,
 }
 
 #[derive(Clone)]
@@ -88,9 +98,25 @@ impl ExecutorRuntimeState {
         self.inner.lock().unwrap_or_else(|error| error.into_inner())
     }
 
-    #[must_use]
-    pub fn status(&self) -> ExecutorStatusPayload {
-        self.sync_detected_executor_kind()
+    pub fn status<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
+        let executor_port_pool = self.sync_detected_executor_kind();
+        let available_ports =
+            accounts::storage::list_executor_port_summaries(app, &executor_port_pool)?;
+        let port = {
+            let mut state = self.lock();
+            state.port = normalize_executor_port(
+                executor_port_pool.executor_kind,
+                state.port,
+            );
+            state.port
+        };
+
+        Ok(build_status_payload(
+            executor_port_pool.executor_kind,
+            available_ports,
+            port,
+            self.is_attached(),
+        ))
     }
 
     pub fn attach<R: Runtime>(
@@ -98,7 +124,7 @@ impl ExecutorRuntimeState {
         app: &AppHandle<R>,
         port: u16,
     ) -> Result<ExecutorStatusPayload> {
-        let current_status = self.sync_detected_executor_kind();
+        let current_status = self.status(app)?;
         log_executor_debug(format!("attach requested for port {port}"));
 
         if current_status.executor_kind == ExecutorKind::Unsupported {
@@ -107,7 +133,11 @@ impl ExecutorRuntimeState {
             ));
         }
 
-        if !current_status.available_ports.contains(&port) {
+        if !current_status
+            .available_ports
+            .iter()
+            .any(|available_port| available_port.port == port)
+        {
             return Err(anyhow!(
                 "ConnectionError: Port {port} is not available for the active executor."
             ));
@@ -190,13 +220,13 @@ impl ExecutorRuntimeState {
             }
         }
 
-        let status = self.status();
+        let status = self.status(app)?;
         let _ = emit_executor_status_changed(app, &status);
         Ok(status)
     }
 
     pub fn reattach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
-        let status = self.status();
+        let status = self.status(app)?;
         let port = status.port;
         log_executor_debug(format!("reattach requested for port {port}"));
 
@@ -223,7 +253,7 @@ impl ExecutorRuntimeState {
     }
 
     pub fn detach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
-        let status = self.status();
+        let status = self.status(app)?;
         log_executor_debug("detach requested");
 
         let next_status = match status.executor_kind {
@@ -242,7 +272,7 @@ impl ExecutorRuntimeState {
                 ));
                 let _ = connection.writer.shutdown(Shutdown::Both);
                 let _ = connection.reader_thread.join();
-                self.status()
+                self.status(app)?
             }
             ExecutorKind::Opiumware => {
                 let mut state = self.lock();
@@ -251,7 +281,7 @@ impl ExecutorRuntimeState {
                 }
 
                 state.is_opiumware_attached = false;
-                build_status_payload(&state)
+                self.status(app)?
             }
             ExecutorKind::Unsupported => {
                 return Err(anyhow!(
@@ -269,7 +299,7 @@ impl ExecutorRuntimeState {
     }
 
     pub fn execute_script<R: Runtime>(&self, app: &AppHandle<R>, script: &str) -> Result<()> {
-        let status = self.status();
+        let status = self.status(app)?;
         log_executor_debug(format!(
             "execute requested; script_bytes={}, attached={}",
             script.len(),
@@ -317,7 +347,7 @@ impl ExecutorRuntimeState {
         key: &str,
         value: bool,
     ) -> Result<()> {
-        let status = self.status();
+        let status = self.status(app)?;
         log_executor_debug(format!(
             "update setting requested; key={key}, value={value}"
         ));
@@ -336,6 +366,19 @@ impl ExecutorRuntimeState {
         }
         let payload = format!("{key} {}", if value { "true" } else { "false" });
         self.write_frame_with_reconnect(app, ExecutorIpcType::Setting, payload.as_bytes())
+    }
+
+    pub fn select_current_port<R: Runtime>(
+        &self,
+        app: &AppHandle<R>,
+        port: u16,
+    ) -> Result<ExecutorStatusPayload> {
+        let executor_port_pool = self.sync_detected_executor_kind();
+        self.update_current_port(executor_port_pool.executor_kind, port)?;
+
+        let status = self.status(app)?;
+        let _ = emit_executor_status_changed(app, &status);
+        Ok(status)
     }
 
     fn write_frame(&self, ipc_type: ExecutorIpcType, payload: &[u8]) -> Result<()> {
@@ -382,7 +425,7 @@ impl ExecutorRuntimeState {
         match self.write_frame(ipc_type, payload) {
             Ok(()) => Ok(()),
             Err(error) if should_retry_after_write_error(&error) => {
-                let port = self.status().port;
+                let port = self.current_port();
 
                 log_executor_debug(format!(
                     "write failed with retryable socket error; reconnecting on port {port}"
@@ -430,6 +473,27 @@ impl ExecutorRuntimeState {
         state.connection.as_ref().map(|_| state.port)
     }
 
+    fn current_port(&self) -> u16 {
+        self.lock().port
+    }
+
+    fn update_current_port(&self, executor_kind: ExecutorKind, port: u16) -> Result<()> {
+        if !is_supported_port(executor_kind, port) {
+            return Err(anyhow!(
+                "ConnectionError: Port {port} is not available for the active executor."
+            ));
+        }
+
+        let mut state = self.lock();
+        state.port = port;
+        Ok(())
+    }
+
+    fn is_attached(&self) -> bool {
+        let state = self.lock();
+        state.connection.is_some() || state.is_opiumware_attached
+    }
+
     fn reset_connection<R: Runtime>(&self, app: &AppHandle<R>, emit_status_change: bool) {
         let connection = {
             let mut state = self.lock();
@@ -445,20 +509,22 @@ impl ExecutorRuntimeState {
             log_executor_debug(format!(
                 "resetting connection id {} on port {}",
                 connection.id,
-                self.status().port
+                self.current_port()
             ));
             let _ = connection.writer.shutdown(Shutdown::Both);
             let _ = connection.reader_thread.join();
 
             if emit_status_change {
-                let _ = emit_executor_status_changed(app, &self.status());
+                if let Ok(status) = self.status(app) {
+                    let _ = emit_executor_status_changed(app, &status);
+                }
             }
 
             log_executor_debug("connection reset completed");
         }
     }
 
-    fn sync_detected_executor_kind(&self) -> ExecutorStatusPayload {
+    fn sync_detected_executor_kind(&self) -> ExecutorPortPool {
         let detected_kind = detect_executor_kind();
         let stale_connection = {
             let mut state = self.lock();
@@ -478,7 +544,13 @@ impl ExecutorRuntimeState {
 
             state.port = normalize_executor_port(detected_kind, state.port);
 
-            (build_status_payload(&state), stale_connection)
+            (
+                ExecutorPortPool {
+                    executor_kind: state.executor_kind,
+                    ports: available_ports_for_executor(state.executor_kind).to_vec(),
+                },
+                stale_connection,
+            )
         };
 
         if let Some(connection) = stale_connection.1 {
@@ -519,6 +591,22 @@ fn detect_executor_kind_at(
     }
 }
 
+pub(crate) fn current_executor_port_pool() -> ExecutorPortPool {
+    executor_port_pool_for_kind(detect_executor_kind())
+}
+
+#[cfg(test)]
+pub(crate) fn unsupported_executor_port_pool() -> ExecutorPortPool {
+    executor_port_pool_for_kind(ExecutorKind::Unsupported)
+}
+
+pub(crate) fn executor_port_pool_for_kind(executor_kind: ExecutorKind) -> ExecutorPortPool {
+    ExecutorPortPool {
+        executor_kind,
+        ports: available_ports_for_executor(executor_kind).to_vec(),
+    }
+}
+
 fn available_ports_for_executor(executor_kind: ExecutorKind) -> &'static [u16] {
     match executor_kind {
         ExecutorKind::Macsploit => &MACSPLOIT_AVAILABLE_PORTS,
@@ -546,13 +634,35 @@ fn normalize_executor_port(executor_kind: ExecutorKind, port: u16) -> u16 {
     }
 }
 
-fn build_status_payload(state: &ExecutorState) -> ExecutorStatusPayload {
+fn build_status_payload(
+    executor_kind: ExecutorKind,
+    available_ports: Vec<ExecutorPortSummary>,
+    port: u16,
+    is_attached: bool,
+) -> ExecutorStatusPayload {
     ExecutorStatusPayload {
-        executor_kind: state.executor_kind,
-        available_ports: available_ports_for_executor(state.executor_kind).to_vec(),
-        port: state.port,
-        is_attached: state.connection.is_some() || state.is_opiumware_attached,
+        executor_kind,
+        available_ports,
+        port,
+        is_attached,
     }
+}
+
+pub(crate) fn emit_current_executor_status<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<ExecutorStatusPayload> {
+    let state = app.state::<ExecutorRuntimeState>();
+    let status = state.status(app)?;
+    emit_executor_status_changed(app, &status).context("failed to emit executor status")?;
+    Ok(status)
+}
+
+pub(crate) fn select_current_executor_port<R: Runtime>(
+    app: &AppHandle<R>,
+    port: u16,
+) -> Result<ExecutorStatusPayload> {
+    let state = app.state::<ExecutorRuntimeState>();
+    state.select_current_port(app, port)
 }
 
 fn connect_to_executor_port(port: u16) -> Result<TcpStream> {
@@ -675,7 +785,7 @@ fn run_reader_loop<R: Runtime>(
         }
     }
 
-    let status = {
+    let should_suppress_disconnect_event = {
         let mut state = state_handle
             .lock()
             .unwrap_or_else(|error| error.into_inner());
@@ -694,18 +804,8 @@ fn run_reader_loop<R: Runtime>(
             state.suppressed_disconnect_connection_id = None;
         }
 
-        (
-            build_status_payload(&state),
-            should_suppress_disconnect_event,
-        )
+        should_suppress_disconnect_event
     };
-
-    let (status, should_suppress_disconnect_event) = status;
-
-    log_executor_debug(format!(
-        "reader loop finished; connection_id={connection_id}, attached={}, port={}",
-        status.is_attached, status.port
-    ));
 
     if should_suppress_disconnect_event {
         log_executor_debug(format!(
@@ -714,7 +814,19 @@ fn run_reader_loop<R: Runtime>(
         return;
     }
 
-    let _ = emit_executor_status_changed(&app, &status);
+    match emit_current_executor_status(&app) {
+        Ok(status) => {
+            log_executor_debug(format!(
+                "reader loop finished; connection_id={connection_id}, attached={}, port={}",
+                status.is_attached, status.port
+            ));
+        }
+        Err(error) => {
+            log_executor_debug(format!(
+                "reader loop finished without refreshed status; connection_id={connection_id}; error={error:#}"
+            ));
+        }
+    }
 }
 
 fn extract_complete_messages(pending: &mut Vec<u8>) -> Result<Vec<ExecutorMessagePayload>> {
@@ -913,62 +1025,61 @@ mod tests {
 
     #[test]
     fn build_status_payload_marks_opiumware_as_attached_without_a_persistent_socket() {
-        let state = ExecutorState {
-            executor_kind: ExecutorKind::Opiumware,
-            port: 8394,
-            next_connection_id: 0,
-            suppressed_disconnect_connection_id: None,
-            connection: None,
-            is_opiumware_attached: true,
-        };
-
-        let status = build_status_payload(&state);
+        let status = build_status_payload(
+            ExecutorKind::Opiumware,
+            vec![ExecutorPortSummary {
+                port: 8394,
+                bound_account_id: Some("account-1".to_string()),
+                bound_account_display_name: Some("Alpha".to_string()),
+                is_bound_to_unknown_account: false,
+            }],
+            8394,
+            true,
+        );
 
         assert_eq!(status.executor_kind, ExecutorKind::Opiumware);
-        assert_eq!(status.available_ports, OPIUMWARE_AVAILABLE_PORTS);
+        assert_eq!(
+            status.available_ports,
+            vec![ExecutorPortSummary {
+                port: 8394,
+                bound_account_id: Some("account-1".to_string()),
+                bound_account_display_name: Some("Alpha".to_string()),
+                is_bound_to_unknown_account: false,
+            }]
+        );
         assert_eq!(status.port, 8394);
         assert!(status.is_attached);
     }
 
     #[test]
-    fn build_status_payload_exposes_executor_specific_ports() {
-        let macsploit_state = ExecutorState {
-            executor_kind: ExecutorKind::Macsploit,
-            port: 5553,
-            next_connection_id: 0,
-            suppressed_disconnect_connection_id: None,
-            connection: None,
-            is_opiumware_attached: false,
-        };
+    fn executor_port_pool_exposes_executor_specific_ports() {
+        assert_eq!(
+            executor_port_pool_for_kind(ExecutorKind::Macsploit).ports,
+            MACSPLOIT_AVAILABLE_PORTS.to_vec()
+        );
+        assert_eq!(
+            executor_port_pool_for_kind(ExecutorKind::Opiumware).ports,
+            OPIUMWARE_AVAILABLE_PORTS.to_vec()
+        );
+        assert_eq!(
+            executor_port_pool_for_kind(ExecutorKind::Unsupported).ports,
+            UNSUPPORTED_EXECUTOR_PORTS.to_vec()
+        );
+    }
 
-        let opiumware_state = ExecutorState {
-            executor_kind: ExecutorKind::Opiumware,
-            port: 8392,
-            next_connection_id: 0,
-            suppressed_disconnect_connection_id: None,
-            connection: None,
-            is_opiumware_attached: false,
-        };
-        let unsupported_state = ExecutorState {
-            executor_kind: ExecutorKind::Unsupported,
-            port: 0,
-            next_connection_id: 0,
-            suppressed_disconnect_connection_id: None,
-            connection: None,
-            is_opiumware_attached: false,
-        };
+    #[test]
+    fn update_current_port_switches_the_selected_port() {
+        let runtime_state = ExecutorRuntimeState::default();
+        {
+            let mut state = runtime_state.lock();
+            state.executor_kind = ExecutorKind::Macsploit;
+            state.port = 5553;
+        }
 
-        assert_eq!(
-            build_status_payload(&macsploit_state).available_ports,
-            MACSPLOIT_AVAILABLE_PORTS
-        );
-        assert_eq!(
-            build_status_payload(&opiumware_state).available_ports,
-            OPIUMWARE_AVAILABLE_PORTS
-        );
-        assert_eq!(
-            build_status_payload(&unsupported_state).available_ports,
-            UNSUPPORTED_EXECUTOR_PORTS
-        );
+        runtime_state
+            .update_current_port(ExecutorKind::Macsploit, 5556)
+            .expect("port should switch");
+
+        assert_eq!(runtime_state.current_port(), 5556);
     }
 }

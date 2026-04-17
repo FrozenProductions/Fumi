@@ -57,6 +57,10 @@ function parseAccountSummary(
         throw createInvalidAccountsResponseError(operation);
     }
 
+    if (value.boundPort !== null && !isNumber(value.boundPort)) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
     if (value.lastLaunchedAt !== null && !isNumber(value.lastLaunchedAt)) {
         throw createInvalidAccountsResponseError(operation);
     }
@@ -68,6 +72,7 @@ function parseAccountSummary(
         displayName: value.displayName,
         avatarUrl: value.avatarUrl,
         status: value.status,
+        boundPort: value.boundPort,
         lastLaunchedAt: value.lastLaunchedAt,
     };
 }

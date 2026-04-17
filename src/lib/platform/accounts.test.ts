@@ -34,6 +34,7 @@ function createAccountSummary(
         displayName: "Cool User",
         avatarUrl: "https://cdn.test/42.png",
         status: "offline",
+        boundPort: null,
         lastLaunchedAt: null,
         ...overrides,
     };
@@ -68,6 +69,7 @@ describe("accounts platform commands", () => {
             .mockResolvedValueOnce(
                 createAccountSummary({
                     status: "active",
+                    boundPort: 5553,
                     lastLaunchedAt: 123,
                 }),
             );
@@ -80,6 +82,7 @@ describe("accounts platform commands", () => {
         ).resolves.toEqual(
             createAccountSummary({
                 status: "active",
+                boundPort: 5553,
                 lastLaunchedAt: 123,
             }),
         );

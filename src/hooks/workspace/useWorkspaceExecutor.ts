@@ -15,6 +15,7 @@ import {
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import {
     getExecutorPortRangeErrorMessage,
+    getExecutorPortsFromSummaries,
     normalizeExecutorPort,
     parseExecutorPort,
 } from "../../lib/workspace/executor";
@@ -29,6 +30,16 @@ import type {
 } from "./useWorkspaceExecutor.type";
 
 type AsyncUnsubscribe = () => void;
+const EXECUTOR_STATUS_POLL_INTERVAL_MS = 2_000;
+
+function createDefaultAvailablePortSummaries(): ExecutorStatusPayload["availablePorts"] {
+    return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({
+        port,
+        boundAccountId: null,
+        boundAccountDisplayName: null,
+        isBoundToUnknownAccount: false,
+    }));
+}
 
 function manageAsyncSubscription(
     start: () => Promise<AsyncUnsubscribe>,
@@ -62,6 +73,9 @@ export function useWorkspaceExecutor({
     activeTabContent,
 }: UseWorkspaceExecutorOptions): UseWorkspaceExecutorResult {
     const [executorKind, setExecutorKind] = useState(DEFAULT_EXECUTOR_KIND);
+    const [availablePortSummaries, setAvailablePortSummaries] = useState<
+        ExecutorStatusPayload["availablePorts"]
+    >(createDefaultAvailablePortSummaries);
     const [availablePorts, setAvailablePorts] = useState<readonly number[]>([
         ...getExecutorPorts(DEFAULT_EXECUTOR_KIND),
     ]);
@@ -74,15 +88,19 @@ export function useWorkspaceExecutor({
 
     const applyExecutorStatus = useEffectEvent(
         (status: ExecutorStatusPayload): void => {
+            const nextAvailablePorts = getExecutorPortsFromSummaries(
+                status.availablePorts,
+            );
             const nextPort = resolvePersistedExecutorPort({
                 executorKind: status.executorKind,
                 availablePorts: status.availablePorts,
                 fallbackPort: status.port,
             });
             setExecutorKind(status.executorKind);
-            setAvailablePorts(status.availablePorts);
+            setAvailablePortSummaries(status.availablePorts);
+            setAvailablePorts(nextAvailablePorts);
             setPort(
-                normalizeExecutorPort(String(nextPort), status.availablePorts),
+                normalizeExecutorPort(String(nextPort), nextAvailablePorts),
             );
             setIsAttached(status.isAttached);
             setDidRecentAttachFail(false);
@@ -92,9 +110,10 @@ export function useWorkspaceExecutor({
     );
 
     useEffect(() => {
+        let intervalId: number | null = null;
         let isCancelled = false;
 
-        void (async () => {
+        const refreshExecutorStatus = async (): Promise<void> => {
             try {
                 const status = await getExecutorStatus();
 
@@ -111,10 +130,18 @@ export function useWorkspaceExecutor({
                     );
                 }
             }
-        })();
+        };
+
+        void refreshExecutorStatus();
+        intervalId = window.setInterval(() => {
+            void refreshExecutorStatus();
+        }, EXECUTOR_STATUS_POLL_INTERVAL_MS);
 
         return () => {
             isCancelled = true;
+            if (intervalId !== null) {
+                window.clearInterval(intervalId);
+            }
         };
     }, []);
 
@@ -293,6 +320,7 @@ export function useWorkspaceExecutor({
         state: {
             executorKind,
             availablePorts,
+            availablePortSummaries,
             hasSupportedExecutor,
             port,
             isAttached,

@@ -1,3 +1,11 @@
+import type { ExecutorPortSummary } from "./workspace.type";
+
+export function getExecutorPortsFromSummaries(
+    availablePorts: readonly ExecutorPortSummary[],
+): number[] {
+    return availablePorts.map((item) => item.port);
+}
+
 export function parseExecutorPort(
     port: string,
     availablePorts: readonly number[],

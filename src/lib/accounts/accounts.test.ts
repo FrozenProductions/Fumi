@@ -17,6 +17,7 @@ function account(
         displayName: `User ${id}`,
         avatarUrl: null,
         status: "offline",
+        boundPort: null,
         lastLaunchedAt: null,
         ...overrides,
     };
@@ -37,18 +38,34 @@ describe("accounts list helpers", () => {
         ]);
     });
 
-    it("upserts an active account and clears any previous active state", () => {
+    it("upserts an active account without forcing other active bindings offline", () => {
         const nextAccounts = upsertAccountSummary(
             [
-                account("one", { status: "active", lastLaunchedAt: 1 }),
+                account("one", {
+                    status: "active",
+                    boundPort: 5553,
+                    lastLaunchedAt: 1,
+                }),
                 account("two", { status: "offline", lastLaunchedAt: 2 }),
             ],
-            account("two", { status: "active", lastLaunchedAt: 3 }),
+            account("two", {
+                status: "active",
+                boundPort: 5554,
+                lastLaunchedAt: 3,
+            }),
         );
 
         expect(nextAccounts).toEqual([
-            account("two", { status: "active", lastLaunchedAt: 3 }),
-            account("one", { status: "offline", lastLaunchedAt: 1 }),
+            account("two", {
+                status: "active",
+                boundPort: 5554,
+                lastLaunchedAt: 3,
+            }),
+            account("one", {
+                status: "active",
+                boundPort: 5553,
+                lastLaunchedAt: 1,
+            }),
         ]);
     });
 

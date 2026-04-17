@@ -32,6 +32,7 @@ export type AppTopbarExecutorControlsProps = {
     state: Pick<
         WorkspaceExecutorState,
         | "availablePorts"
+        | "availablePortSummaries"
         | "didRecentAttachFail"
         | "hasSupportedExecutor"
         | "isAttached"

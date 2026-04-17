@@ -50,17 +50,6 @@ export function upsertAccountSummary(
     );
     const nextAccounts = [...accounts];
 
-    if (nextAccount.status === "active") {
-        for (let index = 0; index < nextAccounts.length; index += 1) {
-            if (nextAccounts[index]?.status === "active") {
-                nextAccounts[index] = {
-                    ...nextAccounts[index],
-                    status: "offline",
-                };
-            }
-        }
-    }
-
     if (existingIndex >= 0) {
         nextAccounts[existingIndex] = nextAccount;
         return sortAccounts(nextAccounts);

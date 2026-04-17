@@ -126,12 +126,20 @@ function createWorkspaceSession(
 function createWorkspaceExecutor(
     overrides: WorkspaceExecutorOverrides = {},
 ): UseWorkspaceExecutorResult {
+    const availablePorts = [
+        5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
+    ];
+
     return {
         state: {
             executorKind: "macsploit",
-            availablePorts: [
-                5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,
-            ],
+            availablePorts,
+            availablePortSummaries: availablePorts.map((port) => ({
+                port,
+                boundAccountId: null,
+                boundAccountDisplayName: null,
+                isBoundToUnknownAccount: false,
+            })),
             hasSupportedExecutor: true,
             port: "5553",
             isAttached: false,
@@ -285,6 +293,7 @@ describe("normalizeAppCommandPaletteSearchValue", () => {
                     state: {
                         executorKind: "unsupported",
                         availablePorts: [],
+                        availablePortSummaries: [],
                         hasSupportedExecutor: false,
                         port: "",
                     },

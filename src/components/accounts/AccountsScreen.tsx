@@ -10,14 +10,14 @@ import type { AccountSummary } from "../../lib/accounts/accounts.type";
 import { confirmAction } from "../../lib/platform/dialog";
 import { AppIcon } from "../app/AppIcon";
 
-function getAccountStatusTone(status: AccountSummary["status"]): string {
-    return status === "active"
+function getAccountStatusTone(account: AccountSummary): string {
+    return account.boundPort !== null
         ? "border-emerald-200 bg-emerald-50 text-emerald-600"
         : "border-fumi-200 bg-fumi-100 text-fumi-500";
 }
 
-function getAccountStatusLabel(status: AccountSummary["status"]): string {
-    return status === "active" ? "Active" : "Offline";
+function getAccountStatusLabel(account: AccountSummary): string {
+    return account.boundPort !== null ? "Active" : "Offline";
 }
 
 export function AccountsScreen(): ReactElement {
@@ -41,7 +41,7 @@ export function AccountsScreen(): ReactElement {
 
     async function handleDeleteAccount(account: AccountSummary): Promise<void> {
         const shouldDelete = await confirmAction(
-            `Delete ${account.displayName} from Fumi? This will also clear the active Roblox cookie if this account is currently active.`,
+            `Delete ${account.displayName} from Fumi? Any live Roblox window for this account will stay open and be shown as an unknown account.`,
         );
 
         if (!shouldDelete) {
@@ -140,12 +140,17 @@ export function AccountsScreen(): ReactElement {
                                                     {account.displayName}
                                                 </h3>
                                                 <span
-                                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${getAccountStatusTone(account.status)}`}
+                                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${getAccountStatusTone(account)}`}
                                                 >
                                                     {getAccountStatusLabel(
-                                                        account.status,
+                                                        account,
                                                     )}
                                                 </span>
+                                                {account.boundPort !== null ? (
+                                                    <span className="inline-flex items-center rounded-full border border-fumi-200 bg-fumi-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-fumi-600">
+                                                        Port {account.boundPort}
+                                                    </span>
+                                                ) : null}
                                             </div>
                                             <p className="mt-1 text-xs text-fumi-500">
                                                 @{account.username}
