@@ -7,7 +7,9 @@ pub(crate) mod storage;
 use anyhow::Result;
 use tauri::{AppHandle, Runtime};
 
-use self::models::{AccountListResponse, AccountSummary, RobloxProcessInfo};
+use self::models::{
+    AccountListResponse, AccountSummary, RobloxAccountIdentity, RobloxProcessInfo,
+};
 
 pub(crate) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountListResponse> {
     storage::list_accounts(app)
@@ -42,8 +44,16 @@ pub(crate) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
     storage::launch_roblox(app)
 }
 
-pub(crate) fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {
-    storage::list_roblox_processes()
+pub(crate) fn list_roblox_processes_with_bindings<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<Vec<RobloxProcessInfo>> {
+    storage::list_roblox_processes_with_bindings(app)
+}
+
+pub(crate) async fn get_live_roblox_account<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<Option<RobloxAccountIdentity>> {
+    storage::get_live_roblox_account(app).await
 }
 
 pub(crate) fn kill_roblox_process<R: Runtime>(app: &AppHandle<R>, pid: u32) -> Result<()> {

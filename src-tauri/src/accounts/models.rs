@@ -37,6 +37,18 @@ pub struct AccountListResponse {
 pub struct RobloxProcessInfo {
     pub pid: u32,
     pub started_at: i64,
+    pub bound_account_id: Option<String>,
+    pub bound_account_display_name: Option<String>,
+    pub is_bound_to_unknown_account: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RobloxAccountIdentity {
+    pub user_id: i64,
+    pub username: String,
+    pub display_name: String,
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -45,6 +57,17 @@ pub(super) struct ResolvedRobloxAccount {
     pub(super) username: String,
     pub(super) display_name: String,
     pub(super) avatar_url: Option<String>,
+}
+
+impl ResolvedRobloxAccount {
+    pub(super) fn into_identity(self) -> RobloxAccountIdentity {
+        RobloxAccountIdentity {
+            user_id: self.user_id,
+            username: self.username,
+            display_name: self.display_name,
+            avatar_url: self.avatar_url,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

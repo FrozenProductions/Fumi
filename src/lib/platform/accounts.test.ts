@@ -40,6 +40,31 @@ function createAccountSummary(
     };
 }
 
+function createRobloxProcessInfo(
+    overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+    return {
+        pid: 101,
+        startedAt: 123,
+        boundAccountId: "account-1",
+        boundAccountDisplayName: "Cool User",
+        isBoundToUnknownAccount: false,
+        ...overrides,
+    };
+}
+
+function createRobloxAccountIdentity(
+    overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+    return {
+        userId: 42,
+        username: "cool-user",
+        displayName: "Cool User",
+        avatarUrl: "https://cdn.test/42.png",
+        ...overrides,
+    };
+}
+
 describe("accounts platform commands", () => {
     beforeEach(() => {
         mocks.invoke.mockReset();
@@ -133,6 +158,20 @@ describe("accounts platform commands", () => {
         ).rejects.toHaveProperty(
             "message",
             "Unexpected response shape for addAccount.",
+        );
+    });
+
+    it("parses enriched roblox process payloads and the live account identity", async () => {
+        const accountsModule = await loadAccountsModule();
+        mocks.invoke
+            .mockResolvedValueOnce([createRobloxProcessInfo()])
+            .mockResolvedValueOnce(createRobloxAccountIdentity());
+
+        await expect(accountsModule.listRobloxProcesses()).resolves.toEqual([
+            createRobloxProcessInfo(),
+        ]);
+        await expect(accountsModule.getLiveRobloxAccount()).resolves.toEqual(
+            createRobloxAccountIdentity(),
         );
     });
 });

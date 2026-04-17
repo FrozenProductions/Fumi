@@ -13,13 +13,17 @@ import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCo
 import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
-import type { RobloxProcessInfo } from "../../lib/accounts/accounts.type";
+import type {
+    RobloxAccountIdentity,
+    RobloxProcessInfo,
+} from "../../lib/accounts/accounts.type";
 import {
     getAppHotkeyBinding,
     getAppHotkeyShortcutLabel,
 } from "../../lib/app/hotkeys";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import {
+    getLiveRobloxAccount,
     killRobloxProcess,
     killRobloxProcesses,
     launchRoblox,
@@ -110,6 +114,8 @@ export function WorkspaceScreen({
     const [robloxProcesses, setRobloxProcesses] = useState<
         readonly RobloxProcessInfo[]
     >([]);
+    const [liveRobloxAccount, setLiveRobloxAccount] =
+        useState<RobloxAccountIdentity | null>(null);
     const [isLaunching, setIsLaunching] = useState(false);
     const [isKillingRoblox, setIsKillingRoblox] = useState(false);
     const isDesktopShell = isTauriEnvironment();
@@ -139,6 +145,33 @@ export function WorkspaceScreen({
         const intervalId = window.setInterval(() => {
             void pollRobloxState();
         }, 2_000);
+
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+        };
+    }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function pollLiveRobloxAccount(): Promise<void> {
+            try {
+                const account = await getLiveRobloxAccount();
+                if (isMounted) {
+                    setLiveRobloxAccount(account);
+                }
+            } catch {
+                if (isMounted) {
+                    setLiveRobloxAccount(null);
+                }
+            }
+        }
+
+        void pollLiveRobloxAccount();
+        const intervalId = window.setInterval(() => {
+            void pollLiveRobloxAccount();
+        }, 15_000);
 
         return () => {
             isMounted = false;
@@ -660,6 +693,7 @@ export function WorkspaceScreen({
                                         editorSettings.isOutlinePanelVisible,
                                     onToggleOutlinePanel: toggleOutlinePanel,
                                     robloxProcesses,
+                                    liveRobloxAccount,
                                     onKillRobloxProcess:
                                         handleKillRobloxProcess,
                                 }}

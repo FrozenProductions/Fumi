@@ -14,13 +14,15 @@ use tauri::{AppHandle, Manager, Runtime};
 use uuid::Uuid;
 
 use crate::{
-    binarycookies::write_minimal_roblosecurity_cookie_file,
+    binarycookies::{
+        read_roblosecurity_cookie_value, write_minimal_roblosecurity_cookie_file,
+    },
     executor::{self, ExecutorKind, ExecutorPortPool, ExecutorPortSummary},
 };
 
 use super::models::{
-    AccountListResponse, AccountSummary, ResolvedRobloxAccount, RobloxProcessInfo,
-    StoredAccountRecord, StoredAccountsManifest, StoredRobloxBindingRecord,
+    AccountListResponse, AccountSummary, ResolvedRobloxAccount, RobloxAccountIdentity,
+    RobloxProcessInfo, StoredAccountRecord, StoredAccountsManifest, StoredRobloxBindingRecord,
     ACCOUNTS_COOKIES_DIR_NAME, ACCOUNTS_DIR_NAME, ACCOUNTS_MANIFEST_FILE_NAME,
     ACCOUNTS_MANIFEST_VERSION,
 };
@@ -211,11 +213,47 @@ pub(super) fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {
 
     for pid in pids {
         let started_at = get_process_start_time(pid).unwrap_or(0);
-        processes.push(RobloxProcessInfo { pid, started_at });
+        processes.push(RobloxProcessInfo {
+            pid,
+            started_at,
+            bound_account_id: None,
+            bound_account_display_name: None,
+            is_bound_to_unknown_account: true,
+        });
     }
 
     sort_roblox_processes(&mut processes);
     Ok(processes)
+}
+
+pub(super) fn list_roblox_processes_with_bindings<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<Vec<RobloxProcessInfo>> {
+    let accounts_root = get_accounts_root(app)?;
+    let executor_port_pool = executor::current_executor_port_pool();
+    let running_processes = list_roblox_processes()?;
+    let manifest = sync_accounts_manifest(
+        &accounts_root,
+        &executor_port_pool,
+        running_processes.as_slice(),
+    )?;
+
+    Ok(build_roblox_process_list(
+        &manifest,
+        running_processes.as_slice(),
+    ))
+}
+
+pub(super) async fn get_live_roblox_account<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<Option<RobloxAccountIdentity>> {
+    let live_cookie_path = get_live_roblox_cookie_path()?;
+    let Some(cookie_value) = read_roblosecurity_cookie_value(&live_cookie_path)? else {
+        return Ok(None);
+    };
+    let resolved_account = super::roblox::resolve_account_from_cookie(app, &cookie_value).await?;
+
+    Ok(Some(resolved_account.into_identity()))
 }
 
 pub(super) fn kill_roblox_process<R: Runtime>(app: &AppHandle<R>, pid: u32) -> Result<()> {
@@ -413,6 +451,41 @@ fn build_executor_port_summaries(
                 bound_account_id: binding.account_id.clone(),
                 bound_account_display_name,
                 is_bound_to_unknown_account,
+            }
+        })
+        .collect()
+}
+
+fn build_roblox_process_list(
+    manifest: &StoredAccountsManifest,
+    running_processes: &[RobloxProcessInfo],
+) -> Vec<RobloxProcessInfo> {
+    let account_names = manifest
+        .accounts
+        .iter()
+        .map(|account| (account.id.as_str(), account.display_name.as_str()))
+        .collect::<HashMap<_, _>>();
+
+    running_processes
+        .iter()
+        .map(|process| {
+            let binding = manifest
+                .roblox_bindings
+                .iter()
+                .find(|binding| binding.pid == process.pid);
+            let bound_account_id =
+                binding.and_then(|binding| binding.account_id.as_ref()).cloned();
+            let bound_account_display_name = bound_account_id
+                .as_deref()
+                .and_then(|account_id| account_names.get(account_id).copied())
+                .map(str::to_string);
+
+            RobloxProcessInfo {
+                pid: process.pid,
+                started_at: process.started_at,
+                bound_account_id,
+                bound_account_display_name: bound_account_display_name.clone(),
+                is_bound_to_unknown_account: bound_account_display_name.is_none(),
             }
         })
         .collect()
@@ -1109,7 +1182,13 @@ mod tests {
     }
 
     fn roblox_process(pid: u32, started_at: i64) -> RobloxProcessInfo {
-        RobloxProcessInfo { pid, started_at }
+        RobloxProcessInfo {
+            pid,
+            started_at,
+            bound_account_id: None,
+            bound_account_display_name: None,
+            is_bound_to_unknown_account: true,
+        }
     }
 
     fn macsploit_pool() -> ExecutorPortPool {

@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
     AccountListResponse,
     AccountSummary,
+    RobloxAccountIdentity,
     RobloxProcessInfo,
 } from "../accounts/accounts.type";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
@@ -104,7 +105,11 @@ function parseRobloxProcessInfo(
     if (
         !isRecord(value) ||
         !isNumber(value.pid) ||
-        !isNumber(value.startedAt)
+        !isNumber(value.startedAt) ||
+        (value.boundAccountId !== null && !isString(value.boundAccountId)) ||
+        (value.boundAccountDisplayName !== null &&
+            !isString(value.boundAccountDisplayName)) ||
+        !isBoolean(value.isBoundToUnknownAccount)
     ) {
         throw createInvalidAccountsResponseError(operation);
     }
@@ -112,6 +117,9 @@ function parseRobloxProcessInfo(
     return {
         pid: value.pid,
         startedAt: value.startedAt,
+        boundAccountId: value.boundAccountId,
+        boundAccountDisplayName: value.boundAccountDisplayName,
+        isBoundToUnknownAccount: value.isBoundToUnknownAccount,
     };
 }
 
@@ -126,6 +134,39 @@ function parseRobloxProcessList(
     return value.map((processInfo) =>
         parseRobloxProcessInfo(processInfo, operation),
     );
+}
+
+function parseRobloxAccountIdentity(
+    value: unknown,
+    operation: string,
+): RobloxAccountIdentity {
+    if (
+        !isRecord(value) ||
+        !isNumber(value.userId) ||
+        !isString(value.username) ||
+        !isString(value.displayName) ||
+        (value.avatarUrl !== null && !isString(value.avatarUrl))
+    ) {
+        throw createInvalidAccountsResponseError(operation);
+    }
+
+    return {
+        userId: value.userId,
+        username: value.username,
+        displayName: value.displayName,
+        avatarUrl: value.avatarUrl,
+    };
+}
+
+function parseNullableRobloxAccountIdentity(
+    value: unknown,
+    operation: string,
+): RobloxAccountIdentity | null {
+    if (value === null) {
+        return null;
+    }
+
+    return parseRobloxAccountIdentity(value, operation);
 }
 
 async function invokeAccountsCommand<T>(
@@ -284,5 +325,17 @@ export function killRobloxProcess(pid: number): Promise<void> {
         "kill_roblox_process",
         "killRobloxProcess",
         { pid },
+    );
+}
+
+export function getLiveRobloxAccount(): Promise<RobloxAccountIdentity | null> {
+    if (!isTauriEnvironment()) {
+        return Promise.resolve(null);
+    }
+
+    return invokeAccountsCommand(
+        "get_live_roblox_account",
+        "getLiveRobloxAccount",
+        parseNullableRobloxAccountIdentity,
     );
 }

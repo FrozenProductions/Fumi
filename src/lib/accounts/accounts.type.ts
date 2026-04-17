@@ -19,4 +19,14 @@ export type AccountListResponse = {
 export type RobloxProcessInfo = {
     pid: number;
     startedAt: number;
+    boundAccountId: string | null;
+    boundAccountDisplayName: string | null;
+    isBoundToUnknownAccount: boolean;
+};
+
+export type RobloxAccountIdentity = {
+    userId: number;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
 };
