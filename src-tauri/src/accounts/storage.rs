@@ -31,7 +31,7 @@ pub(crate) const ROBLOX_APPLICATION_PATH: &str = "/Applications/Roblox.app";
 const ROBLOX_PROCESS_NAMES: &[&str] = &["RobloxPlayer", "RobloxPlayerBeta"];
 const ROBLOX_EXECUTABLE_CANDIDATES: &[&str] = &["RobloxPlayer", "RobloxPlayerBeta"];
 const PROCESS_EXIT_POLL_INTERVAL: Duration = Duration::from_millis(100);
-const PROCESS_EXIT_POLL_ATTEMPTS: usize = 10;
+const PROCESS_EXIT_POLL_ATTEMPTS: usize = 50;
 const PROCESS_DISCOVERY_POLL_INTERVAL: Duration = Duration::from_millis(200);
 const PROCESS_DISCOVERY_POLL_ATTEMPTS: usize = 30;
 
@@ -956,7 +956,37 @@ fn is_process_running(pid: u32) -> Result<bool> {
         .status()
         .with_context(|| format!("failed to inspect process {pid}"))?;
 
-    Ok(status.success())
+    if !status.success() {
+        return Ok(false);
+    }
+
+    match get_process_state(pid)? {
+        Some(process_state) => Ok(!is_exited_process_state(process_state)),
+        None => Ok(false),
+    }
+}
+
+fn get_process_state(pid: u32) -> Result<Option<char>> {
+    let output = Command::new("ps")
+        .args(["-o", "state=", "-p", &pid.to_string()])
+        .output()
+        .context("failed to inspect process state")?;
+
+    if !output.status.success() {
+        return Ok(None);
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let trimmed_state = stdout.trim();
+    if trimmed_state.is_empty() {
+        return Ok(None);
+    }
+
+    Ok(trimmed_state.chars().next())
+}
+
+fn is_exited_process_state(process_state: char) -> bool {
+    process_state == 'Z'
 }
 
 fn sort_roblox_processes(processes: &mut [RobloxProcessInfo]) {
@@ -1464,6 +1494,12 @@ mod tests {
         assert_eq!(parse_ps_process_line(""), None);
         assert_eq!(parse_ps_process_line("abc RobloxPlayer"), None);
         assert_eq!(parse_ps_process_line("123"), None);
+    }
+
+    #[test]
+    fn zombie_process_state_is_treated_as_exited() {
+        assert!(is_exited_process_state('Z'));
+        assert!(!is_exited_process_state('S'));
     }
 
     #[test]
