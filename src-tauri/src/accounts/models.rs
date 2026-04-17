@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 pub(super) const ACCOUNTS_DIR_NAME: &str = "accounts";
 pub(super) const ACCOUNTS_MANIFEST_FILE_NAME: &str = "accounts.json";
 pub(super) const ACCOUNTS_COOKIES_DIR_NAME: &str = "cookies";
-pub(super) const ACCOUNTS_MANIFEST_VERSION: u8 = 1;
+pub(super) const ACCOUNTS_MANIFEST_VERSION: u8 = 2;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -21,6 +21,7 @@ pub struct AccountSummary {
     pub display_name: String,
     pub avatar_url: Option<String>,
     pub status: AccountStatus,
+    pub bound_port: Option<u16>,
     pub last_launched_at: Option<i64>,
 }
 
@@ -36,6 +37,18 @@ pub struct AccountListResponse {
 pub struct RobloxProcessInfo {
     pub pid: u32,
     pub started_at: i64,
+    pub bound_account_id: Option<String>,
+    pub bound_account_display_name: Option<String>,
+    pub is_bound_to_unknown_account: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RobloxAccountIdentity {
+    pub user_id: i64,
+    pub username: String,
+    pub display_name: String,
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,6 +57,17 @@ pub(super) struct ResolvedRobloxAccount {
     pub(super) username: String,
     pub(super) display_name: String,
     pub(super) avatar_url: Option<String>,
+}
+
+impl ResolvedRobloxAccount {
+    pub(super) fn into_identity(self) -> RobloxAccountIdentity {
+        RobloxAccountIdentity {
+            user_id: self.user_id,
+            username: self.username,
+            display_name: self.display_name,
+            avatar_url: self.avatar_url,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -62,40 +86,45 @@ pub(super) struct StoredAccountRecord {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub(super) struct StoredRobloxBindingRecord {
+    pub(super) pid: u32,
+    pub(super) started_at: i64,
+    pub(super) port: u16,
+    pub(super) account_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub(super) struct StoredAccountsManifest {
     pub(super) version: u8,
-    pub(super) active_account_id: Option<String>,
     pub(super) accounts: Vec<StoredAccountRecord>,
+    pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
 }
 
 impl Default for StoredAccountsManifest {
     fn default() -> Self {
         Self {
             version: ACCOUNTS_MANIFEST_VERSION,
-            active_account_id: None,
             accounts: Vec::new(),
+            roblox_bindings: Vec::new(),
         }
     }
 }
 
 impl StoredAccountRecord {
-    pub(super) fn to_summary(
-        &self,
-        active_account_id: Option<&str>,
-        is_roblox_running: bool,
-    ) -> AccountSummary {
+    pub(super) fn to_summary(&self, bound_port: Option<u16>) -> AccountSummary {
         AccountSummary {
             id: self.id.clone(),
             user_id: self.user_id,
             username: self.username.clone(),
             display_name: self.display_name.clone(),
             avatar_url: self.avatar_url.clone(),
-            status: match active_account_id {
-                Some(active_id) if active_id == self.id && is_roblox_running => {
-                    AccountStatus::Active
-                }
-                _ => AccountStatus::Offline,
+            status: if bound_port.is_some() {
+                AccountStatus::Active
+            } else {
+                AccountStatus::Offline
             },
+            bound_port: bound_port,
             last_launched_at: self.last_launched_at,
         }
     }

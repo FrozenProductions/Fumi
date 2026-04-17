@@ -1,5 +1,5 @@
-mod automatic_execution;
 mod accounts;
+mod automatic_execution;
 pub(crate) mod binarycookies;
 mod command;
 mod dialog;
@@ -42,6 +42,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             accounts::commands::launch_roblox,
             accounts::commands::list_roblox_processes,
             accounts::commands::kill_roblox_process,
+            accounts::commands::get_live_roblox_account,
             executor::commands::get_executor_status,
             executor::commands::attach_executor,
             executor::commands::detach_executor,

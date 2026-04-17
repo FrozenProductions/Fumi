@@ -29,16 +29,14 @@ impl AppRuntimeState {
         let mut state = self.lock();
         state.has_workspace_unsaved_changes = has_unsaved_changes;
         state.has_synced_unsaved_changes =
-            state.has_workspace_unsaved_changes
-                || state.has_automatic_execution_unsaved_changes;
+            state.has_workspace_unsaved_changes || state.has_automatic_execution_unsaved_changes;
     }
 
     pub fn set_automatic_execution_unsaved_changes(&self, has_unsaved_changes: bool) {
         let mut state = self.lock();
         state.has_automatic_execution_unsaved_changes = has_unsaved_changes;
         state.has_synced_unsaved_changes =
-            state.has_workspace_unsaved_changes
-                || state.has_automatic_execution_unsaved_changes;
+            state.has_workspace_unsaved_changes || state.has_automatic_execution_unsaved_changes;
     }
 
     pub fn next_exit_guard_sync_request_id(&self) -> u64 {

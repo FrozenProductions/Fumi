@@ -4,8 +4,11 @@ use super::{ExecutorRuntimeState, ExecutorStatusPayload};
 use crate::command::{run_command, CommandResponse};
 
 #[command]
-pub fn get_executor_status(state: State<ExecutorRuntimeState>) -> ExecutorStatusPayload {
-    state.status()
+pub fn get_executor_status(
+    app: AppHandle,
+    state: State<ExecutorRuntimeState>,
+) -> CommandResponse<ExecutorStatusPayload> {
+    run_command(|| state.status(&app))
 }
 
 #[command]

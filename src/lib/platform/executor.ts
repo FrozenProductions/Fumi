@@ -7,19 +7,29 @@ import {
 } from "../../constants/workspace/executor";
 import type {
     ExecutorMessagePayload,
+    ExecutorPortSummary,
     ExecutorStatusPayload,
 } from "../../lib/workspace/workspace.type";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { isBoolean, isNumber, isRecord } from "../shared/validation";
+import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
 import { ExecutorCommandError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 
 const EXECUTOR_MESSAGE_EVENT = "executor://message";
 const EXECUTOR_STATUS_CHANGED_EVENT = "executor://status-changed";
 
+function createDefaultExecutorPortSummaries(): readonly ExecutorPortSummary[] {
+    return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({
+        port,
+        boundAccountId: null,
+        boundAccountDisplayName: null,
+        isBoundToUnknownAccount: false,
+    }));
+}
+
 const DEFAULT_EXECUTOR_STATUS: ExecutorStatusPayload = {
     executorKind: DEFAULT_EXECUTOR_KIND,
-    availablePorts: [...getExecutorPorts(DEFAULT_EXECUTOR_KIND)],
+    availablePorts: createDefaultExecutorPortSummaries(),
     port: DEFAULT_EXECUTOR_PORT,
     isAttached: false,
 };
@@ -59,7 +69,9 @@ function parseExecutorStatusPayload(
         (value.executorKind !== "macsploit" &&
             value.executorKind !== "opiumware" &&
             value.executorKind !== "unsupported") ||
-        !value.availablePorts.every((port) => isNumber(port)) ||
+        !value.availablePorts.every((portSummary) =>
+            isExecutorPortSummary(portSummary),
+        ) ||
         !isNumber(value.port) ||
         !isBoolean(value.isAttached)
     ) {
@@ -72,6 +84,17 @@ function parseExecutorStatusPayload(
         port: value.port,
         isAttached: value.isAttached,
     };
+}
+
+function isExecutorPortSummary(value: unknown): value is ExecutorPortSummary {
+    return (
+        isRecord(value) &&
+        isNumber(value.port) &&
+        (value.boundAccountId === null || isString(value.boundAccountId)) &&
+        (value.boundAccountDisplayName === null ||
+            isString(value.boundAccountDisplayName)) &&
+        isBoolean(value.isBoundToUnknownAccount)
+    );
 }
 
 async function invokeExecutorCommand<T>(

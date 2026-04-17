@@ -13,9 +13,16 @@ export type ExecutorMessagePayload = {
     messageType: ExecutorMessageType;
 };
 
+export type ExecutorPortSummary = {
+    port: number;
+    boundAccountId: string | null;
+    boundAccountDisplayName: string | null;
+    isBoundToUnknownAccount: boolean;
+};
+
 export type ExecutorStatusPayload = {
     executorKind: ExecutorKind;
-    availablePorts: readonly number[];
+    availablePorts: readonly ExecutorPortSummary[];
     port: number;
     isAttached: boolean;
 };

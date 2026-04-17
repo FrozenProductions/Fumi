@@ -7,6 +7,7 @@ export type AccountSummary = {
     displayName: string;
     avatarUrl: string | null;
     status: AccountStatus;
+    boundPort: number | null;
     lastLaunchedAt: number | null;
 };
 
@@ -18,4 +19,14 @@ export type AccountListResponse = {
 export type RobloxProcessInfo = {
     pid: number;
     startedAt: number;
+    boundAccountId: string | null;
+    boundAccountDisplayName: string | null;
+    isBoundToUnknownAccount: boolean;
+};
+
+export type RobloxAccountIdentity = {
+    userId: number;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
 };

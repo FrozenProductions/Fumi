@@ -1,7 +1,10 @@
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
 import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename.type";
-import type { RobloxProcessInfo } from "../../lib/accounts/accounts.type";
+import type {
+    RobloxAccountIdentity,
+    RobloxProcessInfo,
+} from "../../lib/accounts/accounts.type";
 import type { AppMiddleClickTabAction } from "../../lib/app/app.type";
 import type {
     WorkspacePaneId,
@@ -23,6 +26,7 @@ export type WorkspaceActionsButtonProps = {
     isOutlinePanelVisible: boolean;
     onToggleOutlinePanel: () => void;
     robloxProcesses: readonly RobloxProcessInfo[];
+    liveRobloxAccount: RobloxAccountIdentity | null;
     onKillRobloxProcess: (pid: number) => Promise<void>;
 };
 

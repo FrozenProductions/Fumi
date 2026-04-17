@@ -1,4 +1,7 @@
-import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+import type {
+    ExecutorKind,
+    ExecutorPortSummary,
+} from "../../lib/workspace/workspace.type";
 
 export type UseWorkspaceExecutorOptions = {
     activeTabContent: string | null;
@@ -7,6 +10,7 @@ export type UseWorkspaceExecutorOptions = {
 export type WorkspaceExecutorState = {
     executorKind: ExecutorKind;
     availablePorts: readonly number[];
+    availablePortSummaries: readonly ExecutorPortSummary[];
     hasSupportedExecutor: boolean;
     port: string;
     isAttached: boolean;

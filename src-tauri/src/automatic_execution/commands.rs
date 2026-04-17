@@ -16,8 +16,8 @@ use super::{
         read_automatic_execution_snapshot, resolve_automatic_execution_path,
         write_automatic_execution_metadata,
     },
-    AutomaticExecutionMetadata, AutomaticExecutionScriptSnapshot,
-    AutomaticExecutionScriptState, AutomaticExecutionSnapshot,
+    AutomaticExecutionMetadata, AutomaticExecutionScriptSnapshot, AutomaticExecutionScriptState,
+    AutomaticExecutionSnapshot,
 };
 
 fn load_metadata(
@@ -154,8 +154,7 @@ pub fn rename_automatic_execution_script(
         }
 
         let next_file_path = automatic_execution_path.join(&normalized_file_name);
-        let is_case_only_rename =
-            is_case_only_rename(&script.file_name, &normalized_file_name);
+        let is_case_only_rename = is_case_only_rename(&script.file_name, &normalized_file_name);
 
         if next_file_path.exists() && !is_case_only_rename {
             return Err(anyhow!(

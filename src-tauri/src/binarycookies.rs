@@ -1,12 +1,11 @@
 use std::{
     fs,
+    io::ErrorKind,
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-#[cfg(test)]
-use anyhow::{anyhow, bail};
-use anyhow::{Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 
 const FILE_MAGIC: &[u8; 4] = b"cook";
 const PAGE_MAGIC: u32 = 0x0000_0100;
@@ -168,7 +167,6 @@ impl CookiePage {
 }
 
 impl BinaryCookiesFile {
-    #[cfg(test)]
     fn parse(input: &[u8]) -> Result<Self> {
         let mut cursor = 0usize;
 
@@ -257,7 +255,6 @@ impl BinaryCookiesFile {
         self.pages.iter().map(|page| page.cookies.len()).sum()
     }
 
-    #[cfg(test)]
     fn find_cookie(&self, domain: &[u8], name: &[u8]) -> Option<&BinaryCookie> {
         self.pages
             .iter()
@@ -373,7 +370,6 @@ impl BinaryCookiesFile {
 }
 
 impl CookiePage {
-    #[cfg(test)]
     fn parse(page_bytes: &[u8]) -> Result<Self> {
         let mut cursor = 0usize;
 
@@ -419,7 +415,6 @@ impl CookiePage {
 }
 
 impl BinaryCookie {
-    #[cfg(test)]
     fn parse(cookie_bytes: &[u8]) -> Result<Self> {
         if cookie_bytes.len() < COOKIE_HEADER_LEN {
             bail!(
@@ -519,7 +514,6 @@ fn append_c_string(buffer: &mut Vec<u8>, value: &[u8]) -> Result<u32> {
     Ok(offset)
 }
 
-#[cfg(test)]
 fn read_c_string(input: &[u8], offset: usize, label: &str) -> Result<(Vec<u8>, usize)> {
     if offset >= input.len() {
         bail!(
@@ -548,7 +542,6 @@ fn calculate_page_checksum(page: &[u8]) -> u32 {
         .fold(0u32, |sum, byte| sum.wrapping_add(u32::from(*byte)))
 }
 
-#[cfg(test)]
 fn read_bytes<'a>(
     input: &'a [u8],
     cursor: &mut usize,
@@ -563,7 +556,6 @@ fn read_bytes<'a>(
     Ok(bytes)
 }
 
-#[cfg(test)]
 fn read_u32_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     let bytes = read_bytes(input, cursor, 4, label)?;
     Ok(u32::from_be_bytes(
@@ -571,7 +563,6 @@ fn read_u32_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     ))
 }
 
-#[cfg(test)]
 fn read_u64_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u64> {
     let bytes = read_bytes(input, cursor, 8, label)?;
     Ok(u64::from_be_bytes(
@@ -579,7 +570,6 @@ fn read_u64_be(input: &[u8], cursor: &mut usize, label: &str) -> Result<u64> {
     ))
 }
 
-#[cfg(test)]
 fn read_u32_le(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     let bytes = read_bytes(input, cursor, 4, label)?;
     Ok(u32::from_le_bytes(
@@ -587,7 +577,6 @@ fn read_u32_le(input: &[u8], cursor: &mut usize, label: &str) -> Result<u32> {
     ))
 }
 
-#[cfg(test)]
 fn read_f64_le(input: &[u8], cursor: &mut usize, label: &str) -> Result<f64> {
     let bytes = read_bytes(input, cursor, 8, label)?;
     Ok(f64::from_le_bytes(
@@ -707,6 +696,27 @@ pub(crate) fn write_minimal_roblosecurity_cookie_file(
     let output_bytes = build_minimal_roblosecurity_binarycookies(cookie_value)?;
     fs::write(output_path, output_bytes)
         .with_context(|| format!("failed to write {}", output_path.display()))
+}
+
+pub(crate) fn read_roblosecurity_cookie_value(input_path: &Path) -> Result<Option<String>> {
+    let input_bytes = match fs::read(input_path) {
+        Ok(input_bytes) => input_bytes,
+        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(None),
+        Err(error) => {
+            return Err(error).with_context(|| format!("failed to read {}", input_path.display()));
+        }
+    };
+    let file = BinaryCookiesFile::parse(&input_bytes)
+        .with_context(|| format!("failed to parse {}", input_path.display()))?;
+    let Some(cookie) = file.find_cookie(ROBLOX_DOMAIN, ROBLOSECURITY_COOKIE_NAME) else {
+        return Ok(None);
+    };
+
+    Ok(Some(
+        String::from_utf8(cookie.value.clone())
+            .map_err(|error| anyhow!(error))
+            .context("failed to decode the roblox cookie value")?,
+    ))
 }
 
 #[cfg(test)]

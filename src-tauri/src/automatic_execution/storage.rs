@@ -12,9 +12,8 @@ use uuid::Uuid;
 use crate::executor::ExecutorKind;
 
 use super::models::{
-    AutomaticExecutionCursorState, AutomaticExecutionMetadata,
-    AutomaticExecutionScriptSnapshot, AutomaticExecutionScriptState,
-    AutomaticExecutionSnapshot, StoredAutomaticExecutionMetadata,
+    AutomaticExecutionCursorState, AutomaticExecutionMetadata, AutomaticExecutionScriptSnapshot,
+    AutomaticExecutionScriptState, AutomaticExecutionSnapshot, StoredAutomaticExecutionMetadata,
     AUTOMATIC_EXECUTION_METADATA_DIR_NAME, AUTOMATIC_EXECUTION_METADATA_FILE_NAME,
     DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME, DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION,
     MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH,
@@ -73,9 +72,7 @@ fn get_opiumware_automatic_execution_path(home_dir: &Path) -> PathBuf {
     home_dir.join("Opiumware").join("autoexec")
 }
 
-pub(super) fn resolve_automatic_execution_path(
-    executor_kind: ExecutorKind,
-) -> Result<PathBuf> {
+pub(super) fn resolve_automatic_execution_path(executor_kind: ExecutorKind) -> Result<PathBuf> {
     let home_dir = resolve_home_directory()?;
 
     resolve_automatic_execution_path_at(
@@ -254,9 +251,7 @@ fn write_script_file(file_path: &Path, content: &str) -> Result<()> {
         .with_context(|| format!("failed to write {}", file_path.display()))
 }
 
-fn read_disk_script_file_names(
-    automatic_execution_path: &Path,
-) -> Result<Vec<String>> {
+fn read_disk_script_file_names(automatic_execution_path: &Path) -> Result<Vec<String>> {
     let mut file_names = Vec::new();
 
     for entry in fs::read_dir(automatic_execution_path)
@@ -268,12 +263,9 @@ fn read_disk_script_file_names(
                 automatic_execution_path.display()
             )
         })?;
-        let file_type = entry.file_type().with_context(|| {
-            format!(
-                "failed to read file type for {}",
-                entry.path().display()
-            )
-        })?;
+        let file_type = entry
+            .file_type()
+            .with_context(|| format!("failed to read file type for {}", entry.path().display()))?;
 
         if !file_type.is_file() {
             continue;
@@ -400,8 +392,7 @@ pub(super) fn read_automatic_execution_metadata(
 ) -> Result<AutomaticExecutionMetadata> {
     ensure_directory(automatic_execution_path)?;
     let metadata_path = get_metadata_path(automatic_execution_path);
-    let stored_metadata =
-        read_json_file::<StoredAutomaticExecutionMetadata>(&metadata_path)?;
+    let stored_metadata = read_json_file::<StoredAutomaticExecutionMetadata>(&metadata_path)?;
     let on_disk_file_names = read_disk_script_file_names(automatic_execution_path)?;
     let normalized_metadata =
         normalize_automatic_execution_metadata(stored_metadata.clone(), &on_disk_file_names);
@@ -471,10 +462,7 @@ pub(super) fn read_automatic_execution_snapshot_at(
     .with_repaired_active_script_id();
 
     if normalized_metadata != metadata {
-        write_automatic_execution_metadata(
-            &automatic_execution_path,
-            &normalized_metadata,
-        )?;
+        write_automatic_execution_metadata(&automatic_execution_path, &normalized_metadata)?;
     }
 
     Ok(AutomaticExecutionSnapshot {
@@ -516,13 +504,13 @@ fn ensure_unique_file_name(
     let normalized_file_name = if is_supported_script_file_name(&fallback_file_name) {
         fallback_file_name
     } else {
-        format!(
-            "{fallback_file_name}{DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION}"
-        )
+        format!("{fallback_file_name}{DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION}")
     };
 
     if !used_file_names.contains(normalized_file_name.as_str())
-        && !automatic_execution_path.join(&normalized_file_name).exists()
+        && !automatic_execution_path
+            .join(&normalized_file_name)
+            .exists()
     {
         return normalized_file_name;
     }
@@ -635,8 +623,11 @@ pub(super) fn create_script(
 
     let file_name =
         ensure_unique_file_name(automatic_execution_path, metadata, &preferred_file_name);
-    let existing_ids: HashSet<String> =
-        metadata.scripts.iter().map(|script| script.id.clone()).collect();
+    let existing_ids: HashSet<String> = metadata
+        .scripts
+        .iter()
+        .map(|script| script.id.clone())
+        .collect();
     let script_id = create_script_id(&existing_ids);
     let cursor = create_empty_cursor_state();
 
@@ -722,14 +713,14 @@ mod tests {
             "/Users/dayte/Documents/Macsploit Automatic Execution",
             "/Users/dayte/Opiumware/autoexec",
         )?;
-        assert_eq!(path.display().to_string(), "/Users/dayte/Opiumware/autoexec");
+        assert_eq!(
+            path.display().to_string(),
+            "/Users/dayte/Opiumware/autoexec"
+        );
 
-        let error = resolve_automatic_execution_path_at(
-            ExecutorKind::Unsupported,
-            "ignored",
-            "ignored",
-        )
-        .expect_err("unsupported executor should fail");
+        let error =
+            resolve_automatic_execution_path_at(ExecutorKind::Unsupported, "ignored", "ignored")
+                .expect_err("unsupported executor should fail");
         assert!(is_unsupported_executor_error(&error));
         Ok(())
     }
@@ -773,7 +764,11 @@ mod tests {
                 version: 1,
                 active_script_id: Some("missing".to_string()),
                 scripts: Some(vec![
-                    script("script-1", " folders/alpha ", cursor(-3, -7, f64::NEG_INFINITY)),
+                    script(
+                        "script-1",
+                        " folders/alpha ",
+                        cursor(-3, -7, f64::NEG_INFINITY),
+                    ),
                     script("", "beta.txt", cursor(1, 2, 3.0)),
                     script("script-3", "alpha.lua", cursor(1, 2, 3.0)),
                 ]),
@@ -798,9 +793,18 @@ mod tests {
     fn read_metadata_ignores_non_lua_files() -> anyhow::Result<()> {
         let automatic_execution_dir = TestAutomaticExecutionDir::new("ignore-files");
         ensure_directory(automatic_execution_dir.path())?;
-        write_script_file(&automatic_execution_dir.path().join("alpha.lua"), "print('a')")?;
-        write_script_file(&automatic_execution_dir.path().join("beta.luau"), "print('b')")?;
-        write_script_file(&automatic_execution_dir.path().join("notes.txt"), "ignore me")?;
+        write_script_file(
+            &automatic_execution_dir.path().join("alpha.lua"),
+            "print('a')",
+        )?;
+        write_script_file(
+            &automatic_execution_dir.path().join("beta.luau"),
+            "print('b')",
+        )?;
+        write_script_file(
+            &automatic_execution_dir.path().join("notes.txt"),
+            "ignore me",
+        )?;
 
         let metadata = read_automatic_execution_metadata(automatic_execution_dir.path())?;
 
@@ -866,10 +870,16 @@ mod tests {
             automatic_execution_dir.path(),
             ExecutorKind::Macsploit,
         )?;
-        assert_eq!(snapshot.resolved_path, automatic_execution_dir.path().display().to_string());
+        assert_eq!(
+            snapshot.resolved_path,
+            automatic_execution_dir.path().display().to_string()
+        );
         assert_eq!(snapshot.scripts.len(), 1);
         assert_eq!(snapshot.scripts[0].file_name, "renamed.lua");
-        assert_eq!(snapshot.metadata.active_script_id, Some(created_script.id.clone()));
+        assert_eq!(
+            snapshot.metadata.active_script_id,
+            Some(created_script.id.clone())
+        );
 
         fs::remove_file(&renamed_file)?;
         let cleaned_metadata = read_automatic_execution_metadata(automatic_execution_dir.path())?;

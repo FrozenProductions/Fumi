@@ -1,13 +1,16 @@
 use tauri::{command, AppHandle};
 
-use crate::accounts::models::{AccountListResponse, AccountSummary, RobloxProcessInfo};
+use crate::accounts::models::{
+    AccountListResponse, AccountSummary, RobloxAccountIdentity, RobloxProcessInfo,
+};
 use crate::accounts::{
     add_account as add_account_operation, delete_account as delete_account_operation,
+    get_live_roblox_account as get_live_roblox_account_operation,
     kill_roblox_process as kill_roblox_process_operation,
     kill_roblox_processes as kill_roblox_processes_operation,
     launch_account as launch_account_operation, launch_roblox as launch_roblox_operation,
     list_accounts as list_accounts_operation,
-    list_roblox_processes as list_roblox_processes_operation,
+    list_roblox_processes_with_bindings as list_roblox_processes_operation,
 };
 use crate::command::{format_command_error, run_command, CommandResponse};
 
@@ -34,21 +37,30 @@ pub fn delete_account(app: AppHandle, account_id: String) -> CommandResponse<()>
 }
 
 #[command]
-pub fn kill_roblox_processes() -> CommandResponse<()> {
-    run_command(kill_roblox_processes_operation)
+pub fn kill_roblox_processes(app: AppHandle) -> CommandResponse<()> {
+    run_command(|| kill_roblox_processes_operation(&app))
 }
 
 #[command]
-pub fn launch_roblox() -> CommandResponse<()> {
-    run_command(launch_roblox_operation)
+pub fn launch_roblox(app: AppHandle) -> CommandResponse<()> {
+    run_command(|| launch_roblox_operation(&app))
 }
 
 #[command]
-pub fn list_roblox_processes() -> CommandResponse<Vec<RobloxProcessInfo>> {
-    run_command(list_roblox_processes_operation)
+pub fn list_roblox_processes(app: AppHandle) -> CommandResponse<Vec<RobloxProcessInfo>> {
+    run_command(|| list_roblox_processes_operation(&app))
 }
 
 #[command]
-pub fn kill_roblox_process(pid: u32) -> CommandResponse<()> {
-    run_command(|| kill_roblox_process_operation(pid))
+pub fn kill_roblox_process(app: AppHandle, pid: u32) -> CommandResponse<()> {
+    run_command(|| kill_roblox_process_operation(&app, pid))
+}
+
+#[command]
+pub async fn get_live_roblox_account(
+    app: AppHandle,
+) -> CommandResponse<Option<RobloxAccountIdentity>> {
+    get_live_roblox_account_operation(&app)
+        .await
+        .map_err(format_command_error)
 }

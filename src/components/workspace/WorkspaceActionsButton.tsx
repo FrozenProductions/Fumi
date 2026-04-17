@@ -12,6 +12,10 @@ import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
+import {
+    getLiveRobloxAccountTooltipLabel,
+    getRobloxProcessAccountLabel,
+} from "./robloxProcessLabel";
 import type { WorkspaceActionsButtonProps } from "./workspaceScreen.type";
 
 type ConfirmAction = "kill" | `kill-pid-${number}`;
@@ -25,6 +29,7 @@ export function WorkspaceActionsButton({
     isOutlinePanelVisible,
     onToggleOutlinePanel,
     robloxProcesses,
+    liveRobloxAccount,
     onKillRobloxProcess,
 }: WorkspaceActionsButtonProps): ReactElement {
     const theme = useAppStore((state) => state.theme);
@@ -179,6 +184,11 @@ export function WorkspaceActionsButton({
         if (isLaunching) {
             return "Launching Roblox…";
         }
+        const liveRobloxAccountLabel =
+            getLiveRobloxAccountTooltipLabel(liveRobloxAccount);
+        if (liveRobloxAccountLabel) {
+            return `Launch Roblox as ${liveRobloxAccountLabel}`;
+        }
         return "Launch Roblox instance";
     }
 
@@ -218,6 +228,7 @@ export function WorkspaceActionsButton({
             const confirmKey = `kill-pid-${process.pid}` as const;
             const isConfirming = confirmingAction === confirmKey;
             const canKillProcess = isDesktopShell && !isKillingRoblox;
+            const processAccountLabel = getRobloxProcessAccountLabel(process);
             return (
                 <div
                     key={process.pid}
@@ -232,7 +243,7 @@ export function WorkspaceActionsButton({
                     }`}
                 >
                     <div
-                        className={`text-[11px] font-medium ${
+                        className={`min-w-0 text-[11px] font-medium ${
                             isConfirming
                                 ? isDark
                                     ? "text-red-200"
@@ -242,9 +253,22 @@ export function WorkspaceActionsButton({
                                   : "text-fumi-700"
                         }`}
                     >
-                        {isConfirming
-                            ? "Confirm kill?"
-                            : `Instance ${index + 1}`}
+                        {isConfirming ? (
+                            "Confirm kill?"
+                        ) : (
+                            <>
+                                <div>{`Instance ${index + 1}`}</div>
+                                <div
+                                    className={`mt-0.5 truncate text-[10px] ${
+                                        isDark
+                                            ? "text-fumi-500"
+                                            : "text-fumi-400"
+                                    }`}
+                                >
+                                    {processAccountLabel}
+                                </div>
+                            </>
+                        )}
                     </div>
                     <AppTooltip
                         content={
@@ -252,7 +276,7 @@ export function WorkspaceActionsButton({
                                 ? "Roblox controls require the Tauri desktop shell"
                                 : isConfirming
                                   ? "Click to confirm kill"
-                                  : `Kill instance ${index + 1}`
+                                  : `Kill instance ${index + 1} (${processAccountLabel})`
                         }
                         side="left"
                     >

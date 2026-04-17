@@ -10,14 +10,14 @@ import type { AccountSummary } from "../../lib/accounts/accounts.type";
 import { confirmAction } from "../../lib/platform/dialog";
 import { AppIcon } from "../app/AppIcon";
 
-function getAccountStatusTone(status: AccountSummary["status"]): string {
-    return status === "active"
+function getAccountStatusTone(account: AccountSummary): string {
+    return account.boundPort !== null
         ? "border-emerald-200 bg-emerald-50 text-emerald-600"
         : "border-fumi-200 bg-fumi-100 text-fumi-500";
 }
 
-function getAccountStatusLabel(status: AccountSummary["status"]): string {
-    return status === "active" ? "Active" : "Offline";
+function getAccountStatusLabel(account: AccountSummary): string {
+    return account.boundPort !== null ? "Active" : "Offline";
 }
 
 export function AccountsScreen(): ReactElement {
@@ -41,7 +41,7 @@ export function AccountsScreen(): ReactElement {
 
     async function handleDeleteAccount(account: AccountSummary): Promise<void> {
         const shouldDelete = await confirmAction(
-            `Delete ${account.displayName} from Fumi? This will also clear the active Roblox cookie if this account is currently active.`,
+            `Delete ${account.displayName} from Fumi? Any live Roblox window for this account will stay open and be shown as an unknown account.`,
         );
 
         if (!shouldDelete) {
@@ -89,7 +89,7 @@ export function AccountsScreen(): ReactElement {
                             </div>
                         </div>
                     ) : accounts.length === 0 ? (
-                        <div className="flex flex-1 items-center justify-center rounded-[1.35rem] border border-dashed border-fumi-300 bg-fumi-50/80 px-8 py-14 shadow-[var(--shadow-app-card)]">
+                        <div className="flex flex-1 items-center justify-center bg-fumi-50 px-8 py-14">
                             <div className="max-w-md text-center">
                                 <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                     No Accounts
@@ -140,12 +140,17 @@ export function AccountsScreen(): ReactElement {
                                                     {account.displayName}
                                                 </h3>
                                                 <span
-                                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${getAccountStatusTone(account.status)}`}
+                                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${getAccountStatusTone(account)}`}
                                                 >
                                                     {getAccountStatusLabel(
-                                                        account.status,
+                                                        account,
                                                     )}
                                                 </span>
+                                                {account.boundPort !== null ? (
+                                                    <span className="inline-flex items-center rounded-full border border-fumi-200 bg-fumi-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-fumi-600">
+                                                        Port {account.boundPort}
+                                                    </span>
+                                                ) : null}
                                             </div>
                                             <p className="mt-1 text-xs text-fumi-500">
                                                 @{account.username}
@@ -211,8 +216,8 @@ export function AccountsScreen(): ReactElement {
             </div>
 
             {isAddModalOpen ? (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-fumi-900/20 px-4 backdrop-blur-sm">
-                    <div className="w-full max-w-lg rounded-[1.6rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-card)]">
+                <div className="absolute inset-0 z-10 flex items-center justify-center px-4">
+                    <div className="w-full max-w-lg rounded-[0.9rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-floating)]">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                             Add Account
                         </p>
@@ -239,7 +244,7 @@ export function AccountsScreen(): ReactElement {
                                 }}
                                 rows={6}
                                 placeholder="Paste your .ROBLOSECURITY cookie"
-                                className="min-h-32 w-full resize-y rounded-[1rem] border border-fumi-200 bg-fumi-50 px-4 py-3 text-sm text-fumi-800 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-300 focus:ring-2 focus:ring-fumi-200"
+                                className="min-h-32 max-h-80 w-full resize-y rounded-[1rem] border border-fumi-200 bg-fumi-50 px-4 py-3 text-sm text-fumi-800 outline-none transition-[border-color,box-shadow] placeholder:text-fumi-400 focus:border-fumi-300 focus:ring-2 focus:ring-fumi-200"
                             />
                         </label>
 
