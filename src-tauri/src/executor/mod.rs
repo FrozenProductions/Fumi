@@ -55,6 +55,13 @@ pub struct ExecutorRuntimeState {
     inner: Arc<Mutex<ExecutorState>>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ExecutorStatusSnapshot {
+    executor_kind: ExecutorKind,
+    port: u16,
+    is_attached: bool,
+}
+
 struct ExecutorState {
     executor_kind: ExecutorKind,
     port: u16,
@@ -99,20 +106,16 @@ impl ExecutorRuntimeState {
     }
 
     pub fn status<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
-        let executor_port_pool = self.sync_detected_executor_kind();
+        let snapshot = self.current_status_snapshot();
+        let executor_port_pool = executor_port_pool_for_kind(snapshot.executor_kind);
         let available_ports =
             accounts::storage::list_executor_port_summaries(app, &executor_port_pool)?;
-        let port = {
-            let mut state = self.lock();
-            state.port = normalize_executor_port(executor_port_pool.executor_kind, state.port);
-            state.port
-        };
 
         Ok(build_status_payload(
-            executor_port_pool.executor_kind,
+            snapshot.executor_kind,
             available_ports,
-            port,
-            self.is_attached(),
+            snapshot.port,
+            snapshot.is_attached,
         ))
     }
 
@@ -121,7 +124,7 @@ impl ExecutorRuntimeState {
         app: &AppHandle<R>,
         port: u16,
     ) -> Result<ExecutorStatusPayload> {
-        let current_status = self.status(app)?;
+        let current_status = self.current_status_snapshot();
         log_executor_debug(format!("attach requested for port {port}"));
 
         if current_status.executor_kind == ExecutorKind::Unsupported {
@@ -130,11 +133,7 @@ impl ExecutorRuntimeState {
             ));
         }
 
-        if !current_status
-            .available_ports
-            .iter()
-            .any(|available_port| available_port.port == port)
-        {
+        if !is_supported_port(current_status.executor_kind, port) {
             return Err(anyhow!(
                 "ConnectionError: Port {port} is not available for the active executor."
             ));
@@ -223,7 +222,7 @@ impl ExecutorRuntimeState {
     }
 
     pub fn reattach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
-        let status = self.status(app)?;
+        let status = self.current_status_snapshot();
         let port = status.port;
         log_executor_debug(format!("reattach requested for port {port}"));
 
@@ -250,7 +249,7 @@ impl ExecutorRuntimeState {
     }
 
     pub fn detach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
-        let status = self.status(app)?;
+        let status = self.current_status_snapshot();
         log_executor_debug("detach requested");
 
         let next_status = match status.executor_kind {
@@ -296,7 +295,7 @@ impl ExecutorRuntimeState {
     }
 
     pub fn execute_script<R: Runtime>(&self, app: &AppHandle<R>, script: &str) -> Result<()> {
-        let status = self.status(app)?;
+        let status = self.current_status_snapshot();
         log_executor_debug(format!(
             "execute requested; script_bytes={}, attached={}",
             script.len(),
@@ -344,7 +343,7 @@ impl ExecutorRuntimeState {
         key: &str,
         value: bool,
     ) -> Result<()> {
-        let status = self.status(app)?;
+        let status = self.current_status_snapshot();
         log_executor_debug(format!(
             "update setting requested; key={key}, value={value}"
         ));
@@ -486,9 +485,15 @@ impl ExecutorRuntimeState {
         Ok(())
     }
 
-    fn is_attached(&self) -> bool {
+    fn current_status_snapshot(&self) -> ExecutorStatusSnapshot {
+        let executor_port_pool = self.sync_detected_executor_kind();
         let state = self.lock();
-        state.connection.is_some() || state.is_opiumware_attached
+
+        ExecutorStatusSnapshot {
+            executor_kind: executor_port_pool.executor_kind,
+            port: state.port,
+            is_attached: state.connection.is_some() || state.is_opiumware_attached,
+        }
     }
 
     fn reset_connection<R: Runtime>(&self, app: &AppHandle<R>, emit_status_change: bool) {

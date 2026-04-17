@@ -4,6 +4,7 @@ use std::{
     io::ErrorKind,
     path::{Path, PathBuf},
     process::Command,
+    sync::Mutex,
     thread,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -33,7 +34,8 @@ const ROBLOX_EXECUTABLE_CANDIDATES: &[&str] = &["RobloxPlayer", "RobloxPlayerBet
 const PROCESS_EXIT_POLL_INTERVAL: Duration = Duration::from_millis(100);
 const PROCESS_EXIT_POLL_ATTEMPTS: usize = 50;
 const PROCESS_DISCOVERY_POLL_INTERVAL: Duration = Duration::from_millis(200);
-const PROCESS_DISCOVERY_POLL_ATTEMPTS: usize = 30;
+const PROCESS_DISCOVERY_POLL_ATTEMPTS: usize = 120;
+static ROBLOX_LAUNCH_FLOW_MUTEX: Mutex<()> = Mutex::new(());
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -97,7 +99,12 @@ pub(super) fn launch_account<R: Runtime>(
     let accounts_root = get_accounts_root(app)?;
     let live_cookie_path = get_live_roblox_cookie_path()?;
     let executor_port_pool = executor::current_executor_port_pool();
+    let _launch_flow_guard = lock_roblox_launch_flow();
     let running_processes = list_roblox_processes()?;
+    let existing_pids = running_processes
+        .iter()
+        .map(|process| process.pid)
+        .collect::<HashSet<_>>();
     let mut manifest = sync_accounts_manifest(
         &accounts_root,
         &executor_port_pool,
@@ -116,34 +123,48 @@ pub(super) fn launch_account<R: Runtime>(
     let cookie_value = fs::read_to_string(&cookie_path)
         .with_context(|| format!("failed to read {}", cookie_path.display()))?;
     let timestamp = current_timestamp()?;
+    let previous_live_cookie_snapshot = snapshot_file_bytes(&live_cookie_path)?;
 
-    write_minimal_roblosecurity_cookie_file(&live_cookie_path, cookie_value.as_bytes())?;
+    let launch_result = (|| -> Result<AccountSummary> {
+        write_minimal_roblosecurity_cookie_file(&live_cookie_path, cookie_value.as_bytes())?;
+        let launched_pid = launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
+        let launched_process = wait_for_new_roblox_process(&existing_pids, Some(launched_pid))?;
+        manifest.accounts[account_index].last_launched_at = Some(timestamp);
+        manifest.accounts[account_index].updated_at = timestamp;
+        clear_account_binding(&mut manifest.roblox_bindings, account_id);
+        upsert_binding(
+            &mut manifest.roblox_bindings,
+            launched_process,
+            reserved_port,
+            Some(account_id.to_string()),
+        );
 
-    let existing_pids = running_processes
-        .iter()
-        .map(|process| process.pid)
-        .collect::<HashSet<_>>();
-    launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
+        write_accounts_manifest(&accounts_root, &manifest)?;
+        let _ = executor::select_current_executor_port(app, reserved_port)?;
 
-    let launched_process = wait_for_new_roblox_process(&existing_pids)?;
-    manifest.accounts[account_index].last_launched_at = Some(timestamp);
-    manifest.accounts[account_index].updated_at = timestamp;
-    upsert_binding(
-        &mut manifest.roblox_bindings,
-        launched_process,
-        reserved_port,
-        Some(account_id.to_string()),
-    );
+        Ok(manifest.accounts[account_index].to_summary(Some(reserved_port)))
+    })();
 
-    write_accounts_manifest(&accounts_root, &manifest)?;
-    let _ = executor::select_current_executor_port(app, reserved_port)?;
+    match launch_result {
+        Ok(summary) => Ok(summary),
+        Err(error) => {
+            if let Err(restore_error) =
+                restore_file_bytes(&live_cookie_path, previous_live_cookie_snapshot.as_deref())
+            {
+                return Err(error.context(format!(
+                    "failed to restore the live Roblox cookie file after launch failure: {restore_error:#}"
+                )));
+            }
 
-    Ok(manifest.accounts[account_index].to_summary(Some(reserved_port)))
+            Err(error)
+        }
+    }
 }
 
 pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
     let accounts_root = get_accounts_root(app)?;
     let executor_port_pool = executor::current_executor_port_pool();
+    let _launch_flow_guard = lock_roblox_launch_flow();
     let running_processes = list_roblox_processes()?;
     let mut manifest = sync_accounts_manifest(
         &accounts_root,
@@ -156,9 +177,9 @@ pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
         .map(|process| process.pid)
         .collect::<HashSet<_>>();
 
-    launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
+    let launched_pid = launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
 
-    let launched_process = wait_for_new_roblox_process(&existing_pids)?;
+    let launched_process = wait_for_new_roblox_process(&existing_pids, Some(launched_pid))?;
     let mut detected_processes = running_processes.clone();
     detected_processes.push(launched_process.clone());
     let inferred_binding = infer_saved_account_binding_for_new_processes(
@@ -532,12 +553,14 @@ fn ensure_supported_executor(executor_port_pool: &ExecutorPortPool) -> Result<()
     Ok(())
 }
 
-fn wait_for_new_roblox_process(existing_pids: &HashSet<u32>) -> Result<RobloxProcessInfo> {
+fn wait_for_new_roblox_process(
+    existing_pids: &HashSet<u32>,
+    launched_pid: Option<u32>,
+) -> Result<RobloxProcessInfo> {
     for _ in 0..PROCESS_DISCOVERY_POLL_ATTEMPTS {
         let processes = list_roblox_processes()?;
-        if let Some(process) = processes
-            .into_iter()
-            .find(|process| !existing_pids.contains(&process.pid))
+        if let Some(process) =
+            select_new_roblox_process(processes.as_slice(), existing_pids, launched_pid)
         {
             return Ok(process);
         }
@@ -548,6 +571,24 @@ fn wait_for_new_roblox_process(existing_pids: &HashSet<u32>) -> Result<RobloxPro
     Err(anyhow!(
         "RobloxLaunchDetectionError: Could not detect the newly launched Roblox process."
     ))
+}
+
+fn select_new_roblox_process(
+    processes: &[RobloxProcessInfo],
+    existing_pids: &HashSet<u32>,
+    launched_pid: Option<u32>,
+) -> Option<RobloxProcessInfo> {
+    if let Some(launched_pid) = launched_pid {
+        if let Some(process) = processes.iter().find(|process| process.pid == launched_pid) {
+            return Some(process.clone());
+        }
+    }
+
+    processes
+        .iter()
+        .filter(|process| !existing_pids.contains(&process.pid))
+        .max_by_key(|process| (process.started_at, process.pid))
+        .cloned()
 }
 
 fn upsert_binding(
@@ -574,6 +615,14 @@ fn find_account_bound_port(
         .iter()
         .find(|binding| binding.account_id.as_deref() == Some(account_id))
         .map(|binding| binding.port)
+}
+
+fn clear_account_binding(bindings: &mut [StoredRobloxBindingRecord], account_id: &str) {
+    for binding in bindings {
+        if binding.account_id.as_deref() == Some(account_id) {
+            binding.account_id = None;
+        }
+    }
 }
 
 fn first_free_port(ports: &[u16], used_ports: &HashSet<u16>) -> Option<u16> {
@@ -608,11 +657,15 @@ fn sync_accounts_manifest(
             true,
         ),
     };
-    let inferred_binding = infer_saved_account_binding_for_new_processes(
-        accounts_root,
-        &manifest,
-        sorted_processes.as_slice(),
-    );
+    let inferred_binding = has_new_unbound_running_process(&manifest, sorted_processes.as_slice())
+        .then(|| {
+            infer_saved_account_binding_for_new_processes(
+                accounts_root,
+                &manifest,
+                sorted_processes.as_slice(),
+            )
+        })
+        .flatten();
 
     let reconciled_manifest = reconcile_manifest_bindings(
         manifest,
@@ -709,6 +762,21 @@ fn reconcile_manifest_bindings(
 
     sort_bindings(&mut manifest.roblox_bindings);
     manifest
+}
+
+fn has_new_unbound_running_process(
+    manifest: &StoredAccountsManifest,
+    running_processes: &[RobloxProcessInfo],
+) -> bool {
+    let bound_pids = manifest
+        .roblox_bindings
+        .iter()
+        .map(|binding| binding.pid)
+        .collect::<HashSet<_>>();
+
+    running_processes
+        .iter()
+        .any(|process| !bound_pids.contains(&process.pid))
 }
 
 fn has_incompatible_bindings(
@@ -947,7 +1015,35 @@ fn write_accounts_manifest(accounts_root: &Path, manifest: &StoredAccountsManife
         .with_context(|| format!("failed to write {}", manifest_path.display()))
 }
 
-pub(crate) fn launch_roblox_application(roblox_app_path: &Path) -> Result<()> {
+fn lock_roblox_launch_flow() -> std::sync::MutexGuard<'static, ()> {
+    ROBLOX_LAUNCH_FLOW_MUTEX
+        .lock()
+        .unwrap_or_else(|error| error.into_inner())
+}
+
+fn snapshot_file_bytes(path: &Path) -> Result<Option<Vec<u8>>> {
+    match fs::read(path) {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error).with_context(|| format!("failed to read {}", path.display())),
+    }
+}
+
+fn restore_file_bytes(path: &Path, snapshot: Option<&[u8]>) -> Result<()> {
+    match snapshot {
+        Some(bytes) => {
+            if let Some(parent) = path.parent() {
+                fs::create_dir_all(parent)
+                    .with_context(|| format!("failed to create directory {}", parent.display()))?;
+            }
+
+            fs::write(path, bytes).with_context(|| format!("failed to write {}", path.display()))
+        }
+        None => remove_file_if_exists(path),
+    }
+}
+
+pub(crate) fn launch_roblox_application(roblox_app_path: &Path) -> Result<u32> {
     if !roblox_app_path.exists() {
         return Err(anyhow!(
             "roblox application not found at {}",
@@ -956,11 +1052,11 @@ pub(crate) fn launch_roblox_application(roblox_app_path: &Path) -> Result<()> {
     }
 
     let executable_path = resolve_roblox_executable_path(roblox_app_path)?;
-    let _child = Command::new(&executable_path)
+    let child = Command::new(&executable_path)
         .spawn()
         .with_context(|| format!("failed to launch {}", executable_path.display()))?;
 
-    Ok(())
+    Ok(child.id())
 }
 
 fn resolve_roblox_executable_path(roblox_app_path: &Path) -> Result<PathBuf> {
@@ -1520,6 +1616,36 @@ mod tests {
     }
 
     #[test]
+    fn select_new_roblox_process_prefers_the_spawned_pid() {
+        let existing_pids = HashSet::from([101_u32]);
+        let processes = vec![
+            roblox_process(101, 1),
+            roblox_process(202, 3),
+            roblox_process(303, 2),
+        ];
+
+        let process = select_new_roblox_process(&processes, &existing_pids, Some(303))
+            .expect("expected a process");
+
+        assert_eq!(process.pid, 303);
+    }
+
+    #[test]
+    fn select_new_roblox_process_falls_back_to_the_newest_pid() {
+        let existing_pids = HashSet::from([101_u32]);
+        let processes = vec![
+            roblox_process(101, 1),
+            roblox_process(202, 2),
+            roblox_process(303, 3),
+        ];
+
+        let process = select_new_roblox_process(&processes, &existing_pids, None)
+            .expect("expected a process");
+
+        assert_eq!(process.pid, 303);
+    }
+
+    #[test]
     fn plain_roblox_launches_create_unknown_bindings() {
         let manifest = reconcile_manifest_bindings(
             StoredAccountsManifest::default(),
@@ -1630,6 +1756,44 @@ mod tests {
         assert_eq!(inferred_binding, None);
 
         Ok(())
+    }
+
+    #[test]
+    fn clear_account_binding_preserves_ports_while_unbinding_the_account() {
+        let mut bindings = vec![
+            StoredRobloxBindingRecord {
+                pid: 101,
+                started_at: 1,
+                port: 5553,
+                account_id: Some("account-1".to_string()),
+            },
+            StoredRobloxBindingRecord {
+                pid: 202,
+                started_at: 2,
+                port: 5554,
+                account_id: Some("account-2".to_string()),
+            },
+        ];
+
+        clear_account_binding(&mut bindings, "account-1");
+
+        assert_eq!(
+            bindings,
+            vec![
+                StoredRobloxBindingRecord {
+                    pid: 101,
+                    started_at: 1,
+                    port: 5553,
+                    account_id: None,
+                },
+                StoredRobloxBindingRecord {
+                    pid: 202,
+                    started_at: 2,
+                    port: 5554,
+                    account_id: Some("account-2".to_string()),
+                },
+            ]
+        );
     }
 
     #[test]
@@ -1804,6 +1968,21 @@ mod tests {
         assert_eq!(parse_ps_process_line(""), None);
         assert_eq!(parse_ps_process_line("abc RobloxPlayer"), None);
         assert_eq!(parse_ps_process_line("123"), None);
+    }
+
+    #[test]
+    fn restore_file_bytes_recovers_the_original_snapshot() -> Result<()> {
+        let accounts_dir = TestAccountsDir::new("restore-file-bytes");
+        let file_path = accounts_dir.path().join("roblox.binarycookies");
+        fs::write(&file_path, b"original")?;
+        let snapshot = snapshot_file_bytes(&file_path)?;
+
+        fs::write(&file_path, b"updated")?;
+        restore_file_bytes(&file_path, snapshot.as_deref())?;
+
+        assert_eq!(fs::read(&file_path)?, b"original");
+
+        Ok(())
     }
 
     #[test]
