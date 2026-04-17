@@ -6,7 +6,7 @@
   <a href="https://github.com/FrozenProductions/Fumi/actions/workflows/ci.yml">
     <img src="https://github.com/FrozenProductions/Fumi/actions/workflows/ci.yml/badge.svg" alt="CI status" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.0.4-7f8c8d" alt="Version 1.0.4" />
+  <img src="https://img.shields.io/badge/version-1.0.5-7f8c8d" alt="Version 1.0.5" />
   <a href="./LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-2f855a" alt="MIT License" />
   </a>

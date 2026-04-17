@@ -64,7 +64,7 @@ body:
     attributes:
       label: Fumi version
       description: Release version, commit, or branch
-      placeholder: v1.0.4 or main at 8f3c2ab
+      placeholder: v1.0.5 or main at 8f3c2ab
     validations:
       required: true
 
