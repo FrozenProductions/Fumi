@@ -199,11 +199,7 @@ Current validation is driven by `package.json` scripts and GitHub Actions.
 
 ## Notes For Contributors
 
-- Use the scripts in `package.json` as the source of truth
-- Keep Tauri API usage behind `src/lib/platform/` wrappers
-- Keep shared contracts explicit and domain-local instead of introducing generic dump files
-- Follow the existing split between `src/view/`, `src/components/`, `src/hooks/`, `src/lib/`, and `src-tauri/`
-- For runtime wiring or cross-process changes, run `bun run lint`, `bun run typecheck`, and `bun run build`
+- Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening issues or pull requests
 
 ## License
 

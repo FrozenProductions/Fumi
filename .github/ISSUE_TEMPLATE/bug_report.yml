@@ -1,0 +1,86 @@
+name: Bug report
+description: Report a reproducible problem in Fumi
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include a reproducible report. "It broke" is not enough to debug.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and where you saw it.
+      placeholder: The workspace tab restored with the wrong file after reopening the app.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide the shortest reliable reproduction you can.
+      placeholder: |
+        1. Open Fumi
+        2. Open a workspace folder
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+      placeholder: The previously selected file should restore correctly.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Workspace
+        - Script Library
+        - Accounts
+        - Settings
+        - Editor
+        - Native / Tauri
+        - Build / install
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, or recordings
+      description: Paste relevant logs or attach screenshots if they help.
+      render: text
+
+  - type: input
+    id: version
+    attributes:
+      label: Fumi version
+      description: Release version, commit, or branch
+      placeholder: v1.0.4 or main at 8f3c2ab
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 15.4.1
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Mention whether this happened in a release build or a local source checkout.
+      placeholder: Release build, or local build with Bun 1.3.10 and Rust 1.88.0
+    validations:
+      required: true

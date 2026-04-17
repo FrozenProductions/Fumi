@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest an improvement with a clear use case
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the problem. Requests are easier to evaluate when the need is clear.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the workflow pain or missing capability.
+      placeholder: Managing archived tabs is slow because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What change would you like?
+      description: Describe the behavior you want, not just a vague theme.
+      placeholder: Add a bulk restore action in the archived tabs UI.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: Optional, but useful if you considered other approaches.
+      placeholder: I currently have to restore tabs one by one.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Workspace
+        - Script Library
+        - Accounts
+        - Settings
+        - Editor
+        - Native / Tauri
+        - Build / install
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Extra context
+      description: Add mockups, examples, screenshots, or constraints if they help.

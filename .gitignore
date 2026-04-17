@@ -6,6 +6,9 @@ node_modules
 
 *.md
 !README.md
+!CONTRIBUTING.md
+!CHANGELOG.md
+!.github/PULL_REQUEST_TEMPLATE.md
 !resources/logo.png
 !resources/logo.ico
 
