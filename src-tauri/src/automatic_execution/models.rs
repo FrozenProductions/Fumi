@@ -3,8 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::executor::ExecutorKind;
 
 pub(super) const AUTOMATIC_EXECUTION_METADATA_DIR_NAME: &str = ".fumi";
-pub(super) const AUTOMATIC_EXECUTION_METADATA_FILE_NAME: &str =
-    "automatic-execution.json";
+pub(super) const AUTOMATIC_EXECUTION_METADATA_FILE_NAME: &str = "automatic-execution.json";
 pub(super) const DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME: &str = "script";
 pub(super) const DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION: &str = ".lua";
 pub(super) const MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH: usize = 20;

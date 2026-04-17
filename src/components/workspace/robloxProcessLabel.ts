@@ -14,7 +14,7 @@ export function getRobloxProcessAccountLabel(
     }
 
     if (process.isBoundToUnknownAccount) {
-        return "? Unknown account";
+        return "Unknown account";
     }
 
     return "Unknown account";

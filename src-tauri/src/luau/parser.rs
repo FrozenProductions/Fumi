@@ -114,7 +114,8 @@ impl<'content> LuauSymbolScanner<'content> {
                 .into_iter()
                 .map(|symbol| {
                     let scope = *symbol.scope.borrow();
-                    let owner_function = symbol.owner_function.as_ref().map(|value| *value.borrow());
+                    let owner_function =
+                        symbol.owner_function.as_ref().map(|value| *value.borrow());
 
                     LuauFileSymbol {
                         label: symbol.label,
@@ -207,11 +208,7 @@ impl<'content> LuauSymbolScanner<'content> {
         )
     }
 
-    fn is_block_terminator(
-        &self,
-        token: Option<&LuauToken>,
-        end_keywords: &HashSet<&str>,
-    ) -> bool {
+    fn is_block_terminator(&self, token: Option<&LuauToken>, end_keywords: &HashSet<&str>) -> bool {
         matches!(
             token,
             Some(value)
@@ -380,14 +377,9 @@ impl<'content> LuauSymbolScanner<'content> {
 
         if let Some(equals_token) = equals_token {
             if equals_token.kind == TokenKind::Symbol && equals_token.value == "=" {
-                if let Some(equals_index) = self
-                    .tokens
-                    .iter()
-                    .position(|candidate| {
-                        candidate.start == equals_token.start
-                            && candidate.end == equals_token.end
-                    })
-                {
+                if let Some(equals_index) = self.tokens.iter().position(|candidate| {
+                    candidate.start == equals_token.start && candidate.end == equals_token.end
+                }) {
                     self.index = equals_index + 1;
                     self.add_symbol(
                         TokenBoundary {
@@ -493,7 +485,9 @@ impl<'content> LuauSymbolScanner<'content> {
             return;
         }
 
-        let loop_scope_start = self.current().map_or(self.root_scope_end(), |token| token.start);
+        let loop_scope_start = self
+            .current()
+            .map_or(self.root_scope_end(), |token| token.start);
 
         self.parse_scoped_block(
             hash_set(["end"]),
@@ -535,7 +529,9 @@ impl<'content> LuauSymbolScanner<'content> {
         let mut uses_method_syntax = false;
         let mut function_label = None;
         let mut function_kind = LuauSymbolKind::Function;
-        let declaration_start = self.current().map_or(self.root_scope_end(), |token| token.start);
+        let declaration_start = self
+            .current()
+            .map_or(self.root_scope_end(), |token| token.start);
         let declaration_start_byte = self
             .current()
             .map_or(self.content.len(), |token| token.start_byte);
@@ -583,7 +579,9 @@ impl<'content> LuauSymbolScanner<'content> {
             self.skip_type_expression(hash_set(["\n"]));
         }
 
-        let function_scope_start = self.current().map_or(self.root_scope_end(), |token| token.start);
+        let function_scope_start = self
+            .current()
+            .map_or(self.root_scope_end(), |token| token.start);
         let function_scope_start_byte = self
             .current()
             .map_or(self.content.len(), |token| token.start_byte);
@@ -653,9 +651,8 @@ impl<'content> LuauSymbolScanner<'content> {
             .tokens
             .get(self.index.saturating_sub(1))
             .map_or(declaration_start, |token| token.end);
-        let signature = normalize_whitespace(
-            &self.content[declaration_start_byte..function_scope_start_byte],
-        );
+        let signature =
+            normalize_whitespace(&self.content[declaration_start_byte..function_scope_start_byte]);
 
         self.add_symbol(
             TokenBoundary {
@@ -797,14 +794,20 @@ impl<'content> LuauSymbolScanner<'content> {
         let _ = self.match_keyword("end");
     }
 
-    fn parse_local_bindings(&mut self, scope: SharedScope, current_function_scope: Option<SharedScope>) {
+    fn parse_local_bindings(
+        &mut self,
+        scope: SharedScope,
+        current_function_scope: Option<SharedScope>,
+    ) {
         if self.mode == LuauScanMode::Functions {
             self.skip_simple_statement();
             return;
         }
 
         let bindings = self.parse_bindings();
-        let visible_start = self.current().map_or(self.root_scope_end(), |token| token.start);
+        let visible_start = self
+            .current()
+            .map_or(self.root_scope_end(), |token| token.start);
 
         self.skip_simple_statement();
 
@@ -827,28 +830,32 @@ impl<'content> LuauSymbolScanner<'content> {
 
     fn parse_repeat_block(&mut self, current_function_scope: Option<SharedScope>) {
         let repeat_scope = Rc::new(RefCell::new(ScopeFrame {
-            start: self.current().map_or(self.root_scope_end(), |token| token.start),
+            start: self
+                .current()
+                .map_or(self.root_scope_end(), |token| token.start),
             end: self.root_scope_end(),
         }));
 
-        self.parse_block(repeat_scope.clone(), &hash_set(["until"]), current_function_scope);
+        self.parse_block(
+            repeat_scope.clone(),
+            &hash_set(["until"]),
+            current_function_scope,
+        );
 
         let until_token_start = self.current().map(|token| token.start);
 
         if !self.match_keyword("until") {
-            repeat_scope.borrow_mut().end =
-                self.current().map_or(self.root_scope_end(), |token| token.start);
+            repeat_scope.borrow_mut().end = self
+                .current()
+                .map_or(self.root_scope_end(), |token| token.start);
             return;
         }
 
         self.skip_simple_statement();
-        repeat_scope.borrow_mut().end = self
-            .tokens
-            .get(self.index.saturating_sub(1))
-            .map_or_else(
-                || until_token_start.unwrap_or(self.root_scope_end()),
-                |token| token.end,
-            );
+        repeat_scope.borrow_mut().end = self.tokens.get(self.index.saturating_sub(1)).map_or_else(
+            || until_token_start.unwrap_or(self.root_scope_end()),
+            |token| token.end,
+        );
     }
 
     fn parse_scoped_block(
@@ -860,7 +867,9 @@ impl<'content> LuauSymbolScanner<'content> {
     ) {
         let child_scope = existing_scope.unwrap_or_else(|| {
             Rc::new(RefCell::new(ScopeFrame {
-                start: self.current().map_or(self.root_scope_end(), |token| token.start),
+                start: self
+                    .current()
+                    .map_or(self.root_scope_end(), |token| token.start),
                 end: self.root_scope_end(),
             }))
         });
@@ -871,7 +880,9 @@ impl<'content> LuauSymbolScanner<'content> {
 
         self.parse_block(child_scope.clone(), &end_keywords, current_function_scope);
 
-        child_scope.borrow_mut().end = self.current().map_or(self.root_scope_end(), |token| token.start);
+        child_scope.borrow_mut().end = self
+            .current()
+            .map_or(self.root_scope_end(), |token| token.start);
 
         if self.is_current_keyword("end") {
             let _ = self.consume_end_keyword();
@@ -1353,10 +1364,7 @@ mod tests {
 
     #[test]
     fn scans_locals_and_globals() {
-        let analysis = scan(
-            "local foo = 1\nvalue = foo\n",
-            LuauScanMode::Full,
-        );
+        let analysis = scan("local foo = 1\nvalue = foo\n", LuauScanMode::Full);
 
         let local_symbol = find_symbol(&analysis, "foo");
         let global_symbol = find_symbol(&analysis, "value");

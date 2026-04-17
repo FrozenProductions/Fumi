@@ -7,9 +7,7 @@ pub(crate) mod storage;
 use anyhow::Result;
 use tauri::{AppHandle, Runtime};
 
-use self::models::{
-    AccountListResponse, AccountSummary, RobloxAccountIdentity, RobloxProcessInfo,
-};
+use self::models::{AccountListResponse, AccountSummary, RobloxAccountIdentity, RobloxProcessInfo};
 
 pub(crate) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountListResponse> {
     storage::list_accounts(app)

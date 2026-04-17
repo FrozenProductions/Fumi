@@ -14,9 +14,7 @@ use tauri::{AppHandle, Manager, Runtime};
 use uuid::Uuid;
 
 use crate::{
-    binarycookies::{
-        read_roblosecurity_cookie_value, write_minimal_roblosecurity_cookie_file,
-    },
+    binarycookies::{read_roblosecurity_cookie_value, write_minimal_roblosecurity_cookie_file},
     executor::{self, ExecutorKind, ExecutorPortPool, ExecutorPortSummary},
 };
 
@@ -50,6 +48,12 @@ enum StoredAccountsManifestState {
     Missing,
     V1(LegacyStoredAccountsManifest),
     V2(StoredAccountsManifest),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct InferredRobloxBindingAccount {
+    pid: u32,
+    account_id: String,
 }
 
 pub(super) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountListResponse> {
@@ -155,11 +159,18 @@ pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
     launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
 
     let launched_process = wait_for_new_roblox_process(&existing_pids)?;
+    let mut detected_processes = running_processes.clone();
+    detected_processes.push(launched_process.clone());
+    let inferred_binding = infer_saved_account_binding_for_new_processes(
+        &accounts_root,
+        &manifest,
+        detected_processes.as_slice(),
+    );
     upsert_binding(
         &mut manifest.roblox_bindings,
         launched_process,
         reserved_port,
-        None,
+        inferred_binding.map(|binding| binding.account_id),
     );
 
     write_accounts_manifest(&accounts_root, &manifest)?;
@@ -338,7 +349,10 @@ fn upsert_account_at_with_runtime(
             existing_account.avatar_url = resolved_account.avatar_url.clone();
             existing_account.updated_at = timestamp;
 
-            (existing_account.id.clone(), existing_account.cookie_file_name.clone())
+            (
+                existing_account.id.clone(),
+                existing_account.cookie_file_name.clone(),
+            )
         }
         None => {
             let account_id = Uuid::new_v4().to_string();
@@ -473,8 +487,9 @@ fn build_roblox_process_list(
                 .roblox_bindings
                 .iter()
                 .find(|binding| binding.pid == process.pid);
-            let bound_account_id =
-                binding.and_then(|binding| binding.account_id.as_ref()).cloned();
+            let bound_account_id = binding
+                .and_then(|binding| binding.account_id.as_ref())
+                .cloned();
             let bound_account_display_name = bound_account_id
                 .as_deref()
                 .and_then(|account_id| account_names.get(account_id).copied())
@@ -562,7 +577,10 @@ fn find_account_bound_port(
 }
 
 fn first_free_port(ports: &[u16], used_ports: &HashSet<u16>) -> Option<u16> {
-    ports.iter().copied().find(|port| !used_ports.contains(port))
+    ports
+        .iter()
+        .copied()
+        .find(|port| !used_ports.contains(port))
 }
 
 fn sync_accounts_manifest(
@@ -586,17 +604,22 @@ fn sync_accounts_manifest(
         StoredAccountsManifestState::Missing => (StoredAccountsManifest::default(), false),
         StoredAccountsManifestState::V2(manifest) => (manifest, false),
         StoredAccountsManifestState::V1(legacy_manifest) => (
-            migrate_accounts_manifest(
-                legacy_manifest,
-                &sorted_processes,
-                executor_port_pool,
-            ),
+            migrate_accounts_manifest(legacy_manifest, &sorted_processes, executor_port_pool),
             true,
         ),
     };
+    let inferred_binding = infer_saved_account_binding_for_new_processes(
+        accounts_root,
+        &manifest,
+        sorted_processes.as_slice(),
+    );
 
-    let reconciled_manifest =
-        reconcile_manifest_bindings(manifest, &sorted_processes, executor_port_pool);
+    let reconciled_manifest = reconcile_manifest_bindings(
+        manifest,
+        &sorted_processes,
+        executor_port_pool,
+        inferred_binding.as_ref(),
+    );
     let should_persist = should_write
         || should_write_from_load
         || previous_manifest
@@ -614,6 +637,7 @@ fn reconcile_manifest_bindings(
     mut manifest: StoredAccountsManifest,
     running_processes: &[RobloxProcessInfo],
     executor_port_pool: &ExecutorPortPool,
+    inferred_binding: Option<&InferredRobloxBindingAccount>,
 ) -> StoredAccountsManifest {
     manifest.version = ACCOUNTS_MANIFEST_VERSION;
     sort_bindings(&mut manifest.roblox_bindings);
@@ -677,7 +701,9 @@ fn reconcile_manifest_bindings(
             pid: process.pid,
             started_at: process.started_at,
             port,
-            account_id: None,
+            account_id: inferred_binding
+                .filter(|binding| binding.pid == process.pid)
+                .map(|binding| binding.account_id.clone()),
         });
     }
 
@@ -720,6 +746,117 @@ fn rebuild_bindings(
     }
 
     bindings
+}
+
+fn infer_saved_account_binding_for_new_processes(
+    accounts_root: &Path,
+    manifest: &StoredAccountsManifest,
+    running_processes: &[RobloxProcessInfo],
+) -> Option<InferredRobloxBindingAccount> {
+    let live_cookie_path = match get_live_roblox_cookie_path() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!(
+                "Failed to resolve the live Roblox cookie path while inferring a binding: {error:#}"
+            );
+            return None;
+        }
+    };
+    let live_cookie_value = match read_roblosecurity_cookie_value(&live_cookie_path) {
+        Ok(Some(cookie_value)) => cookie_value,
+        Ok(None) => return None,
+        Err(error) => {
+            eprintln!(
+                "Failed to read the live Roblox cookie file while inferring a binding: {error:#}"
+            );
+            return None;
+        }
+    };
+
+    infer_saved_account_binding_for_new_processes_with_cookie_value(
+        accounts_root,
+        manifest,
+        running_processes,
+        Some(&live_cookie_value),
+    )
+}
+
+fn infer_saved_account_binding_for_new_processes_with_cookie_value(
+    accounts_root: &Path,
+    manifest: &StoredAccountsManifest,
+    running_processes: &[RobloxProcessInfo],
+    live_cookie_value: Option<&str>,
+) -> Option<InferredRobloxBindingAccount> {
+    let running_pids = running_processes
+        .iter()
+        .map(|process| process.pid)
+        .collect::<HashSet<_>>();
+    let bound_live_pids = manifest
+        .roblox_bindings
+        .iter()
+        .filter(|binding| running_pids.contains(&binding.pid))
+        .map(|binding| binding.pid)
+        .collect::<HashSet<_>>();
+    let newest_unbound_process = running_processes
+        .iter()
+        .filter(|process| !bound_live_pids.contains(&process.pid))
+        .max_by_key(|process| (process.started_at, process.pid))?;
+    let normalized_live_cookie = match normalize_cookie_value(live_cookie_value?) {
+        Ok(cookie_value) => cookie_value,
+        Err(error) => {
+            eprintln!(
+                "Failed to normalize the live Roblox cookie while inferring a binding: {error:#}"
+            );
+            return None;
+        }
+    };
+    let account_id =
+        find_saved_account_id_by_cookie_value(accounts_root, manifest, &normalized_live_cookie)?;
+    let account_is_already_bound = manifest.roblox_bindings.iter().any(|binding| {
+        running_pids.contains(&binding.pid)
+            && binding.account_id.as_deref() == Some(account_id.as_str())
+    });
+
+    if account_is_already_bound {
+        return None;
+    }
+
+    Some(InferredRobloxBindingAccount {
+        pid: newest_unbound_process.pid,
+        account_id,
+    })
+}
+
+fn find_saved_account_id_by_cookie_value(
+    accounts_root: &Path,
+    manifest: &StoredAccountsManifest,
+    normalized_cookie_value: &str,
+) -> Option<String> {
+    manifest.accounts.iter().find_map(|account| {
+        let cookie_path = get_cookie_path(accounts_root, &account.cookie_file_name);
+        let stored_cookie_value = match fs::read_to_string(&cookie_path) {
+            Ok(cookie_value) => cookie_value,
+            Err(error) => {
+                eprintln!(
+                    "Failed to read saved Roblox cookie {} while inferring a binding: {error}",
+                    cookie_path.display()
+                );
+                return None;
+            }
+        };
+        let normalized_stored_cookie = match normalize_cookie_value(&stored_cookie_value) {
+            Ok(cookie_value) => cookie_value,
+            Err(error) => {
+                eprintln!(
+                    "Failed to normalize saved Roblox cookie {} while inferring a binding: {error:#}",
+                    cookie_path.display()
+                );
+                return None;
+            }
+        };
+
+        (normalized_stored_cookie == normalized_cookie_value).then(|| account.id.clone())
+    })
 }
 
 fn migrate_accounts_manifest(
@@ -1349,6 +1486,7 @@ mod tests {
             manifest,
             &[roblox_process(202, 2)],
             &macsploit_pool(),
+            None,
         );
 
         assert_eq!(
@@ -1387,6 +1525,7 @@ mod tests {
             StoredAccountsManifest::default(),
             &[roblox_process(101, 1)],
             &macsploit_pool(),
+            None,
         );
 
         assert_eq!(
@@ -1401,7 +1540,101 @@ mod tests {
     }
 
     #[test]
-    fn deleting_a_saved_account_with_a_live_binding_preserves_the_binding_as_unknown() -> Result<()> {
+    fn new_processes_can_inherit_a_saved_account_from_the_live_cookie() -> Result<()> {
+        let accounts_dir = TestAccountsDir::new("infer-live-cookie-account");
+        let first_account = upsert_account_at(
+            accounts_dir.path(),
+            &resolved_account(42, "alpha", "Alpha"),
+            "cookie-alpha",
+        )?;
+        let second_account = upsert_account_at(
+            accounts_dir.path(),
+            &resolved_account(43, "bravo", "Bravo"),
+            "cookie-bravo",
+        )?;
+        let mut manifest = read_accounts_manifest(accounts_dir.path())?;
+
+        manifest.roblox_bindings.push(StoredRobloxBindingRecord {
+            pid: 101,
+            started_at: 1,
+            port: 5553,
+            account_id: Some(first_account.id.clone()),
+        });
+
+        let running_processes = [roblox_process(101, 1), roblox_process(202, 2)];
+        let inferred_binding = infer_saved_account_binding_for_new_processes_with_cookie_value(
+            accounts_dir.path(),
+            &manifest,
+            &running_processes,
+            Some("cookie-bravo"),
+        );
+        let reconciled_manifest = reconcile_manifest_bindings(
+            manifest,
+            &running_processes,
+            &macsploit_pool(),
+            inferred_binding.as_ref(),
+        );
+
+        assert_eq!(
+            inferred_binding,
+            Some(InferredRobloxBindingAccount {
+                pid: 202,
+                account_id: second_account.id.clone(),
+            })
+        );
+        assert_eq!(
+            reconciled_manifest.roblox_bindings,
+            vec![
+                StoredRobloxBindingRecord {
+                    pid: 101,
+                    started_at: 1,
+                    port: 5553,
+                    account_id: Some(first_account.id),
+                },
+                StoredRobloxBindingRecord {
+                    pid: 202,
+                    started_at: 2,
+                    port: 5554,
+                    account_id: Some(second_account.id),
+                },
+            ]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn live_cookie_inference_does_not_duplicate_an_already_bound_account() -> Result<()> {
+        let accounts_dir = TestAccountsDir::new("infer-live-cookie-duplicate");
+        let account = upsert_account_at(
+            accounts_dir.path(),
+            &resolved_account(42, "alpha", "Alpha"),
+            "cookie-alpha",
+        )?;
+        let mut manifest = read_accounts_manifest(accounts_dir.path())?;
+
+        manifest.roblox_bindings.push(StoredRobloxBindingRecord {
+            pid: 101,
+            started_at: 1,
+            port: 5553,
+            account_id: Some(account.id.clone()),
+        });
+
+        let inferred_binding = infer_saved_account_binding_for_new_processes_with_cookie_value(
+            accounts_dir.path(),
+            &manifest,
+            &[roblox_process(101, 1), roblox_process(202, 2)],
+            Some("cookie-alpha"),
+        );
+
+        assert_eq!(inferred_binding, None);
+
+        Ok(())
+    }
+
+    #[test]
+    fn deleting_a_saved_account_with_a_live_binding_preserves_the_binding_as_unknown() -> Result<()>
+    {
         let accounts_dir = TestAccountsDir::new("delete-preserves-binding");
         let account = upsert_account_at(
             accounts_dir.path(),
@@ -1507,11 +1740,9 @@ mod tests {
 
         let no_free_port_error =
             reserve_free_executor_port(&full_manifest, &macsploit_pool()).expect_err("no port");
-        let unsupported_error = reserve_free_executor_port(
-            &StoredAccountsManifest::default(),
-            &unsupported_pool(),
-        )
-        .expect_err("unsupported");
+        let unsupported_error =
+            reserve_free_executor_port(&StoredAccountsManifest::default(), &unsupported_pool())
+                .expect_err("unsupported");
 
         assert!(no_free_port_error
             .to_string()

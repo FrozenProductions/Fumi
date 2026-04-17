@@ -703,8 +703,7 @@ pub(crate) fn read_roblosecurity_cookie_value(input_path: &Path) -> Result<Optio
         Ok(input_bytes) => input_bytes,
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(None),
         Err(error) => {
-            return Err(error)
-                .with_context(|| format!("failed to read {}", input_path.display()));
+            return Err(error).with_context(|| format!("failed to read {}", input_path.display()));
         }
     };
     let file = BinaryCookiesFile::parse(&input_bytes)

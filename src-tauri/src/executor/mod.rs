@@ -104,10 +104,7 @@ impl ExecutorRuntimeState {
             accounts::storage::list_executor_port_summaries(app, &executor_port_pool)?;
         let port = {
             let mut state = self.lock();
-            state.port = normalize_executor_port(
-                executor_port_pool.executor_kind,
-                state.port,
-            );
+            state.port = normalize_executor_port(executor_port_pool.executor_kind, state.port);
             state.port
         };
 

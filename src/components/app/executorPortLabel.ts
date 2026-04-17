@@ -6,7 +6,7 @@ export function getExecutorPortLabel(summary: ExecutorPortSummary): string {
     }
 
     if (summary.isBoundToUnknownAccount) {
-        return "? Unknown account";
+        return "Unknown account";
     }
 
     return "Available";

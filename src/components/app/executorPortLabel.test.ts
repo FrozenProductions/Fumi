@@ -21,7 +21,7 @@ describe("getExecutorPortLabel", () => {
                 boundAccountDisplayName: null,
                 isBoundToUnknownAccount: true,
             }),
-        ).toBe("? Unknown account");
+        ).toBe("Unknown account");
     });
 
     it("labels free ports as available", () => {

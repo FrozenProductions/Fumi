@@ -1,5 +1,5 @@
-mod automatic_execution;
 mod accounts;
+mod automatic_execution;
 pub(crate) mod binarycookies;
 mod command;
 mod dialog;

@@ -20,7 +20,7 @@ describe("robloxProcessLabel", () => {
                 boundAccountDisplayName: null,
                 isBoundToUnknownAccount: true,
             }),
-        ).toBe("? Unknown account");
+        ).toBe("Unknown account");
     });
 
     it("formats the live launch tooltip label", () => {
