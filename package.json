@@ -13,7 +13,9 @@
         "dev:web": "vp dev",
         "build:web": "vp build",
         "build": "bunx tauri build",
-        "test": "vp test run && cargo test --manifest-path src-tauri/Cargo.toml",
+        "test": "bun run test:frontend && bun run test:backend",
+        "test:frontend": "vp test run",
+        "test:backend": "cargo test --manifest-path src-tauri/Cargo.toml",
         "typecheck": "tsc --noEmit",
         "lint": "biome check",
         "format": "biome format --write"
