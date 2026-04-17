@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
+## [Unreleased]
+
+### Added
+
+- Add live Roblox account details in the accounts screen.
+- Bind executor ports to Roblox accounts across the backend and UI.
+
+### Changed
+
+- Refine Roblox account binding inference.
+- Polish the accounts screen empty and modal states.
+- Constrain the account cookie textarea height.
+
+### Fixed
+
+- Treat zombie Roblox processes as exited.
+- Harden Roblox launch and executor status flows.
+
 ## [1.0.5] - 2026-04-17
 
 ### Added
