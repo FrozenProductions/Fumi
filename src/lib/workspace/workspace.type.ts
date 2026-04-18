@@ -13,6 +13,11 @@ export type ExecutorMessagePayload = {
     messageType: ExecutorMessageType;
 };
 
+export type ExecutorConsoleMessage = ExecutorMessagePayload & {
+    id: string;
+    receivedAt: number;
+};
+
 export type ExecutorPortSummary = {
     port: number;
     boundAccountId: string | null;

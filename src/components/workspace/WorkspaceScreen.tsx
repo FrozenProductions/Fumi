@@ -45,6 +45,7 @@ import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceExecutionHistoryModal } from "./WorkspaceExecutionHistoryModal";
+import { WorkspaceExecutorOutputPanel } from "./WorkspaceExecutorOutputPanel";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
 import type { WorkspaceScreenProps } from "./workspaceScreen.type";
@@ -627,88 +628,110 @@ export function WorkspaceScreen({
                             action={createFileAction}
                         />
                     ) : activeTab ? (
-                        <div className="relative flex min-h-0 flex-1">
-                            <WorkspaceEditor
-                                activeTabId={activeTab.id}
-                                appTheme={appTheme}
-                                editorFontSize={editorSettings.fontSize}
-                                tabs={workspace.tabs}
-                                splitView={resolvedSplitView}
-                                searchPanel={searchPanel}
-                                acceptCompletion={acceptCompletion}
-                                completionPopup={completionPopup}
-                                createHandleCursorChange={
-                                    createHandleCursorChange
-                                }
-                                createHandleEditorChange={
-                                    createHandleEditorChange
-                                }
-                                createHandleEditorLoad={createHandleEditorLoad}
-                                createHandleScroll={createHandleScroll}
-                                handleCompletionHover={handleCompletionHover}
-                                isOutlinePanelVisible={
-                                    editorSettings.isOutlinePanelVisible
-                                }
-                                sidebarPosition={sidebarPosition}
-                                luauSymbols={luauSymbols}
-                                outlinePanelWidth={
-                                    editorSettings.outlinePanelWidth
-                                }
-                                outlineExpandedGroups={
-                                    editorSettings.outlineExpandedGroups
-                                }
-                                onToggleExpandedGroup={(title) => {
-                                    setOutlineExpandedGroups({
-                                        [title]:
-                                            !editorSettings
-                                                .outlineExpandedGroups[title],
-                                    });
-                                }}
-                                onExpandAllGroups={(titles) => {
-                                    setOutlineExpandedGroups(
-                                        Object.fromEntries(
-                                            titles.map((t) => [t, true]),
-                                        ),
-                                    );
-                                }}
-                                onCollapseAllGroups={(titles) => {
-                                    setOutlineExpandedGroups(
-                                        Object.fromEntries(
-                                            titles.map((t) => [t, false]),
-                                        ),
-                                    );
-                                }}
-                                outlineSearchQuery={
-                                    editorSettings.outlineSearchQuery
-                                }
-                                onOutlineSearchQueryChange={
-                                    setOutlineSearchQuery
-                                }
-                                onActiveTabLuauChange={
-                                    handleActiveTabLuauChange
-                                }
-                                onFocusPane={focusWorkspacePane}
-                                onSetOutlinePanelWidth={setOutlinePanelWidth}
-                                onResizeSplitPreview={handleResizeSplitPreview}
-                                onResizeSplitCommit={handleResizeSplitCommit}
-                                onResizeSplitCancel={handleResizeSplitCancel}
-                                goToLine={goToLine}
-                                workspaceActionsButton={{
-                                    executor,
-                                    isLaunching,
-                                    onLaunchRoblox: handleLaunchRoblox,
-                                    isKillingRoblox,
-                                    onKillRoblox: handleKillRoblox,
-                                    isOutlinePanelVisible:
-                                        editorSettings.isOutlinePanelVisible,
-                                    onToggleOutlinePanel: toggleOutlinePanel,
-                                    robloxProcesses,
-                                    liveRobloxAccount,
-                                    onKillRobloxProcess:
-                                        handleKillRobloxProcess,
-                                    onOpenExecutionHistory:
-                                        executionHistoryModal.onOpen,
-                                }}
+                        <div className="flex min-h-0 flex-1 flex-col">
+                            <div className="relative flex min-h-0 flex-1">
+                                <WorkspaceEditor
+                                    activeTabId={activeTab.id}
+                                    appTheme={appTheme}
+                                    editorFontSize={editorSettings.fontSize}
+                                    tabs={workspace.tabs}
+                                    splitView={resolvedSplitView}
+                                    searchPanel={searchPanel}
+                                    acceptCompletion={acceptCompletion}
+                                    completionPopup={completionPopup}
+                                    createHandleCursorChange={
+                                        createHandleCursorChange
+                                    }
+                                    createHandleEditorChange={
+                                        createHandleEditorChange
+                                    }
+                                    createHandleEditorLoad={
+                                        createHandleEditorLoad
+                                    }
+                                    createHandleScroll={createHandleScroll}
+                                    handleCompletionHover={
+                                        handleCompletionHover
+                                    }
+                                    isOutlinePanelVisible={
+                                        editorSettings.isOutlinePanelVisible
+                                    }
+                                    sidebarPosition={sidebarPosition}
+                                    luauSymbols={luauSymbols}
+                                    outlinePanelWidth={
+                                        editorSettings.outlinePanelWidth
+                                    }
+                                    outlineExpandedGroups={
+                                        editorSettings.outlineExpandedGroups
+                                    }
+                                    onToggleExpandedGroup={(title) => {
+                                        setOutlineExpandedGroups({
+                                            [title]:
+                                                !editorSettings
+                                                    .outlineExpandedGroups[
+                                                    title
+                                                ],
+                                        });
+                                    }}
+                                    onExpandAllGroups={(titles) => {
+                                        setOutlineExpandedGroups(
+                                            Object.fromEntries(
+                                                titles.map((t) => [t, true]),
+                                            ),
+                                        );
+                                    }}
+                                    onCollapseAllGroups={(titles) => {
+                                        setOutlineExpandedGroups(
+                                            Object.fromEntries(
+                                                titles.map((t) => [t, false]),
+                                            ),
+                                        );
+                                    }}
+                                    outlineSearchQuery={
+                                        editorSettings.outlineSearchQuery
+                                    }
+                                    onOutlineSearchQueryChange={
+                                        setOutlineSearchQuery
+                                    }
+                                    onActiveTabLuauChange={
+                                        handleActiveTabLuauChange
+                                    }
+                                    onFocusPane={focusWorkspacePane}
+                                    onSetOutlinePanelWidth={
+                                        setOutlinePanelWidth
+                                    }
+                                    onResizeSplitPreview={
+                                        handleResizeSplitPreview
+                                    }
+                                    onResizeSplitCommit={
+                                        handleResizeSplitCommit
+                                    }
+                                    onResizeSplitCancel={
+                                        handleResizeSplitCancel
+                                    }
+                                    goToLine={goToLine}
+                                    workspaceActionsButton={{
+                                        executor,
+                                        isLaunching,
+                                        onLaunchRoblox: handleLaunchRoblox,
+                                        isKillingRoblox,
+                                        onKillRoblox: handleKillRoblox,
+                                        isOutlinePanelVisible:
+                                            editorSettings.isOutlinePanelVisible,
+                                        onToggleOutlinePanel:
+                                            toggleOutlinePanel,
+                                        robloxProcesses,
+                                        liveRobloxAccount,
+                                        onKillRobloxProcess:
+                                            handleKillRobloxProcess,
+                                        onOpenExecutionHistory:
+                                            executionHistoryModal.onOpen,
+                                    }}
+                                />
+                            </div>
+                            <WorkspaceExecutorOutputPanel
+                                isAttached={executorState.isAttached}
+                                messages={executorState.recentMessages}
+                                onClear={executor.actions.clearRecentMessages}
                             />
                         </div>
                     ) : (

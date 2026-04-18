@@ -24,10 +24,7 @@ import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStore } from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
-import {
-    getAppTopbarWorkspaceContext,
-    renderActiveAppScreen,
-} from "./appScreens";
+import { createAppScreenMap, getAppTopbarWorkspaceContext } from "./appScreens";
 
 export function App(): ReactElement {
     useWorkspaceStoreLifecycle();
@@ -127,6 +124,18 @@ export function App(): ReactElement {
         activeSidebarItem,
         workspaceSession,
     );
+    const appScreens = createAppScreenMap(
+        workspaceSession,
+        workspaceExecutor,
+        updater,
+        {
+            executionHistoryModal: {
+                isOpen: isExecutionHistoryModalOpen,
+                onOpen: handleOpenExecutionHistory,
+                onClose: handleCloseExecutionHistory,
+            },
+        },
+    );
 
     useEffect(() => {
         if (activeSidebarItem === "workspace" && workspace) {
@@ -175,23 +184,32 @@ export function App(): ReactElement {
                         />
                     ) : null}
                     <main className="min-w-0 flex-1 bg-fumi-50">
-                        <div
-                            key={activeSidebarItem}
-                            className="h-full w-full animate-slide-in"
-                        >
-                            {renderActiveAppScreen(
-                                activeSidebarItem,
-                                workspaceSession,
-                                workspaceExecutor,
-                                updater,
-                                {
-                                    executionHistoryModal: {
-                                        isOpen: isExecutionHistoryModalOpen,
-                                        onOpen: handleOpenExecutionHistory,
-                                        onClose: handleCloseExecutionHistory,
-                                    },
-                                },
-                            )}
+                        <div className="relative h-full w-full overflow-hidden">
+                            {(
+                                [
+                                    "workspace",
+                                    "automatic-execution",
+                                    "script-library",
+                                    "accounts",
+                                    "settings",
+                                ] as const
+                            ).map((screenId) => {
+                                const isActive = activeSidebarItem === screenId;
+
+                                return (
+                                    <div
+                                        key={screenId}
+                                        aria-hidden={!isActive}
+                                        className={`absolute inset-0 h-full w-full transition-[opacity,transform] duration-200 ${
+                                            isActive
+                                                ? "z-10 opacity-100 translate-y-0"
+                                                : "pointer-events-none z-0 translate-y-1 opacity-0"
+                                        }`}
+                                    >
+                                        {appScreens[screenId]}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </main>
                     {sidebarPosition === "right" ? (

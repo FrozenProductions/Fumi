@@ -35,8 +35,7 @@ export function getAppTopbarWorkspaceContext(
     };
 }
 
-export function renderActiveAppScreen(
-    activeSidebarItem: AppSidebarItem,
+export function createAppScreenMap(
     workspaceSession: UseWorkspaceSessionResult,
     workspaceExecutor: UseWorkspaceExecutorResult,
     updater: UseAppUpdaterResult,
@@ -44,30 +43,27 @@ export function renderActiveAppScreen(
         WorkspaceScreenProps,
         "executionHistoryModal"
     >,
-): ReactElement {
-    switch (activeSidebarItem) {
-        case "workspace":
-            return (
-                <WorkspaceScreen
-                    session={workspaceSession}
-                    executor={workspaceExecutor}
-                    executionHistoryModal={
-                        workspaceScreenOverlays.executionHistoryModal
-                    }
-                />
-            );
-        case "automatic-execution":
-            return <AutomaticExecutionScreen />;
-        case "script-library":
-            return <ScriptLibraryScreen workspaceSession={workspaceSession} />;
-        case "accounts":
-            return <AccountsScreen />;
-        case "settings":
-            return (
-                <AppSettingsScreen
-                    updater={updater}
-                    workspaceSession={workspaceSession}
-                />
-            );
-    }
+): Record<AppSidebarItem, ReactElement> {
+    return {
+        workspace: (
+            <WorkspaceScreen
+                session={workspaceSession}
+                executor={workspaceExecutor}
+                executionHistoryModal={
+                    workspaceScreenOverlays.executionHistoryModal
+                }
+            />
+        ),
+        "automatic-execution": <AutomaticExecutionScreen />,
+        "script-library": (
+            <ScriptLibraryScreen workspaceSession={workspaceSession} />
+        ),
+        accounts: <AccountsScreen />,
+        settings: (
+            <AppSettingsScreen
+                updater={updater}
+                workspaceSession={workspaceSession}
+            />
+        ),
+    };
 }
