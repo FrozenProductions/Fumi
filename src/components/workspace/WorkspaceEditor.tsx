@@ -312,8 +312,8 @@ export function WorkspaceEditor({
             const getWidth = (clientX: number): number => {
                 const delta =
                     sidebarPosition === "right"
-                        ? startX - clientX
-                        : clientX - startX;
+                        ? clientX - startX
+                        : startX - clientX;
                 return clampOutlineWidth(initialOutlineWidth + delta);
             };
 
