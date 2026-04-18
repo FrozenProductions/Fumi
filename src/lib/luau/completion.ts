@@ -118,6 +118,10 @@ function shouldIncludeFileSymbol(
     cursorIndex: number,
     currentFunctionOwner: number | null,
 ): boolean {
+    if (symbol.kind === "comment") {
+        return false;
+    }
+
     if (symbol.visibleStart > cursorIndex || cursorIndex > symbol.visibleEnd) {
         return false;
     }

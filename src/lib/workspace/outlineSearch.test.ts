@@ -32,9 +32,14 @@ function createSymbol(
 }
 
 describe("getWorkspaceOutlineGroups", () => {
-    it("groups symbols into functions, locals, and globals", () => {
+    it("groups symbols into functions, comments, locals, and globals", () => {
         const groups = getWorkspaceOutlineGroups([
             createSymbol({ label: "renderNode", kind: "function" }),
+            createSymbol({
+                label: "Utilities",
+                kind: "comment",
+                detail: "comment",
+            }),
             createSymbol({
                 label: "localState",
                 kind: "constant",
@@ -53,6 +58,7 @@ describe("getWorkspaceOutlineGroups", () => {
             })),
         ).toEqual([
             { title: "Functions", labels: ["renderNode"] },
+            { title: "Comments", labels: ["Utilities"] },
             { title: "Locals", labels: ["localState"] },
             { title: "Globals", labels: ["HttpService"] },
         ]);
@@ -67,6 +73,11 @@ describe("searchWorkspaceOutlineGroups", () => {
             kind: "constant",
             detail: "Local cache",
             isLexical: true,
+        }),
+        createSymbol({
+            label: "Networking",
+            kind: "comment",
+            detail: "comment",
         }),
         createSymbol({
             label: "HttpService",
@@ -86,11 +97,15 @@ describe("searchWorkspaceOutlineGroups", () => {
 
     it("matches detail text and group names", () => {
         const detailGroups = searchWorkspaceOutlineGroups(symbols, "cache");
+        const commentGroups = searchWorkspaceOutlineGroups(symbols, "comments");
         const groupGroups = searchWorkspaceOutlineGroups(symbols, "globals");
 
         expect(detailGroups[0]?.symbols.map((symbol) => symbol.label)).toEqual([
             "stateValue",
         ]);
+        expect(commentGroups[0]?.symbols.map((symbol) => symbol.label)).toEqual(
+            ["Networking"],
+        );
         expect(groupGroups[0]?.symbols.map((symbol) => symbol.label)).toEqual([
             "HttpService",
         ]);

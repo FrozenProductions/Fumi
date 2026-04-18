@@ -102,6 +102,12 @@ impl<'content> LuauSymbolScanner<'content> {
 
     fn scan(mut self) -> LuauFileAnalysis {
         self.parse_block(self.root_scope.clone(), &HashSet::new(), None);
+        let comment_symbols = if self.mode == LuauScanMode::Functions {
+            Vec::new()
+        } else {
+            extract_outline_comment_symbols(self.content, self.root_scope.clone())
+        };
+        self.pending_symbols.extend(comment_symbols);
 
         LuauFileAnalysis {
             function_scopes: self
@@ -1303,6 +1309,213 @@ fn normalize_whitespace(value: &str) -> String {
     value.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
+fn is_standalone_comment(content: &str, comment_start_byte: usize) -> bool {
+    let line_start = content[..comment_start_byte]
+        .rfind('\n')
+        .map(|index| index + 1)
+        .unwrap_or(0);
+
+    content[line_start..comment_start_byte].trim().is_empty()
+}
+
+fn normalize_outline_comment_line(value: &str) -> String {
+    value.trim_start_matches(|character: char| {
+        character.is_whitespace() || matches!(character, '#' | '*' | '/' | '=' | '-')
+    })
+    .trim()
+    .to_string()
+}
+
+fn get_outline_comment_metadata(comment_body: &str) -> Option<(String, String, bool)> {
+    let cleaned_lines = comment_body
+        .lines()
+        .map(normalize_outline_comment_line)
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>();
+
+    let summary = cleaned_lines.join(" ").trim().to_string();
+
+    if summary.is_empty() || !summary.chars().any(|character| character.is_ascii_alphanumeric()) {
+        return None;
+    }
+
+    Some((
+        cleaned_lines.first()?.clone(),
+        summary,
+        comment_body.contains('\n'),
+    ))
+}
+
+fn extract_outline_comment_symbols(
+    content: &str,
+    root_scope: SharedScope,
+) -> Vec<PendingLuauFileSymbol> {
+    let mut symbols = Vec::new();
+    let mut cursor = CursorPosition { byte: 0, utf16: 0 };
+
+    while cursor.byte < content.len() {
+        let character = match current_char(content, cursor.byte) {
+            Some(value) => value,
+            None => break,
+        };
+        let next_character = next_char(content, cursor.byte);
+
+        if character == '\r' || character.is_whitespace() {
+            advance_char(content, &mut cursor);
+            continue;
+        }
+
+        if character == '-' && next_character == Some('-') {
+            let comment_start = cursor;
+            let should_include_comment = is_standalone_comment(content, comment_start.byte);
+            let mut comment_cursor = cursor;
+
+            advance_char(content, &mut comment_cursor);
+            advance_char(content, &mut comment_cursor);
+
+            if let Some((close_delimiter, delimiter_length)) =
+                match_long_bracket(&content[comment_cursor.byte..])
+            {
+                advance_bytes(&mut comment_cursor, delimiter_length);
+                let comment_body_start = comment_cursor.byte;
+
+                while comment_cursor.byte < content.len()
+                    && !content[comment_cursor.byte..].starts_with(&close_delimiter)
+                {
+                    advance_char(content, &mut comment_cursor);
+                }
+
+                let comment_body_end = comment_cursor.byte;
+
+                if content[comment_cursor.byte..].starts_with(&close_delimiter) {
+                    advance_bytes(&mut comment_cursor, close_delimiter.len());
+                }
+
+                if should_include_comment {
+                    if let Some((label, summary, is_multiline)) =
+                        get_outline_comment_metadata(&content[comment_body_start..comment_body_end])
+                    {
+                        symbols.push(PendingLuauFileSymbol {
+                            label,
+                            kind: LuauSymbolKind::Comment,
+                            detail: if is_multiline {
+                                "multiline comment".to_string()
+                            } else {
+                                "comment".to_string()
+                            },
+                            declaration: TokenBoundary {
+                                start: comment_start.utf16,
+                                end: comment_cursor.utf16,
+                            },
+                            is_lexical: false,
+                            owner_function: None,
+                            scope: root_scope.clone(),
+                            visible_start: comment_start.utf16,
+                            doc_summary: summary,
+                            signature: None,
+                            insert_text: None,
+                        });
+                    }
+                }
+
+                cursor = comment_cursor;
+                continue;
+            }
+
+            let comment_body_start = comment_cursor.byte;
+
+            while comment_cursor.byte < content.len()
+                && current_char(content, comment_cursor.byte) != Some('\n')
+            {
+                advance_char(content, &mut comment_cursor);
+            }
+
+            if should_include_comment {
+                if let Some((label, summary, is_multiline)) =
+                    get_outline_comment_metadata(&content[comment_body_start..comment_cursor.byte])
+                {
+                    symbols.push(PendingLuauFileSymbol {
+                        label,
+                        kind: LuauSymbolKind::Comment,
+                        detail: if is_multiline {
+                            "multiline comment".to_string()
+                        } else {
+                            "comment".to_string()
+                        },
+                        declaration: TokenBoundary {
+                            start: comment_start.utf16,
+                            end: comment_cursor.utf16,
+                        },
+                        is_lexical: false,
+                        owner_function: None,
+                        scope: root_scope.clone(),
+                        visible_start: comment_start.utf16,
+                        doc_summary: summary,
+                        signature: None,
+                        insert_text: None,
+                    });
+                }
+            }
+
+            cursor = comment_cursor;
+            continue;
+        }
+
+        if matches!(character, '\'' | '"' | '`') {
+            let quote = character;
+            advance_char(content, &mut cursor);
+
+            while cursor.byte < content.len() {
+                let current = match current_char(content, cursor.byte) {
+                    Some(value) => value,
+                    None => break,
+                };
+
+                if current == '\\' {
+                    advance_char(content, &mut cursor);
+
+                    if cursor.byte < content.len() {
+                        advance_char(content, &mut cursor);
+                    }
+
+                    continue;
+                }
+
+                advance_char(content, &mut cursor);
+
+                if current == quote {
+                    break;
+                }
+            }
+
+            continue;
+        }
+
+        if character == '[' {
+            if let Some((close_delimiter, delimiter_length)) = match_long_bracket(&content[cursor.byte..])
+            {
+                advance_bytes(&mut cursor, delimiter_length);
+
+                while cursor.byte < content.len()
+                    && !content[cursor.byte..].starts_with(&close_delimiter)
+                {
+                    advance_char(content, &mut cursor);
+                }
+
+                if content[cursor.byte..].starts_with(&close_delimiter) {
+                    advance_bytes(&mut cursor, close_delimiter.len());
+                }
+
+                continue;
+            }
+        }
+
+        advance_char(content, &mut cursor);
+    }
+
+    symbols
+}
+
 fn hash_set<const N: usize>(values: [&'static str; N]) -> HashSet<&'static str> {
     values.into_iter().collect()
 }
@@ -1375,7 +1588,7 @@ mod tests {
     }
 
     #[test]
-    fn ignores_comment_and_string_contents() {
+    fn extracts_outline_comments_without_scanning_comment_contents() {
         let analysis = scan(
             "-- local function fake() end\nlocal text = \"function hidden() end\"\n--[=[\nfunction buried() end\n]=]\nlocal function real() end\n",
             LuauScanMode::Full,
@@ -1384,6 +1597,13 @@ mod tests {
         let labels = analysis
             .symbols
             .iter()
+            .filter(|symbol| symbol.kind != LuauSymbolKind::Comment)
+            .map(|symbol| symbol.label.as_str())
+            .collect::<Vec<_>>();
+        let comment_labels = analysis
+            .symbols
+            .iter()
+            .filter(|symbol| symbol.kind == LuauSymbolKind::Comment)
             .map(|symbol| symbol.label.as_str())
             .collect::<Vec<_>>();
 
@@ -1391,6 +1611,24 @@ mod tests {
         assert!(!labels.contains(&"fake"));
         assert!(!labels.contains(&"hidden"));
         assert!(!labels.contains(&"buried"));
+        assert_eq!(comment_labels, vec!["local function fake() end", "function buried() end"]);
+    }
+
+    #[test]
+    fn ignores_inline_comments_for_outline_symbols() {
+        let analysis = scan(
+            "local function real()\n    print(value) -- trailing note\nend\n",
+            LuauScanMode::Full,
+        );
+
+        let comment_labels = analysis
+            .symbols
+            .iter()
+            .filter(|symbol| symbol.kind == LuauSymbolKind::Comment)
+            .map(|symbol| symbol.label.as_str())
+            .collect::<Vec<_>>();
+
+        assert!(comment_labels.is_empty());
     }
 
     #[test]

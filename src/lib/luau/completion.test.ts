@@ -116,4 +116,35 @@ describe("shouldOpenLuauCompletion", () => {
 
         expect(query.items.map((item) => item.label)).toContain("foo");
     });
+
+    it("excludes outline comments from file completions", () => {
+        const query = getCompletionQuery("Ne", {
+            functionScopes: [],
+            symbols: [
+                {
+                    label: "Networking",
+                    kind: "comment",
+                    detail: "comment",
+                    declarationStart: 0,
+                    declarationEnd: 12,
+                    isLexical: false,
+                    ownerFunctionStart: null,
+                    ownerFunctionEnd: null,
+                    scopeStart: 0,
+                    scopeEnd: 12,
+                    visibleStart: 0,
+                    visibleEnd: 12,
+                    doc: {
+                        summary: "Networking",
+                        source: "Current File",
+                    },
+                    score: 2000,
+                },
+            ],
+        });
+
+        expect(query.items.map((item) => item.label)).not.toContain(
+            "Networking",
+        );
+    });
 });

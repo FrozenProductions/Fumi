@@ -1,4 +1,5 @@
 export type LuauSymbolKind =
+    | "comment"
     | "constant"
     | "datatype"
     | "enum"

@@ -22,6 +22,8 @@ import type {
 
 function getSymbolIcon(kind: LuauFileSymbol["kind"]): string {
     switch (kind) {
+        case "comment":
+            return "#";
         case "function":
             return "ƒ";
         case "constant":
@@ -45,6 +47,8 @@ function getSymbolIcon(kind: LuauFileSymbol["kind"]): string {
 
 function getSymbolColor(kind: LuauFileSymbol["kind"]): string {
     switch (kind) {
+        case "comment":
+            return "text-fumi-500";
         case "function":
             return "text-fumi-700";
         case "constant":
@@ -163,7 +167,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                 type: "group",
             });
 
-            if (!expandedGroups[group.title]) {
+            if (expandedGroups[group.title] === false) {
                 continue;
             }
 
