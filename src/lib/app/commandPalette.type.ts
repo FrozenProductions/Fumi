@@ -26,6 +26,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     onOpenAutomaticExecution: () => void;
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
+    onOpenExecutionHistory: () => void;
     onOpenSettings: () => void;
     isOutlinePanelVisible: boolean;
     onToggleSidebar: () => void;
@@ -53,6 +54,7 @@ export type AppCommandPaletteControllerOptions = {
     onOpenAutomaticExecution: () => void;
     onOpenScriptLibrary: () => void;
     onOpenAccounts: () => void;
+    onOpenExecutionHistory: () => void;
     onToggleSidebar: () => void;
     onToggleOutlinePanel: () => void;
     onOpenSettings: () => void;
@@ -137,6 +139,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "onOpenAutomaticExecution"
     | "onOpenScriptLibrary"
     | "onOpenAccounts"
+    | "onOpenExecutionHistory"
     | "onToggleSidebar"
     | "onToggleOutlinePanel"
     | "onOpenSettings"

@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::executor::ExecutorKind;
+
 pub(super) const WORKSPACE_METADATA_DIR_NAME: &str = ".fumi";
 pub(super) const WORKSPACE_METADATA_FILE_NAME: &str = "workspace.json";
 pub(super) const APP_STATE_FILE_NAME: &str = "state.json";
@@ -11,6 +13,8 @@ pub(super) const LEGACY_STATE_DIRECTORIES: [&str; 2] = ["Fumi", "frozenproductio
 pub(super) const DEFAULT_WORKSPACE_SPLIT_RATIO: f64 = 0.5;
 pub(super) const MIN_WORKSPACE_SPLIT_RATIO: f64 = 0.12;
 pub(super) const MAX_WORKSPACE_SPLIT_RATIO: f64 = 0.88;
+pub(super) const WORKSPACE_METADATA_VERSION: u8 = 4;
+pub(super) const MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES: usize = 100;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -73,6 +77,8 @@ pub struct WorkspaceMetadata {
     pub split_view: Option<WorkspaceSplitView>,
     pub tabs: Vec<WorkspaceTabState>,
     pub archived_tabs: Vec<WorkspaceTabState>,
+    #[serde(default)]
+    pub execution_history: Vec<WorkspaceExecutionHistoryEntry>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -98,6 +104,20 @@ pub struct DroppedWorkspaceScriptDraft {
     pub content: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceExecutionHistoryEntry {
+    pub id: String,
+    pub executed_at: i64,
+    pub executor_kind: ExecutorKind,
+    pub port: u16,
+    pub account_id: Option<String>,
+    pub account_display_name: Option<String>,
+    pub is_bound_to_unknown_account: bool,
+    pub file_name: String,
+    pub script_content: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct StoredAppState {
@@ -113,4 +133,6 @@ pub(super) struct StoredWorkspaceMetadata {
     pub(super) split_view: Option<WorkspaceSplitView>,
     pub(super) tabs: Option<Vec<WorkspaceTabState>>,
     pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(default)]
+    pub(super) execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
 }

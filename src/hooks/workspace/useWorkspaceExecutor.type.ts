@@ -1,12 +1,21 @@
 import type {
     ExecutorKind,
     ExecutorPortSummary,
+    WorkspaceExecutionHistoryEntry,
 } from "../../lib/workspace/workspace.type";
 
 export type AsyncUnsubscribe = () => void;
 
 export type UseWorkspaceExecutorOptions = {
-    activeTabContent: string | null;
+    workspacePath: string | null;
+    activeTab: {
+        fileName: string;
+        content: string;
+    } | null;
+    onExecutionHistoryUpdated?: (
+        workspacePath: string,
+        entries: WorkspaceExecutionHistoryEntry[],
+    ) => void;
 };
 
 export type WorkspaceExecutorState = {
@@ -26,6 +35,9 @@ export type WorkspaceExecutorActions = {
     clearErrorMessage: () => void;
     toggleConnection: () => Promise<void>;
     executeActiveTab: () => Promise<void>;
+    executeHistoryEntry: (
+        entry: WorkspaceExecutionHistoryEntry,
+    ) => Promise<void>;
 };
 
 export type UseWorkspaceExecutorResult = {

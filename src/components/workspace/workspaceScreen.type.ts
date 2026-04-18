@@ -15,6 +15,11 @@ import type {
 export type WorkspaceScreenProps = {
     session: UseWorkspaceSessionResult;
     executor: UseWorkspaceExecutorResult;
+    executionHistoryModal: {
+        isOpen: boolean;
+        onOpen: () => void;
+        onClose: () => void;
+    };
 };
 
 export type WorkspaceActionsButtonProps = {
@@ -28,6 +33,7 @@ export type WorkspaceActionsButtonProps = {
     robloxProcesses: readonly RobloxProcessInfo[];
     liveRobloxAccount: RobloxAccountIdentity | null;
     onKillRobloxProcess: (pid: number) => Promise<void>;
+    onOpenExecutionHistory: () => void;
 };
 
 export type WorkspaceTabBarProps = {

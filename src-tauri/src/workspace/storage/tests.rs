@@ -1,4 +1,5 @@
 use super::*;
+use crate::executor::ExecutorKind;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 struct TestWorkspaceDir {
@@ -53,6 +54,20 @@ fn tab(
     }
 }
 
+fn history_entry(id: &str, executed_at: i64) -> WorkspaceExecutionHistoryEntry {
+    WorkspaceExecutionHistoryEntry {
+        id: id.to_string(),
+        executed_at,
+        executor_kind: ExecutorKind::Macsploit,
+        port: 5553,
+        account_id: Some("account-1".to_string()),
+        account_display_name: Some("Main".to_string()),
+        is_bound_to_unknown_account: false,
+        file_name: "script.lua".to_string(),
+        script_content: format!("print('{id}')"),
+    }
+}
+
 #[test]
 fn normalize_new_workspace_file_name_sanitizes_and_rejects_overlong_names() {
     assert_eq!(
@@ -85,11 +100,13 @@ fn normalize_workspace_metadata_repairs_invalid_entries_and_conflicts() {
             tab("arch-1", ".beta", cursor(9, 10, 11.0), Some(50)),
             tab("arch-2", "alpha.lua", cursor(1, 1, 1.0), Some(75)),
         ]),
+        execution_history: Some(vec![history_entry("legacy-history", 99)]),
     }));
 
-    assert_eq!(metadata.version, 3);
+    assert_eq!(metadata.version, WORKSPACE_METADATA_VERSION);
     assert!(metadata.split_view.is_none());
     assert_eq!(metadata.active_tab_id.as_deref(), Some("open-1"));
+    assert!(metadata.execution_history.is_empty());
     assert_eq!(metadata.tabs.len(), 1);
     assert_eq!(metadata.tabs[0].id, "open-1");
     assert_eq!(metadata.tabs[0].file_name, "alpha.lua");
@@ -106,7 +123,7 @@ fn normalize_workspace_metadata_repairs_invalid_entries_and_conflicts() {
 #[test]
 fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
     let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
-        version: 3,
+        version: WORKSPACE_METADATA_VERSION,
         active_tab_id: Some("tab-3".to_string()),
         split_view: Some(WorkspaceSplitView {
             direction: "vertical".to_string(),
@@ -126,6 +143,10 @@ fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
             tab("tab-3", "three.lua", create_empty_cursor_state(), None),
         ]),
         archived_tabs: Some(vec![]),
+        execution_history: Some(vec![
+            history_entry("history-1", 10),
+            history_entry("history-2", 9),
+        ]),
     }));
 
     assert_eq!(
@@ -153,6 +174,32 @@ fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
         metadata.split_view.as_ref().map(|split| split.split_ratio),
         Some(0.68)
     );
+    assert_eq!(
+        metadata.execution_history,
+        vec![history_entry("history-1", 10), history_entry("history-2", 9)]
+    );
+}
+
+#[test]
+fn normalize_workspace_metadata_upgrades_legacy_versions_to_v4_with_empty_history() {
+    for version in 1..=3 {
+        let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
+            version,
+            active_tab_id: Some("tab-1".to_string()),
+            split_view: None,
+            tabs: Some(vec![tab(
+                "tab-1",
+                "one.lua",
+                create_empty_cursor_state(),
+                None,
+            )]),
+            archived_tabs: Some(vec![]),
+            execution_history: Some(vec![history_entry("legacy", 1)]),
+        }));
+
+        assert_eq!(metadata.version, WORKSPACE_METADATA_VERSION);
+        assert!(metadata.execution_history.is_empty());
+    }
 }
 
 #[test]
@@ -162,7 +209,7 @@ fn ensure_unique_file_name_accounts_for_metadata_and_existing_files() {
         .expect("existing workspace file should be created");
 
     let metadata = WorkspaceMetadata {
-        version: 3,
+        version: WORKSPACE_METADATA_VERSION,
         active_tab_id: Some("open-1".to_string()),
         split_view: None,
         tabs: vec![tab(
@@ -177,6 +224,7 @@ fn ensure_unique_file_name_accounts_for_metadata_and_existing_files() {
             create_empty_cursor_state(),
             Some(10),
         )],
+        execution_history: vec![],
     };
 
     assert_eq!(
@@ -202,7 +250,7 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
     write_json_file(
         &get_workspace_metadata_path(workspace_dir.path()),
         &WorkspaceMetadata {
-            version: 3,
+            version: WORKSPACE_METADATA_VERSION,
             active_tab_id: Some("missing-open".to_string()),
             split_view: None,
             tabs: vec![
@@ -228,6 +276,7 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
                     Some(456),
                 ),
             ],
+            execution_history: vec![history_entry("history-1", 123)],
         },
     )?;
 
@@ -249,6 +298,10 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
     assert_eq!(snapshot.metadata.tabs.len(), 1);
     assert_eq!(snapshot.metadata.archived_tabs.len(), 1);
     assert_eq!(snapshot.metadata.archived_tabs[0].file_name, "archived.lua");
+    assert_eq!(
+        snapshot.metadata.execution_history,
+        vec![history_entry("history-1", 123)]
+    );
 
     let persisted_metadata =
         read_json_file::<WorkspaceMetadata>(&get_workspace_metadata_path(workspace_dir.path()))?
@@ -261,6 +314,10 @@ fn read_workspace_snapshot_prunes_missing_files_and_persists_cleaned_metadata() 
     assert_eq!(
         persisted_metadata.archived_tabs[0].file_name,
         "archived.lua"
+    );
+    assert_eq!(
+        persisted_metadata.execution_history,
+        vec![history_entry("history-1", 123)]
     );
 
     Ok(())
@@ -277,7 +334,7 @@ fn read_workspace_snapshot_preserves_split_membership() -> anyhow::Result<()> {
     write_json_file(
         &get_workspace_metadata_path(workspace_dir.path()),
         &WorkspaceMetadata {
-            version: 3,
+            version: WORKSPACE_METADATA_VERSION,
             active_tab_id: Some("tab-3".to_string()),
             split_view: Some(WorkspaceSplitView {
                 direction: "vertical".to_string(),
@@ -293,6 +350,7 @@ fn read_workspace_snapshot_preserves_split_membership() -> anyhow::Result<()> {
                 tab("tab-3", "three.lua", create_empty_cursor_state(), None),
             ],
             archived_tabs: vec![],
+            execution_history: vec![history_entry("history-1", 50)],
         },
     )?;
 
@@ -309,6 +367,62 @@ fn read_workspace_snapshot_preserves_split_membership() -> anyhow::Result<()> {
         vec!["tab-1".to_string(), "tab-2".to_string()]
     );
     assert_eq!(split_view.split_ratio, 0.64);
+    assert_eq!(
+        snapshot.metadata.execution_history,
+        vec![history_entry("history-1", 50)]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn append_workspace_execution_history_preserves_metadata_and_caps_to_100_entries(
+) -> anyhow::Result<()> {
+    let workspace_dir = TestWorkspaceDir::new("append-history");
+
+    write_workspace_file(&workspace_dir.path().join("one.lua"), "print('one')")?;
+    write_json_file(
+        &get_workspace_metadata_path(workspace_dir.path()),
+        &WorkspaceMetadata {
+            version: WORKSPACE_METADATA_VERSION,
+            active_tab_id: Some("tab-1".to_string()),
+            split_view: Some(WorkspaceSplitView {
+                direction: "vertical".to_string(),
+                primary_tab_id: "tab-1".to_string(),
+                secondary_tab_id: "tab-2".to_string(),
+                secondary_tab_ids: vec!["tab-2".to_string()],
+                split_ratio: 0.5,
+                focused_pane: WorkspacePaneId::Primary,
+            }),
+            tabs: vec![
+                tab("tab-1", "one.lua", create_empty_cursor_state(), None),
+                tab("tab-2", "two.lua", create_empty_cursor_state(), None),
+            ],
+            archived_tabs: vec![tab(
+                "arch-1",
+                "archived.lua",
+                create_empty_cursor_state(),
+                Some(1),
+            )],
+            execution_history: (0..MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES)
+                .map(|index| history_entry(&format!("history-{index}"), index as i64))
+                .collect(),
+        },
+    )?;
+
+    let updated_history = append_workspace_execution_history(
+        workspace_dir.path(),
+        history_entry("latest", 9_999),
+    )?;
+    let persisted_metadata =
+        read_workspace_metadata(workspace_dir.path())?;
+
+    assert_eq!(updated_history.len(), MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES);
+    assert_eq!(updated_history[0].id, "latest");
+    assert_eq!(persisted_metadata.execution_history, updated_history);
+    assert_eq!(persisted_metadata.tabs.len(), 2);
+    assert_eq!(persisted_metadata.archived_tabs.len(), 1);
+    assert!(persisted_metadata.split_view.is_some());
 
     Ok(())
 }

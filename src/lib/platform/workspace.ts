@@ -3,6 +3,7 @@ import type {
     DroppedWorkspaceScriptDraft,
     WorkspaceBootstrapResponse,
     WorkspaceCursorState,
+    WorkspaceExecutionHistoryEntry,
     WorkspaceSnapshot,
     WorkspaceSplitView,
     WorkspaceTabSnapshot,
@@ -286,6 +287,7 @@ export function persistWorkspaceState(options: {
     splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTabState[];
     archivedTabs: WorkspaceTabState[];
+    executionHistory: WorkspaceExecutionHistoryEntry[];
 }): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.resolve();
@@ -294,6 +296,26 @@ export function persistWorkspaceState(options: {
     return invokeWorkspaceVoidCommand(
         "persist_workspace_state",
         "persistWorkspaceState",
+        options,
+    );
+}
+
+export function appendWorkspaceExecutionHistory(options: {
+    workspacePath: string;
+    entry: WorkspaceExecutionHistoryEntry;
+}): Promise<WorkspaceExecutionHistoryEntry[]> {
+    if (!isTauriEnvironment()) {
+        return Promise.reject(
+            new WorkspaceCommandError({
+                operation: "appendWorkspaceExecutionHistory",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeWorkspaceCommand<WorkspaceExecutionHistoryEntry[]>(
+        "append_workspace_execution_history",
+        "appendWorkspaceExecutionHistory",
         options,
     );
 }

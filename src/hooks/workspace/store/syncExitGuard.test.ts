@@ -16,7 +16,9 @@ function createWorkspaceStoreState(hasUnsavedChanges: boolean): WorkspaceStore {
             workspacePath: "/workspace/current",
             workspaceName: "current",
             activeTabId: "tab-1",
+            splitView: null,
             archivedTabs: [],
+            executionHistory: [],
             tabs: [
                 {
                     id: "tab-1",

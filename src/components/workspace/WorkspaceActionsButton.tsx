@@ -43,6 +43,7 @@ export function WorkspaceActionsButton({
     robloxProcesses,
     liveRobloxAccount,
     onKillRobloxProcess,
+    onOpenExecutionHistory,
 }: WorkspaceActionsButtonProps): ReactElement {
     const theme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
@@ -169,6 +170,12 @@ export function WorkspaceActionsButton({
         clearPendingConfirm();
         setIsDropdownOpen(false);
         onToggleOutlinePanel();
+    }
+
+    function handleOpenExecutionHistoryClick(): void {
+        clearPendingConfirm();
+        setIsDropdownOpen(false);
+        onOpenExecutionHistory();
     }
 
     const containerClass = isDark
@@ -412,6 +419,29 @@ export function WorkspaceActionsButton({
                                         ? "Hide outline panel"
                                         : "Show outline panel"}
                                 </span>
+                            </button>
+                        </AppTooltip>
+
+                        <AppTooltip
+                            content="Inspect and replay successful manual executes"
+                            side="left"
+                        >
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={handleOpenExecutionHistoryClick}
+                                className={`app-select-none flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                    isDark
+                                        ? "text-fumi-200 hover:bg-fumi-700"
+                                        : "text-fumi-700 hover:bg-fumi-100"
+                                }`}
+                            >
+                                <AppIcon
+                                    icon={FileCodeIcon}
+                                    className="size-3.5 shrink-0 -translate-y-[0.5px]"
+                                    strokeWidth={2.5}
+                                />
+                                <span>Execution history</span>
                             </button>
                         </AppTooltip>
 

@@ -44,6 +44,7 @@ function createWorkspaceSession(
         activeTabId: "tab-1",
         splitView: null,
         archivedTabs: [],
+        executionHistory: [],
         tabs: [
             createWorkspaceTab("tab-1"),
             createWorkspaceTab("tab-2"),

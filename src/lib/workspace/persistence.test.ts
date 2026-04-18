@@ -41,6 +41,7 @@ function createWorkspaceSession(
             },
         ],
         archivedTabs: [],
+        executionHistory: [],
         ...overrides,
     };
 }
@@ -122,13 +123,17 @@ describe("getWorkspacePersistSignature", () => {
         const workspace = createWorkspaceSession();
         const equivalentWorkspace = createWorkspaceSession();
         const changedWorkspace = createWorkspaceSession({
-            tabs: [
+            executionHistory: [
                 {
-                    ...workspace.tabs[0],
-                    cursor: {
-                        ...workspace.tabs[0].cursor,
-                        column: 3,
-                    },
+                    id: "history-1",
+                    executedAt: 1,
+                    executorKind: "macsploit",
+                    port: 5553,
+                    accountId: null,
+                    accountDisplayName: null,
+                    isBoundToUnknownAccount: false,
+                    fileName: "script.lua",
+                    scriptContent: "print('hello')",
                 },
             ],
         });

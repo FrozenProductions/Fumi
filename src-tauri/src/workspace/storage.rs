@@ -11,12 +11,14 @@ use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
 use super::models::{
-    StoredAppState, StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceMetadata,
-    WorkspacePaneId, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabSnapshot,
-    WorkspaceTabState, APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME,
-    DEFAULT_WORKSPACE_FILE_EXTENSION, DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES,
-    MAX_WORKSPACE_SPLIT_RATIO, MAX_WORKSPACE_TAB_NAME_LENGTH, MIN_WORKSPACE_SPLIT_RATIO,
-    WORKSPACE_METADATA_DIR_NAME, WORKSPACE_METADATA_FILE_NAME, WORKSPACE_MISSING_ERROR_MESSAGE,
+    StoredAppState, StoredWorkspaceMetadata, WorkspaceCursorState,
+    WorkspaceExecutionHistoryEntry, WorkspaceMetadata, WorkspacePaneId, WorkspaceSnapshot,
+    WorkspaceSplitView, WorkspaceTabSnapshot, WorkspaceTabState, APP_STATE_FILE_NAME,
+    DEFAULT_WORKSPACE_FILE_BASE_NAME, DEFAULT_WORKSPACE_FILE_EXTENSION,
+    DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES,
+    MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES, MAX_WORKSPACE_SPLIT_RATIO,
+    MAX_WORKSPACE_TAB_NAME_LENGTH, MIN_WORKSPACE_SPLIT_RATIO, WORKSPACE_METADATA_DIR_NAME,
+    WORKSPACE_METADATA_FILE_NAME, WORKSPACE_METADATA_VERSION, WORKSPACE_MISSING_ERROR_MESSAGE,
 };
 
 #[derive(Debug)]
@@ -173,12 +175,23 @@ pub(super) fn create_workspace_tab_id(seen_tab_ids: &HashSet<String>) -> String 
 
 fn create_default_metadata() -> WorkspaceMetadata {
     WorkspaceMetadata {
-        version: 3,
+        version: WORKSPACE_METADATA_VERSION,
         active_tab_id: None,
         split_view: None,
         tabs: Vec::new(),
         archived_tabs: Vec::new(),
+        execution_history: Vec::new(),
     }
+}
+
+fn normalize_workspace_execution_history(
+    execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
+) -> Vec<WorkspaceExecutionHistoryEntry> {
+    execution_history
+        .unwrap_or_default()
+        .into_iter()
+        .take(MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES)
+        .collect()
 }
 
 fn normalize_split_view(
@@ -289,7 +302,11 @@ pub(super) fn normalize_workspace_metadata(
         return create_default_metadata();
     };
 
-    if metadata.version != 1 && metadata.version != 2 && metadata.version != 3 {
+    if metadata.version != 1
+        && metadata.version != 2
+        && metadata.version != 3
+        && metadata.version != WORKSPACE_METADATA_VERSION
+    {
         return create_default_metadata();
     }
 
@@ -308,10 +325,15 @@ pub(super) fn normalize_workspace_metadata(
     };
 
     let open_tab_ids: HashSet<String> = normalized_tabs.iter().map(|t| t.id.clone()).collect();
-    let normalized_split_view = if metadata.version == 3 {
+    let normalized_split_view = if metadata.version >= 3 {
         normalize_split_view(metadata.split_view, &open_tab_ids)
     } else {
         None
+    };
+    let normalized_execution_history = if metadata.version >= WORKSPACE_METADATA_VERSION {
+        normalize_workspace_execution_history(metadata.execution_history)
+    } else {
+        Vec::new()
     };
 
     let active_tab_id = match &normalized_split_view {
@@ -329,11 +351,12 @@ pub(super) fn normalize_workspace_metadata(
     };
 
     WorkspaceMetadata {
-        version: 3,
+        version: WORKSPACE_METADATA_VERSION,
         active_tab_id,
         split_view: normalized_split_view,
         tabs: normalized_tabs,
         archived_tabs: normalized_archived_tabs,
+        execution_history: normalized_execution_history,
     }
 }
 
@@ -371,6 +394,30 @@ pub(super) fn write_workspace_metadata(
 ) -> Result<()> {
     ensure_workspace_exists(workspace_path)?;
     write_json_file(&get_workspace_metadata_path(workspace_path), metadata)
+}
+
+pub(super) fn append_workspace_execution_history(
+    workspace_path: &Path,
+    entry: WorkspaceExecutionHistoryEntry,
+) -> Result<Vec<WorkspaceExecutionHistoryEntry>> {
+    let metadata = read_workspace_metadata(workspace_path)?;
+    let next_execution_history = normalize_workspace_execution_history(Some(
+        std::iter::once(entry)
+            .chain(metadata.execution_history)
+            .collect(),
+    ));
+    let next_metadata = WorkspaceMetadata {
+        version: metadata.version,
+        active_tab_id: metadata.active_tab_id,
+        split_view: metadata.split_view,
+        tabs: metadata.tabs,
+        archived_tabs: metadata.archived_tabs,
+        execution_history: next_execution_history.clone(),
+    };
+
+    write_workspace_metadata(workspace_path, &next_metadata)?;
+
+    Ok(next_execution_history)
 }
 
 fn import_legacy_app_state<R: tauri::Runtime>(
@@ -560,6 +607,7 @@ pub(super) fn get_temporary_rename_file_name(
                 .cloned()
                 .collect(),
             archived_tabs: metadata.archived_tabs.clone(),
+            execution_history: metadata.execution_history.clone(),
         },
         &temporary_name,
     )
@@ -641,11 +689,12 @@ pub(super) fn read_workspace_snapshot(workspace_path: &Path) -> Result<Workspace
     };
 
     let normalized_metadata = WorkspaceMetadata {
-        version: 3,
+        version: WORKSPACE_METADATA_VERSION,
         active_tab_id,
         split_view: normalized_split_view,
         tabs: existing_tab_states,
         archived_tabs: existing_archived_tab_states,
+        execution_history: metadata.execution_history,
     };
 
     write_workspace_metadata(workspace_path, &normalized_metadata)?;

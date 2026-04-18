@@ -1,6 +1,7 @@
 import type { StateCreator } from "zustand";
 import type {
     WorkspaceCursorState,
+    WorkspaceExecutionHistoryEntry,
     WorkspacePaneId,
     WorkspaceSession,
 } from "../../../lib/workspace/workspace.type";
@@ -48,6 +49,10 @@ export type WorkspaceStoreActions = {
     updateActiveTabContent: (content: string) => void;
     updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;
     updateActiveTabScrollTop: (scrollTop: number) => void;
+    replaceWorkspaceExecutionHistory: (
+        workspacePath: string,
+        entries: WorkspaceExecutionHistoryEntry[],
+    ) => void;
     setErrorMessage: (errorMessage: string | null) => void;
     clearErrorMessage: () => void;
 };
@@ -65,6 +70,7 @@ export type WorkspaceLifecycleSlice = Pick<
     | "refreshWorkspaceFromFilesystem"
     | "openWorkspaceDirectory"
     | "openWorkspacePath"
+    | "replaceWorkspaceExecutionHistory"
 >;
 
 export type WorkspaceFileSlice = Pick<
