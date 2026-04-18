@@ -13,8 +13,8 @@ import type {
 
 export const APP_SIDEBAR_ITEM_IDS = [
     "workspace",
-    "automatic-execution",
     "script-library",
+    "automatic-execution",
     "accounts",
     "settings",
 ] as const satisfies AppSidebarItem[];
@@ -26,14 +26,14 @@ export const APP_SIDEBAR_ITEMS = [
         icon: FolderCodeIcon,
     },
     {
-        id: "automatic-execution",
-        label: "Automatic Execution",
-        icon: CommandIcon,
-    },
-    {
         id: "script-library",
         label: "Script Library",
         icon: BookCopyIcon,
+    },
+    {
+        id: "automatic-execution",
+        label: "Automatic Execution",
+        icon: CommandIcon,
     },
     {
         id: "accounts",

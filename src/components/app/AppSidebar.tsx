@@ -56,6 +56,12 @@ export function AppSidebar({
             ? "border-r border-fumi-200"
             : "border-l border-fumi-200";
     const tooltipSide = position === "left" ? "right" : "left";
+    const getTooltipLabel = (
+        id: (typeof APP_SIDEBAR_ITEMS)[number]["id"],
+        label: string,
+    ): string => {
+        return id === "accounts" ? "Accounts Manager" : label;
+    };
 
     return (
         <aside
@@ -94,10 +100,11 @@ export function AppSidebar({
 
                     {APP_SIDEBAR_ITEMS.map(({ id, label, icon }) => {
                         const isActive = activeItem === id;
+                        const tooltipLabel = getTooltipLabel(id, label);
                         return (
                             <AppTooltip
                                 key={id}
-                                content={label}
+                                content={tooltipLabel}
                                 side={tooltipSide}
                                 shortcut={shortcutLabels[id]}
                             >
