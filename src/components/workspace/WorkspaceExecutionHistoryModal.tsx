@@ -4,15 +4,17 @@ import {
     Key01Icon,
     PlayIcon,
     Tick01Icon,
-    UserIcon,
 } from "@hugeicons/core-free-icons";
 import type { Ace } from "ace-builds";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import {
-    WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
+import {
+    EXECUTION_HISTORY_EDITOR_OPTIONS,
+    EXECUTION_HISTORY_LARGE_SCRIPT_EDITOR_OPTIONS,
+} from "../../constants/workspace/executionHistory";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
@@ -20,7 +22,7 @@ import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
-import { shouldUsePlainTextExecutionHistoryPreview } from "../../lib/workspace/executionHistory";
+import { isLargeExecutionHistoryScript } from "../../lib/workspace/executionHistory";
 import type { WorkspaceExecutionHistoryEntry } from "../../lib/workspace/workspace.type";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
@@ -90,15 +92,13 @@ export function WorkspaceExecutionHistoryModal({
     const [AceEditorComp, setAceEditorComp] =
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
-    const editorRef = useRef<Ace.Editor | null>(null);
-    const appliedEntryIdRef = useRef<string | null>(null);
     const selectedEntry =
         entries.find((entry) => entry.id === selectedEntryId) ??
         entries[0] ??
         null;
-    const shouldUsePlainTextPreview =
+    const isLargeScript =
         selectedEntry !== null &&
-        shouldUsePlainTextExecutionHistoryPreview(selectedEntry.scriptContent);
+        isLargeExecutionHistoryScript(selectedEntry.scriptContent);
 
     useEffect(() => {
         if (!isOpen) {
@@ -133,35 +133,7 @@ export function WorkspaceExecutionHistoryModal({
     }, [isOpen, onClose]);
 
     useEffect(() => {
-        if (!isOpen || shouldUsePlainTextPreview) {
-            editorRef.current = null;
-            appliedEntryIdRef.current = selectedEntryId;
-            return;
-        }
-
-        const editor = editorRef.current;
-
-        if (!editor || !selectedEntryId) {
-            appliedEntryIdRef.current = selectedEntryId;
-            return;
-        }
-
-        if (appliedEntryIdRef.current === selectedEntryId) {
-            return;
-        }
-
-        appliedEntryIdRef.current = selectedEntryId;
-        editor.selection.moveCursorTo(0, 0);
-        editor.clearSelection();
-        editor.renderer.scrollToY(0);
-    }, [isOpen, selectedEntryId, shouldUsePlainTextPreview]);
-
-    useEffect(() => {
-        if (
-            !isOpen ||
-            shouldUsePlainTextPreview ||
-            (AceEditorComp !== null && aceRuntime !== null)
-        ) {
+        if (!isOpen || (AceEditorComp !== null && aceRuntime !== null)) {
             return;
         }
 
@@ -183,7 +155,7 @@ export function WorkspaceExecutionHistoryModal({
         return () => {
             isMounted = false;
         };
-    }, [AceEditorComp, aceRuntime, isOpen, shouldUsePlainTextPreview]);
+    }, [AceEditorComp, aceRuntime, isOpen]);
 
     if (!isOpen) {
         return null;
@@ -363,12 +335,19 @@ export function WorkspaceExecutionHistoryModal({
                                                 {selectedEntry.fileName}
                                             </h3>
                                             <p className="mt-0.5 truncate text-[10px] font-semibold text-fumi-500">
-                                                {formatExecutionTimestamp(selectedEntry.executedAt)}
+                                                {formatExecutionTimestamp(
+                                                    selectedEntry.executedAt,
+                                                )}
                                                 {" · "}
-                                                {formatExecutorKind(selectedEntry.executorKind)}
-                                                {" · Port "}{selectedEntry.port}
+                                                {formatExecutorKind(
+                                                    selectedEntry.executorKind,
+                                                )}
+                                                {" · Port "}
+                                                {selectedEntry.port}
                                                 {" · "}
-                                                {formatAccountLabel(selectedEntry)}
+                                                {formatAccountLabel(
+                                                    selectedEntry,
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -383,80 +362,75 @@ export function WorkspaceExecutionHistoryModal({
                                 ) : null}
 
                                 <div className="min-h-0 flex-1">
-                                    {shouldUsePlainTextPreview ? (
+                                    {AceEditorComp && aceRuntime ? (
                                         <div className="flex h-full min-h-0 flex-col">
-                                            <div className="shrink-0 border-b border-fumi-200 px-4 py-1.5">
-                                                <p className="text-[10px] font-semibold text-fumi-500">
-                                                    Large snapshot loaded in
-                                                    plain-text mode to keep the
-                                                    app responsive.
-                                                </p>
-                                            </div>
-                                            <div className="min-h-0 flex-1 bg-fumi-50">
-                                                <textarea
-                                                    key={selectedEntry.id}
-                                                    readOnly
-                                                    defaultValue={
-                                                        selectedEntry.scriptContent
-                                                    }
-                                                    spellCheck={false}
-                                                    wrap="off"
-                                                    className="h-full w-full resize-none border-0 bg-fumi-50 px-4 py-3 text-fumi-900 outline-none"
-                                                    style={{
-                                                        ...WORKSPACE_EDITOR_STYLE,
-                                                        fontSize: Math.max(
-                                                            editorFontSize - 2,
-                                                            10,
-                                                        ),
-                                                        lineHeight: 1.55,
-                                                    }}
-                                                />
-                                            </div>
+                                            {isLargeScript ? (
+                                                <div className="shrink-0 border-b border-fumi-200 px-4 py-1.5">
+                                                    <p className="text-[10px] font-semibold text-fumi-500">
+                                                        Large snapshot loaded in
+                                                        optimized editor mode to
+                                                        keep the app responsive.
+                                                    </p>
+                                                </div>
+                                            ) : null}
+                                            <AceEditorComp
+                                                key={selectedEntry.id}
+                                                className="workspace-ace-editor"
+                                                name={`execution-history-editor-${selectedEntry.id}`}
+                                                defaultValue={
+                                                    selectedEntry.scriptContent
+                                                }
+                                                mode={
+                                                    isLargeScript
+                                                        ? aceRuntime.getTextMode()
+                                                        : aceRuntime.getMode(
+                                                              selectedEntry.fileName,
+                                                          )
+                                                }
+                                                theme={aceRuntime.getTheme(
+                                                    appTheme,
+                                                )}
+                                                width="100%"
+                                                height="100%"
+                                                fontSize={Math.max(
+                                                    editorFontSize - 2,
+                                                    10,
+                                                )}
+                                                readOnly
+                                                highlightActiveLine={false}
+                                                enableBasicAutocompletion={
+                                                    false
+                                                }
+                                                enableLiveAutocompletion={false}
+                                                enableSnippets={false}
+                                                showGutter
+                                                showPrintMargin={false}
+                                                navigateToFileEnd={false}
+                                                tabSize={4}
+                                                wrapEnabled={false}
+                                                setOptions={
+                                                    isLargeScript
+                                                        ? EXECUTION_HISTORY_LARGE_SCRIPT_EDITOR_OPTIONS
+                                                        : EXECUTION_HISTORY_EDITOR_OPTIONS
+                                                }
+                                                style={WORKSPACE_EDITOR_STYLE}
+                                                onLoad={(
+                                                    editor: Ace.Editor,
+                                                ) => {
+                                                    editor.selection.moveCursorTo(
+                                                        0,
+                                                        0,
+                                                    );
+                                                    editor.clearSelection();
+                                                    editor.renderer.scrollToY(
+                                                        0,
+                                                    );
+                                                }}
+                                                editorProps={
+                                                    WORKSPACE_EDITOR_PROPS
+                                                }
+                                            />
                                         </div>
-                                    ) : AceEditorComp && aceRuntime ? (
-                                        <AceEditorComp
-                                            className="workspace-ace-editor"
-                                            name={`execution-history-editor-${selectedEntry.id}`}
-                                            value={selectedEntry.scriptContent}
-                                            mode={aceRuntime.getMode(
-                                                selectedEntry.fileName,
-                                            )}
-                                            theme={aceRuntime.getTheme(
-                                                appTheme,
-                                            )}
-                                            width="100%"
-                                            height="100%"
-                                            fontSize={Math.max(
-                                                editorFontSize - 2,
-                                                10,
-                                            )}
-                                            readOnly
-                                            highlightActiveLine={false}
-                                            enableBasicAutocompletion={false}
-                                            enableLiveAutocompletion={false}
-                                            enableSnippets={false}
-                                            showGutter
-                                            showPrintMargin={false}
-                                            tabSize={4}
-                                            wrapEnabled={false}
-                                            setOptions={{
-                                                ...WORKSPACE_EDITOR_OPTIONS,
-                                                scrollPastEnd: false,
-                                            }}
-                                            style={WORKSPACE_EDITOR_STYLE}
-                                            onLoad={(editor: Ace.Editor) => {
-                                                editorRef.current = editor;
-                                                appliedEntryIdRef.current =
-                                                    selectedEntry.id;
-                                                editor.selection.moveCursorTo(
-                                                    0,
-                                                    0,
-                                                );
-                                                editor.clearSelection();
-                                                editor.renderer.scrollToY(0);
-                                            }}
-                                            editorProps={WORKSPACE_EDITOR_PROPS}
-                                        />
                                     ) : (
                                         <div className="flex h-full items-center justify-center bg-fumi-50">
                                             <div className="text-center">

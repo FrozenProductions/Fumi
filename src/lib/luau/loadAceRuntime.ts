@@ -145,6 +145,9 @@ export function loadAceRuntime(): Promise<LoadedAceRuntime> {
                     ? luauMode
                     : textMode;
             },
+            getTextMode(): AceModeInstance {
+                return textMode;
+            },
             getTheme(
                 appTheme: AppTheme,
             ): "github_dark" | "github_light_default" {
