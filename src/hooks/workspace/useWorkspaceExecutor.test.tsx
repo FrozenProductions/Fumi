@@ -78,7 +78,6 @@ describe("useWorkspaceExecutor", () => {
     let container: HTMLDivElement;
     let root: ReturnType<typeof createRoot>;
     let latestResult: UseWorkspaceExecutorResult | null = null;
-    const originalCrypto = globalThis.crypto;
 
     beforeEach(() => {
         container = document.createElement("div");
@@ -98,21 +97,14 @@ describe("useWorkspaceExecutor", () => {
             () => undefined,
         );
         vi.spyOn(Date, "now").mockReturnValue(1_234);
-        Object.defineProperty(globalThis, "crypto", {
-            configurable: true,
-            value: {
-                randomUUID: () => "history-id",
-            },
-        });
+        vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
+            "00000000-0000-4000-8000-000000000000",
+        );
     });
 
     afterEach(() => {
         root.unmount();
         container.remove();
-        Object.defineProperty(globalThis, "crypto", {
-            configurable: true,
-            value: originalCrypto,
-        });
         vi.restoreAllMocks();
     });
 
@@ -176,7 +168,7 @@ describe("useWorkspaceExecutor", () => {
         expect(mocks.appendWorkspaceExecutionHistory).toHaveBeenCalledWith({
             workspacePath: "/workspace/current",
             entry: {
-                id: "history-id",
+                id: "00000000-0000-4000-8000-000000000000",
                 executedAt: 1_234,
                 executorKind: "macsploit",
                 port: 5553,
@@ -222,7 +214,7 @@ describe("useWorkspaceExecutor", () => {
         expect(mocks.appendWorkspaceExecutionHistory).toHaveBeenCalledWith({
             workspacePath: "/workspace/current",
             entry: expect.objectContaining({
-                id: "history-id",
+                id: "00000000-0000-4000-8000-000000000000",
                 fileName: "stored.lua",
                 scriptContent: "print('stored')",
                 executorKind: "macsploit",

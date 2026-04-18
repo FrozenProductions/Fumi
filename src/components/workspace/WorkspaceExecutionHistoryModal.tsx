@@ -89,6 +89,8 @@ export function WorkspaceExecutionHistoryModal({
     const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
     const [isCopying, setIsCopying] = useState(false);
     const [isReRunning, setIsReRunning] = useState(false);
+    const [editorLoadError, setEditorLoadError] = useState<string | null>(null);
+    const [editorLoadNonce, setEditorLoadNonce] = useState(0);
     const [AceEditorComp, setAceEditorComp] =
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
@@ -103,6 +105,7 @@ export function WorkspaceExecutionHistoryModal({
     useEffect(() => {
         if (!isOpen) {
             setFeedbackMessage(null);
+            setEditorLoadError(null);
             return;
         }
 
@@ -137,25 +140,43 @@ export function WorkspaceExecutionHistoryModal({
             return;
         }
 
+        if (editorLoadNonce > 0) {
+            setFeedbackMessage(null);
+        }
+
         let isMounted = true;
 
         void (async () => {
-            const loadedAceRuntime = await loadAceRuntime();
-            const reactAceModule = await import("react-ace");
-            const reactAceComponent = getReactAceComponent(reactAceModule);
+            try {
+                const loadedAceRuntime = await loadAceRuntime();
+                const reactAceModule = await import("react-ace");
+                const reactAceComponent = getReactAceComponent(reactAceModule);
 
-            if (!isMounted) {
-                return;
+                if (!isMounted) {
+                    return;
+                }
+
+                setEditorLoadError(null);
+                setAceRuntime(loadedAceRuntime);
+                setAceEditorComp(() => reactAceComponent);
+            } catch (error) {
+                if (!isMounted) {
+                    return;
+                }
+
+                setEditorLoadError(
+                    getErrorMessage(
+                        error,
+                        "Could not load the script preview.",
+                    ),
+                );
             }
-
-            setAceRuntime(loadedAceRuntime);
-            setAceEditorComp(() => reactAceComponent);
         })();
 
         return () => {
             isMounted = false;
         };
-    }, [AceEditorComp, aceRuntime, isOpen]);
+    }, [AceEditorComp, aceRuntime, editorLoadNonce, isOpen]);
 
     if (!isOpen) {
         return null;
@@ -193,6 +214,13 @@ export function WorkspaceExecutionHistoryModal({
         } finally {
             setIsReRunning(false);
         }
+    };
+
+    const handleRetryEditorLoad = (): void => {
+        setEditorLoadError(null);
+        setAceRuntime(null);
+        setAceEditorComp(null);
+        setEditorLoadNonce((currentValue) => currentValue + 1);
     };
 
     return (
@@ -430,6 +458,26 @@ export function WorkspaceExecutionHistoryModal({
                                                     WORKSPACE_EDITOR_PROPS
                                                 }
                                             />
+                                        </div>
+                                    ) : editorLoadError ? (
+                                        <div className="flex h-full items-center justify-center bg-fumi-50 px-4">
+                                            <div className="max-w-xs text-center">
+                                                <p className="text-xs font-semibold text-fumi-900">
+                                                    Could not load preview
+                                                </p>
+                                                <p className="mt-1.5 text-[10px] leading-relaxed text-fumi-500">
+                                                    {editorLoadError}
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        handleRetryEditorLoad
+                                                    }
+                                                    className="mt-3 inline-flex h-7 items-center justify-center rounded-md border border-fumi-200 bg-fumi-50 px-3 text-[10px] font-semibold text-fumi-600 transition-colors hover:bg-fumi-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
+                                                >
+                                                    Retry
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="flex h-full items-center justify-center bg-fumi-50">

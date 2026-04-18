@@ -176,7 +176,10 @@ fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
     );
     assert_eq!(
         metadata.execution_history,
-        vec![history_entry("history-1", 10), history_entry("history-2", 9)]
+        vec![
+            history_entry("history-1", 10),
+            history_entry("history-2", 9)
+        ]
     );
 }
 
@@ -410,19 +413,76 @@ fn append_workspace_execution_history_preserves_metadata_and_caps_to_100_entries
         },
     )?;
 
-    let updated_history = append_workspace_execution_history(
-        workspace_dir.path(),
-        history_entry("latest", 9_999),
-    )?;
-    let persisted_metadata =
-        read_workspace_metadata(workspace_dir.path())?;
+    let updated_history =
+        append_workspace_execution_history(workspace_dir.path(), history_entry("latest", 9_999))?;
+    let persisted_metadata = read_workspace_metadata(workspace_dir.path())?;
 
-    assert_eq!(updated_history.len(), MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES);
+    assert_eq!(
+        updated_history.len(),
+        MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES
+    );
     assert_eq!(updated_history[0].id, "latest");
     assert_eq!(persisted_metadata.execution_history, updated_history);
     assert_eq!(persisted_metadata.tabs.len(), 2);
     assert_eq!(persisted_metadata.archived_tabs.len(), 1);
     assert!(persisted_metadata.split_view.is_some());
+
+    Ok(())
+}
+
+#[test]
+fn append_workspace_execution_history_normalizes_legacy_metadata_before_persisting(
+) -> anyhow::Result<()> {
+    let workspace_dir = TestWorkspaceDir::new("append-history-legacy");
+
+    let legacy_metadata = serde_json::json!({
+        "version": 3,
+        "activeTabId": "missing-tab",
+        "splitView": null,
+        "tabs": [
+            {
+                "id": "tab-1",
+                "fileName": "legacy.lua",
+                "cursor": {
+                    "line": 0,
+                    "column": 0,
+                    "scrollTop": 0.0
+                },
+                "archivedAt": null
+            }
+        ],
+        "archivedTabs": [],
+        "executionHistory": [
+            {
+                "id": "legacy",
+                "executedAt": 1,
+                "executorKind": "macsploit",
+                "port": 5553,
+                "accountId": "account-1",
+                "accountDisplayName": "Main",
+                "isBoundToUnknownAccount": false,
+                "fileName": "script.lua",
+                "scriptContent": "print('legacy')"
+            }
+        ]
+    });
+    let metadata_path = get_workspace_metadata_path(workspace_dir.path());
+    ensure_file_parent_directory(&metadata_path)?;
+    fs::write(
+        metadata_path,
+        format!("{}\n", serde_json::to_string_pretty(&legacy_metadata)?),
+    )?;
+
+    let updated_history =
+        append_workspace_execution_history(workspace_dir.path(), history_entry("latest", 9_999))?;
+    let persisted_metadata =
+        read_json_file::<WorkspaceMetadata>(&get_workspace_metadata_path(workspace_dir.path()))?
+            .expect("appended metadata should be persisted");
+
+    assert_eq!(updated_history, vec![history_entry("latest", 9_999)]);
+    assert_eq!(persisted_metadata.version, WORKSPACE_METADATA_VERSION);
+    assert_eq!(persisted_metadata.active_tab_id.as_deref(), Some("tab-1"));
+    assert_eq!(persisted_metadata.execution_history, updated_history);
 
     Ok(())
 }
