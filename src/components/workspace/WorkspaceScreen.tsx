@@ -44,6 +44,7 @@ import {
 import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
+import { WorkspaceExecutionHistoryModal } from "./WorkspaceExecutionHistoryModal";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
 import type { WorkspaceScreenProps } from "./workspaceScreen.type";
@@ -59,6 +60,7 @@ import type { WorkspaceScreenProps } from "./workspaceScreen.type";
 export function WorkspaceScreen({
     session,
     executor,
+    executionHistoryModal,
 }: WorkspaceScreenProps): ReactElement {
     const appTheme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
@@ -117,6 +119,7 @@ export function WorkspaceScreen({
         updateActiveTabScrollTop,
     } = session.editorActions;
     const executorState = executor.state;
+    const { executeHistoryEntry } = executor.actions;
 
     const [robloxProcesses, setRobloxProcesses] = useState<
         readonly RobloxProcessInfo[]
@@ -703,6 +706,8 @@ export function WorkspaceScreen({
                                     liveRobloxAccount,
                                     onKillRobloxProcess:
                                         handleKillRobloxProcess,
+                                    onOpenExecutionHistory:
+                                        executionHistoryModal.onOpen,
                                 }}
                             />
                         </div>
@@ -726,6 +731,12 @@ export function WorkspaceScreen({
                         : "No active tab"}
                 </div>
             )}
+            <WorkspaceExecutionHistoryModal
+                isOpen={executionHistoryModal.isOpen}
+                entries={workspace?.executionHistory ?? []}
+                onClose={executionHistoryModal.onClose}
+                onReRun={executeHistoryEntry}
+            />
         </section>
     );
 }

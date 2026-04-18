@@ -29,6 +29,7 @@ export function getWorkspacePersistSignature(
         splitView: workspace.splitView,
         tabs: workspace.tabs.map(serializeTabState),
         archivedTabs: workspace.archivedTabs,
+        executionHistory: workspace.executionHistory,
     });
 }
 

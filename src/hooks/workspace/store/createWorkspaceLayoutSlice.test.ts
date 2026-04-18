@@ -10,6 +10,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
             activeTabId: "tab-1",
             splitView: null,
             archivedTabs: [],
+            executionHistory: [],
             tabs: [
                 {
                     id: "tab-1",
@@ -46,6 +47,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
         refreshWorkspaceFromFilesystem: vi.fn(),
         openWorkspaceDirectory: vi.fn(),
         openWorkspacePath: vi.fn(),
+        replaceWorkspaceExecutionHistory: vi.fn(),
         createWorkspaceFile: vi.fn(),
         addWorkspaceScriptTab: vi.fn(),
         importDroppedWorkspaceFiles: vi.fn(),

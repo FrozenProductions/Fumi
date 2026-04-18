@@ -154,6 +154,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     splitView: workspace.splitView,
                     tabs: workspace.tabs.map(serializeTabState),
                     archivedTabs: workspace.archivedTabs,
+                    executionHistory: workspace.executionHistory,
                 });
 
                 markWorkspacePersistedSignature(workspaceSignature);
@@ -167,6 +168,36 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     ),
                 });
                 return false;
+            }
+        },
+        replaceWorkspaceExecutionHistory: (workspacePath, entries): void => {
+            let nextWorkspace: WorkspaceSession | null = null;
+
+            set((state) => {
+                if (!isMatchingWorkspacePath(state.workspace, workspacePath)) {
+                    return {};
+                }
+
+                const currentWorkspace = state.workspace;
+
+                if (!currentWorkspace) {
+                    return {};
+                }
+
+                nextWorkspace = {
+                    ...currentWorkspace,
+                    executionHistory: entries,
+                };
+
+                return {
+                    workspace: nextWorkspace,
+                };
+            });
+
+            if (nextWorkspace) {
+                markWorkspacePersistedSignature(
+                    getWorkspacePersistSignature(nextWorkspace),
+                );
             }
         },
         refreshWorkspaceFromFilesystem: async (): Promise<void> => {

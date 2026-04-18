@@ -4,6 +4,6 @@ mod storage;
 
 pub use models::{
     DroppedWorkspaceScriptDraft, WorkspaceBootstrapResponse, WorkspaceCursorState,
-    WorkspaceMetadata, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabSnapshot,
-    WorkspaceTabState,
+    WorkspaceExecutionHistoryEntry, WorkspaceMetadata, WorkspaceSnapshot, WorkspaceSplitView,
+    WorkspaceTabSnapshot, WorkspaceTabState,
 };

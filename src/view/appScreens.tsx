@@ -4,6 +4,7 @@ import { AppSettingsScreen } from "../components/app/AppSettingsScreen";
 import { AutomaticExecutionScreen } from "../components/automaticExecution/AutomaticExecutionScreen";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
+import type { WorkspaceScreenProps } from "../components/workspace/workspaceScreen.type";
 import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater.type";
 import type { UseWorkspaceExecutorResult } from "../hooks/workspace/useWorkspaceExecutor.type";
 import type { UseWorkspaceSessionResult } from "../hooks/workspace/useWorkspaceSession.type";
@@ -39,6 +40,10 @@ export function renderActiveAppScreen(
     workspaceSession: UseWorkspaceSessionResult,
     workspaceExecutor: UseWorkspaceExecutorResult,
     updater: UseAppUpdaterResult,
+    workspaceScreenOverlays: Pick<
+        WorkspaceScreenProps,
+        "executionHistoryModal"
+    >,
 ): ReactElement {
     switch (activeSidebarItem) {
         case "workspace":
@@ -46,6 +51,9 @@ export function renderActiveAppScreen(
                 <WorkspaceScreen
                     session={workspaceSession}
                     executor={workspaceExecutor}
+                    executionHistoryModal={
+                        workspaceScreenOverlays.executionHistoryModal
+                    }
                 />
             );
         case "automatic-execution":

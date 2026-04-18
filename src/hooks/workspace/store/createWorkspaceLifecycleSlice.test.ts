@@ -58,6 +58,7 @@ function createWorkspaceSession(
         activeTabId: "tab-1",
         splitView: null,
         archivedTabs: [],
+        executionHistory: [],
         tabs: [
             {
                 id: "tab-1",
@@ -98,6 +99,7 @@ function createWorkspaceSnapshot(
                 },
             ],
             archivedTabs: [],
+            executionHistory: [],
         },
         tabs: [
             {
@@ -198,6 +200,40 @@ describe("createWorkspaceLifecycleSlice", () => {
         ]);
         expect(store.getState().errorMessage).toBeNull();
         expect(store.getState().isHydrated).toBe(true);
+    });
+
+    it("replaces execution history only for the currently open workspace", async () => {
+        const store = await createLifecycleStore(createWorkspaceSession());
+        const nextHistory = [
+            {
+                id: "history-1",
+                executedAt: 10,
+                executorKind: "macsploit" as const,
+                port: 5553,
+                accountId: null,
+                accountDisplayName: null,
+                isBoundToUnknownAccount: false,
+                fileName: "alpha.lua",
+                scriptContent: "print('saved')",
+            },
+        ];
+
+        store
+            .getState()
+            .replaceWorkspaceExecutionHistory(
+                "/workspace/current",
+                nextHistory,
+            );
+        store
+            .getState()
+            .replaceWorkspaceExecutionHistory("/workspace/other", []);
+
+        expect(store.getState().workspace?.executionHistory).toEqual(
+            nextHistory,
+        );
+        expect(mocks.markWorkspacePersistedSignature).toHaveBeenCalledWith(
+            "signature:/workspace/current",
+        );
     });
 
     it("preserves a dirty workspace and shows the unavailable error when the backend reports it missing", async () => {

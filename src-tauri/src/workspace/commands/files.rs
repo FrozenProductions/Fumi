@@ -124,6 +124,7 @@ pub fn create_workspace_file(
                 split_view: None,
                 tabs: next_tabs,
                 archived_tabs: metadata.archived_tabs,
+                execution_history: metadata.execution_history,
             },
         )?;
 
@@ -180,6 +181,7 @@ pub fn save_workspace_file(
                 })
                 .collect(),
             archived_tabs: metadata.archived_tabs,
+            execution_history: metadata.execution_history,
         };
 
         persist_workspace_metadata(&app, &workspace_path, &next_metadata)
@@ -254,6 +256,7 @@ pub fn rename_workspace_file(
                 })
                 .collect(),
             archived_tabs: metadata.archived_tabs.clone(),
+            execution_history: metadata.execution_history.clone(),
         };
 
         if is_case_only_rename && cfg!(target_os = "macos") {

@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import { AppCommandPalette } from "../components/app/AppCommandPalette";
 import { AppDragDropOverlay } from "../components/app/AppDragDropOverlay";
 import { AppSidebar } from "../components/app/AppSidebar";
@@ -67,9 +67,21 @@ export function App(): ReactElement {
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
     const workspaceSession = useWorkspaceSession();
-    const { activeTab } = workspaceSession.state;
+    const replaceWorkspaceExecutionHistory = useWorkspaceStore(
+        (state) => state.replaceWorkspaceExecutionHistory,
+    );
+    const { activeTab, workspace } = workspaceSession.state;
+    const [isExecutionHistoryModalOpen, setIsExecutionHistoryModalOpen] =
+        useState(false);
     const workspaceExecutor = useWorkspaceExecutor({
-        activeTabContent: activeTab?.content ?? null,
+        workspacePath: workspace?.workspacePath ?? null,
+        activeTab: activeTab
+            ? {
+                  fileName: activeTab.fileName,
+                  content: activeTab.content,
+              }
+            : null,
+        onExecutionHistoryUpdated: replaceWorkspaceExecutionHistory,
     });
     useAutomaticExecutionLifecycle(workspaceExecutor.state.executorKind);
     const automaticExecutionHasUnsavedChanges = useAutomaticExecutionStore(
@@ -85,6 +97,13 @@ export function App(): ReactElement {
     };
     const handleOpenWorkspaceScreen = (): void => {
         selectSidebarItem("workspace");
+    };
+    const handleOpenExecutionHistory = (): void => {
+        selectSidebarItem("workspace");
+        setIsExecutionHistoryModalOpen(true);
+    };
+    const handleCloseExecutionHistory = (): void => {
+        setIsExecutionHistoryModalOpen(false);
     };
     const handleOpenAutomaticExecution = (): void => {
         selectSidebarItem("automatic-execution");
@@ -108,6 +127,14 @@ export function App(): ReactElement {
         activeSidebarItem,
         workspaceSession,
     );
+
+    useEffect(() => {
+        if (activeSidebarItem === "workspace" && workspace) {
+            return;
+        }
+
+        setIsExecutionHistoryModalOpen(false);
+    }, [activeSidebarItem, workspace]);
 
     useAppShellLifecycle({
         hasUnsavedChanges,
@@ -157,6 +184,13 @@ export function App(): ReactElement {
                                 workspaceSession,
                                 workspaceExecutor,
                                 updater,
+                                {
+                                    executionHistoryModal: {
+                                        isOpen: isExecutionHistoryModalOpen,
+                                        onOpen: handleOpenExecutionHistory,
+                                        onClose: handleCloseExecutionHistory,
+                                    },
+                                },
                             )}
                         </div>
                     </main>
@@ -188,6 +222,7 @@ export function App(): ReactElement {
                     onOpenAutomaticExecution={handleOpenAutomaticExecution}
                     onOpenScriptLibrary={handleOpenScriptLibrary}
                     onOpenAccounts={handleOpenAccounts}
+                    onOpenExecutionHistory={handleOpenExecutionHistory}
                     onToggleSidebar={toggleSidebar}
                     onToggleOutlinePanel={toggleOutlinePanel}
                     onOpenSettings={handleOpenSettings}

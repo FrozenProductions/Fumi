@@ -13,6 +13,7 @@ import {
     subscribeToExecutorMessages,
     subscribeToExecutorStatusChanged,
 } from "../../lib/platform/executor";
+import { appendWorkspaceExecutionHistory } from "../../lib/platform/workspace";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import {
     getExecutorPortRangeErrorMessage,
@@ -24,7 +25,10 @@ import {
     persistExecutorPort,
     resolvePersistedExecutorPort,
 } from "../../lib/workspace/executorPersistence";
-import type { ExecutorStatusPayload } from "../../lib/workspace/workspace.type";
+import type {
+    ExecutorStatusPayload,
+    WorkspaceExecutionHistoryEntry,
+} from "../../lib/workspace/workspace.type";
 import type {
     AsyncUnsubscribe,
     UseWorkspaceExecutorOptions,
@@ -68,6 +72,50 @@ function manageAsyncSubscription(
     };
 }
 
+function findSelectedPortSummary(options: {
+    port: string;
+    availablePorts: readonly number[];
+    availablePortSummaries: ExecutorStatusPayload["availablePorts"];
+}): ExecutorStatusPayload["availablePorts"][number] | null {
+    const parsedPort = parseExecutorPort(options.port, options.availablePorts);
+
+    if (parsedPort === null) {
+        return null;
+    }
+
+    return (
+        options.availablePortSummaries.find(
+            (summary) => summary.port === parsedPort,
+        ) ?? null
+    );
+}
+
+function createExecutionHistoryEntry(options: {
+    executorKind: ExecutorStatusPayload["executorKind"];
+    port: number | null;
+    selectedPortSummary: ExecutorStatusPayload["availablePorts"][number] | null;
+    fileName: string;
+    scriptContent: string;
+}): WorkspaceExecutionHistoryEntry | null {
+    if (options.port === null) {
+        return null;
+    }
+
+    return {
+        id: crypto.randomUUID(),
+        executedAt: Date.now(),
+        executorKind: options.executorKind,
+        port: options.port,
+        accountId: options.selectedPortSummary?.boundAccountId ?? null,
+        accountDisplayName:
+            options.selectedPortSummary?.boundAccountDisplayName ?? null,
+        isBoundToUnknownAccount:
+            options.selectedPortSummary?.isBoundToUnknownAccount ?? false,
+        fileName: options.fileName,
+        scriptContent: options.scriptContent,
+    };
+}
+
 /**
  * Manages executor connection lifecycle including attach, detach, and script execution.
  *
@@ -77,7 +125,9 @@ function manageAsyncSubscription(
  * on the active tab when connected.
  */
 export function useWorkspaceExecutor({
-    activeTabContent,
+    workspacePath,
+    activeTab,
+    onExecutionHistoryUpdated,
 }: UseWorkspaceExecutorOptions): UseWorkspaceExecutorResult {
     const [executorKind, setExecutorKind] = useState(DEFAULT_EXECUTOR_KIND);
     const [availablePortSummaries, setAvailablePortSummaries] = useState<
@@ -92,6 +142,21 @@ export function useWorkspaceExecutor({
     const [isBusy, setIsBusy] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const wasAttachedRef = useRef(false);
+    const syncExecutionHistoryUpdate = useEffectEvent(
+        (
+            requestedWorkspacePath: string,
+            executionHistory: WorkspaceExecutionHistoryEntry[],
+        ): void => {
+            if (requestedWorkspacePath !== workspacePath) {
+                return;
+            }
+
+            onExecutionHistoryUpdated?.(
+                requestedWorkspacePath,
+                executionHistory,
+            );
+        },
+    );
 
     const applyExecutorStatus = useEffectEvent(
         (status: ExecutorStatusPayload): void => {
@@ -289,13 +354,12 @@ export function useWorkspaceExecutor({
         }
     };
 
-    const executeActiveTab = async (): Promise<void> => {
+    const executeScript = async (options: {
+        fileName: string;
+        scriptContent: string;
+        executeFailureMessage: string;
+    }): Promise<void> => {
         if (isBusy) {
-            return;
-        }
-
-        if (activeTabContent === null) {
-            setErrorMessage("Open a workspace tab before executing a script.");
             return;
         }
 
@@ -309,18 +373,86 @@ export function useWorkspaceExecutor({
             return;
         }
 
+        const requestedWorkspacePath = workspacePath;
+        const selectedPort = parseExecutorPort(port, availablePorts);
+        const selectedPortSummary = findSelectedPortSummary({
+            port,
+            availablePorts,
+            availablePortSummaries,
+        });
+        const entry =
+            requestedWorkspacePath === null
+                ? null
+                : createExecutionHistoryEntry({
+                      executorKind,
+                      port: selectedPort,
+                      selectedPortSummary,
+                      fileName: options.fileName,
+                      scriptContent: options.scriptContent,
+                  });
+
         setIsBusy(true);
 
         try {
-            await executeExecutorScript(activeTabContent);
+            await executeExecutorScript(options.scriptContent);
             setErrorMessage(null);
+
+            if (!requestedWorkspacePath || !entry) {
+                return;
+            }
+
+            try {
+                const executionHistory = await appendWorkspaceExecutionHistory({
+                    workspacePath: requestedWorkspacePath,
+                    entry,
+                });
+
+                syncExecutionHistoryUpdate(
+                    requestedWorkspacePath,
+                    executionHistory,
+                );
+            } catch (error) {
+                console.error(
+                    getErrorMessage(
+                        error,
+                        "Could not save the execution history.",
+                    ),
+                );
+                setErrorMessage(
+                    "Executed script, but could not save execution history.",
+                );
+            }
         } catch (error) {
             setErrorMessage(
-                getErrorMessage(error, "Could not execute the active script."),
+                getErrorMessage(error, options.executeFailureMessage),
             );
         } finally {
             setIsBusy(false);
         }
+    };
+
+    const executeActiveTab = async (): Promise<void> => {
+        if (!activeTab) {
+            setErrorMessage("Open a workspace tab before executing a script.");
+            return;
+        }
+
+        await executeScript({
+            fileName: activeTab.fileName,
+            scriptContent: activeTab.content,
+            executeFailureMessage: "Could not execute the active script.",
+        });
+    };
+
+    const executeHistoryEntry = async (
+        entry: WorkspaceExecutionHistoryEntry,
+    ): Promise<void> => {
+        await executeScript({
+            fileName: entry.fileName,
+            scriptContent: entry.scriptContent,
+            executeFailureMessage:
+                "Could not execute the selected history entry.",
+        });
     };
 
     return {
@@ -340,6 +472,7 @@ export function useWorkspaceExecutor({
             clearErrorMessage,
             toggleConnection,
             executeActiveTab,
+            executeHistoryEntry,
         },
     };
 }

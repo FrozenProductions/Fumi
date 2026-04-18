@@ -58,6 +58,7 @@ pub fn restore_archived_workspace_tab(
                 .into_iter()
                 .filter(|item| item.id != tab_id)
                 .collect(),
+            execution_history: metadata.execution_history,
         };
 
         persist_workspace_metadata(&app, &workspace_path, &next_metadata)?;
@@ -109,6 +110,7 @@ pub fn restore_all_archived_workspace_tabs(
             split_view: metadata.split_view,
             tabs: next_tabs,
             archived_tabs: Vec::new(),
+            execution_history: metadata.execution_history,
         };
 
         persist_workspace_metadata(&app, &workspace_path, &next_metadata)
@@ -140,6 +142,7 @@ pub fn delete_all_archived_workspace_tabs(
             split_view: metadata.split_view,
             tabs: metadata.tabs,
             archived_tabs: Vec::new(),
+            execution_history: metadata.execution_history,
         };
 
         let normalized_metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
@@ -148,6 +151,7 @@ pub fn delete_all_archived_workspace_tabs(
             split_view: next_metadata.split_view,
             tabs: Some(next_metadata.tabs),
             archived_tabs: Some(next_metadata.archived_tabs),
+            execution_history: Some(next_metadata.execution_history),
         }));
         persist_workspace_metadata(&app, &workspace_path, &normalized_metadata)
     })

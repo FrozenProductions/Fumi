@@ -61,12 +61,25 @@ export type WorkspaceSplitView = {
     focusedPane: WorkspacePaneId;
 };
 
+export type WorkspaceExecutionHistoryEntry = {
+    id: string;
+    executedAt: number;
+    executorKind: ExecutorKind;
+    port: number;
+    accountId: string | null;
+    accountDisplayName: string | null;
+    isBoundToUnknownAccount: boolean;
+    fileName: string;
+    scriptContent: string;
+};
+
 export type WorkspaceMetadata = {
-    version: 2 | 3;
+    version: 2 | 3 | 4;
     activeTabId: string | null;
     splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTabState[];
     archivedTabs: WorkspaceTabState[];
+    executionHistory: WorkspaceExecutionHistoryEntry[];
 };
 
 export type WorkspaceSnapshot = {
@@ -97,4 +110,5 @@ export type WorkspaceSession = {
     splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTab[];
     archivedTabs: WorkspaceTabState[];
+    executionHistory: WorkspaceExecutionHistoryEntry[];
 };

@@ -75,6 +75,7 @@ function createWorkspaceSnapshot(
                 }),
             ),
             archivedTabs: [],
+            executionHistory: [],
             ...overrides.metadata,
         },
         tabs,
@@ -103,6 +104,7 @@ function createWorkspaceSession(
         splitView: null,
         tabs,
         archivedTabs: [],
+        executionHistory: [],
         ...overrides,
     };
 }
@@ -142,6 +144,7 @@ describe("buildWorkspaceSession", () => {
                     createTabState("orphan-tab"),
                 ],
                 archivedTabs: [createTabState("archived-tab")],
+                executionHistory: [],
             },
             tabs: [
                 createSnapshotTab("tab-1"),
@@ -156,6 +159,7 @@ describe("buildWorkspaceSession", () => {
 
         expect(session.activeTabId).toBe("tab-2");
         expect(session.archivedTabs).toEqual([createTabState("archived-tab")]);
+        expect(session.executionHistory).toEqual([]);
         expect(session.tabs).toHaveLength(1);
         expect(session.tabs[0]).toMatchObject({
             id: "tab-2",
@@ -185,6 +189,7 @@ describe("buildWorkspaceSession", () => {
                 },
                 tabs: [createTabState("tab-1"), createTabState("tab-2")],
                 archivedTabs: [],
+                executionHistory: [],
             },
         });
 
@@ -198,6 +203,36 @@ describe("buildWorkspaceSession", () => {
             splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
             focusedPane: "secondary",
         });
+    });
+
+    it("carries execution history from the snapshot metadata", () => {
+        const snapshot = createWorkspaceSnapshot({
+            metadata: {
+                version: 4,
+                activeTabId: "tab-1",
+                splitView: null,
+                tabs: [createTabState("tab-1")],
+                archivedTabs: [],
+                executionHistory: [
+                    {
+                        id: "history-1",
+                        executedAt: 123,
+                        executorKind: "macsploit",
+                        port: 5553,
+                        accountId: "account-1",
+                        accountDisplayName: "Main",
+                        isBoundToUnknownAccount: false,
+                        fileName: "tab-1.lua",
+                        scriptContent: "print('hello')",
+                    },
+                ],
+            },
+            tabs: [createSnapshotTab("tab-1")],
+        });
+
+        expect(buildWorkspaceSession(snapshot).executionHistory).toEqual(
+            snapshot.metadata.executionHistory,
+        );
     });
 });
 
@@ -359,6 +394,7 @@ describe("mergeWorkspaceSession", () => {
                     }),
                 ],
                 archivedTabs: [createTabState("archived-tab")],
+                executionHistory: [],
             },
             tabs: [
                 createSnapshotTab("tab-clean", {
@@ -378,6 +414,7 @@ describe("mergeWorkspaceSession", () => {
         expect(merged.workspaceName).toBe("next");
         expect(merged.activeTabId).toBe("tab-dirty");
         expect(merged.archivedTabs).toEqual([createTabState("archived-tab")]);
+        expect(merged.executionHistory).toEqual([]);
         expect(merged.tabs.map((tab) => tab.id)).toEqual([
             "tab-clean",
             "tab-fresh",

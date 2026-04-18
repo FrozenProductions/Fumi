@@ -147,12 +147,14 @@ pub(super) fn delete_workspace_tab_by_id(
         split_view,
         tabs,
         archived_tabs,
+        execution_history,
     } = StoredWorkspaceMetadata {
         version: metadata.version,
         active_tab_id: metadata.active_tab_id,
         split_view: metadata.split_view,
         tabs: Some(metadata.tabs),
         archived_tabs: Some(metadata.archived_tabs),
+        execution_history: Some(metadata.execution_history),
     };
     let matches_deleted_tab = |item: &WorkspaceTabState| {
         item.id == tab_id
@@ -178,6 +180,7 @@ pub(super) fn delete_workspace_tab_by_id(
         split_view: get_next_split_view_after_delete(split_view, tab_id),
         tabs: Some(next_tabs),
         archived_tabs: Some(next_archived_tabs),
+        execution_history,
     }));
 
     persist_workspace_metadata(app, workspace_path, &normalized_metadata)

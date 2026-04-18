@@ -6,10 +6,12 @@ use tauri::{command, AppHandle};
 use super::super::{
     models::StoredWorkspaceMetadata,
     storage::{
+        append_workspace_execution_history as append_workspace_execution_history_to_storage,
         clear_workspace_launch_state, is_workspace_missing_error, normalize_workspace_metadata,
         persist_workspace_launch_state, read_app_state, read_workspace_snapshot,
     },
-    WorkspaceBootstrapResponse, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabState,
+    WorkspaceBootstrapResponse, WorkspaceExecutionHistoryEntry, WorkspaceSnapshot,
+    WorkspaceSplitView, WorkspaceTabState,
 };
 use super::{load_workspace_metadata, persist_workspace_metadata, run_command, CommandResponse};
 
@@ -84,14 +86,25 @@ pub fn persist_workspace_state(
     let workspace_path = PathBuf::from(workspace_path);
 
     run_command(|| {
-        let _ = load_workspace_metadata(&workspace_path)?;
+        let metadata = load_workspace_metadata(&workspace_path)?;
         let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
-            version: 3,
+            version: metadata.version,
             active_tab_id,
             split_view,
             tabs: Some(tabs),
             archived_tabs: Some(archived_tabs),
+            execution_history: Some(metadata.execution_history),
         }));
         persist_workspace_metadata(&app, &workspace_path, &metadata)
     })
+}
+
+#[command]
+pub fn append_workspace_execution_history(
+    workspace_path: String,
+    entry: WorkspaceExecutionHistoryEntry,
+) -> CommandResponse<Vec<WorkspaceExecutionHistoryEntry>> {
+    let workspace_path = PathBuf::from(workspace_path);
+
+    run_command(|| append_workspace_execution_history_to_storage(&workspace_path, entry))
 }

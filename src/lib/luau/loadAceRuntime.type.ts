@@ -31,5 +31,6 @@ export type WindowWithAce = Window & {
 
 export type LoadedAceRuntime = {
     getMode: (fileName: string) => AceModeInstance;
+    getTextMode: () => AceModeInstance;
     getTheme: (appTheme: AppTheme) => "github_dark" | "github_light_default";
 };

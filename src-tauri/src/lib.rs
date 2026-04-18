@@ -66,6 +66,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             workspace::commands::files::rename_workspace_file,
             workspace::commands::files::delete_workspace_file,
             workspace::commands::session::persist_workspace_state,
+            workspace::commands::session::append_workspace_execution_history,
             workspace::commands::archive::restore_archived_workspace_tab,
             workspace::commands::archive::restore_all_archived_workspace_tabs,
             workspace::commands::archive::delete_archived_workspace_tab,

@@ -152,6 +152,7 @@ function createWorkspaceExecutor(
             clearErrorMessage: vi.fn(),
             toggleConnection: vi.fn().mockResolvedValue(undefined),
             executeActiveTab: vi.fn().mockResolvedValue(undefined),
+            executeHistoryEntry: vi.fn().mockResolvedValue(undefined),
             ...overrides.actions,
         },
     };
@@ -196,6 +197,7 @@ function createCommandPaletteOptions(
         onOpenAutomaticExecution: vi.fn(),
         onOpenScriptLibrary: vi.fn(),
         onOpenAccounts: vi.fn(),
+        onOpenExecutionHistory: vi.fn(),
         onOpenSettings: vi.fn(),
         isOutlinePanelVisible: true,
         onToggleSidebar: vi.fn(),
@@ -263,6 +265,7 @@ describe("normalizeAppCommandPaletteSearchValue", () => {
                             activeTabId: "tab-1",
                             splitView: null,
                             archivedTabs: [],
+                            executionHistory: [],
                             tabs: [
                                 {
                                     id: "tab-1",
@@ -671,6 +674,7 @@ describe("getTabCommandPaletteItems", () => {
                     activeTabId: "tab-2",
                     splitView: null,
                     archivedTabs: [],
+                    executionHistory: [],
                     tabs: [
                         {
                             id: "tab-1",
@@ -774,6 +778,7 @@ describe("getCommandCommandPaletteItems", () => {
         const onActivateThemeMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
         const onOpenAccounts = vi.fn();
+        const onOpenExecutionHistory = vi.fn();
         const onOpenSettings = vi.fn();
         const onRequestRenameCurrentTab = vi.fn();
 
@@ -785,6 +790,7 @@ describe("getCommandCommandPaletteItems", () => {
                     activeTabId: "tab-1",
                     splitView: null,
                     archivedTabs: [],
+                    executionHistory: [],
                     tabs: [
                         {
                             id: "tab-1",
@@ -826,6 +832,7 @@ describe("getCommandCommandPaletteItems", () => {
                 onActivateThemeMode,
                 onOpenWorkspaceScreen,
                 onOpenAccounts,
+                onOpenExecutionHistory,
                 onOpenSettings,
                 onRequestRenameCurrentTab,
             }),
@@ -836,6 +843,7 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-open-accounts",
                 "command-settings",
                 "command-change-theme",
+                "command-open-execution-history",
                 "command-create-file",
                 "command-execute-tab",
                 "command-goto-line",
@@ -896,6 +904,50 @@ describe("getCommandCommandPaletteItems", () => {
         });
     });
 
+    it("adds an execution history command only when a workspace is open", () => {
+        const onOpenExecutionHistory = vi.fn();
+        const onOpenWorkspaceScreen = vi.fn();
+        const withWorkspaceItems = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: null,
+                            splitView: null,
+                            tabs: [],
+                            archivedTabs: [],
+                            executionHistory: [],
+                        },
+                    },
+                }),
+                onOpenExecutionHistory,
+                onOpenWorkspaceScreen,
+            }),
+        );
+        const withoutWorkspaceItems = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession(),
+            }),
+        );
+        const executionHistoryItem = withWorkspaceItems.find(
+            (item) => item.id === "command-open-execution-history",
+        );
+
+        expect(executionHistoryItem).toBeDefined();
+        expect(
+            withoutWorkspaceItems.some(
+                (item) => item.id === "command-open-execution-history",
+            ),
+        ).toBe(false);
+
+        executionHistoryItem?.onSelect();
+
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledOnce();
+        expect(onOpenExecutionHistory).toHaveBeenCalledOnce();
+    });
+
     it("adds split focus controls only when a split is already open", () => {
         const focusWorkspacePane = vi.fn();
         const resetWorkspaceSplitView = vi.fn();
@@ -917,6 +969,7 @@ describe("getCommandCommandPaletteItems", () => {
                                 focusedPane: "secondary",
                             },
                             archivedTabs: [],
+                            executionHistory: [],
                             tabs: [
                                 {
                                     id: "tab-1",
@@ -1002,6 +1055,7 @@ describe("getCommandCommandPaletteItems", () => {
                             activeTabId: "tab-1",
                             splitView: null,
                             archivedTabs: [],
+                            executionHistory: [],
                             tabs: [
                                 {
                                     id: "tab-1",
@@ -1089,6 +1143,7 @@ describe("getWorkspaceCommandPaletteItems", () => {
                             cursor: { line: 0, column: 0, scrollTop: 0 },
                         },
                     ],
+                    executionHistory: [],
                 },
                 recentWorkspacePaths: [
                     "/Users/dayte/projects/current",

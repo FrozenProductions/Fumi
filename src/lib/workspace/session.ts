@@ -143,6 +143,7 @@ export function buildWorkspaceSession(
         splitView: normalizedSplitView,
         tabs,
         archivedTabs: snapshot.metadata.archivedTabs,
+        executionHistory: snapshot.metadata.executionHistory,
     };
 }
 
@@ -729,5 +730,6 @@ export function mergeWorkspaceSession(
         splitView: normalizedSplitView,
         tabs: nextTabs,
         archivedTabs: snapshot.metadata.archivedTabs,
+        executionHistory: snapshot.metadata.executionHistory,
     };
 }
