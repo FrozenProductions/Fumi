@@ -6,7 +6,7 @@ import {
     Tick01Icon,
 } from "@hugeicons/core-free-icons";
 import type { Ace } from "ace-builds";
-import { type ReactElement, useEffect, useMemo, useState } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
@@ -89,45 +89,14 @@ export function WorkspaceExecutionHistoryModal({
     const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
     const [isCopying, setIsCopying] = useState(false);
     const [isReRunning, setIsReRunning] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [executorFilter, setExecutorFilter] = useState<
-        WorkspaceExecutionHistoryEntry["executorKind"] | "all"
-    >("all");
     const [editorLoadError, setEditorLoadError] = useState<string | null>(null);
     const [editorLoadNonce, setEditorLoadNonce] = useState(0);
     const [AceEditorComp, setAceEditorComp] =
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
-    const filteredEntries = useMemo(() => {
-        const normalizedQuery = searchQuery.trim().toLowerCase();
-
-        return entries.filter((entry) => {
-            if (
-                executorFilter !== "all" &&
-                entry.executorKind !== executorFilter
-            ) {
-                return false;
-            }
-
-            if (!normalizedQuery) {
-                return true;
-            }
-
-            const searchHaystack = [
-                entry.fileName,
-                formatExecutorKind(entry.executorKind),
-                formatAccountLabel(entry),
-                String(entry.port),
-            ]
-                .join(" ")
-                .toLowerCase();
-
-            return searchHaystack.includes(normalizedQuery);
-        });
-    }, [entries, executorFilter, searchQuery]);
     const selectedEntry =
-        filteredEntries.find((entry) => entry.id === selectedEntryId) ??
-        filteredEntries[0] ??
+        entries.find((entry) => entry.id === selectedEntryId) ??
+        entries[0] ??
         null;
     const isLargeScript =
         selectedEntry !== null &&
@@ -140,14 +109,14 @@ export function WorkspaceExecutionHistoryModal({
             return;
         }
 
-        const hasSelectedEntry = filteredEntries.some(
+        const hasSelectedEntry = entries.some(
             (entry) => entry.id === selectedEntryId,
         );
 
         if (!hasSelectedEntry) {
-            setSelectedEntryId(filteredEntries[0]?.id ?? null);
+            setSelectedEntryId(entries[0]?.id ?? null);
         }
-    }, [filteredEntries, isOpen, selectedEntryId]);
+    }, [entries, isOpen, selectedEntryId]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -279,52 +248,10 @@ export function WorkspaceExecutionHistoryModal({
 
                 <div className="flex min-h-0 flex-1">
                     <div className="flex w-60 shrink-0 flex-col border-r border-fumi-200 bg-fumi-50/30">
-                        <div className="shrink-0 border-b border-fumi-200 p-2">
-                            <div className="flex flex-col gap-2">
-                                <input
-                                    value={searchQuery}
-                                    onChange={(event) => {
-                                        setSearchQuery(event.target.value);
-                                    }}
-                                    placeholder="Filter by file, account, or port"
-                                    className="h-8 rounded-md border border-fumi-200 bg-fumi-50 px-2.5 text-[11px] font-medium text-fumi-900 placeholder:text-fumi-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
-                                />
-                                <div className="flex items-center gap-2">
-                                    <select
-                                        value={executorFilter}
-                                        onChange={(event) => {
-                                            setExecutorFilter(
-                                                event.target.value as
-                                                    | WorkspaceExecutionHistoryEntry["executorKind"]
-                                                    | "all",
-                                            );
-                                        }}
-                                        className="h-8 min-w-0 flex-1 rounded-md border border-fumi-200 bg-fumi-50 px-2.5 text-[11px] font-medium text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
-                                    >
-                                        <option value="all">
-                                            All executors
-                                        </option>
-                                        <option value="macsploit">
-                                            Macsploit
-                                        </option>
-                                        <option value="opiumware">
-                                            Opiumware
-                                        </option>
-                                        <option value="unsupported">
-                                            Unsupported
-                                        </option>
-                                    </select>
-                                    <span className="shrink-0 text-[10px] font-semibold text-fumi-500">
-                                        {filteredEntries.length}/
-                                        {entries.length}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                         {entries.length > 0 ? (
                             <div className="min-h-0 flex-1 overflow-y-auto p-2 [&::-webkit-scrollbar-thumb:hover]:bg-[rgb(var(--color-scrollbar-thumb-hover)/1)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-[rgb(var(--color-scrollbar-thumb)/1)] [&::-webkit-scrollbar-thumb]:bg-clip-padding [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[6px]">
                                 <div className="flex flex-col gap-0.5">
-                                    {filteredEntries.map((entry) => {
+                                    {entries.map((entry) => {
                                         const isSelected =
                                             entry.id === selectedEntry?.id;
 
@@ -376,14 +303,6 @@ export function WorkspaceExecutionHistoryModal({
                                         );
                                     })}
                                 </div>
-                                {filteredEntries.length === 0 ? (
-                                    <div className="flex min-h-24 items-center justify-center px-4 py-6 text-center">
-                                        <p className="text-[10px] font-semibold text-fumi-500">
-                                            No executions match the active
-                                            filters
-                                        </p>
-                                    </div>
-                                ) : null}
                             </div>
                         ) : (
                             <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-6 text-center">
