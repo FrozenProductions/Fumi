@@ -126,6 +126,7 @@ export function WorkspaceEditor({
     const isOutlinePanelSupported = activeEditorMode === "luau";
     const resolvedOutlinePanelWidth =
         outlinePanelPreviewWidth ?? outlinePanelWidth;
+    const isOutlineResizeActive = outlinePanelPreviewWidth !== null;
 
     const handleSelectSymbol = useCallback(
         (symbol: LuauFileSymbol): void => {
@@ -488,8 +489,12 @@ export function WorkspaceEditor({
                 <div
                     className={`pointer-events-none absolute bottom-5 z-40 ${
                         sidebarPosition === "right"
-                            ? "left-5 transition-[left] duration-200"
-                            : "right-5 transition-[right] duration-200"
+                            ? isOutlineResizeActive
+                                ? "left-5 transition-none"
+                                : "left-5 transition-[left] duration-200"
+                            : isOutlineResizeActive
+                              ? "right-5 transition-none"
+                              : "right-5 transition-[right] duration-200"
                     }`}
                     style={
                         sidebarPosition === "right"
