@@ -11,6 +11,11 @@ import { AppTooltip } from "../app/AppTooltip";
 import { AutomaticExecutionEditor } from "./AutomaticExecutionEditor";
 import { AutomaticExecutionSidebar } from "./AutomaticExecutionSidebar";
 
+/**
+ * The main automatic execution screen with script editor and sidebar.
+ *
+ * @returns A React component
+ */
 export function AutomaticExecutionScreen(): ReactElement {
     const automaticExecution = useAutomaticExecution();
     const appTheme = useAppStore((state) => state.theme);

@@ -4,6 +4,12 @@ import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { PlatformOperationError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 
+/**
+ * Shows a native confirmation dialog and returns whether the user accepted.
+ *
+ * @param message - The confirmation message to display
+ * @returns True if the user accepted, false otherwise
+ */
 export async function confirmAction(message: string): Promise<boolean> {
     try {
         if (!isTauriEnvironment()) {
@@ -22,6 +28,12 @@ export async function confirmAction(message: string): Promise<boolean> {
     }
 }
 
+/**
+ * Opens a native directory picker dialog.
+ *
+ * @param defaultPath - Optional default directory to start from
+ * @returns Selected directory path, or null if cancelled
+ */
 export async function pickDirectory(
     defaultPath?: string,
 ): Promise<string | null> {

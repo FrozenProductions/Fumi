@@ -1,5 +1,12 @@
 import type { ErrorMessageOptions } from "./errorMessage.type";
 
+/**
+ * Extracts a user-friendly error message from an unknown error value.
+ *
+ * @remarks
+ * Prefers the error's message property when available. Supports optional
+ * handling of AbortError as a fallback message when configured.
+ */
 export function getErrorMessage(
     error: unknown,
     fallbackMessage: string,

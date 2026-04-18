@@ -23,6 +23,12 @@ import {
 } from "../../lib/app/store";
 import type { AppStore, AppStoreState } from "./appStore.type";
 
+/**
+ * Global application state store for Fumi.
+ *
+ * Persists user preferences including sidebar visibility, zoom level, theme,
+ * hotkey bindings, editor settings, and workspace settings to localStorage.
+ */
 export const useAppStore = create<AppStore>()(
     persist(
         (set) => ({

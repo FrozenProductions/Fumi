@@ -63,6 +63,21 @@ function WorkspaceSplitDropZone({
     );
 }
 
+/**
+ * The main workspace editor with tab management, split view, and outline panel.
+ *
+ * @param props - Component props
+ * @param props.activeTabId - Currently active tab ID
+ * @param props.appTheme - Current app theme
+ * @param props.editorFontSize - Editor font size
+ * @param props.tabs - All workspace tabs
+ * @param props.splitView - Current split view configuration
+ * @param props.searchPanel - Search panel state
+ * @param props.completionPopup - Code completion popup state
+ * @param props.isOutlinePanelVisible - Whether outline panel is visible
+ * @param props.luauSymbols - Luau symbols for outline
+ * @returns A React component
+ */
 export function WorkspaceEditor({
     activeTabId,
     appTheme,

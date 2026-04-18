@@ -12,6 +12,12 @@ const SCRIPT_LIBRARY_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
 });
 
+/**
+ * Formats an ISO date string into a human-readable short date (e.g., "Apr 18, 2026").
+ *
+ * @remarks
+ * Returns "Unknown date" for empty strings or invalid dates.
+ */
 export function formatScriptLibraryDate(dateString: string): string {
     if (!dateString) {
         return "Unknown date";
@@ -26,18 +32,27 @@ export function formatScriptLibraryDate(dateString: string): string {
     return SCRIPT_LIBRARY_DATE_FORMATTER.format(date);
 }
 
+/**
+ * Builds a permalink URL for a script on rscripts.net.
+ */
 export function getScriptLibraryPermalink(
     script: Pick<ScriptLibraryEntry, "slug">,
 ): string {
     return `https://rscripts.net/script/${script.slug}`;
 }
 
+/**
+ * Creates a workspace file name from a script title, clamped to max tab name length.
+ */
 export function getWorkspaceScriptFileName(
     script: Pick<ScriptLibraryEntry, "title">,
 ): string {
     return `${clampWorkspaceTabBaseName(script.title.trim())}.lua`;
 }
 
+/**
+ * Normalizes a script entry for storage in favorites by copying the creator object.
+ */
 export function normalizeScriptLibraryFavoriteEntry(
     script: ScriptLibraryEntry,
 ): ScriptLibraryFavoriteEntry {
@@ -49,6 +64,13 @@ export function normalizeScriptLibraryFavoriteEntry(
     };
 }
 
+/**
+ * Checks if a script matches the given filter criteria.
+ *
+ * @remarks
+ * A script passes a filter if the filter is inactive (default) or the script
+ * satisfies the filter condition (keyless, free, unpatched, verified).
+ */
 export function matchesScriptLibraryFilters(
     script: ScriptLibraryEntry,
     filters: ScriptLibraryFilters,
@@ -72,6 +94,9 @@ export function matchesScriptLibraryFilters(
     return true;
 }
 
+/**
+ * Checks if a script matches a search query against title, description, creator name, or slug.
+ */
 export function matchesScriptLibraryQuery(
     script: ScriptLibraryEntry,
     query: string,
@@ -90,6 +115,9 @@ export function matchesScriptLibraryQuery(
     ].some((value) => value.toLowerCase().includes(normalizedQuery));
 }
 
+/**
+ * Sorts script entries by the specified order (views, likes, or date) with title as tiebreaker.
+ */
 export function sortScriptLibraryEntries(
     scripts: ScriptLibraryEntry[],
     orderBy: ScriptLibrarySort,
@@ -121,6 +149,9 @@ export function sortScriptLibraryEntries(
     });
 }
 
+/**
+ * Filters and sorts scripts to return only visible entries matching query and filters.
+ */
 export function getVisibleScriptLibraryEntries(
     scripts: ScriptLibraryEntry[],
     options: {

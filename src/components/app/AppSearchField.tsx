@@ -4,6 +4,17 @@ import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import { AppIcon } from "./AppIcon";
 import type { AppSearchFieldProps } from "./appForm.type";
 
+/**
+ * A search input field with optional clear button support.
+ *
+ * @param props - Component props
+ * @param props.value - Current input value
+ * @param props.ariaLabel - Accessible label
+ * @param props.onChange - Called when input changes
+ * @param props.placeholder - Placeholder text
+ * @param props.isClearable - Show clear button when has value
+ * @returns A React component
+ */
 export function AppSearchField({
     value,
     ariaLabel,

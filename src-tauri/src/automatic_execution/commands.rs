@@ -28,6 +28,7 @@ fn load_metadata(
     Ok((executor_kind, automatic_execution_path, metadata))
 }
 
+/// Bootstraps the automatic execution system by reading all scripts and metadata.
 #[command]
 pub fn bootstrap_automatic_execution(
     executor_kind: ExecutorKind,
@@ -35,6 +36,7 @@ pub fn bootstrap_automatic_execution(
     run_command(|| read_automatic_execution_snapshot(executor_kind))
 }
 
+/// Refreshes automatic execution by re-reading scripts and metadata from disk.
 #[command]
 pub fn refresh_automatic_execution(
     executor_kind: ExecutorKind,
@@ -42,6 +44,7 @@ pub fn refresh_automatic_execution(
     run_command(|| read_automatic_execution_snapshot(executor_kind))
 }
 
+/// Creates a new automatic execution script with optional initial content.
 #[command]
 pub fn create_automatic_execution_script(
     executor_kind: ExecutorKind,
@@ -77,6 +80,7 @@ pub fn create_automatic_execution_script(
     })
 }
 
+/// Saves script content and cursor state to disk.
 #[command]
 pub fn save_automatic_execution_script(
     executor_kind: ExecutorKind,
@@ -117,6 +121,7 @@ pub fn save_automatic_execution_script(
     })
 }
 
+/// Renames a script file with case-only rename support on macOS.
 #[command]
 pub fn rename_automatic_execution_script(
     executor_kind: ExecutorKind,
@@ -241,6 +246,7 @@ pub fn rename_automatic_execution_script(
     })
 }
 
+/// Deletes a script file and removes it from metadata.
 #[command]
 pub fn delete_automatic_execution_script(
     executor_kind: ExecutorKind,
@@ -277,6 +283,7 @@ pub fn delete_automatic_execution_script(
     })
 }
 
+/// Persists the automatic execution state including active script and all script IDs.
 #[command]
 pub fn persist_automatic_execution_state(
     executor_kind: ExecutorKind,

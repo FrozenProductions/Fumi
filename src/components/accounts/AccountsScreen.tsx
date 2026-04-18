@@ -20,6 +20,11 @@ function getAccountStatusLabel(account: AccountSummary): string {
     return account.boundPort !== null ? "Active" : "Offline";
 }
 
+/**
+ * The accounts screen for managing saved Roblox accounts.
+ *
+ * @returns A React component
+ */
 export function AccountsScreen(): ReactElement {
     const {
         accounts,

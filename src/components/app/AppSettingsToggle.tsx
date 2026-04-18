@@ -1,6 +1,17 @@
 import type { ReactElement } from "react";
 import type { AppSettingsToggleProps } from "./appForm.type";
 
+/**
+ * A settings toggle switch with label and optional nested controls.
+ *
+ * @param props - Component props
+ * @param props.label - Setting label
+ * @param props.description - Description text
+ * @param props.isEnabled - Current toggle state
+ * @param props.onChange - Called when toggled
+ * @param props.children - Optional nested controls shown when enabled
+ * @returns A React component
+ */
 export function AppSettingsToggle({
     label,
     description,

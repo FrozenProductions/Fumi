@@ -67,6 +67,14 @@ function shiftCompletionSelection(
     };
 }
 
+/**
+ * Manages Luau code completion popup lifecycle, positioning, and keyboard interaction.
+ *
+ * @remarks
+ * Handles completion popup opening based on cursor position and analysis,
+ * keyboard navigation (arrow keys, enter, tab, escape), and auto-closing
+ * on editor dismiss or navigation away from completion triggers.
+ */
 export function useWorkspaceCompletionPopup({
     activeEditorMode,
     getActiveEditor,

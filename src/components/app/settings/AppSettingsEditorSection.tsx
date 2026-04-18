@@ -12,6 +12,11 @@ import { AppInput } from "../AppInput";
 import { AppSelect } from "../AppSelect";
 import { AppSettingsToggle } from "../AppSettingsToggle";
 
+/**
+ * The editor settings section with font size, IntelliSense, and tab actions.
+ *
+ * @returns A React component
+ */
 export function AppSettingsEditorSection(): ReactElement {
     const editorSettings = useAppStore((state) => state.editorSettings);
     const setEditorFontSize = useAppStore((state) => state.setEditorFontSize);

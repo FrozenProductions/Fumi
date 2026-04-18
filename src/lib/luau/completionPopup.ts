@@ -116,6 +116,14 @@ function getCompletionPopupWidth(
     return dynamicWidth;
 }
 
+/**
+ * Calculates the position for the Luau completion popup relative to the caret.
+ *
+ * @remarks
+ * Determines vertical placement (above/below caret) based on available space,
+ * clamps position to viewport, and computes dynamic width based on content
+ * and intellisense settings.
+ */
 export function getLuauCompletionPopupPosition(
     caretLeft: number,
     caretTop: number,

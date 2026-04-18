@@ -58,6 +58,7 @@ fn build_dropped_workspace_script_draft(
     Ok(DroppedWorkspaceScriptDraft { file_name, content })
 }
 
+/// Imports a dropped file as a workspace script draft (.lua or .luau only).
 #[command]
 pub fn import_workspace_file(file_path: String) -> CommandResponse<DroppedWorkspaceScriptDraft> {
     let file_path = PathBuf::from(file_path);
@@ -65,6 +66,7 @@ pub fn import_workspace_file(file_path: String) -> CommandResponse<DroppedWorksp
     run_command(|| build_dropped_workspace_script_draft(&file_path))
 }
 
+/// Creates a new workspace file with optional initial content.
 #[command]
 pub fn create_workspace_file(
     app: AppHandle,
@@ -135,6 +137,7 @@ pub fn create_workspace_file(
     })
 }
 
+/// Saves workspace tab content and cursor state to disk.
 #[command]
 pub fn save_workspace_file(
     app: AppHandle,
@@ -183,6 +186,7 @@ pub fn save_workspace_file(
     })
 }
 
+/// Renames a workspace tab file with case-only rename support on macOS.
 #[command]
 pub fn rename_workspace_file(
     app: AppHandle,
@@ -308,6 +312,7 @@ pub fn rename_workspace_file(
     })
 }
 
+/// Deletes a workspace tab and its file from disk.
 #[command]
 pub fn delete_workspace_file(
     app: AppHandle,

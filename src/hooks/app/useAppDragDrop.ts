@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { subscribeToDroppedFilesHover } from "../../lib/platform/window";
 import type { UseAppDragDropResult } from "./useAppDragDrop.type";
 
+/**
+ * Manages drag-and-drop state for file drop interactions.
+ *
+ * @remarks
+ * Tracks both native Tauri file hover events and browser drag events to
+ * display the drag overlay. Cleans up all event listeners on unmount.
+ */
 export function useAppDragDrop(): UseAppDragDropResult {
     const [isDragActive, setIsDragActive] = useState(false);
 

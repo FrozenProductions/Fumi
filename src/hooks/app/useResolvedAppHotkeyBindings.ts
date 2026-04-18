@@ -2,6 +2,13 @@ import { getAppHotkeyBinding } from "../../lib/app/hotkeys";
 import type { ResolvedAppHotkeyBindings } from "./useAppHotkeys.type";
 import { useAppStore } from "./useAppStore";
 
+/**
+ * Resolves hotkey bindings from store state into full key sequences.
+ *
+ * @remarks
+ * Combines stored hotkey bindings with default bindings to produce the actual
+ * key sequences to register with the hotkey system.
+ */
 export function useResolvedAppHotkeyBindings(): ResolvedAppHotkeyBindings {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
 

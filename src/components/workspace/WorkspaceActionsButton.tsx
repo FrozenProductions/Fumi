@@ -20,6 +20,17 @@ import type { WorkspaceActionsButtonProps } from "./workspaceScreen.type";
 
 type ConfirmAction = "kill" | `kill-pid-${number}`;
 
+/**
+ * Floating action button for execute, Roblox controls, and workspace actions.
+ *
+ * @param props - Component props
+ * @param props.executor - Executor state and actions
+ * @param props.isLaunching - Whether Roblox is launching
+ * @param props.onLaunchRoblox - Launch Roblox handler
+ * @param props.isKillingRoblox - Whether Roblox is being killed
+ * @param props.onKillRoblox - Kill all Roblox handler
+ * @returns A React component
+ */
 export function WorkspaceActionsButton({
     executor,
     isLaunching,

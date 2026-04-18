@@ -94,6 +94,13 @@ function MaximizeGlyph({
     );
 }
 
+/**
+ * macOS-style traffic light window controls for the topbar.
+ *
+ * Displays close, minimize, and maximize buttons with tooltips.
+ *
+ * @returns A React component
+ */
 export function AppTopbarTrafficLights(): ReactElement {
     const [isWindowMaximized, setIsWindowMaximized] = useState(false);
 

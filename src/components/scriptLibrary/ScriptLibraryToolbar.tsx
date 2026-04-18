@@ -16,6 +16,18 @@ import { AppSelect } from "../app/AppSelect";
 import { AppTooltip } from "../app/AppTooltip";
 import type { ScriptLibraryToolbarProps } from "./scriptLibrary.type";
 
+/**
+ * The toolbar for the script library with search, filters, and view controls.
+ *
+ * @param props - Component props
+ * @param props.contentMode - Browse or favorites mode
+ * @param props.favoriteCount - Number of favorites
+ * @param props.query - Search query
+ * @param props.filters - Active filters
+ * @param props.orderBy - Sort order
+ * @param props.viewFormat - Grid or list
+ * @returns A React component
+ */
 export function ScriptLibraryToolbar({
     contentMode,
     favoriteCount,

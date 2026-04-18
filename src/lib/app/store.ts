@@ -24,6 +24,12 @@ const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
 const APP_MIDDLE_CLICK_TAB_ACTIONS = ["archive", "delete"] as const;
 const APP_SIDEBAR_POSITIONS = ["left", "right"] as const;
 
+/**
+ * Clamps a zoom percentage value to the valid range [APP_ZOOM_MIN, APP_ZOOM_MAX].
+ *
+ * @remarks
+ * Returns APP_ZOOM_DEFAULT for non-finite values like Infinity or NaN.
+ */
 export function clampAppZoomPercent(zoomPercent: number): number {
     if (!Number.isFinite(zoomPercent)) {
         return APP_ZOOM_DEFAULT;

@@ -24,6 +24,17 @@ type AutomaticExecutionEditorProps = {
     }) => void;
 };
 
+/**
+ * The Ace editor for automatic execution scripts.
+ *
+ * @param props - Component props
+ * @param props.appTheme - Current app theme
+ * @param props.editorFontSize - Editor font size
+ * @param props.script - The active script to edit
+ * @param props.onChange - Called when content changes
+ * @param props.onCursorChange - Called when cursor moves
+ * @returns A React component
+ */
 export function AutomaticExecutionEditor({
     appTheme,
     editorFontSize,

@@ -8,6 +8,7 @@ use crate::command::{format_command_error, CommandResponse};
 
 pub(crate) use models::{LuauFileAnalysis, LuauScanMode};
 
+/// Scans a Luau file and returns analysis with symbol locations and function scopes.
 #[command]
 pub(crate) async fn scan_luau_file_analysis(
     content: String,

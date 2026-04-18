@@ -20,6 +20,14 @@ function splitTextIntoCharacters(text: string): AnimatedCharacter[] {
     });
 }
 
+/**
+ * Animated text that reveals characters with a staggered entrance effect.
+ *
+ * @param props - Component props
+ * @param props.text - The text to display
+ * @param props.animateOnInitialRender - Animate on first render
+ * @returns A React component
+ */
 export function AppAnimatedText({
     text,
     animateOnInitialRender = true,

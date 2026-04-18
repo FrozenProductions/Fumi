@@ -28,6 +28,13 @@ import type {
 } from "./useAppCommandPalette.type";
 import { useAppStore } from "./useAppStore";
 
+/**
+ * Manages command palette state, input handling, scope switching, and result filtering.
+ *
+ * @remarks
+ * Handles keyboard navigation, go-to-line mode, theme switching mode, and
+ * coordinates with the workspace session and executor for contextual results.
+ */
 export function useAppCommandPalette({
     isOpen,
     requestedScope,

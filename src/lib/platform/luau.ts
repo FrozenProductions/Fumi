@@ -14,6 +14,16 @@ class LuauAnalysisCommandError extends Error {
     }
 }
 
+/**
+ * Performs static analysis on a Luau script for symbols and syntax info.
+ *
+ * Falls back to local analysis when not in Tauri environment.
+ *
+ * @param options - Analysis options
+ * @param options.content - The Luau source content
+ * @param options.mode - Optional scan mode
+ * @returns The file analysis result with symbols
+ */
 export async function scanLuauFileAnalysis(options: {
     content: string;
     mode?: LuauScanMode;

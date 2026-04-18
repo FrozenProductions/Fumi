@@ -16,6 +16,25 @@ import {
 } from "../../lib/app/textInput";
 import type { AppInputProps } from "./appForm.type";
 
+/**
+ * A styled text input with optional step controls and prefix/suffix support.
+ *
+ * @param props - Component props
+ * @param props.value - Controlled input value
+ * @param props.ariaLabel - Accessible label
+ * @param props.onChange - Called when value changes
+ * @param props.minValue - Minimum value for step controls
+ * @param props.maxValue - Maximum value for step controls
+ * @param props.maxLength - Maximum character length
+ * @param props.inputMode - HTML input mode hint
+ * @param props.suffix - Unit label displayed after input
+ * @param props.prefix - Label displayed before input
+ * @param props.placeholder - Placeholder text
+ * @param props.isReadOnly - Prevent editing
+ * @param props.step - Step increment for arrow keys
+ * @param props.size - Predefined size variant
+ * @returns A React component
+ */
 export function AppInput({
     value,
     ariaLabel,

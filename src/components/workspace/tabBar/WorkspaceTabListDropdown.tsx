@@ -19,6 +19,15 @@ const WORKSPACE_TAB_LIST_DROPDOWN_STYLE = {
     paddingTop: `${WORKSPACE_TAB_LIST_TOP_PADDING_REM}rem`,
 } satisfies CSSProperties;
 
+/**
+ * Dropdown showing all workspace tabs for quick selection.
+ *
+ * @param props - Component props
+ * @param props.workspace - The workspace data
+ * @param props.onSelectTab - Select a tab
+ * @param props.onClose - Close the dropdown
+ * @returns A React component
+ */
 export function WorkspaceTabListDropdown({
     workspace,
     onClose,

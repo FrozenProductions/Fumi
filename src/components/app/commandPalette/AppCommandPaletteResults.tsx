@@ -2,6 +2,17 @@ import type { ReactElement } from "react";
 import { AppIcon } from "../AppIcon";
 import type { AppCommandPaletteResultsProps } from "./appCommandPalette.type";
 
+/**
+ * The results list for the command palette.
+ *
+ * @param props - Component props
+ * @param props.activeResultIndex - Currently selected result index
+ * @param props.isClosing - Whether the palette is closing
+ * @param props.results - Result items to display
+ * @param props.onCommitSelection - Called when a result is selected
+ * @param props.onHoverItem - Called when hovering a result
+ * @returns A React component
+ */
 export function AppCommandPaletteResults({
     activeResultIndex,
     isClosing,

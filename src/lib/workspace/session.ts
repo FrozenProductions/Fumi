@@ -12,6 +12,12 @@ import type {
 import { clamp } from "../shared/math";
 import { normalizeWorkspaceSplitRatio } from "./splitView";
 
+/**
+ * Clamps a cursor position to valid coordinates within the given content.
+ *
+ * @remarks
+ * Ensures line and column are within bounds and scrollTop is non-negative.
+ */
 export function clampCursorToContent(
     content: string,
     cursor: WorkspaceCursorState,
@@ -35,6 +41,13 @@ function createWorkspaceTab(tab: WorkspaceTabSnapshot): WorkspaceTab {
     };
 }
 
+/**
+ * Normalizes a split view configuration by filtering to valid open tabs.
+ *
+ * @remarks
+ * Returns null if primary/secondary tab IDs are invalid or the same.
+ * Also normalizes the split ratio to valid bounds.
+ */
 export function normalizeSplitView(
     splitView: WorkspaceSplitView | null,
     openTabIds: Set<string>,
@@ -68,6 +81,9 @@ export function normalizeSplitView(
     };
 }
 
+/**
+ * Determines which pane's tab should be active based on split view and active tab.
+ */
 export function getFocusedPaneTabId(
     splitView: WorkspaceSplitView | null,
     activeTabId: string | null,
@@ -81,6 +97,9 @@ export function getFocusedPaneTabId(
         : splitView.secondaryTabId;
 }
 
+/**
+ * Builds a workspace session from a snapshot with clamped cursors and validated split view.
+ */
 export function buildWorkspaceSession(
     snapshot: WorkspaceSnapshot,
 ): WorkspaceSession {
@@ -127,6 +146,9 @@ export function buildWorkspaceSession(
     };
 }
 
+/**
+ * Finds the index of the active tab in the tabs array, or -1 if not found.
+ */
 export function getActiveTabIndex(
     tabs: WorkspaceTab[],
     activeTabId: string | null,
@@ -138,6 +160,9 @@ export function getActiveTabIndex(
     return tabs.findIndex((tab) => tab.id === activeTabId);
 }
 
+/**
+ * Serializes a workspace tab to its persistent state (id, fileName, cursor).
+ */
 export function serializeTabState(tab: WorkspaceTab): WorkspaceTabState {
     return {
         id: tab.id,
@@ -146,6 +171,13 @@ export function serializeTabState(tab: WorkspaceTab): WorkspaceTabState {
     };
 }
 
+/**
+ * Returns the next active tab ID after closing a tab at the given index.
+ *
+ * @remarks
+ * Prefers the tab at the same index (now shifted), then the previous tab,
+ * then the first available tab.
+ */
 export function getNextActiveTabId(
     tabs: WorkspaceTab[],
     closedTabIndex: number,
@@ -158,10 +190,20 @@ export function getNextActiveTabId(
     return nextTab?.id ?? tabs[0]?.id ?? null;
 }
 
+/**
+ * Checks if any workspace tab has unsaved content changes.
+ */
 export function hasWorkspaceDraftChanges(workspace: WorkspaceSession): boolean {
     return workspace.tabs.some((tab) => tab.content !== tab.savedContent);
 }
 
+/**
+ * Inserts or updates a tab in the workspace session.
+ *
+ * @remarks
+ * Removes any archived tab with the same ID, sets the tab as active,
+ * and clears the split view.
+ */
 export function upsertWorkspaceTab(
     currentWorkspace: WorkspaceSession,
     tab: WorkspaceTabSnapshot,
@@ -184,6 +226,9 @@ export function upsertWorkspaceTab(
     };
 }
 
+/**
+ * Reorders workspace tabs by moving a dragged tab to the target position.
+ */
 export function reorderWorkspaceTabs(
     currentWorkspace: WorkspaceSession,
     draggedTabId: string,
@@ -231,6 +276,9 @@ export function reorderWorkspaceTabs(
     };
 }
 
+/**
+ * Applies a mutation function to a specific tab in the workspace.
+ */
 export function updateWorkspaceTab(
     currentWorkspace: WorkspaceSession,
     tabId: string,
@@ -256,6 +304,9 @@ export function updateWorkspaceTab(
     };
 }
 
+/**
+ * Applies a mutation function to the active tab in the workspace.
+ */
 export function updateActiveWorkspaceTab(
     currentWorkspace: WorkspaceSession,
     updateTab: (tab: WorkspaceTab) => WorkspaceTab,
@@ -271,6 +322,13 @@ export function updateActiveWorkspaceTab(
     );
 }
 
+/**
+ * Removes a tab from the split view configuration.
+ *
+ * @remarks
+ * Returns null if the primary tab is removed. Updates secondary tab IDs
+ * and picks a new secondary tab ID if needed.
+ */
 export function removedTabFromSplitView(
     splitView: WorkspaceSplitView,
     removedTabId: string,
@@ -323,6 +381,13 @@ function getPrimaryPaneTabId(
     );
 }
 
+/**
+ * Updates workspace state to select a specific tab.
+ *
+ * @remarks
+ * Updates activeTabId and adjusts split view to show the selected tab in the
+ * appropriate pane. Removes tabs that become invalid from secondary positions.
+ */
 export function selectWorkspaceTabState(
     currentWorkspace: WorkspaceSession,
     tabId: string,
@@ -399,6 +464,13 @@ export function selectWorkspaceTabState(
     };
 }
 
+/**
+ * Opens a workspace tab in the specified pane, creating a split view if needed.
+ *
+ * @remarks
+ * If no split view exists, creates one with the current active tab and the target tab.
+ * If a split view exists, moves the tab to the specified pane and updates secondary tabs.
+ */
 export function openWorkspaceTabInPaneState(
     currentWorkspace: WorkspaceSession,
     tabId: string,
@@ -574,6 +646,13 @@ export function openWorkspaceTabInPaneState(
     };
 }
 
+/**
+ * Merges a workspace snapshot into the current session, preserving unsaved changes.
+ *
+ * @remarks
+ * Preserves tabs with unsaved changes that aren't in the snapshot. Validates split
+ * view against available tabs. Picks an appropriate active tab from the result.
+ */
 export function mergeWorkspaceSession(
     currentWorkspace: WorkspaceSession,
     snapshot: WorkspaceSnapshot,

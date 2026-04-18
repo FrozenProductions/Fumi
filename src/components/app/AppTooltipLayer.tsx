@@ -2,6 +2,18 @@ import { forwardRef } from "react";
 import { TOOLTIP_HIDDEN_MOTION_CLASS_NAMES } from "../../constants/tooltip/tooltip";
 import type { AppTooltipLayerProps } from "./appTooltip.type";
 
+/**
+ * The actual tooltip layer rendered via portal with positioning and animation.
+ *
+ * @param props - Component props
+ * @param props.content - Tooltip text content
+ * @param props.shortcut - Optional keyboard shortcut to display
+ * @param props.side - Which side to render relative to trigger
+ * @param props.top - Vertical position
+ * @param props.left - Horizontal position
+ * @param props.isVisible - Whether tooltip should be visible
+ * @returns A styled tooltip div
+ */
 export const AppTooltipLayer = forwardRef<HTMLDivElement, AppTooltipLayerProps>(
     function AppTooltipLayer(
         {

@@ -49,6 +49,14 @@ const SPLIT_DROP_IDS = new Set([
     "workspace-split-right",
 ]);
 
+/**
+ * The main workspace screen containing tabs, editor, and split view.
+ *
+ * @param props - Component props
+ * @param props.session - Workspace session state and actions
+ * @param props.executor - Executor state and actions
+ * @returns A React component
+ */
 export function WorkspaceScreen({
     session,
     executor,

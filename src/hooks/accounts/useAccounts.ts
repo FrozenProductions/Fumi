@@ -13,6 +13,13 @@ import {
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { UseAccountsResult } from "./useAccounts.type";
 
+/**
+ * Manages Roblox account lifecycle including listing, adding, launching, and deleting accounts.
+ *
+ * @remarks
+ * Polls for account updates every 2 seconds and coordinates with the accounts
+ * platform layer to persist and launch Roblox sessions.
+ */
 export function useAccounts(): UseAccountsResult {
     const [accounts, setAccounts] = useState(
         () => [] as ReturnType<typeof sortAccounts>,

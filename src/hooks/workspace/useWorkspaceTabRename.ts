@@ -7,6 +7,14 @@ import type {
 } from "./useWorkspaceTabRename.type";
 import { useWorkspaceUiStore } from "./useWorkspaceUiStore";
 
+/**
+ * Manages tab rename interaction lifecycle including start, commit, cancel, and error handling.
+ *
+ * @remarks
+ * Handles rename input focus management, validates non-empty names,
+ * coordinates with workspace store for rename operations, and manages
+ * UI state for the rename overlay.
+ */
 export function useWorkspaceTabRename({
     workspace,
     renameWorkspaceTab,

@@ -3,6 +3,13 @@ import type { ReactElement } from "react";
 import { AppIcon } from "./AppIcon";
 import type { AppDragDropOverlayProps } from "./appDragDropOverlay.type";
 
+/**
+ * Full-screen overlay displayed when dragging files over the app.
+ *
+ * @param props - Component props
+ * @param props.isVisible - Whether the overlay is shown
+ * @returns A React component or null
+ */
 export function AppDragDropOverlay({
     isVisible,
 }: AppDragDropOverlayProps): ReactElement | null {

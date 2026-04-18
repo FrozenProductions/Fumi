@@ -207,6 +207,11 @@ async function invokeAccountsVoidCommand(
     }
 }
 
+/**
+ * Lists all saved accounts and whether Roblox is currently running.
+ *
+ * @returns Account list with running status
+ */
 export function listAccounts(): Promise<AccountListResponse> {
     if (!isTauriEnvironment()) {
         return Promise.resolve({ accounts: [], isRobloxRunning: false });
@@ -219,6 +224,12 @@ export function listAccounts(): Promise<AccountListResponse> {
     );
 }
 
+/**
+ * Adds a new account with the provided Roblox cookie.
+ *
+ * @param cookie - Roblox authentication cookie
+ * @returns The newly created account summary
+ */
 export function addAccount(cookie: string): Promise<AccountSummary> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -237,6 +248,12 @@ export function addAccount(cookie: string): Promise<AccountSummary> {
     );
 }
 
+/**
+ * Launches the Roblox client for the specified account.
+ *
+ * @param accountId - ID of the account to launch
+ * @returns The updated account summary with bound port info
+ */
 export function launchAccount(accountId: string): Promise<AccountSummary> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -255,6 +272,11 @@ export function launchAccount(accountId: string): Promise<AccountSummary> {
     );
 }
 
+/**
+ * Deletes the specified account from storage.
+ *
+ * @param accountId - ID of the account to delete
+ */
 export function deleteAccount(accountId: string): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -270,6 +292,9 @@ export function deleteAccount(accountId: string): Promise<void> {
     });
 }
 
+/**
+ * Kills all currently running Roblox processes.
+ */
 export function killRobloxProcesses(): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -286,6 +311,9 @@ export function killRobloxProcesses(): Promise<void> {
     );
 }
 
+/**
+ * Launches the Roblox client without a bound account.
+ */
 export function launchRoblox(): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -299,6 +327,11 @@ export function launchRoblox(): Promise<void> {
     return invokeAccountsVoidCommand("launch_roblox", "launchRoblox");
 }
 
+/**
+ * Lists all currently running Roblox processes.
+ *
+ * @returns Array of Roblox process information
+ */
 export function listRobloxProcesses(): Promise<readonly RobloxProcessInfo[]> {
     if (!isTauriEnvironment()) {
         return Promise.resolve([]);
@@ -311,6 +344,11 @@ export function listRobloxProcesses(): Promise<readonly RobloxProcessInfo[]> {
     );
 }
 
+/**
+ * Kills a specific Roblox process by PID.
+ *
+ * @param pid - Process ID to terminate
+ */
 export function killRobloxProcess(pid: number): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -328,6 +366,11 @@ export function killRobloxProcess(pid: number): Promise<void> {
     );
 }
 
+/**
+ * Gets the currently active Roblox account from the running client.
+ *
+ * @returns The active account identity, or null if no account is bound
+ */
 export function getLiveRobloxAccount(): Promise<RobloxAccountIdentity | null> {
     if (!isTauriEnvironment()) {
         return Promise.resolve(null);

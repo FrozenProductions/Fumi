@@ -10,6 +10,11 @@ import {
 } from "../../../lib/app/hotkeys";
 import { AppSettingsHotkeyField } from "./hotkeys/AppSettingsHotkeyField";
 
+/**
+ * The hotkeys settings section with keyboard shortcut management.
+ *
+ * @returns A React component
+ */
 export function AppSettingsHotkeysSection(): ReactElement {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const setHotkeyBinding = useAppStore((state) => state.setHotkeyBinding);

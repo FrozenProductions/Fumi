@@ -6,6 +6,19 @@ import type { WorkspaceTabContextMenuProps } from "./workspaceTabBar.type";
 
 const WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS = 120;
 
+/**
+ * Context menu for workspace tab actions (rename, duplicate, archive, delete).
+ *
+ * @param props - Component props
+ * @param props.isOpen - Whether the menu is visible
+ * @param props.position - Menu position
+ * @param props.splitView - Current split view if any
+ * @param props.onDuplicate - Duplicate the tab
+ * @param props.onArchive - Archive the tab
+ * @param props.onDelete - Delete the tab
+ * @param props.onRename - Start rename
+ * @returns A React component or null
+ */
 export function WorkspaceTabContextMenu({
     isOpen,
     position,

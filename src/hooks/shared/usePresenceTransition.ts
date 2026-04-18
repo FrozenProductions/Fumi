@@ -4,6 +4,13 @@ import type {
     UsePresenceTransitionResult,
 } from "./usePresenceTransition.type";
 
+/**
+ * Manages presence lifecycle for animatable overlay elements.
+ *
+ * @remarks
+ * Keeps elements present during exit animations by delaying the `isPresent`
+ * state change until the exit duration completes, enabling fade-out animations.
+ */
 export function usePresenceTransition({
     isOpen,
     exitDurationMs,

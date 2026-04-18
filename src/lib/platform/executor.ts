@@ -119,6 +119,11 @@ async function invokeExecutorCommand<T>(
     }
 }
 
+/**
+ * Gets the current executor status including available ports and attachment state.
+ *
+ * @returns The current executor status payload
+ */
 export function getExecutorStatus(): Promise<ExecutorStatusPayload> {
     if (!isTauriEnvironment()) {
         return Promise.resolve(DEFAULT_EXECUTOR_STATUS);
@@ -131,6 +136,12 @@ export function getExecutorStatus(): Promise<ExecutorStatusPayload> {
     );
 }
 
+/**
+ * Attaches the executor to a specific port for script execution.
+ *
+ * @param port - The port number to attach to
+ * @returns Updated executor status with port binding info
+ */
 export function attachExecutor(port: number): Promise<ExecutorStatusPayload> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -151,6 +162,11 @@ export function attachExecutor(port: number): Promise<ExecutorStatusPayload> {
     );
 }
 
+/**
+ * Detaches the executor from the current port.
+ *
+ * @returns Updated executor status showing detached state
+ */
 export function detachExecutor(): Promise<ExecutorStatusPayload> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -168,6 +184,11 @@ export function detachExecutor(): Promise<ExecutorStatusPayload> {
     );
 }
 
+/**
+ * Executes a Luau script string via the attached executor.
+ *
+ * @param script - The Luau script source to execute
+ */
 export function executeExecutorScript(script: string): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.reject(
@@ -189,6 +210,12 @@ export function executeExecutorScript(script: string): Promise<void> {
     });
 }
 
+/**
+ * Subscribes to executor messages (stdout/stderr from executed scripts).
+ *
+ * @param listener - Callback invoked with each executor message payload
+ * @returns Unsubscribe function
+ */
 export function subscribeToExecutorMessages(
     listener: (payload: ExecutorMessagePayload) => void,
 ): Promise<() => void> {
@@ -207,6 +234,12 @@ export function subscribeToExecutorMessages(
     });
 }
 
+/**
+ * Subscribes to executor status changes (attach/detach events).
+ *
+ * @param listener - Callback invoked with updated executor status
+ * @returns Unsubscribe function
+ */
 export function subscribeToExecutorStatusChanged(
     listener: (payload: ExecutorStatusPayload) => void,
 ): Promise<() => void> {

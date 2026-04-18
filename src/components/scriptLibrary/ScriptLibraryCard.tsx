@@ -17,6 +17,15 @@ import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import type { ScriptLibraryCardProps } from "./scriptLibrary.type";
 
+/**
+ * A card displaying a script library entry with actions.
+ *
+ * @param props - Component props
+ * @param props.script - The script entry data
+ * @param props.viewFormat - Grid or list view
+ * @param props.actions - Action handlers and state
+ * @returns A React component
+ */
 export function ScriptLibraryCard({
     script,
     viewFormat,

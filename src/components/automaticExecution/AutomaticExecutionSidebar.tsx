@@ -36,6 +36,17 @@ type AutomaticExecutionSidebarProps = {
     onDeleteScript: (scriptId: string, fileName: string) => void;
 };
 
+/**
+ * The sidebar for automatic execution script management.
+ *
+ * @param props - Component props
+ * @param props.scripts - All scripts
+ * @param props.activeScriptId - Currently active script ID
+ * @param props.resolvedPath - Resolved folder path
+ * @param props.onCreateScript - Create new script
+ * @param props.onSelectScript - Select a script
+ * @returns A React component
+ */
 export function AutomaticExecutionSidebar({
     scripts,
     activeScriptId,

@@ -21,6 +21,13 @@ import type {
 
 const STARTUP_UPDATE_CHECK_RETRY_DELAY_MS = 5_000;
 
+/**
+ * Manages application update lifecycle including checking, downloading, and installing updates.
+ *
+ * @remarks
+ * Coordinates with Tauri updater plugin, handles download progress, prompts for
+ * restart, and retries failed startup checks with exponential backoff.
+ */
 export function useAppUpdater(): UseAppUpdaterResult {
     const isAutoUpdateEnabled = useAppStore(
         (state) => state.updaterSettings.isAutoUpdateEnabled,

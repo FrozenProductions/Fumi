@@ -10,6 +10,14 @@ import { AppSettingsHotkeysSection } from "./settings/AppSettingsHotkeysSection"
 import { AppSettingsWorkspaceSection } from "./settings/AppSettingsWorkspaceSection";
 import type { AppSettingsScreenProps } from "./settings/appSettings.type";
 
+/**
+ * The settings screen with section navigation and content panels.
+ *
+ * @param props - Component props
+ * @param props.updater - App update state and handlers
+ * @param props.workspaceSession - Current workspace session info
+ * @returns A React component
+ */
 export function AppSettingsScreen({
     updater,
     workspaceSession,

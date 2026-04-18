@@ -23,6 +23,14 @@ import type {
 import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
 import type { UseWorkspaceLuauAnalysisResult } from "./useWorkspaceLuauAnalysis.type";
 
+/**
+ * Manages Luau file analysis lifecycle with caching and incremental updates.
+ *
+ * @remarks
+ * Uses requestIdleCallback for background scanning, caches analysis results
+ * by content hash, and performs incremental updates when only content changes
+ * occur. Debounces analysis updates through startTransition for smooth UI.
+ */
 export function useWorkspaceLuauAnalysis(
     activeTab: WorkspaceTab | null,
     isEnabled: boolean,

@@ -1,6 +1,14 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import type { UseAppScopedHotkeysOptions } from "./useAppHotkeys.type";
 
+/**
+ * Registers workspace-scoped keyboard shortcuts and routes them to appropriate handlers.
+ *
+ * @remarks
+ * Registers hotkeys for workspace operations (open, create, archive tabs),
+ * split view management, sidebar navigation, and command palette control.
+ * Hotkeys are conditionally enabled based on context (e.g., command palette open).
+ */
 export function useAppScopedHotkeys({
     activeSidebarItem,
     isCommandPaletteOpen,

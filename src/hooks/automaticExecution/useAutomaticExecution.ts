@@ -1,6 +1,13 @@
 import type { UseAutomaticExecutionResult } from "./useAutomaticExecution.type";
 import { useAutomaticExecutionStore } from "./useAutomaticExecutionStore";
 
+/**
+ * Provides access to automatic execution state and script management actions.
+ *
+ * @remarks
+ * Coordinates script creation, selection, saving, renaming, and deletion.
+ * Manages editor state for the active script including content and cursor position.
+ */
 export function useAutomaticExecution(): UseAutomaticExecutionResult {
     const executorKind = useAutomaticExecutionStore(
         (state) => state.executorKind,

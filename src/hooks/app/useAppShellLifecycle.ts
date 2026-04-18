@@ -6,6 +6,13 @@ import {
 } from "../../lib/platform/window";
 import type { UseAppShellLifecycleOptions } from "./useAppShellLifecycle.type";
 
+/**
+ * Coordinates app shell lifecycle including beforeunload handling and settings navigation.
+ *
+ * @remarks
+ * Prevents accidental navigation away when there are unsaved changes, and subscribes
+ * to Tauri events for opening settings from menu or keyboard shortcuts.
+ */
 export function useAppShellLifecycle({
     hasUnsavedChanges,
     onOpenSettings,

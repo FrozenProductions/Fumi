@@ -129,6 +129,18 @@ const OutlineGroupRow = memo(function OutlineGroupRow({
     );
 });
 
+/**
+ * The outline panel showing Luau symbols (functions, constants, etc).
+ *
+ * @param props - Component props
+ * @param props.symbols - Luau file symbols to display
+ * @param props.onSelectSymbol - Called when a symbol is selected
+ * @param props.expandedGroups - Map of expanded group titles
+ * @param props.onToggleExpandedGroup - Toggle a group's expanded state
+ * @param props.outlineSearchQuery - Current filter query
+ * @param props.onOutlineSearchQueryChange - Called when filter changes
+ * @returns A React component
+ */
 export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     symbols,
     onSelectSymbol,

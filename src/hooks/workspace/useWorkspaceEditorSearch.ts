@@ -103,6 +103,14 @@ function pruneSearchStateByOpenTabs(
     return hasRemovedClosedTab ? nextSearchStateByTabId : searchStateByTabId;
 }
 
+/**
+ * Manages Ace editor search state per workspace tab with toggle, query, and replace.
+ *
+ * @remarks
+ * Maintains search state by tab ID, syncs match state with the active editor,
+ * handles search toggle (seeding from selection or word), and provides
+ * find/replace operations with keyboard shortcut integration.
+ */
 export function useWorkspaceEditorSearch({
     activeTabId,
     tabs,

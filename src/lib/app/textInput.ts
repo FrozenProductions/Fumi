@@ -4,6 +4,9 @@ import type {
     ResolveCommittedTextInputValueResult,
 } from "./textInput.type";
 
+/**
+ * Disables browser autocorrect, autocomplete, autocapitalize, and spellcheck on a text input.
+ */
 export function disableTextInputCorrections(
     element: HTMLInputElement | HTMLTextAreaElement,
 ): void {
@@ -14,6 +17,11 @@ export function disableTextInputCorrections(
     element.spellcheck = false;
 }
 
+/**
+ * Parses and clamps a numeric text input value to the specified range.
+ *
+ * @returns The clamped value as a string, or null if the input is not a valid number.
+ */
 export function clampNumericTextInputValue(
     rawValue: string,
     minValue?: number,
@@ -38,6 +46,13 @@ export function clampNumericTextInputValue(
     return String(nextValue);
 }
 
+/**
+ * Resolves a committed text input value from draft, applying min/max constraints.
+ *
+ * @remarks
+ * Returns the current stored value if the draft is empty, otherwise returns
+ * the trimmed value clamped to the valid range.
+ */
 export function resolveCommittedTextInputValue({
     draftValue,
     value,
@@ -79,6 +94,12 @@ export function resolveCommittedTextInputValue({
     };
 }
 
+/**
+ * Steps a numeric input value up or down by a specified amount.
+ *
+ * @remarks
+ * Uses 0 as the current value if the draft is non-numeric.
+ */
 export function getSteppedTextInputValue({
     draftValue,
     minValue,

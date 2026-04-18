@@ -5,6 +5,14 @@ import { useAppStore } from "../../hooks/app/useAppStore";
 import { useResolvedAppHotkeyBindings } from "../../hooks/app/useResolvedAppHotkeyBindings";
 import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
 
+/**
+ * Provides app-wide hotkey handling for keyboard shortcuts.
+ *
+ * @remarks
+ * Combines global hotkey capture (for fallback when tanstack-hotkeys misses events)
+ * and scoped hotkeys (for workspace-specific actions). Registers both layers to ensure
+ * reliable hotkey response across different contexts.
+ */
 export function AppHotkeysProvider({
     children,
     workspaceSession,

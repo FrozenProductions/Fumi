@@ -2,6 +2,17 @@ import type { ReactElement } from "react";
 import { getCompactLuauCompletionDetailLabel } from "../../lib/luau/completionPopup";
 import type { AppCodeCompletionProps } from "./workspaceEditor.type";
 
+/**
+ * Code completion popup displayed in the editor.
+ *
+ * @param props - Component props
+ * @param props.items - Completion items to display
+ * @param props.selectedIndex - Currently selected item index
+ * @param props.position - Popup position and size
+ * @param props.onHoverItem - Called when hovering an item
+ * @param props.onSelectItem - Called when selecting an item
+ * @returns A React component or null
+ */
 export function AppCodeCompletion({
     items,
     selectedIndex,

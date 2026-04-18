@@ -31,6 +31,13 @@ import { AppSelect } from "../AppSelect";
 import { AppSettingsToggle } from "../AppSettingsToggle";
 import type { AppSettingsGeneralSectionProps } from "./appSettings.type";
 
+/**
+ * The general settings section with theme, zoom, and updater controls.
+ *
+ * @param props - Component props
+ * @param props.updater - App updater state and handlers
+ * @returns A React component
+ */
 export function AppSettingsGeneralSection({
     updater,
 }: AppSettingsGeneralSectionProps): ReactElement {

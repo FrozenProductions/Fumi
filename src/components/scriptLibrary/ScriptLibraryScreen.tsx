@@ -57,6 +57,13 @@ function getScriptLibraryEmptyState(options: {
     };
 }
 
+/**
+ * The main script library screen for browsing and managing scripts.
+ *
+ * @param props - Component props
+ * @param props.workspaceSession - Current workspace session
+ * @returns A React component
+ */
 export function ScriptLibraryScreen({
     workspaceSession,
 }: ScriptLibraryScreenProps): ReactElement {

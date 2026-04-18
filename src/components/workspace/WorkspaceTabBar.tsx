@@ -39,6 +39,19 @@ type WorkspaceTabBarInternalProps = WorkspaceTabBarProps &
         isTabDragActive: boolean;
     };
 
+/**
+ * The tab bar for workspace files with drag-and-drop reordering.
+ *
+ * @param props - Component props
+ * @param props.workspace - The workspace data
+ * @param props.splitView - Current split view if any
+ * @param props.renameState - Current rename state
+ * @param props.onCreateFile - Create new file
+ * @param props.onSelectTab - Select a tab
+ * @param props.onArchiveTab - Archive a tab
+ * @param props.onDeleteTab - Delete a tab
+ * @returns A React component
+ */
 export function WorkspaceTabBar({
     workspace,
     splitView,

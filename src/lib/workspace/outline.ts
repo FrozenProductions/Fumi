@@ -8,6 +8,13 @@ import type {
 const STRUCTURAL_TEXT_PATTERN =
     /\b(local|function|export|for|while|repeat|until|if|elseif|else|do|end)\b|[={}()[\]]/u;
 
+/**
+ * Checks if a cached outline entry matches the given parameters.
+ *
+ * @remarks
+ * Returns null if the entry doesn't exist or has different fileName, contentHash,
+ * or contentLength. Used to avoid rescanning unchanged files.
+ */
 export function getWorkspaceOutlineCacheHit(
     cache: Map<string, WorkspaceOutlineCacheEntry>,
     tabId: string,
@@ -32,6 +39,9 @@ export function getWorkspaceOutlineCacheHit(
     return entry;
 }
 
+/**
+ * Stores an outline cache entry with LRU eviction when maxEntries is exceeded.
+ */
 export function storeWorkspaceOutlineCacheEntry(
     cache: Map<string, WorkspaceOutlineCacheEntry>,
     tabId: string,
@@ -55,6 +65,13 @@ export function storeWorkspaceOutlineCacheEntry(
     }
 }
 
+/**
+ * Attempts to incrementally update an existing outline for a content change.
+ *
+ * @remarks
+ * Returns null if the change involves structural text (keywords/brackets) or
+ * affects symbol declaration boundaries, requiring a full rescan.
+ */
 export function incrementallyUpdateWorkspaceOutline({
     change,
     nextContent,
@@ -171,6 +188,9 @@ export function incrementallyUpdateWorkspaceOutline({
     };
 }
 
+/**
+ * Converts a character offset in content to a line number (1-indexed).
+ */
 export function getWorkspaceLineNumberFromOffset(
     content: string,
     offset: number,

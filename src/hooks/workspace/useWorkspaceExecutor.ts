@@ -69,6 +69,14 @@ function manageAsyncSubscription(
     };
 }
 
+/**
+ * Manages executor connection lifecycle including attach, detach, and script execution.
+ *
+ * @remarks
+ * Polls executor status every 2 seconds, subscribes to status changes and messages,
+ * and persists the selected port. Coordinates with the workspace to execute scripts
+ * on the active tab when connected.
+ */
 export function useWorkspaceExecutor({
     activeTabContent,
 }: UseWorkspaceExecutorOptions): UseWorkspaceExecutorResult {

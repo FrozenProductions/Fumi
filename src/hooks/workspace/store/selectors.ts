@@ -8,6 +8,13 @@ import type {
 import { getActiveTabFromWorkspace } from "./helpers";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
+/**
+ * Memoized selectors for workspace store state.
+ *
+ * @remarks
+ * Provides derived state computations from the workspace store including
+ * active tab, unsaved changes, exit guard status, and split view state.
+ */
 export const selectWorkspaceActiveTabIndex = (state: WorkspaceStore): number =>
     getActiveTabIndex(
         state.workspace?.tabs ?? [],

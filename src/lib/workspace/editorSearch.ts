@@ -4,6 +4,9 @@ import type {
     WorkspaceEditorSearchState,
 } from "./editorSearch.type";
 
+/**
+ * Creates a workspace editor search state with optional overrides to defaults.
+ */
 export function createWorkspaceEditorSearchState(
     overrides: Partial<WorkspaceEditorSearchState> = {},
 ): WorkspaceEditorSearchState {
@@ -13,6 +16,9 @@ export function createWorkspaceEditorSearchState(
     };
 }
 
+/**
+ * Builds Ace search options from a workspace editor search state.
+ */
 export function buildWorkspaceEditorSearchOptions(
     state: Pick<
         WorkspaceEditorSearchState,
@@ -28,6 +34,12 @@ export function buildWorkspaceEditorSearchOptions(
     };
 }
 
+/**
+ * Validates a search query, returning an error message or null if valid.
+ *
+ * @remarks
+ * For regex mode, tests whether the query is a valid RegExp.
+ */
 export function getWorkspaceEditorSearchValidationError(
     query: string,
     isRegex: boolean,

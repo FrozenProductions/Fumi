@@ -16,6 +16,14 @@ import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { ExecutorKind } from "../../lib/workspace/workspace.type";
 import type { AutomaticExecutionStore } from "./automaticExecutionStore.type";
 
+/**
+ * Automatic execution state store managing scripts, executor, and persistence.
+ *
+ * @remarks
+ * Handles bootstrapping, refresh, create, save, rename, delete, and script
+ * selection. Coordinates with Tauri commands and manages request deduplication
+ * via request ID tracking. Flushes dirty scripts before refresh when needed.
+ */
 export const useAutomaticExecutionStore = create<AutomaticExecutionStore>(
     (set, get) => {
         const runtime = {

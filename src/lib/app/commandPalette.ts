@@ -15,6 +15,13 @@ import type {
     GetThemeCommandPaletteItemsOptions,
 } from "./commandPalette.type";
 
+/**
+ * Parses a go-to-line query string into a line number.
+ *
+ * @remarks
+ * Accepts formats like "42", ":42", "line 42", "go to line 42".
+ * Returns null for empty or invalid input.
+ */
 export function parseGoToLineQuery(value: string): number | null {
     const trimmedValue = value.trim();
 

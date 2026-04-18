@@ -19,6 +19,13 @@ function compareNullableNumbersDescending(
     return right - left;
 }
 
+/**
+ * Sorts accounts by active status, last launched time, display name, and username.
+ *
+ * @remarks
+ * Active accounts float to the top, then sort by lastLaunchedAt descending,
+ * then alphabetically by displayName and username.
+ */
 export function sortAccounts(
     accounts: readonly AccountSummary[],
 ): AccountSummary[] {

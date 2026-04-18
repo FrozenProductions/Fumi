@@ -9,6 +9,17 @@ import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
 import type { AppSidebarProps } from "./appShell.type";
 
+/**
+ * The sidebar navigation panel providing access to main app sections.
+ *
+ * @param props - Component props
+ * @param props.isOpen - Whether the sidebar is expanded
+ * @param props.position - Which side the sidebar is anchored to
+ * @param props.activeItem - Currently selected sidebar item ID
+ * @param props.showsSettingsUpdateIndicator - Show indicator on settings icon
+ * @param props.onSelectItem - Callback when a sidebar item is selected
+ * @returns A React component
+ */
 export function AppSidebar({
     isOpen,
     position,

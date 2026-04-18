@@ -10,6 +10,13 @@ const INITIAL_TOOLTIP_POSITION = {
 export const selectActiveTooltipId = (state: TooltipStore): string | null =>
     state.activeTooltip?.id ?? null;
 
+/**
+ * Global tooltip state store managing visibility, positioning, and tooltip content.
+ *
+ * @remarks
+ * Handles tooltip showing, hiding, and positioning with viewport margin constraints.
+ * Tracks active tooltip definition and coordinates visibility with position updates.
+ */
 export const useTooltipStore = create<TooltipStore>((set) => ({
     activeTooltip: null,
     position: INITIAL_TOOLTIP_POSITION,

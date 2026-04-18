@@ -58,6 +58,11 @@ async function invokeWorkspaceVoidCommand(
     }
 }
 
+/**
+ * Bootstraps the workspace by loading the last session or returning empty state.
+ *
+ * @returns Bootstrap response with last workspace path and workspace snapshot
+ */
 export function bootstrapWorkspace(): Promise<WorkspaceBootstrapResponse> {
     if (!isTauriEnvironment()) {
         return Promise.resolve({
@@ -72,6 +77,12 @@ export function bootstrapWorkspace(): Promise<WorkspaceBootstrapResponse> {
     );
 }
 
+/**
+ * Opens a workspace at the specified path.
+ *
+ * @param workspacePath - Absolute path to the workspace directory
+ * @returns Complete workspace snapshot with tabs and state
+ */
 export function openWorkspace(
     workspacePath: string,
 ): Promise<WorkspaceSnapshot> {
@@ -93,6 +104,12 @@ export function openWorkspace(
     );
 }
 
+/**
+ * Refreshes the workspace state from disk, detecting external file changes.
+ *
+ * @param workspacePath - Path to the workspace
+ * @returns Updated snapshot, or null if workspace no longer exists
+ */
 export function refreshWorkspace(
     workspacePath: string,
 ): Promise<WorkspaceSnapshot | null> {
@@ -109,6 +126,15 @@ export function refreshWorkspace(
     );
 }
 
+/**
+ * Creates a new file in the workspace.
+ *
+ * @param options - File creation options
+ * @param options.workspacePath - Path to the workspace
+ * @param options.fileName - Optional initial file name
+ * @param options.initialContent - Optional initial content
+ * @returns The created tab snapshot
+ */
 export function createWorkspaceFile(options: {
     workspacePath: string;
     fileName?: string;
@@ -130,6 +156,13 @@ export function createWorkspaceFile(options: {
     );
 }
 
+/**
+ * Imports a file from an external path into the workspace.
+ *
+ * @param options - Import options
+ * @param options.filePath - Source file path to import
+ * @returns Draft script state for the imported file
+ */
 export function importWorkspaceFile(options: {
     filePath: string;
 }): Promise<DroppedWorkspaceScriptDraft> {
@@ -149,6 +182,15 @@ export function importWorkspaceFile(options: {
     );
 }
 
+/**
+ * Saves a workspace file with current content and cursor state.
+ *
+ * @param options - Save options
+ * @param options.workspacePath - Path to the workspace
+ * @param options.tabId - ID of the tab to save
+ * @param options.content - File content to persist
+ * @param options.cursor - Current cursor and scroll state
+ */
 export function saveWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;
@@ -171,6 +213,15 @@ export function saveWorkspaceFile(options: {
     );
 }
 
+/**
+ * Renames a file in the workspace.
+ *
+ * @param options - Rename options
+ * @param options.workspacePath - Path to the workspace
+ * @param options.tabId - ID of the tab to rename
+ * @param options.fileName - New file name
+ * @returns Updated tab state with new file name
+ */
 export function renameWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;
@@ -192,6 +243,13 @@ export function renameWorkspaceFile(options: {
     );
 }
 
+/**
+ * Deletes a file from the workspace.
+ *
+ * @param options - Delete options
+ * @param options.workspacePath - Path to the workspace
+ * @param options.tabId - ID of the tab to delete
+ */
 export function deleteWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;
@@ -212,6 +270,16 @@ export function deleteWorkspaceFile(options: {
     );
 }
 
+/**
+ * Persists the workspace UI state including tabs, split view, and ordering.
+ *
+ * @param options - State to persist
+ * @param options.workspacePath - Path to the workspace
+ * @param options.activeTabId - Currently active tab ID
+ * @param options.splitView - Current split view configuration
+ * @param options.tabs - Ordered array of open tab states
+ * @param options.archivedTabs - Ordered array of archived tab states
+ */
 export function persistWorkspaceState(options: {
     workspacePath: string;
     activeTabId: string | null;
@@ -230,6 +298,14 @@ export function persistWorkspaceState(options: {
     );
 }
 
+/**
+ * Restores an archived tab back into the workspace.
+ *
+ * @param options - Restore options
+ * @param options.workspacePath - Path to the workspace
+ * @param options.tabId - ID of the archived tab to restore
+ * @returns The restored tab snapshot
+ */
 export function restoreArchivedWorkspaceTab(options: {
     workspacePath: string;
     tabId: string;
@@ -250,6 +326,12 @@ export function restoreArchivedWorkspaceTab(options: {
     );
 }
 
+/**
+ * Restores all archived tabs back into the workspace.
+ *
+ * @param options - Restore options
+ * @param options.workspacePath - Path to the workspace
+ */
 export function restoreAllArchivedWorkspaceTabs(options: {
     workspacePath: string;
 }): Promise<void> {
@@ -269,6 +351,14 @@ export function restoreAllArchivedWorkspaceTabs(options: {
     );
 }
 
+/**
+ * Deletes an archived tab from the archive.
+ *
+ * @param options - Delete options
+ * @param options.workspacePath - Path to the workspace
+ * @param options.tabId - ID of the tab to delete from archive
+ * @param options.fileName - File name for verification
+ */
 export function deleteArchivedWorkspaceTab(options: {
     workspacePath: string;
     tabId: string;
@@ -290,6 +380,12 @@ export function deleteArchivedWorkspaceTab(options: {
     );
 }
 
+/**
+ * Deletes all archived tabs from the archive.
+ *
+ * @param options - Delete options
+ * @param options.workspacePath - Path to the workspace
+ */
 export function deleteAllArchivedWorkspaceTabs(options: {
     workspacePath: string;
 }): Promise<void> {
@@ -309,6 +405,11 @@ export function deleteAllArchivedWorkspaceTabs(options: {
     );
 }
 
+/**
+ * Notifies the backend of unsaved changes state.
+ *
+ * @param hasUnsavedChanges - Whether there are unsaved changes
+ */
 export function setWorkspaceUnsavedChanges(
     hasUnsavedChanges: boolean,
 ): Promise<void> {

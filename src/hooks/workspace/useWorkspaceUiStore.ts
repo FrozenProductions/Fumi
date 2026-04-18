@@ -12,6 +12,13 @@ const INITIAL_WORKSPACE_UI_STATE = {
     hasRenameError: false,
 } satisfies WorkspaceUiStoreState;
 
+/**
+ * Ephemeral UI state store for workspace interactions.
+ *
+ * @remarks
+ * Tracks tab list dropdown visibility, rename input state, and rename form
+ * submission status. Resets on unmount or tab switch.
+ */
 export const useWorkspaceUiStore = create<WorkspaceUiStore>((set) => ({
     ...INITIAL_WORKSPACE_UI_STATE,
     openTabList: () => {

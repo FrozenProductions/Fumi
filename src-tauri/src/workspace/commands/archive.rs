@@ -17,6 +17,7 @@ use super::{
     CommandResponse,
 };
 
+/// Restores an archived workspace tab back to active tabs.
 #[command]
 pub fn restore_archived_workspace_tab(
     app: AppHandle,
@@ -71,6 +72,7 @@ pub fn restore_archived_workspace_tab(
     })
 }
 
+/// Deletes an archived workspace tab without restoring it.
 #[command]
 pub fn delete_archived_workspace_tab(
     app: AppHandle,
@@ -83,6 +85,7 @@ pub fn delete_archived_workspace_tab(
     run_command(|| delete_workspace_tab_by_id(&app, &workspace_path, &tab_id))
 }
 
+/// Restores all archived workspace tabs back to active tabs.
 #[command]
 pub fn restore_all_archived_workspace_tabs(
     app: AppHandle,
@@ -112,6 +115,7 @@ pub fn restore_all_archived_workspace_tabs(
     })
 }
 
+/// Deletes all archived workspace tabs from disk and metadata.
 #[command]
 pub fn delete_all_archived_workspace_tabs(
     app: AppHandle,

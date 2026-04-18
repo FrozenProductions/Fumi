@@ -8,6 +8,12 @@ import type { AppCommandPaletteProps } from "./appShell.type";
 import { AppCommandPaletteInputRow } from "./commandPalette/AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./commandPalette/AppCommandPaletteResults";
 
+/**
+ * The command palette overlay for quick actions and navigation.
+ *
+ * @param props - Component props
+ * @returns A React component or null when not visible
+ */
 export function AppCommandPalette({
     isOpen,
     requestedScope,

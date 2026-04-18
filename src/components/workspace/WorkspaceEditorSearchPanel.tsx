@@ -13,6 +13,13 @@ import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditor.type";
 
+/**
+ * Floating search panel for the workspace editor with find/replace.
+ *
+ * @param props - Component props
+ * @param props.searchPanel - Search panel state and handlers
+ * @returns A React component or null
+ */
 export function WorkspaceEditorSearchPanel({
     searchPanel,
 }: WorkspaceEditorSearchPanelProps): ReactElement | null {

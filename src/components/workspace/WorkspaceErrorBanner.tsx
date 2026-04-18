@@ -3,6 +3,13 @@ import type { ReactElement } from "react";
 import { AppIcon } from "../app/AppIcon";
 import type { WorkspaceErrorBannerProps } from "./workspaceFeedback.type";
 
+/**
+ * Displays an error message banner in the workspace.
+ *
+ * @param props - Component props
+ * @param props.errorMessage - The error message to display
+ * @returns A React component
+ */
 export function WorkspaceErrorBanner({
     errorMessage,
 }: WorkspaceErrorBannerProps): ReactElement {

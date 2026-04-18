@@ -5,6 +5,13 @@ import {
 } from "../../lib/app/hotkeys";
 import type { UseAppGlobalHotkeyCaptureOptions } from "./useAppHotkeys.type";
 
+/**
+ * Captures global keyboard events for app-level hotkeys outside the tanstack-hotkeys context.
+ *
+ * @remarks
+ * Handles cases where tanstack-hotkeys may not capture events, providing a fallback
+ * for core shortcuts like toggle sidebar, command palette, and settings.
+ */
 export function useAppGlobalHotkeyCapture({
     activeSidebarItem,
     isCommandPaletteOpen,

@@ -8,6 +8,13 @@ import {
     useScriptLibraryStore,
 } from "./useScriptLibraryStore";
 
+/**
+ * Provides access to script library state, favorites, pagination, and script management.
+ *
+ * @remarks
+ * Supports browsing remote scripts or local favorites with filtering, sorting,
+ * and search. Debounces query changes at 400ms before fetching remote results.
+ */
 export function useScriptLibrary(): UseScriptLibraryResult {
     const contentMode = useScriptLibraryStore((state) => state.contentMode);
     const query = useScriptLibraryStore((state) => state.query);

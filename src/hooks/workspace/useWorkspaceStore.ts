@@ -14,6 +14,13 @@ export {
     selectWorkspaceShouldGuardExit,
 } from "./store/selectors";
 
+/**
+ * Workspace state store combining lifecycle, tab, and editor slices.
+ *
+ * @remarks
+ * Provides unified access to workspace state and actions through composed slices.
+ * Reads recent workspace paths from persisted storage on initialization.
+ */
 export const useWorkspaceStore = create<WorkspaceStore>((set, get, store) => {
     const workspaceStore: WorkspaceStore = {
         workspace: null,

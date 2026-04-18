@@ -6,6 +6,14 @@ import { AppTooltip } from "./AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./appShell.type";
 import { getExecutorPortLabel } from "./executorPortLabel";
 
+/**
+ * Executor connection controls displayed in the topbar.
+ *
+ * @param props - Component props
+ * @param props.state - Executor state information
+ * @param props.actions - Executor action handlers
+ * @returns A React component
+ */
 export function AppTopbarExecutorControls({
     actions,
     state,

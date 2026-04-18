@@ -1,6 +1,14 @@
 import { forwardRef } from "react";
 import type { AppIconButtonProps } from "./appVisual.type";
 
+/**
+ * A styled icon button with active state styling.
+ *
+ * @param props - Component props
+ * @param props.ariaLabel - Accessible label for the button
+ * @param props.isActive - Whether the button is in active state
+ * @returns A styled button element
+ */
 export const AppIconButton = forwardRef<HTMLButtonElement, AppIconButtonProps>(
     function AppIconButton(
         {

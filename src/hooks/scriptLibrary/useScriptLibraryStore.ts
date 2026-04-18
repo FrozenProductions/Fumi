@@ -294,6 +294,14 @@ export const createScriptLibraryStoreStateCreator: StateCreator<
     };
 };
 
+/**
+ * Script library state store with pagination, favorites, and remote script browsing.
+ *
+ * @remarks
+ * Persists filters, favorites, order, and view format to localStorage. Manages
+ * session caching for paginated API results. Provides action feedback timers
+ * for copy/add operations that clear after 2 seconds.
+ */
 export const useScriptLibraryStore = create<ScriptLibraryStore>()(
     persist(createScriptLibraryStoreStateCreator, {
         name: SCRIPT_LIBRARY_STORE_STORAGE_KEY,

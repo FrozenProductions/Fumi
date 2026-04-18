@@ -182,6 +182,12 @@ async function invokeAutomaticExecutionVoidCommand(
     }
 }
 
+/**
+ * Bootstraps the automatic execution state for the specified executor kind.
+ *
+ * @param executorKind - The type of executor to bootstrap
+ * @returns Complete snapshot including all scripts and metadata
+ */
 export function bootstrapAutomaticExecution(
     executorKind: ExecutorKind,
 ): Promise<AutomaticExecutionSnapshot> {
@@ -204,6 +210,12 @@ export function bootstrapAutomaticExecution(
     );
 }
 
+/**
+ * Refreshes the automatic execution state from disk.
+ *
+ * @param executorKind - The type of executor to refresh
+ * @returns Updated snapshot with current script states
+ */
 export function refreshAutomaticExecution(
     executorKind: ExecutorKind,
 ): Promise<AutomaticExecutionSnapshot> {
@@ -226,6 +238,15 @@ export function refreshAutomaticExecution(
     );
 }
 
+/**
+ * Creates a new script in the automatic execution collection.
+ *
+ * @param options - Script creation options
+ * @param options.executorKind - The executor kind for the script
+ * @param options.fileName - Optional initial file name
+ * @param options.initialContent - Optional initial content
+ * @returns The created script snapshot
+ */
 export function createAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
     fileName?: string;
@@ -248,6 +269,15 @@ export function createAutomaticExecutionScript(options: {
     );
 }
 
+/**
+ * Saves the content and cursor state of an automatic execution script.
+ *
+ * @param options - Save options
+ * @param options.executorKind - The executor kind
+ * @param options.scriptId - ID of the script to save
+ * @param options.content - The script content to persist
+ * @param options.cursor - Current cursor position
+ */
 export function saveAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
     scriptId: string;
@@ -270,6 +300,15 @@ export function saveAutomaticExecutionScript(options: {
     );
 }
 
+/**
+ * Renames a script in the automatic execution collection.
+ *
+ * @param options - Rename options
+ * @param options.executorKind - The executor kind
+ * @param options.scriptId - ID of the script to rename
+ * @param options.fileName - New file name
+ * @returns The updated script state
+ */
 export function renameAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
     scriptId: string;
@@ -292,6 +331,13 @@ export function renameAutomaticExecutionScript(options: {
     );
 }
 
+/**
+ * Deletes a script from the automatic execution collection.
+ *
+ * @param options - Delete options
+ * @param options.executorKind - The executor kind
+ * @param options.scriptId - ID of the script to delete
+ */
 export function deleteAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
     scriptId: string;
@@ -312,6 +358,14 @@ export function deleteAutomaticExecutionScript(options: {
     );
 }
 
+/**
+ * Persists the automatic execution state including active script and ordering.
+ *
+ * @param options - State to persist
+ * @param options.executorKind - The executor kind
+ * @param options.activeScriptId - Currently active script ID
+ * @param options.scripts - Ordered array of script states
+ */
 export function persistAutomaticExecutionState(options: {
     executorKind: ExecutorKind;
     activeScriptId: string | null;
@@ -328,6 +382,11 @@ export function persistAutomaticExecutionState(options: {
     );
 }
 
+/**
+ * Notifies the backend of unsaved changes state.
+ *
+ * @param hasUnsavedChanges - Whether there are unsaved changes
+ */
 export function setAutomaticExecutionUnsavedChanges(
     hasUnsavedChanges: boolean,
 ): Promise<void> {

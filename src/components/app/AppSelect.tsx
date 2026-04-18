@@ -5,6 +5,15 @@ import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition"
 import { AppIcon } from "./AppIcon";
 import type { AppSelectProps } from "./appForm.type";
 
+/**
+ * A dropdown select component with animated open/close transitions.
+ *
+ * @param props - Component props
+ * @param props.value - Currently selected value
+ * @param props.options - Array of selectable options
+ * @param props.onChange - Called when selection changes
+ * @returns A React component
+ */
 export function AppSelect<TValue extends string>({
     value,
     options,

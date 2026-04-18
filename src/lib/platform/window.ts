@@ -107,6 +107,13 @@ async function listenDroppedFilesEvent(): Promise<() => void> {
     }
 }
 
+/**
+ * Initializes the window shell, subscribing to all window-level events.
+ *
+ * Idempotent - subsequent calls return the same initialization promise.
+ *
+ * @returns A promise that resolves when initialization completes
+ */
 export function initializeWindowShell(): Promise<void> {
     if (!isTauriEnvironment()) {
         return Promise.resolve();
@@ -164,10 +171,19 @@ export function initializeWindowShell(): Promise<void> {
     return initializationPromise;
 }
 
+/**
+ * Returns whether the window is currently preparing to exit.
+ */
 export function isPreparingToExit(): boolean {
     return isPreparingToExitState;
 }
 
+/**
+ * Subscribes to the open-settings event from the native menu.
+ *
+ * @param listener - Callback invoked when settings should open
+ * @returns Unsubscribe function
+ */
 export function subscribeToOpenSettings(listener: () => void): () => void {
     openSettingsListeners.add(listener);
 
@@ -176,6 +192,12 @@ export function subscribeToOpenSettings(listener: () => void): () => void {
     };
 }
 
+/**
+ * Subscribes to the check-for-updates event from the native menu.
+ *
+ * @param listener - Callback invoked when update check is requested
+ * @returns Unsubscribe function
+ */
 export function subscribeToCheckForUpdatesRequested(
     listener: () => void,
 ): () => void {
@@ -186,6 +208,12 @@ export function subscribeToCheckForUpdatesRequested(
     };
 }
 
+/**
+ * Subscribes to the prepare-for-exit event before app quit.
+ *
+ * @param listener - Callback invoked when app is preparing to quit
+ * @returns Unsubscribe function
+ */
 export function subscribeToPrepareForExit(listener: () => void): () => void {
     prepareForExitListeners.add(listener);
 
@@ -194,6 +222,12 @@ export function subscribeToPrepareForExit(listener: () => void): () => void {
     };
 }
 
+/**
+ * Subscribes to exit guard sync requests for lifecycle-aware cleanup.
+ *
+ * @param listener - Callback invoked with a sync ID to resolve
+ * @returns Unsubscribe function
+ */
 export function subscribeToExitGuardSyncRequested(
     listener: (syncId: number) => void,
 ): () => void {
@@ -204,6 +238,12 @@ export function subscribeToExitGuardSyncRequested(
     };
 }
 
+/**
+ * Subscribes to dropped files events.
+ *
+ * @param listener - Callback invoked with an array of dropped file paths
+ * @returns Unsubscribe function
+ */
 export function subscribeToDroppedFiles(
     listener: (filePaths: readonly string[]) => void,
 ): () => void {
@@ -214,6 +254,12 @@ export function subscribeToDroppedFiles(
     };
 }
 
+/**
+ * Subscribes to drag-hover state changes for dropped files.
+ *
+ * @param listener - Callback invoked with hover state
+ * @returns Unsubscribe function
+ */
 export function subscribeToDroppedFilesHover(
     listener: (isHovering: boolean) => void,
 ): () => void {
@@ -224,6 +270,12 @@ export function subscribeToDroppedFilesHover(
     };
 }
 
+/**
+ * Subscribes to zoom-in requests from the native menu or keyboard shortcut.
+ *
+ * @param listener - Callback invoked when zoom in is requested
+ * @returns Unsubscribe function
+ */
 export function subscribeToZoomInRequested(listener: () => void): () => void {
     zoomInListeners.add(listener);
 
@@ -232,6 +284,12 @@ export function subscribeToZoomInRequested(listener: () => void): () => void {
     };
 }
 
+/**
+ * Subscribes to zoom-out requests from the native menu or keyboard shortcut.
+ *
+ * @param listener - Callback invoked when zoom out is requested
+ * @returns Unsubscribe function
+ */
 export function subscribeToZoomOutRequested(listener: () => void): () => void {
     zoomOutListeners.add(listener);
 
@@ -240,6 +298,12 @@ export function subscribeToZoomOutRequested(listener: () => void): () => void {
     };
 }
 
+/**
+ * Subscribes to zoom-reset requests from the native menu or keyboard shortcut.
+ *
+ * @param listener - Callback invoked when zoom reset is requested
+ * @returns Unsubscribe function
+ */
 export function subscribeToZoomResetRequested(
     listener: () => void,
 ): () => void {
@@ -250,6 +314,9 @@ export function subscribeToZoomResetRequested(
     };
 }
 
+/**
+ * Starts window dragging operation (e.g., for custom title bar drag).
+ */
 export async function startCurrentWindowDragging(): Promise<void> {
     if (!isTauriEnvironment()) {
         return;
@@ -266,6 +333,11 @@ export async function startCurrentWindowDragging(): Promise<void> {
     }
 }
 
+/**
+ * Toggles the maximized state of the current window.
+ *
+ * @returns True if the window is now maximized
+ */
 export async function toggleCurrentWindowMaximize(): Promise<boolean> {
     if (!isTauriEnvironment()) {
         return false;
@@ -286,6 +358,9 @@ export async function toggleCurrentWindowMaximize(): Promise<boolean> {
     }
 }
 
+/**
+ * Minimizes the current window to the dock/taskbar.
+ */
 export async function minimizeCurrentWindow(): Promise<void> {
     if (!isTauriEnvironment()) {
         return;
@@ -302,6 +377,9 @@ export async function minimizeCurrentWindow(): Promise<void> {
     }
 }
 
+/**
+ * Closes the current window, triggering app quit if it's the last window.
+ */
 export async function closeCurrentWindow(): Promise<void> {
     if (!isTauriEnvironment()) {
         return;
@@ -318,6 +396,11 @@ export async function closeCurrentWindow(): Promise<void> {
     }
 }
 
+/**
+ * Reads the current maximized state of the window.
+ *
+ * @returns True if the window is currently maximized
+ */
 export async function readCurrentWindowMaximizedState(): Promise<boolean> {
     if (!isTauriEnvironment()) {
         return false;
@@ -334,6 +417,12 @@ export async function readCurrentWindowMaximizedState(): Promise<boolean> {
     }
 }
 
+/**
+ * Subscribes to window resize events.
+ *
+ * @param listener - Callback invoked when the window is resized
+ * @returns Unsubscribe function
+ */
 export async function subscribeToCurrentWindowResize(
     listener: () => void,
 ): Promise<() => void> {
@@ -354,6 +443,9 @@ export async function subscribeToCurrentWindowResize(
     }
 }
 
+/**
+ * Completes the exit preparation phase, allowing the app to quit.
+ */
 export async function completeExitPreparation(): Promise<void> {
     if (!isTauriEnvironment()) {
         return;
@@ -370,6 +462,12 @@ export async function completeExitPreparation(): Promise<void> {
     }
 }
 
+/**
+ * Resolves an exit guard sync request with the guard decision.
+ *
+ * @param syncId - The sync ID from the exit guard event
+ * @param shouldGuardExit - Whether to prevent or allow exit
+ */
 export async function resolveExitGuardSync(
     syncId: number,
     shouldGuardExit: boolean,

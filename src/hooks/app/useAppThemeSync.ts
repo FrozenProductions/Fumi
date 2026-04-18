@@ -45,6 +45,14 @@ function applyTheme(resolvedTheme: "light" | "dark"): void {
     document.documentElement.style.colorScheme = resolvedTheme;
 }
 
+/**
+ * Syncs application theme to the document and listens for system theme changes.
+ *
+ * @remarks
+ * Disables CSS transitions temporarily during theme changes to prevent flash of
+ * unstyled content. Uses requestAnimationFrame double-frame technique to ensure
+ * transitions are disabled before and restored after the theme application.
+ */
 export function useAppThemeSync(): void {
     const theme = useAppStore((state) => state.theme);
 

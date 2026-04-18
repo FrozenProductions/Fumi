@@ -31,6 +31,19 @@ function createTitleLetterStyle(offsetX: number): AppTopbarTitleLetterStyle {
     };
 }
 
+/**
+ * The top bar containing window controls, sidebar toggle, and workspace info.
+ *
+ * @param props - Component props
+ * @param props.title - Window title to display
+ * @param props.isSidebarOpen - Whether the sidebar is open
+ * @param props.onToggleSidebar - Callback to toggle sidebar
+ * @param props.workspaceName - Current workspace name
+ * @param props.workspacePath - Current workspace path
+ * @param props.onOpenWorkspace - Callback to open workspace directory
+ * @param props.executorControls - Executor controls to render
+ * @returns A React component
+ */
 export function AppTopbar({
     title,
     isSidebarOpen,

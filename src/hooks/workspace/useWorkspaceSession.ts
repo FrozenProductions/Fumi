@@ -6,6 +6,13 @@ import {
     useWorkspaceStore,
 } from "./useWorkspaceStore";
 
+/**
+ * Provides structured access to workspace store state and grouped actions.
+ *
+ * @remarks
+ * Organizes workspace operations into state, workspace actions, tab actions,
+ * archive actions, and editor actions for ergonomic consumption by components.
+ */
 export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const isBootstrapping = useWorkspaceStore((state) => state.isBootstrapping);
     const workspace = useWorkspaceStore((state) => state.workspace);

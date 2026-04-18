@@ -16,6 +16,14 @@ import {
     useWorkspaceStore,
 } from "../workspace/useWorkspaceStore";
 
+/**
+ * Coordinates application exit guard logic, persisting state and resolving exit readiness.
+ *
+ * @remarks
+ * Syncs unsaved changes state to the backend, subscribes to exit guard sync requests
+ * and prepare-for-exit events, and ensures workspace and automatic execution state
+ * are persisted before the application exits.
+ */
 export function useAppExitGuard(): void {
     const workspaceHasUnsavedChanges = useWorkspaceStore(
         selectWorkspaceHasUnsavedChanges,

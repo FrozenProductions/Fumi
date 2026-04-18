@@ -3,6 +3,18 @@ import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
 import type { AppCommandPaletteScopeButtonProps } from "./appShell.type";
 
+/**
+ * A scope selector button for the command palette.
+ *
+ * @param props - Component props
+ * @param props.ariaLabel - Accessible label
+ * @param props.content - Tooltip content
+ * @param props.shortcut - Keyboard shortcut hint
+ * @param props.icon - Icon to display
+ * @param props.isPressed - Whether the scope is active
+ * @param props.onClick - Called when clicked
+ * @returns A React component
+ */
 export function AppCommandPaletteScopeButton({
     ariaLabel,
     content,

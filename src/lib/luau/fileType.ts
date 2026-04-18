@@ -8,6 +8,12 @@ function getFileExtension(fileName: string): string {
     return fileName.slice(lastDotIndex).toLowerCase();
 }
 
+/**
+ * Determines if a file name has a Luau extension (.lua or .luau).
+ *
+ * @remarks
+ * Case-insensitive comparison. Empty extensions return false.
+ */
 export function isLuauFileName(fileName: string): boolean {
     const extension = getFileExtension(fileName);
 

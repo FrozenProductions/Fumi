@@ -86,6 +86,14 @@ function calculateTooltipPosition(
     }
 }
 
+/**
+ * Renders active tooltips as a portal to the document body.
+ *
+ * Manages tooltip positioning relative to trigger elements and handles
+ * viewport boundary clamping.
+ *
+ * @returns A React portal component or null
+ */
 export function AppTooltipHost(): ReactElement | null {
     const activeTooltip = useTooltipStore((state) => state.activeTooltip);
     const position = useTooltipStore((state) => state.position);

@@ -13,6 +13,8 @@ use super::super::{
 };
 use super::{load_workspace_metadata, persist_workspace_metadata, run_command, CommandResponse};
 
+/// Bootstraps the workspace by restoring the last saved workspace if available.
+/// Returns the last workspace path and snapshot, or None if no workspace was saved.
 #[command]
 pub fn bootstrap_workspace(app: AppHandle) -> CommandResponse<WorkspaceBootstrapResponse> {
     run_command(|| {
@@ -41,6 +43,7 @@ pub fn bootstrap_workspace(app: AppHandle) -> CommandResponse<WorkspaceBootstrap
     })
 }
 
+/// Opens a workspace at the specified path, persisting it as the current workspace.
 #[command]
 pub fn open_workspace(
     app: AppHandle,
@@ -55,6 +58,8 @@ pub fn open_workspace(
     })
 }
 
+/// Refreshes the workspace by re-reading the snapshot from disk.
+/// Returns None if the workspace directory no longer exists.
 #[command]
 pub fn refresh_workspace(workspace_path: String) -> CommandResponse<Option<WorkspaceSnapshot>> {
     let workspace_path = PathBuf::from(workspace_path);
@@ -66,6 +71,7 @@ pub fn refresh_workspace(workspace_path: String) -> CommandResponse<Option<Works
     })
 }
 
+/// Persists workspace state including active tab, split view, and all tab states.
 #[command]
 pub fn persist_workspace_state(
     app: AppHandle,

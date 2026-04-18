@@ -10,6 +10,19 @@ import { AppIcon } from "../../app/AppIcon";
 import { AppTooltip } from "../../app/AppTooltip";
 import type { WorkspaceTabItemProps } from "./workspaceTabBar.type";
 
+/**
+ * A single tab item in the workspace tab bar with drag, rename, and archive.
+ *
+ * @param props - Component props
+ * @param props.tab - The tab data
+ * @param props.isActive - Whether this tab is currently active
+ * @param props.isVisibleInSplit - Whether visible in split view
+ * @param props.isTabDragActive - Whether a tab is being dragged
+ * @param props.onSelectTab - Select this tab
+ * @param props.onArchiveTab - Archive this tab
+ * @param props.onDeleteTab - Delete this tab
+ * @returns A React component
+ */
 export function WorkspaceTabItem({
     index,
     sortableGroup,

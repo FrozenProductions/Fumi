@@ -3,6 +3,16 @@ import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceMessageStateProps } from "./workspaceFeedback.type";
 
+/**
+ * Displays a centered message state with optional action button.
+ *
+ * @param props - Component props
+ * @param props.eyebrow - Small label above the title
+ * @param props.title - Main title text
+ * @param props.description - Descriptive text
+ * @param props.action - Optional action button configuration
+ * @returns A React component
+ */
 export function WorkspaceMessageState({
     eyebrow,
     title,

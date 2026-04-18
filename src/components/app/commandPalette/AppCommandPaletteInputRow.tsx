@@ -6,6 +6,18 @@ import { AppCommandPaletteScopeButton } from "../AppCommandPaletteScopeButton";
 import { AppSearchField } from "../AppSearchField";
 import type { AppCommandPaletteInputRowProps } from "./appCommandPalette.type";
 
+/**
+ * The input row for the command palette with search field and scope buttons.
+ *
+ * @param props - Component props
+ * @param props.inputRef - Ref for the input element
+ * @param props.mode - Current palette mode
+ * @param props.query - Current search query
+ * @param props.scope - Current scope
+ * @param props.scopeLabels - Labels for each scope
+ * @param props.scopePlaceholders - Placeholders for each scope
+ * @returns A React component
+ */
 export function AppCommandPaletteInputRow({
     inputRef,
     mode,

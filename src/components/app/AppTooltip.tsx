@@ -24,6 +24,19 @@ import {
 } from "../../lib/tooltip/tooltip";
 import type { AppTooltipProps } from "./appTooltip.type";
 
+/**
+ * Wrapper that displays a tooltip when the child element is hovered or focused.
+ *
+ * @param props - Component props
+ * @param props.children - The trigger element
+ * @param props.content - Tooltip text content
+ * @param props.shortcut - Optional keyboard shortcut to display
+ * @param props.side - Which side of the trigger to show tooltip
+ * @param props.offset - Distance from trigger
+ * @param props.delayMs - Delay before showing tooltip
+ * @param props.disabled - Prevent tooltip from showing
+ * @returns A React component
+ */
 export function AppTooltip({
     children,
     content,

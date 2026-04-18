@@ -16,6 +16,14 @@ import type {
 } from "./codeCompletion/workspaceCodeCompletion.type";
 import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
 
+/**
+ * Orchestrates Ace editor code completion, search, and cursor go-to functionality.
+ *
+ * @remarks
+ * Manages editor instance lifecycle per tab, coordinates the completion popup and
+ * search panel, handles save shortcuts, cursor tracking, and go-to-line requests
+ * from the app store. Integrates with Luau analysis for intellisense.
+ */
 export function useWorkspaceCodeCompletion({
     activeEditorMode,
     activeLuauAnalysis,

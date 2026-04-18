@@ -7,6 +7,13 @@ import {
 } from "../../lib/platform/window";
 import { useAppStore } from "./useAppStore";
 
+/**
+ * Applies CSS zoom to the document and subscribes to zoom menu events.
+ *
+ * @remarks
+ * Syncs the zoom percent from app store to the document root style. Cleans up
+ * the zoom style on unmount. Subscribes to Tauri zoom events for keyboard/menu zooming.
+ */
 export function useAppZoomSync(): void {
     const zoomPercent = useAppStore((state) => state.zoomPercent);
 
