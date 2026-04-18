@@ -1,17 +1,18 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+    CHECK_FOR_UPDATES_EVENT,
+    OPEN_SETTINGS_EVENT,
+    PREPARE_FOR_EXIT_EVENT,
+    REQUEST_EXIT_GUARD_SYNC_EVENT,
+    ZOOM_IN_EVENT,
+    ZOOM_OUT_EVENT,
+    ZOOM_RESET_EVENT,
+} from "../../constants/platform/platform";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { WindowShellError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
-
-const OPEN_SETTINGS_EVENT = "app://open-settings";
-const CHECK_FOR_UPDATES_EVENT = "app://check-for-updates";
-const PREPARE_FOR_EXIT_EVENT = "app://prepare-for-exit";
-const REQUEST_EXIT_GUARD_SYNC_EVENT = "app://request-exit-guard-sync";
-const ZOOM_IN_EVENT = "app://zoom-in";
-const ZOOM_OUT_EVENT = "app://zoom-out";
-const ZOOM_RESET_EVENT = "app://zoom-reset";
 
 let initializationPromise: Promise<void> | null = null;
 let isPreparingToExitState = false;

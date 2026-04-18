@@ -4,14 +4,10 @@ import {
 } from "../../constants/workspace/executor";
 import { isNumber, isRecord } from "../shared/validation";
 import { getExecutorPortsFromSummaries } from "./executor";
+import type { PersistedExecutorPorts } from "./executorPersistence.type";
 import type { ExecutorKind, ExecutorPortSummary } from "./workspace.type";
 
 const EXECUTOR_PORTS_STORAGE_KEY = "fumi-executor-ports";
-
-type PersistedExecutorPorts = {
-    macsploit: number;
-    opiumware: number;
-};
 
 function createDefaultPersistedExecutorPorts(): PersistedExecutorPorts {
     return {

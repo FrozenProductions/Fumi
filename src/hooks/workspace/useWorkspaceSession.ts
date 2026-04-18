@@ -1,10 +1,10 @@
-import type { UseWorkspaceSessionResult } from "./useWorkspaceSession.type";
 import {
     selectWorkspaceActiveTab,
     selectWorkspaceActiveTabIndex,
     selectWorkspaceHasUnsavedChanges,
-    useWorkspaceStore,
-} from "./useWorkspaceStore";
+} from "./store/selectors";
+import type { UseWorkspaceSessionResult } from "./useWorkspaceSession.type";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 /**
  * Provides structured access to workspace store state and grouped actions.

@@ -6,23 +6,11 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
-import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
-
-type AutomaticExecutionEditorProps = {
-    appTheme: "system" | "light" | "dark";
-    editorFontSize: number;
-    script: AutomaticExecutionScript | null;
-    onChange: (content: string) => void;
-    onCursorChange: (cursor: {
-        line: number;
-        column: number;
-        scrollTop: number;
-    }) => void;
-};
+import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.type";
 
 /**
  * The Ace editor for automatic execution scripts.

@@ -3,6 +3,8 @@ import type {
     ExecutorPortSummary,
 } from "../../lib/workspace/workspace.type";
 
+export type AsyncUnsubscribe = () => void;
+
 export type UseWorkspaceExecutorOptions = {
     activeTabContent: string | null;
 };

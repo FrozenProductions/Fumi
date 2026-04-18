@@ -17,11 +17,6 @@ export type LuauFileAnalysis = {
     symbols: LuauFileSymbol[];
 };
 
-export const EMPTY_LUAU_FILE_ANALYSIS: LuauFileAnalysis = {
-    functionScopes: [],
-    symbols: [],
-};
-
 export type LuauScanMode = "full" | "functions";
 
 export type PendingLuauFileSymbol = Omit<

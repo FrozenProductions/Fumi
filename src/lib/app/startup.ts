@@ -1,7 +1,9 @@
-const STARTUP_ERROR_BACKGROUND = "rgb(244 243 238)";
-const STARTUP_ERROR_BORDER = "rgb(221 219 212)";
-const STARTUP_ERROR_TEXT = "rgb(44 43 40)";
-const STARTUP_ERROR_ACCENT = "rgb(193 95 60)";
+import {
+    STARTUP_ERROR_ACCENT,
+    STARTUP_ERROR_BACKGROUND,
+    STARTUP_ERROR_BORDER,
+    STARTUP_ERROR_TEXT,
+} from "../../constants/app/app";
 
 function escapeStartupErrorHtml(message: string): string {
     return message

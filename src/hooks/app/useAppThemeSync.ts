@@ -1,7 +1,6 @@
 import { useLayoutEffect } from "react";
+import { APP_THEME_TRANSITION_GUARD_ID } from "../../constants/app/app";
 import { useAppStore } from "./useAppStore";
-
-const APP_THEME_TRANSITION_GUARD_ID = "app-theme-transition-guard";
 
 function disableAppTransitions(): () => void {
     const existingGuard = document.getElementById(

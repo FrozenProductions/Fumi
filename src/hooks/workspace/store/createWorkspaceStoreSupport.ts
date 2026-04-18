@@ -11,21 +11,7 @@ import type {
     WorkspaceStoreUpdater,
 } from "./workspaceStore.type";
 
-type WorkspaceStoreSupport = {
-    markNextWorkspaceAsPersisted: (
-        nextWorkspace: WorkspaceSession | null,
-    ) => void;
-    persistWorkspaceAndRefresh: () => Promise<boolean>;
-    setWorkspaceError: (
-        error: unknown,
-        logMessage: string,
-        fallbackMessage: string,
-    ) => void;
-    updateWorkspaceForPath: (
-        workspacePath: string,
-        updater: WorkspaceStoreUpdater,
-    ) => WorkspaceSession | null;
-};
+import type { WorkspaceStoreSupport } from "./workspaceStoreSupport.type";
 
 export function createWorkspaceStoreSupport(
     set: WorkspaceStoreSet,

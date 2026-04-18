@@ -1,26 +1,5 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-
-const platformMocks = vi.hoisted(() => ({
-    confirmAction: vi.fn().mockResolvedValue(true),
-    isTauriEnvironment: vi.fn(() => true),
-    killRobloxProcesses: vi.fn().mockResolvedValue(undefined),
-    launchRoblox: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../platform/accounts", () => ({
-    killRobloxProcesses: platformMocks.killRobloxProcesses,
-    launchRoblox: platformMocks.launchRoblox,
-}));
-
-vi.mock("../platform/dialog", () => ({
-    confirmAction: platformMocks.confirmAction,
-}));
-
-vi.mock("../platform/runtime", () => ({
-    isTauriEnvironment: platformMocks.isTauriEnvironment,
-}));
-
 import type {
     UseWorkspaceExecutorResult,
     WorkspaceExecutorActions,
@@ -51,6 +30,26 @@ import {
     normalizeAppCommandPaletteSearchValue,
     searchAppCommandPaletteItems,
 } from "./commandPaletteSearch";
+
+const platformMocks = vi.hoisted(() => ({
+    confirmAction: vi.fn().mockResolvedValue(true),
+    isTauriEnvironment: vi.fn(() => true),
+    killRobloxProcesses: vi.fn().mockResolvedValue(undefined),
+    launchRoblox: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../platform/accounts", () => ({
+    killRobloxProcesses: platformMocks.killRobloxProcesses,
+    launchRoblox: platformMocks.launchRoblox,
+}));
+
+vi.mock("../platform/dialog", () => ({
+    confirmAction: platformMocks.confirmAction,
+}));
+
+vi.mock("../platform/runtime", () => ({
+    isTauriEnvironment: platformMocks.isTauriEnvironment,
+}));
 
 type WorkspaceSessionOverrides = {
     state?: Partial<WorkspaceSessionState>;

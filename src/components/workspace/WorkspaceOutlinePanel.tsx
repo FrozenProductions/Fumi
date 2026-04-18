@@ -15,21 +15,10 @@ import { searchWorkspaceOutlineGroups } from "../../lib/workspace/outlineSearch"
 import { AppIcon } from "../app/AppIcon";
 import { AppSearchField } from "../app/AppSearchField";
 import { AppTooltip } from "../app/AppTooltip";
-import type { WorkspaceOutlinePanelProps } from "./workspaceOutlinePanel.type";
-
-type OutlineEntry =
-    | {
-          id: string;
-          count: number;
-          title: string;
-          type: "group";
-      }
-    | {
-          id: string;
-          symbol: LuauFileSymbol;
-          title: string;
-          type: "symbol";
-      };
+import type {
+    OutlineEntry,
+    WorkspaceOutlinePanelProps,
+} from "./workspaceOutlinePanel.type";
 
 function getSymbolIcon(kind: LuauFileSymbol["kind"]): string {
     switch (kind) {

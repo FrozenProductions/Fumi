@@ -1,11 +1,11 @@
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
+import {
+    OPEN_PATH_REQUIRED_ERROR,
+    OPENER_REQUIRED_ERROR,
+} from "../../constants/platform/platform";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { PlatformOperationError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
-
-const OPENER_REQUIRED_ERROR = "Opening links requires the Tauri desktop shell.";
-const OPEN_PATH_REQUIRED_ERROR =
-    "Opening local folders requires the Tauri desktop shell.";
 
 /**
  * Opens a URL in the default external browser.

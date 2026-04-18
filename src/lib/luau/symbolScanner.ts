@@ -1,3 +1,4 @@
+import { CURRENT_FILE_DOC_SOURCE } from "../../constants/luau/luau";
 import type { LuauSymbolKind } from "./luau.type";
 import type {
     LuauFileAnalysis,
@@ -7,8 +8,6 @@ import type {
     ScopeFrame,
     TokenBoundary,
 } from "./symbolScanner.type";
-
-const CURRENT_FILE_DOC_SOURCE = "Current File";
 
 function isIdentifierStart(character: string): boolean {
     return /[A-Za-z_]/.test(character);

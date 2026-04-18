@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { ArchivedTabsSortOptionConfig } from "./archive.type";
 
 export const ARCHIVED_TABS_SORT_OPTIONS = [
@@ -8,3 +9,6 @@ export const ARCHIVED_TABS_SORT_OPTIONS = [
 ] as const satisfies ArchivedTabsSortOptionConfig[];
 
 export const ARCHIVED_TABS_HEADER_EXIT_DURATION_MS = 150;
+export const ARCHIVED_TABS_SENTINEL_STYLE = {
+    top: "0px",
+} satisfies CSSProperties;

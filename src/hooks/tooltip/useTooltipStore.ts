@@ -1,11 +1,6 @@
 import { create } from "zustand";
-import { TOOLTIP_VIEWPORT_MARGIN } from "../../constants/tooltip/tooltip";
-import type { TooltipPosition, TooltipStore } from "./useTooltipStore.type";
-
-const INITIAL_TOOLTIP_POSITION = {
-    top: TOOLTIP_VIEWPORT_MARGIN,
-    left: TOOLTIP_VIEWPORT_MARGIN,
-} satisfies TooltipPosition;
+import { INITIAL_TOOLTIP_POSITION } from "../../constants/tooltip/tooltip";
+import type { TooltipStore } from "./useTooltipStore.type";
 
 export const selectActiveTooltipId = (state: TooltipStore): string | null =>
     state.activeTooltip?.id ?? null;

@@ -4,6 +4,20 @@ import type {
     AppReservedHotkey,
 } from "../../lib/app/hotkeys.type";
 
+export const HOTKEY_KEY_CODE_MAP = {
+    "`": "Backquote",
+    "-": "Minus",
+    "=": "Equal",
+    "[": "BracketLeft",
+    "]": "BracketRight",
+    "\\": "Backslash",
+    ";": "Semicolon",
+    "'": "Quote",
+    ",": "Comma",
+    ".": "Period",
+    "/": "Slash",
+} as const satisfies Record<string, string>;
+
 export const APP_HOTKEY_ACTIONS = [
     "QUIT_APP",
     "OPEN_COMMAND_PALETTE",

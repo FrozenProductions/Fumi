@@ -1,6 +1,10 @@
 import { create, type StateCreator } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { DEFAULT_SCRIPT_LIBRARY_FILTERS } from "../../constants/scriptLibrary/scriptLibrary";
+import {
+    ACTION_FEEDBACK_DURATION_MS,
+    DEFAULT_SCRIPT_LIBRARY_FILTERS,
+    SCRIPT_LIBRARY_STORE_STORAGE_KEY,
+} from "../../constants/scriptLibrary/scriptLibrary";
 import {
     createScriptLibraryCachedSession,
     fetchFilteredScriptsPage,
@@ -14,9 +18,6 @@ import type {
     ScriptLibraryStore,
     ScriptLibraryStoreState,
 } from "./useScriptLibraryStore.type";
-
-const ACTION_FEEDBACK_DURATION_MS = 2000;
-export const SCRIPT_LIBRARY_STORE_STORAGE_KEY = "fumi-script-library-store";
 
 export const selectHasActiveScriptLibraryFilters = (
     state: ScriptLibraryStore,

@@ -1,10 +1,11 @@
+import {
+    MAX_RECENT_WORKSPACES,
+    RECENT_WORKSPACE_STORAGE_KEY,
+} from "../../constants/workspace/workspace";
 import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import { isString } from "../shared/validation";
 import { PersistenceError } from "./errors";
 import { serializeTabState } from "./session";
-
-const RECENT_WORKSPACE_STORAGE_KEY = "fumi-recent-workspaces";
-const MAX_RECENT_WORKSPACES = 6;
 
 let lastPersistedWorkspaceSignature: string | null = null;
 

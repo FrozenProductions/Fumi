@@ -1,10 +1,9 @@
 import type { CSSProperties, ReactElement } from "react";
 import { useEffect, useRef } from "react";
+import { WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
 import type { WorkspaceTabContextMenuProps } from "./workspaceTabBar.type";
-
-const WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS = 120;
 
 /**
  * Context menu for workspace tab actions (rename, duplicate, archive, delete).

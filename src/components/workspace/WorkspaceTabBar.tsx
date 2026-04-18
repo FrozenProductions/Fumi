@@ -11,33 +11,19 @@ import {
     useRef,
     useState,
 } from "react";
+import { TAB_BAR_SORTABLE_GROUP } from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
-import { TAB_BAR_SORTABLE_GROUP } from "../../lib/workspace/tabBar";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
 import { WorkspaceTabItem } from "./tabBar/WorkspaceTabItem";
 import { WorkspaceTabListDropdown } from "./tabBar/WorkspaceTabListDropdown";
-import type { WorkspaceTabBarProps } from "./workspaceScreen.type";
-import type { WorkspaceTabContextMenuState } from "./workspaceTabBar.type";
-
-export type WorkspaceTabBarDragCallbacks = {
-    onDragPreview: (draggedTabId: string, targetTabId: string) => void;
-    onDragStart: () => void;
-    onDragEnd: (
-        canceled: boolean,
-        draggedTabId: string | undefined,
-        rawTargetTabId: string | undefined,
-    ) => void;
-};
-
-type WorkspaceTabBarInternalProps = WorkspaceTabBarProps &
-    WorkspaceTabBarDragCallbacks & {
-        previewTabs: WorkspaceTabBarProps["workspace"]["tabs"];
-        isTabDragActive: boolean;
-    };
+import type {
+    WorkspaceTabBarInternalProps,
+    WorkspaceTabContextMenuState,
+} from "./workspaceTabBar.type";
 
 /**
  * The tab bar for workspace files with drag-and-drop reordering.

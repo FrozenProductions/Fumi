@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { STARTUP_UPDATE_CHECK_RETRY_DELAY_MS } from "../../constants/workspace/workspace";
 import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
@@ -18,8 +19,6 @@ import type {
     CheckForUpdatesOptions,
     UseAppUpdaterResult,
 } from "./useAppUpdater.type";
-
-const STARTUP_UPDATE_CHECK_RETRY_DELAY_MS = 5_000;
 
 /**
  * Manages application update lifecycle including checking, downloading, and installing updates.

@@ -10,3 +10,17 @@ export type WorkspaceOutlinePanelProps = {
     outlineSearchQuery: string;
     onOutlineSearchQueryChange: (query: string) => void;
 };
+
+export type OutlineEntry =
+    | {
+          id: string;
+          count: number;
+          title: string;
+          type: "group";
+      }
+    | {
+          id: string;
+          symbol: LuauFileSymbol;
+          title: string;
+          type: "symbol";
+      };

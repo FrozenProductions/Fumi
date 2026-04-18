@@ -3,7 +3,6 @@ import type {
     CSSProperties,
     ReactElement,
     PointerEvent as ReactPointerEvent,
-    RefCallback,
 } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -15,7 +14,11 @@ import {
     WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
     WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
 } from "../../constants/workspace/outline";
-import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../constants/workspace/workspace";
+import {
+    DEFAULT_WORKSPACE_SPLIT_RATIO,
+    SPLIT_DROP_LEFT_ID,
+    SPLIT_DROP_RIGHT_ID,
+} from "../../constants/workspace/workspace";
 import type { AceChangeDelta } from "../../hooks/workspace/codeCompletion/ace.type";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
@@ -29,16 +32,10 @@ import { AppCodeCompletion } from "./AppCodeCompletion";
 import { WorkspaceActionsButton } from "./WorkspaceActionsButton";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
 import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
-import type { WorkspaceEditorProps } from "./workspaceEditor.type";
-
-const SPLIT_DROP_LEFT_ID = "workspace-split-left";
-const SPLIT_DROP_RIGHT_ID = "workspace-split-right";
-
-type WorkspaceSplitDropZoneProps = {
-    alignment: "left" | "right";
-    dropRef: RefCallback<HTMLDivElement>;
-    isDropTarget: boolean;
-};
+import type {
+    WorkspaceEditorProps,
+    WorkspaceSplitDropZoneProps,
+} from "./workspaceEditor.type";
 
 function WorkspaceSplitDropZone({
     alignment,

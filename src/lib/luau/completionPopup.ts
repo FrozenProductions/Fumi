@@ -1,3 +1,12 @@
+import {
+    COMPLETION_POPUP_DETAIL_FONT,
+    COMPLETION_POPUP_LABEL_FONT,
+    COMPLETION_POPUP_LARGE_MIN_WIDTH,
+    COMPLETION_POPUP_MIN_WIDTH,
+    COMPLETION_POPUP_NORMAL_WIDTH,
+    COMPLETION_POPUP_SMALL_WIDTH,
+    COMPLETION_POPUP_VIEWPORT_PADDING,
+} from "../../constants/luau/luau";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
@@ -5,16 +14,6 @@ import type {
 import type { AppIntellisenseWidth } from "../app/app.type";
 
 let completionMeasurementContext: CanvasRenderingContext2D | null = null;
-
-const COMPLETION_POPUP_VIEWPORT_PADDING = 16;
-const COMPLETION_POPUP_MIN_WIDTH = 188;
-const COMPLETION_POPUP_SMALL_WIDTH = 188;
-const COMPLETION_POPUP_NORMAL_WIDTH = 220;
-const COMPLETION_POPUP_LARGE_MIN_WIDTH = 260;
-const COMPLETION_POPUP_LABEL_FONT =
-    '600 10px "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif';
-const COMPLETION_POPUP_DETAIL_FONT =
-    '600 7.5px "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif';
 
 export function getCompactLuauCompletionDetailLabel(detail: string): string {
     if (detail.startsWith("sunc")) {

@@ -11,10 +11,8 @@ import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
 } from "../automaticExecution/useAutomaticExecutionStore";
-import {
-    selectWorkspaceHasUnsavedChanges,
-    useWorkspaceStore,
-} from "../workspace/useWorkspaceStore";
+import { selectWorkspaceHasUnsavedChanges } from "../workspace/store/selectors";
+import { useWorkspaceStore } from "../workspace/useWorkspaceStore";
 
 /**
  * Coordinates application exit guard logic, persisting state and resolving exit readiness.

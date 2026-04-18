@@ -1,3 +1,4 @@
+import { SCRIPT_LIBRARY_DATE_FORMATTER } from "../../constants/scriptLibrary/scriptLibrary";
 import type {
     ScriptLibraryEntry,
     ScriptLibraryFavoriteEntry,
@@ -5,12 +6,6 @@ import type {
     ScriptLibrarySort,
 } from "../../lib/scriptLibrary/scriptLibrary.type";
 import { clampWorkspaceTabBaseName } from "../workspace/fileName";
-
-const SCRIPT_LIBRARY_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-});
 
 /**
  * Formats an ISO date string into a human-readable short date (e.g., "Apr 18, 2026").

@@ -1,26 +1,12 @@
 import { create } from "zustand";
+import { INITIAL_WORKSPACE_UI_STATE } from "../../constants/workspace/workspace";
 import type {
     WorkspaceUiStore,
     WorkspaceUiStoreState,
 } from "./useWorkspaceUiStore.type";
 
-const INITIAL_WORKSPACE_UI_STATE = {
-    isTabListOpen: false,
-    renamingTabId: null,
-    renameValue: "",
-    isRenameSubmitting: false,
-    hasRenameError: false,
-} satisfies WorkspaceUiStoreState;
-
-/**
- * Ephemeral UI state store for workspace interactions.
- *
- * @remarks
- * Tracks tab list dropdown visibility, rename input state, and rename form
- * submission status. Resets on unmount or tab switch.
- */
 export const useWorkspaceUiStore = create<WorkspaceUiStore>((set) => ({
-    ...INITIAL_WORKSPACE_UI_STATE,
+    ...(INITIAL_WORKSPACE_UI_STATE satisfies WorkspaceUiStoreState),
     openTabList: () => {
         set({ isTabListOpen: true });
     },

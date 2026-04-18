@@ -1,20 +1,4 @@
-import { PointerActivationConstraints } from "@dnd-kit/dom";
-import { PointerSensor } from "@dnd-kit/react";
 import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
-
-export const TAB_BAR_MODIFIERS: never[] = [];
-
-export const TAB_BAR_SENSORS = [
-    PointerSensor.configure({
-        activationConstraints: [
-            new PointerActivationConstraints.Distance({
-                value: 6,
-            }),
-        ],
-    }),
-];
-
-export const TAB_BAR_SORTABLE_GROUP = "workspace-tabs";
 
 export function reorderTabPreview(
     tabs: WorkspaceSession["tabs"],

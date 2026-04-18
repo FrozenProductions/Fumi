@@ -1,4 +1,5 @@
 import { ACTORS_GLOBAL_FUNCTION_NAMES } from "../../constants/luau/actorsCompletions";
+import { LUAU_MODE_IDENTIFIER } from "../../constants/luau/luau";
 import {
     RAKNET_NAMESPACE_FUNCTION_NAMES,
     RAKNET_NAMESPACE_NAMES,
@@ -21,7 +22,6 @@ import {
     UNC_GLOBAL_FUNCTION_NAMES,
     UNC_NAMESPACE_NAMES,
 } from "../../constants/luau/uncCompletions";
-import { LUAU_MODE_IDENTIFIER } from "./completion";
 import type {
     AceEditorRuntime,
     LuauModePrototype,

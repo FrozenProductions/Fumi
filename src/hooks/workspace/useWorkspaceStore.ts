@@ -5,15 +5,6 @@ import { createWorkspaceLifecycleSlice } from "./store/createWorkspaceLifecycleS
 import { createWorkspaceTabSlice } from "./store/createWorkspaceTabSlice";
 import type { WorkspaceStore } from "./store/workspaceStore.type";
 
-export {
-    selectWorkspaceActiveTab,
-    selectWorkspaceActiveTabIndex,
-    selectWorkspaceHasUnsavedChanges,
-    selectWorkspacePath,
-    selectWorkspacePersistSignature,
-    selectWorkspaceShouldGuardExit,
-} from "./store/selectors";
-
 /**
  * Workspace state store combining lifecycle, tab, and editor slices.
  *

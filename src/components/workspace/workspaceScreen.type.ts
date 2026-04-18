@@ -44,3 +44,5 @@ export type WorkspaceTabBarProps = {
     splitDropTarget: WorkspacePaneId | null;
     middleClickTabAction: AppMiddleClickTabAction;
 };
+
+export type ConfirmAction = "kill" | `kill-pid-${number}`;

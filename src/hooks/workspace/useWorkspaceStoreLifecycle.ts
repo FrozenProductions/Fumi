@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { WORKSPACE_REFRESH_INTERVAL_MS } from "../../constants/workspace/workspace";
+import {
+    WORKSPACE_PERSIST_DELAY_MS,
+    WORKSPACE_REFRESH_INTERVAL_MS,
+} from "../../constants/workspace/workspace";
 import {
     getLastPersistedWorkspaceSignature,
     markWorkspacePersistedSignature,
@@ -7,10 +10,8 @@ import {
 import {
     selectWorkspacePath,
     selectWorkspacePersistSignature,
-    useWorkspaceStore,
-} from "./useWorkspaceStore";
-
-const WORKSPACE_PERSIST_DELAY_MS = 200;
+} from "./store/selectors";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 export function useWorkspaceStoreLifecycle(): void {
     const bootstrapWorkspaceSession = useWorkspaceStore(

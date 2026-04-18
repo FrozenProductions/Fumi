@@ -1,4 +1,10 @@
 import {
+    APP_INTELLISENSE_WIDTHS,
+    APP_MIDDLE_CLICK_TAB_ACTIONS,
+    APP_SIDEBAR_POSITIONS,
+    APP_THEMES,
+} from "../../constants/app/app";
+import {
     APP_ZOOM_DEFAULT,
     APP_ZOOM_MAX,
     APP_ZOOM_MIN,
@@ -19,10 +25,12 @@ import type {
     AppTheme,
 } from "./app.type";
 
-const APP_THEMES = ["system", "light", "dark"] as const;
-const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
-const APP_MIDDLE_CLICK_TAB_ACTIONS = ["archive", "delete"] as const;
-const APP_SIDEBAR_POSITIONS = ["left", "right"] as const;
+export {
+    APP_INTELLISENSE_WIDTHS,
+    APP_MIDDLE_CLICK_TAB_ACTIONS,
+    APP_SIDEBAR_POSITIONS,
+    APP_THEMES,
+};
 
 /**
  * Clamps a zoom percentage value to the valid range [APP_ZOOM_MIN, APP_ZOOM_MAX].

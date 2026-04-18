@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
+import { EMPTY_LUAU_FILE_ANALYSIS } from "../../constants/luau/luau";
 import { getLuauCompletionQuery, shouldOpenLuauCompletion } from "./completion";
 import type { LuauCompletionQuery } from "./completion.type";
-import { EMPTY_LUAU_FILE_ANALYSIS } from "./symbolScanner.type";
 
 function getCompletionQuery(
     content: string,

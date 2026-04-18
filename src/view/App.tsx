@@ -18,13 +18,11 @@ import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
 } from "../hooks/automaticExecution/useAutomaticExecutionStore";
+import { selectWorkspaceHasUnsavedChanges } from "../hooks/workspace/store/selectors";
 import { useWorkspaceDroppedFiles } from "../hooks/workspace/useWorkspaceDroppedFiles";
 import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
-import {
-    selectWorkspaceHasUnsavedChanges,
-    useWorkspaceStore,
-} from "../hooks/workspace/useWorkspaceStore";
+import { useWorkspaceStore } from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
 import {
     getAppTopbarWorkspaceContext,

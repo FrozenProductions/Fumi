@@ -45,3 +45,9 @@ export type ScriptLibraryToolbarProps = {
     onOrderByChange: (orderBy: ScriptLibrarySort) => void;
     onViewFormatChange: (viewFormat: ScriptLibraryViewFormat) => void;
 };
+
+export type ScriptLibraryEmptyState = {
+    eyebrow: string;
+    title: string;
+    description: string;
+};

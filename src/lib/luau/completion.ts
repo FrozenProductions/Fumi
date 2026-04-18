@@ -1,5 +1,10 @@
 import { ACTORS_TOP_LEVEL_COMPLETIONS } from "../../constants/luau/actorsCompletions";
 import {
+    LUAU_KEYWORD_DOCS,
+    LUAU_TYPE_DOCS,
+    MAX_LUAU_COMPLETION_ITEMS,
+} from "../../constants/luau/luau";
+import {
     LUAU_NAMESPACE_COMPLETIONS,
     LUAU_TOP_LEVEL_COMPLETIONS,
 } from "../../constants/luau/luauCompletions";
@@ -31,35 +36,6 @@ import type {
 } from "../../lib/luau/luau.type";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
 import type { LuauCompletionQuery } from "./completion.type";
-
-const MAX_LUAU_COMPLETION_ITEMS = 6;
-
-const LUAU_KEYWORD_DOCS: Record<string, string> = {
-    as: "Assert that an expression should be treated as a specific type.",
-    continue:
-        "Skip the rest of the current loop iteration and continue with the next one.",
-    function: "Define a function body.",
-    local: "Declare a local variable or function.",
-    typeof: "Capture the inferred type of an expression for use in type annotations.",
-};
-
-const LUAU_TYPE_DOCS: Record<string, string> = {
-    any: "Opt out of static type checking for a value.",
-    boolean: "Boolean true/false type.",
-    buffer: "Binary buffer type for byte-oriented storage.",
-    function: "Callable function type.",
-    never: "Represents an impossible code path or uninhabited type.",
-    nil: "Represents the absence of a value.",
-    number: "Numeric value type.",
-    string: "String value type.",
-    table: "Table value type.",
-    thread: "Coroutine thread type.",
-    unknown: "A value of unknown type that must be refined before use.",
-    userdata: "Opaque userdata type.",
-    vector: "Native vector type available in Luau runtimes that support it.",
-};
-
-export const LUAU_MODE_IDENTIFIER = "ace/mode/luau";
 
 function getLineAtRow(content: string, row: number): string {
     let currentRow = 0;

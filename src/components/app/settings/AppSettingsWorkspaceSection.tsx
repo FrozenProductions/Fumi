@@ -5,7 +5,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import {
     type ChangeEvent,
-    type CSSProperties,
     type ReactElement,
     useEffect,
     useMemo,
@@ -14,6 +13,7 @@ import {
 } from "react";
 import {
     ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
+    ARCHIVED_TABS_SENTINEL_STYLE,
     ARCHIVED_TABS_SORT_OPTIONS,
 } from "../../../constants/workspace/archive";
 import { useAppStore } from "../../../hooks/app/useAppStore";
@@ -29,10 +29,6 @@ import type { AppSettingsWorkspaceSectionProps } from "./appSettings.type";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 import type { ArchivedTabActionButtonClassNames } from "./workspace/appSettingsWorkspace.type";
-
-const ARCHIVED_TABS_SENTINEL_STYLE = {
-    top: "0px",
-} satisfies CSSProperties;
 
 export function AppSettingsWorkspaceSection({
     workspaceSession,

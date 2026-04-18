@@ -7,3 +7,7 @@ export type LuauCompletionQuery = {
     replaceStartColumn: number;
     replaceEndColumn: number;
 };
+
+export type LuauKeywordDocs = Record<string, string>;
+
+export type LuauTypeDocs = Record<string, string>;

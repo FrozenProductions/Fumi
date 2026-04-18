@@ -61,3 +61,9 @@ export type WorkspaceEditorProps = {
 export type WorkspaceEditorSearchPanelProps = {
     searchPanel: WorkspaceEditorSearchController;
 };
+
+export type WorkspaceSplitDropZoneProps = {
+    alignment: "left" | "right";
+    dropRef: (element: HTMLDivElement | null) => void;
+    isDropTarget: boolean;
+};

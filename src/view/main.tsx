@@ -11,7 +11,7 @@ import { initializeWindowShell } from "../lib/platform/window";
 import { App } from "./App";
 import "./index.css";
 
-const HOTKEY_PROVIDER_DEFAULT_OPTIONS: HotkeysProviderOptions = {
+export const HOTKEY_PROVIDER_DEFAULT_OPTIONS: HotkeysProviderOptions = {
     hotkey: {
         preventDefault: true,
         stopPropagation: true,

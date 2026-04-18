@@ -1,5 +1,5 @@
+import { LUAU_MODE_IDENTIFIER } from "../../../constants/luau/luau";
 import { disableTextInputCorrections } from "../../../lib/app/textInput";
-import { LUAU_MODE_IDENTIFIER } from "../../../lib/luau/completion";
 import type { AceEditorInstance, AceSessionWithMode } from "./ace.type";
 
 export function isLuauEditorSession(

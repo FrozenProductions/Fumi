@@ -4,6 +4,7 @@ import {
     DEFAULT_EXECUTOR_PORT,
     getExecutorPorts,
 } from "../../constants/workspace/executor";
+import { EXECUTOR_STATUS_POLL_INTERVAL_MS } from "../../constants/workspace/workspace";
 import {
     attachExecutor,
     detachExecutor,
@@ -25,12 +26,10 @@ import {
 } from "../../lib/workspace/executorPersistence";
 import type { ExecutorStatusPayload } from "../../lib/workspace/workspace.type";
 import type {
+    AsyncUnsubscribe,
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
 } from "./useWorkspaceExecutor.type";
-
-type AsyncUnsubscribe = () => void;
-const EXECUTOR_STATUS_POLL_INTERVAL_MS = 2_000;
 
 function createDefaultAvailablePortSummaries(): ExecutorStatusPayload["availablePorts"] {
     return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({

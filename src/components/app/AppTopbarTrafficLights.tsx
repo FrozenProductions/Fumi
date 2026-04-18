@@ -1,5 +1,6 @@
-import type { CSSProperties, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
+import { TRAFFIC_LIGHT_STYLE_MAP } from "../../constants/app/app";
 import {
     closeCurrentWindow,
     minimizeCurrentWindow,
@@ -11,20 +12,7 @@ import { AppTooltip } from "./AppTooltip";
 import type {
     MaximizeGlyphProps,
     TrafficLightButtonProps,
-    TrafficLightTone,
 } from "./appVisual.type";
-
-const TRAFFIC_LIGHT_STYLE_MAP: Record<TrafficLightTone, CSSProperties> = {
-    close: {
-        backgroundColor: "rgb(var(--color-traffic-close) / 1)",
-    },
-    minimize: {
-        backgroundColor: "rgb(var(--color-traffic-minimize) / 1)",
-    },
-    maximize: {
-        backgroundColor: "rgb(var(--color-traffic-maximize) / 1)",
-    },
-};
 
 function createWindowActionHandler(action: () => Promise<unknown>): () => void {
     return () => {

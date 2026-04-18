@@ -1,7 +1,6 @@
 import { type ReactElement, useEffect, useState } from "react";
+import { CHARACTER_STAGGER_DELAY_MS } from "../../constants/app/app";
 import type { AnimatedCharacter, AppAnimatedTextProps } from "./appVisual.type";
-
-const CHARACTER_STAGGER_DELAY_MS = 12;
 
 function splitTextIntoCharacters(text: string): AnimatedCharacter[] {
     const occurrenceCountByCharacter = new Map<string, number>();

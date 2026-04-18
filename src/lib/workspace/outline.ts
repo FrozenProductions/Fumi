@@ -1,12 +1,10 @@
 import { WORKSPACE_OUTLINE_CACHE_MAX_ENTRIES } from "../../constants/workspace/outline";
+import { STRUCTURAL_TEXT_PATTERN } from "../../constants/workspace/workspace";
 import type { LuauFileAnalysis } from "../luau/symbolScanner.type";
 import type {
     WorkspaceIncrementalOutlineUpdateOptions,
     WorkspaceOutlineCacheEntry,
 } from "./outline.type";
-
-const STRUCTURAL_TEXT_PATTERN =
-    /\b(local|function|export|for|while|repeat|until|if|elseif|else|do|end)\b|[={}()[\]]/u;
 
 /**
  * Checks if a cached outline entry matches the given parameters.

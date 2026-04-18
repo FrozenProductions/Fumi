@@ -8,6 +8,11 @@ import {
     useRef,
     useState,
 } from "react";
+import {
+    SPLIT_DROP_IDS,
+    TAB_BAR_MODIFIERS,
+    TAB_BAR_SENSORS,
+} from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
@@ -36,18 +41,12 @@ import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
 } from "../../lib/workspace/splitView";
-import { TAB_BAR_MODIFIERS, TAB_BAR_SENSORS } from "../../lib/workspace/tabBar";
 import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
 import type { WorkspaceScreenProps } from "./workspaceScreen.type";
-
-const SPLIT_DROP_IDS = new Set([
-    "workspace-split-left",
-    "workspace-split-right",
-]);
 
 /**
  * The main workspace screen containing tabs, editor, and split view.

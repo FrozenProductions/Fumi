@@ -22,19 +22,7 @@ import { AppIcon } from "../app/AppIcon";
 import { AppIconButton } from "../app/AppIconButton";
 import { AppTooltip } from "../app/AppTooltip";
 
-type AutomaticExecutionSidebarProps = {
-    scripts: AutomaticExecutionScript[];
-    activeScriptId: string | null;
-    resolvedPath: string | null;
-    onCreateScript: () => void;
-    onOpenInFinder: () => void;
-    onSelectScript: (scriptId: string) => void;
-    onRenameScript: (
-        scriptId: string,
-        currentFileName: string,
-    ) => Promise<boolean>;
-    onDeleteScript: (scriptId: string, fileName: string) => void;
-};
+import type { AutomaticExecutionSidebarProps } from "./automaticExecution.type";
 
 /**
  * The sidebar for automatic execution script management.

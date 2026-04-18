@@ -1,15 +1,5 @@
+import { TOPBAR_INTERACTIVE_SELECTOR } from "../../constants/app/app";
 import type { AnimatedTitleCharacter } from "./topbar.type";
-
-const TOPBAR_INTERACTIVE_SELECTOR = [
-    "button",
-    "input",
-    "select",
-    "textarea",
-    "a",
-    "[role='button']",
-    "[contenteditable='true']",
-    "[data-topbar-interactive='true']",
-].join(", ");
 
 export function formatWorkspaceTooltipPath(
     workspacePath: string | null | undefined,

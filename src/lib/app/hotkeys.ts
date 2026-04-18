@@ -7,6 +7,7 @@ import {
     rawHotkeyToParsedHotkey,
 } from "@tanstack/hotkeys";
 import { formatForDisplay } from "@tanstack/react-hotkeys";
+import { HOTKEY_KEY_CODE_MAP } from "../../constants/app/app";
 import {
     APP_HOTKEY_ACTIONS,
     APP_HOTKEY_DEFINITIONS,
@@ -272,17 +273,3 @@ function normalizeAppHotkeyBinding(binding: AppHotkeyBinding): string {
 
     return formatHotkey(rawHotkeyToParsedHotkey(binding));
 }
-
-const HOTKEY_KEY_CODE_MAP = {
-    "`": "Backquote",
-    "-": "Minus",
-    "=": "Equal",
-    "[": "BracketLeft",
-    "]": "BracketRight",
-    "\\": "Backslash",
-    ";": "Semicolon",
-    "'": "Quote",
-    ",": "Comma",
-    ".": "Period",
-    "/": "Slash",
-} as const satisfies Record<string, string>;

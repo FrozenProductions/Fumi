@@ -18,14 +18,9 @@ import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
 import type {
     ScriptLibraryCardActions,
+    ScriptLibraryEmptyState,
     ScriptLibraryScreenProps,
 } from "./scriptLibrary.type";
-
-type ScriptLibraryEmptyState = {
-    eyebrow: string;
-    title: string;
-    description: string;
-};
 
 function getScriptLibraryEmptyState(options: {
     contentMode: ScriptLibraryContentMode;

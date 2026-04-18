@@ -16,9 +16,10 @@ import {
     getLiveRobloxAccountTooltipLabel,
     getRobloxProcessAccountLabel,
 } from "./robloxProcessLabel";
-import type { WorkspaceActionsButtonProps } from "./workspaceScreen.type";
-
-type ConfirmAction = "kill" | `kill-pid-${number}`;
+import type {
+    ConfirmAction,
+    WorkspaceActionsButtonProps,
+} from "./workspaceScreen.type";
 
 /**
  * Floating action button for execute, Roblox controls, and workspace actions.

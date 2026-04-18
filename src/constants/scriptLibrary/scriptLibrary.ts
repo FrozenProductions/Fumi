@@ -12,6 +12,13 @@ import type {
 
 export const RSCRIPTS_API_BASE_URL = "https://rscripts.net/api/v2";
 export const SCRIPT_LIBRARY_PAGE_SIZE = 16;
+export const ACTION_FEEDBACK_DURATION_MS = 2000;
+export const SCRIPT_LIBRARY_STORE_STORAGE_KEY = "fumi-script-library-store";
+export const SCRIPT_LIBRARY_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+});
 
 export const DEFAULT_SCRIPT_LIBRARY_FILTERS = {
     keyless: false,

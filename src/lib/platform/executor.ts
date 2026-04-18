@@ -1,6 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
+    EXECUTOR_MESSAGE_EVENT,
+    EXECUTOR_STATUS_CHANGED_EVENT,
+} from "../../constants/platform/platform";
+import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
     getExecutorPorts,
@@ -14,9 +18,6 @@ import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
 import { ExecutorCommandError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
-
-const EXECUTOR_MESSAGE_EVENT = "executor://message";
-const EXECUTOR_STATUS_CHANGED_EVENT = "executor://status-changed";
 
 function createDefaultExecutorPortSummaries(): readonly ExecutorPortSummary[] {
     return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({
