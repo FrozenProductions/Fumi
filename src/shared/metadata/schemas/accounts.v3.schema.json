@@ -1,156 +1,136 @@
 {
-  "$defs": {
-    "MetadataKind": {
-      "enum": [
-        "workspace",
-        "automatic_execution",
-        "accounts"
-      ],
-      "type": "string"
-    },
-    "StoredAccountRecord": {
-      "properties": {
-        "avatarUrl": {
-          "type": [
-            "string",
-            "null"
-          ]
+    "$defs": {
+        "MetadataKind": {
+            "enum": ["workspace", "automatic_execution", "accounts"],
+            "type": "string"
         },
-        "cookieFileName": {
-          "type": "string"
+        "StoredAccountRecord": {
+            "properties": {
+                "avatarUrl": {
+                    "type": ["string", "null"]
+                },
+                "cookieFileName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastLaunchedAt": {
+                    "format": "int64",
+                    "type": ["integer", "null"]
+                },
+                "updatedAt": {
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "userId": {
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "userId",
+                "username",
+                "displayName",
+                "cookieFileName",
+                "createdAt",
+                "updatedAt"
+            ],
+            "type": "object"
+        },
+        "StoredRobloxBindingRecord": {
+            "properties": {
+                "accountId": {
+                    "type": ["string", "null"]
+                },
+                "pid": {
+                    "format": "uint32",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "port": {
+                    "format": "uint16",
+                    "maximum": 65535,
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "startedAt": {
+                    "format": "int64",
+                    "type": "integer"
+                }
+            },
+            "required": ["pid", "startedAt", "port"],
+            "type": "object"
+        }
+    },
+    "$id": "https://fumi.app/schemas/accounts.v3.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": true,
+    "properties": {
+        "$schema": {
+            "const": "https://fumi.app/schemas/accounts.v3.schema.json",
+            "type": "string"
+        },
+        "accounts": {
+            "items": {
+                "$ref": "#/$defs/StoredAccountRecord"
+            },
+            "type": "array"
         },
         "createdAt": {
-          "format": "int64",
-          "type": "integer"
+            "format": "int64",
+            "type": "integer"
         },
-        "displayName": {
-          "type": "string"
+        "kind": {
+            "const": "accounts",
+            "type": "string"
         },
-        "id": {
-          "type": "string"
+        "migratedFromVersion": {
+            "default": null,
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": ["integer", "null"]
         },
-        "lastLaunchedAt": {
-          "format": "int64",
-          "type": [
-            "integer",
-            "null"
-          ]
+        "robloxBindings": {
+            "items": {
+                "$ref": "#/$defs/StoredRobloxBindingRecord"
+            },
+            "type": "array"
         },
         "updatedAt": {
-          "format": "int64",
-          "type": "integer"
+            "format": "int64",
+            "type": "integer"
         },
-        "userId": {
-          "format": "int64",
-          "type": "integer"
+        "version": {
+            "const": 3,
+            "type": "integer"
         },
-        "username": {
-          "type": "string"
+        "writtenByAppVersion": {
+            "type": "string"
         }
-      },
-      "required": [
-        "id",
-        "userId",
-        "username",
-        "displayName",
-        "cookieFileName",
+    },
+    "required": [
+        "$schema",
+        "kind",
+        "version",
         "createdAt",
-        "updatedAt"
-      ],
-      "type": "object"
-    },
-    "StoredRobloxBindingRecord": {
-      "properties": {
-        "accountId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "pid": {
-          "format": "uint32",
-          "minimum": 0,
-          "type": "integer"
-        },
-        "port": {
-          "format": "uint16",
-          "maximum": 65535,
-          "minimum": 0,
-          "type": "integer"
-        },
-        "startedAt": {
-          "format": "int64",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "pid",
-        "startedAt",
-        "port"
-      ],
-      "type": "object"
-    }
-  },
-  "$id": "https://fumi.app/schemas/accounts.v3.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": true,
-  "properties": {
-    "$schema": {
-      "const": "https://fumi.app/schemas/accounts.v3.schema.json",
-      "type": "string"
-    },
-    "accounts": {
-      "items": {
-        "$ref": "#/$defs/StoredAccountRecord"
-      },
-      "type": "array"
-    },
-    "createdAt": {
-      "format": "int64",
-      "type": "integer"
-    },
-    "kind": {
-      "const": "accounts",
-      "type": "string"
-    },
-    "migratedFromVersion": {
-      "default": null,
-      "format": "uint8",
-      "maximum": 255,
-      "minimum": 0,
-      "type": [
-        "integer",
-        "null"
-      ]
-    },
-    "robloxBindings": {
-      "items": {
-        "$ref": "#/$defs/StoredRobloxBindingRecord"
-      },
-      "type": "array"
-    },
-    "updatedAt": {
-      "format": "int64",
-      "type": "integer"
-    },
-    "version": {
-      "const": 3,
-      "type": "integer"
-    },
-    "writtenByAppVersion": {
-      "type": "string"
-    }
-  },
-  "required": [
-    "$schema",
-    "kind",
-    "version",
-    "createdAt",
-    "updatedAt",
-    "writtenByAppVersion",
-    "accounts",
-    "robloxBindings"
-  ],
-  "title": "PersistedAccountsDocumentV3",
-  "type": "object"
+        "updatedAt",
+        "writtenByAppVersion",
+        "accounts",
+        "robloxBindings"
+    ],
+    "title": "PersistedAccountsDocumentV3",
+    "type": "object"
 }
