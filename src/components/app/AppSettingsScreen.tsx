@@ -4,6 +4,8 @@ import {
     DEFAULT_APP_SETTINGS_SECTION,
 } from "../../constants/app/settings";
 import type { AppSettingsSection } from "../../lib/app/app.type";
+import { isDevRuntime } from "../../lib/platform/runtime";
+import { AppSettingsDevSection } from "./settings/AppSettingsDevSection";
 import { AppSettingsEditorSection } from "./settings/AppSettingsEditorSection";
 import { AppSettingsGeneralSection } from "./settings/AppSettingsGeneralSection";
 import { AppSettingsHotkeysSection } from "./settings/AppSettingsHotkeysSection";
@@ -22,8 +24,12 @@ export function AppSettingsScreen({
     updater,
     workspaceSession,
 }: AppSettingsScreenProps): ReactElement {
+    const isDevelopmentRuntime = isDevRuntime();
     const [activeSection, setActiveSection] = useState<AppSettingsSection>(
         DEFAULT_APP_SETTINGS_SECTION,
+    );
+    const visibleSections = APP_SETTINGS_SECTIONS.filter(
+        ({ id }) => id !== "dev" || isDevelopmentRuntime,
     );
 
     const renderSectionContent = (): ReactElement => {
@@ -47,6 +53,10 @@ export function AppSettingsScreen({
             return <AppSettingsHotkeysSection />;
         }
 
+        if (activeSection === "dev" && isDevelopmentRuntime) {
+            return <AppSettingsDevSection />;
+        }
+
         return <AppSettingsGeneralSection updater={updater} />;
     };
 
@@ -66,7 +76,7 @@ export function AppSettingsScreen({
                         aria-label="Settings sections"
                         className="flex flex-1 flex-col gap-0.5"
                     >
-                        {APP_SETTINGS_SECTIONS.map(({ id, label }) => {
+                        {visibleSections.map(({ id, label }) => {
                             const isActive = activeSection === id;
 
                             return (

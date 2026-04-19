@@ -28,7 +28,12 @@ export type AppRenameCurrentTabRequest = {
     requestId: number;
 };
 
-export type AppSettingsSection = "general" | "workspace" | "editor" | "hotkeys";
+export type AppSettingsSection =
+    | "general"
+    | "workspace"
+    | "editor"
+    | "hotkeys"
+    | "dev";
 
 export type AppHotkeyAction =
     | "QUIT_APP"
