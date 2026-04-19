@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
 import { EMPTY_LUAU_FILE_ANALYSIS } from "../../constants/luau/luau";
-import { getLuauCompletionQuery, shouldOpenLuauCompletion } from "./completion";
+import {
+    getLuauCompletionQuery,
+    isPositionInLuauString,
+    shouldOpenLuauCompletion,
+} from "./completion";
 import type { LuauCompletionQuery } from "./completion.type";
 
 function getCompletionQuery(
@@ -146,5 +150,47 @@ describe("shouldOpenLuauCompletion", () => {
         expect(query.items.map((item) => item.label)).not.toContain(
             "Networking",
         );
+    });
+});
+
+describe("isPositionInLuauString", () => {
+    it("returns true while the cursor is inside a quoted string", () => {
+        expect(
+            isPositionInLuauString({
+                content: 'print("hel")',
+                row: 0,
+                column: 10,
+            }),
+        ).toBe(true);
+    });
+
+    it("returns false once the cursor moves past a closed quoted string", () => {
+        expect(
+            isPositionInLuauString({
+                content: 'print("hi")',
+                row: 0,
+                column: 11,
+            }),
+        ).toBe(false);
+    });
+
+    it("returns true while the cursor is inside a long string", () => {
+        expect(
+            isPositionInLuauString({
+                content: "local value = [[hello]]",
+                row: 0,
+                column: 18,
+            }),
+        ).toBe(true);
+    });
+
+    it("ignores quotes that appear inside comments", () => {
+        expect(
+            isPositionInLuauString({
+                content: '-- "string"\nprint(foo)',
+                row: 1,
+                column: 8,
+            }),
+        ).toBe(false);
     });
 });

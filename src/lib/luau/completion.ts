@@ -74,6 +74,109 @@ function getAbsoluteIndexForPosition(
     return Math.min(index + column, content.length);
 }
 
+export function isPositionInLuauString(options: {
+    content: string;
+    row: number;
+    column: number;
+}): boolean {
+    const { content, row, column } = options;
+    const cursorIndex = getAbsoluteIndexForPosition(content, row, column);
+    let index = 0;
+    let stringQuote: "'" | '"' | "`" | null = null;
+    let longStringCloseDelimiter: string | null = null;
+    let longCommentCloseDelimiter: string | null = null;
+    let isInLineComment = false;
+
+    while (index < cursorIndex) {
+        const character = content[index];
+        const nextCharacter = content[index + 1] ?? "";
+
+        if (isInLineComment) {
+            if (character === "\n") {
+                isInLineComment = false;
+            }
+
+            index += 1;
+            continue;
+        }
+
+        if (longCommentCloseDelimiter) {
+            if (content.startsWith(longCommentCloseDelimiter, index)) {
+                index += longCommentCloseDelimiter.length;
+                longCommentCloseDelimiter = null;
+                continue;
+            }
+
+            index += 1;
+            continue;
+        }
+
+        if (stringQuote) {
+            if (character === "\\") {
+                index += Math.min(2, cursorIndex - index);
+                continue;
+            }
+
+            index += 1;
+
+            if (character === stringQuote) {
+                stringQuote = null;
+            }
+
+            continue;
+        }
+
+        if (longStringCloseDelimiter) {
+            if (content.startsWith(longStringCloseDelimiter, index)) {
+                index += longStringCloseDelimiter.length;
+                longStringCloseDelimiter = null;
+                continue;
+            }
+
+            index += 1;
+            continue;
+        }
+
+        if (character === "-" && nextCharacter === "-") {
+            const longCommentMatch = content
+                .slice(index + 2)
+                .match(/^\[(=*)\[/u);
+
+            if (longCommentMatch) {
+                const equals = longCommentMatch[1] ?? "";
+                longCommentCloseDelimiter = `]${equals}]`;
+                index += 2 + longCommentMatch[0].length;
+                continue;
+            }
+
+            isInLineComment = true;
+            index += 2;
+            continue;
+        }
+
+        if (character === "'" || character === '"' || character === "`") {
+            stringQuote = character;
+            index += 1;
+            continue;
+        }
+
+        if (character === "[") {
+            const longStringMatch = content.slice(index).match(/^\[(=*)\[/u);
+
+            if (longStringMatch) {
+                const equals = longStringMatch[1] ?? "";
+                longStringCloseDelimiter = `]${equals}]`;
+                index += longStringMatch[0].length;
+                continue;
+            }
+        }
+
+        index += 1;
+    }
+
+    return stringQuote !== null || longStringCloseDelimiter !== null;
+}
+
 function createCompletionItemFromFileSymbol(
     symbol: LuauFileSymbol,
 ): LuauCompletionItem {

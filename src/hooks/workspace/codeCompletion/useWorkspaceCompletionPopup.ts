@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
     getLuauCompletionQuery,
+    isPositionInLuauString,
     shouldOpenLuauCompletion,
 } from "../../../lib/luau/completion";
 import { getLuauCompletionPopupPosition } from "../../../lib/luau/completionPopup";
@@ -106,9 +107,22 @@ export function useWorkspaceCompletionPopup({
             }
 
             const cursor = editor.getCursorPosition();
+            const content = editor.getValue();
+
+            if (
+                isPositionInLuauString({
+                    content,
+                    row: cursor.row,
+                    column: cursor.column,
+                })
+            ) {
+                setCompletionPopup(null);
+                return;
+            }
+
             const query = getLuauCompletionQuery({
                 analysis: getActiveLuauAnalysis(),
-                content: editor.getValue(),
+                content,
                 row: cursor.row,
                 column: cursor.column,
                 priority: intellisensePriority,
