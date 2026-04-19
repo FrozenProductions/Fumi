@@ -6,7 +6,17 @@ import {
     PlayIcon,
     RocketIcon,
 } from "@hugeicons/core-free-icons";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import {
+    type CSSProperties,
+    type ReactElement,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+import {
+    WORKSPACE_MENU_INSET_REM,
+    WORKSPACE_MENU_RADIUS_REM,
+} from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
@@ -195,6 +205,10 @@ export function WorkspaceActionsButton({
         : "h-5 w-px bg-fumi-500/50";
 
     const killIsConfirming = confirmingAction === "kill";
+    const dropdownStyle: CSSProperties & Record<string, string> = {
+        "--workspace-actions-menu-radius": `${WORKSPACE_MENU_RADIUS_REM}rem`,
+        "--workspace-actions-menu-inset": `${WORKSPACE_MENU_INSET_REM}rem`,
+    };
 
     function getLaunchTooltip(): string {
         if (!isDesktopShell) {
@@ -251,7 +265,7 @@ export function WorkspaceActionsButton({
             return (
                 <div
                     key={process.pid}
-                    className={`flex items-center justify-between rounded-md pl-2.5 pr-1 py-1 transition-colors ${
+                    className={`flex items-center justify-between rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] pl-2.5 pr-1 py-1 transition-colors ${
                         isConfirming
                             ? isDark
                                 ? "bg-red-950/60"
@@ -380,7 +394,8 @@ export function WorkspaceActionsButton({
             {isDropdownOpen ? (
                 <div
                     role="menu"
-                    className={`pointer-events-auto absolute bottom-[calc(100%+0.5rem)] right-0 z-50 origin-bottom-right overflow-hidden rounded-[0.85rem] border bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] animate-fade-in ${
+                    style={dropdownStyle}
+                    className={`pointer-events-auto absolute bottom-[calc(100%+0.5rem)] right-0 z-50 origin-bottom-right overflow-hidden rounded-[var(--workspace-actions-menu-radius)] border bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] animate-fade-in ${
                         hasProcesses ? "w-52" : "w-44"
                     } ${isDark ? "border-fumi-700 bg-fumi-800" : "border-fumi-200 bg-fumi-50"}`}
                 >
@@ -403,7 +418,7 @@ export function WorkspaceActionsButton({
                                 type="button"
                                 role="menuitem"
                                 onClick={handleToggleOutlinePanelClick}
-                                className={`app-select-none flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     isDark
                                         ? "text-fumi-200 hover:bg-fumi-700"
                                         : "text-fumi-700 hover:bg-fumi-100"
@@ -430,7 +445,7 @@ export function WorkspaceActionsButton({
                                 type="button"
                                 role="menuitem"
                                 onClick={handleOpenExecutionHistoryClick}
-                                className={`app-select-none flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     isDark
                                         ? "text-fumi-200 hover:bg-fumi-700"
                                         : "text-fumi-700 hover:bg-fumi-100"
@@ -455,7 +470,7 @@ export function WorkspaceActionsButton({
                                 role="menuitem"
                                 onClick={handleLaunchClick}
                                 disabled={!canLaunch}
-                                className={`app-select-none flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     !canLaunch
                                         ? "cursor-not-allowed opacity-60"
                                         : isDark
@@ -486,7 +501,7 @@ export function WorkspaceActionsButton({
                                 role="menuitem"
                                 onClick={handleKillClick}
                                 disabled={!canKill}
-                                className={`app-select-none flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                                className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     !canKill
                                         ? "cursor-not-allowed opacity-60"
                                         : killIsConfirming
