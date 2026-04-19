@@ -9,6 +9,9 @@ export const OPIUMWARE_EXECUTOR_PORTS = [
 export const UNSUPPORTED_EXECUTOR_PORTS = [] as const;
 export const DEFAULT_EXECUTOR_KIND: ExecutorKind = "macsploit";
 export const DEFAULT_EXECUTOR_PORT = MACSPLOIT_EXECUTOR_PORTS[0];
+export const EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT = 5;
+export const EXECUTOR_PORT_DROPDOWN_ITEM_HEIGHT_REM = 2.5;
+export const EXECUTOR_PORT_DROPDOWN_ITEM_GAP_REM = 0.125;
 
 export function getExecutorPorts(
     executorKind: ExecutorKind,

@@ -1,5 +1,20 @@
 import { ArrowDown01Icon, ConnectIcon } from "@hugeicons/core-free-icons";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import {
+    type CSSProperties,
+    type ReactElement,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+import {
+    EXECUTOR_PORT_DROPDOWN_ITEM_GAP_REM,
+    EXECUTOR_PORT_DROPDOWN_ITEM_HEIGHT_REM,
+    EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT,
+} from "../../constants/workspace/executor";
+import {
+    WORKSPACE_MENU_INSET_REM,
+    WORKSPACE_MENU_RADIUS_REM,
+} from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { AppIcon } from "./AppIcon";
 import { AppTooltip } from "./AppTooltip";
@@ -34,6 +49,13 @@ export function AppTopbarExecutorControls({
     const isPrimaryButtonDisabled = isBusy || isExecutorUnavailable;
     const isDropdownDisabled = isBusy || isAttached || isExecutorUnavailable;
     const unavailableButtonClassName = `${theme === "dark" ? "bg-fumi-800" : "bg-fumi-100"} cursor-not-allowed text-fumi-400 opacity-60`;
+    const dropdownStyle: CSSProperties & Record<string, string> = {
+        "--executor-port-menu-radius": `${WORKSPACE_MENU_RADIUS_REM}rem`,
+        "--executor-port-menu-inset": `${WORKSPACE_MENU_INSET_REM}rem`,
+    };
+    const dropdownViewportStyle = {
+        maxHeight: `calc(${EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT} * ${EXECUTOR_PORT_DROPDOWN_ITEM_HEIGHT_REM}rem + (${EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT} - 1) * ${EXECUTOR_PORT_DROPDOWN_ITEM_GAP_REM}rem)`,
+    } satisfies CSSProperties;
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -147,46 +169,61 @@ export function AppTopbarExecutorControls({
             </div>
 
             {isDropdownOpen ? (
-                <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-52 origin-top-right overflow-y-auto rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] animate-fade-in max-h-64 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div
+                    style={dropdownStyle}
+                    className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-48 origin-top-right overflow-hidden rounded-[var(--executor-port-menu-radius)] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] animate-fade-in"
+                >
                     <div className="app-select-none mb-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-fumi-400">
                         Select Port
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                        {availablePortSummaries.map((availablePortSummary) => {
-                            const portValue = String(availablePortSummary.port);
-                            const isSelected = port === portValue;
-                            const label =
-                                getExecutorPortLabel(availablePortSummary);
-                            return (
-                                <button
-                                    key={availablePortSummary.port}
-                                    type="button"
-                                    onClick={() => {
-                                        updatePort(portValue);
-                                        setIsDropdownOpen(false);
-                                    }}
-                                    className={`app-select-none flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-left transition-colors ${
-                                        isSelected
-                                            ? "bg-fumi-100 font-semibold text-fumi-800"
-                                            : "font-medium text-fumi-500 hover:bg-fumi-100 hover:text-fumi-800"
-                                    }`}
-                                >
-                                    <div className="min-w-0">
-                                        <span className="block text-xs">
-                                            {availablePortSummary.port}
-                                        </span>
-                                        <span className="mt-0.5 block truncate text-[10px] font-medium text-fumi-400">
-                                            {label}
-                                        </span>
-                                    </div>
-                                    <div className="shrink-0">
-                                        {isSelected ? (
-                                            <span className="block size-1.5 rounded-full bg-fumi-600" />
-                                        ) : null}
-                                    </div>
-                                </button>
-                            );
-                        })}
+                    <div
+                        style={dropdownViewportStyle}
+                        className="overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    >
+                        <div className="flex flex-col gap-0.5">
+                            {availablePortSummaries.map(
+                                (availablePortSummary) => {
+                                    const portValue = String(
+                                        availablePortSummary.port,
+                                    );
+                                    const isSelected = port === portValue;
+                                    const label =
+                                        getExecutorPortLabel(
+                                            availablePortSummary,
+                                        );
+
+                                    return (
+                                        <button
+                                            key={availablePortSummary.port}
+                                            type="button"
+                                            onClick={() => {
+                                                updatePort(portValue);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={`app-select-none flex h-10 w-full items-center justify-between gap-3 rounded-[calc(var(--executor-port-menu-radius)-var(--executor-port-menu-inset))] px-2.5 text-left transition-colors ${
+                                                isSelected
+                                                    ? "bg-fumi-100 font-semibold text-fumi-800"
+                                                    : "font-medium text-fumi-500 hover:bg-fumi-100 hover:text-fumi-800"
+                                            }`}
+                                        >
+                                            <div className="min-w-0">
+                                                <span className="block text-xs">
+                                                    {availablePortSummary.port}
+                                                </span>
+                                                <span className="mt-0.5 block truncate text-[10px] font-medium text-fumi-400">
+                                                    {label}
+                                                </span>
+                                            </div>
+                                            <div className="shrink-0">
+                                                {isSelected ? (
+                                                    <span className="block size-1.5 rounded-full bg-fumi-600" />
+                                                ) : null}
+                                            </div>
+                                        </button>
+                                    );
+                                },
+                            )}
+                        </div>
                     </div>
                 </div>
             ) : null}
