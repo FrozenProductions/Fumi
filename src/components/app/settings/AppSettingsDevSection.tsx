@@ -49,10 +49,10 @@ export function AppSettingsDevSection(): ReactElement {
             <div className="flex items-center justify-between gap-6 py-4">
                 <div className="min-w-0">
                     <p className="text-xs font-semibold text-fumi-900">
-                        Cause startup error
+                        Cause runtime error
                     </p>
                     <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
-                        Trigger a simulated startup failure and show the startup
+                        Trigger a simulated runtime failure and show the runtime
                         error screen.
                     </p>
                 </div>
