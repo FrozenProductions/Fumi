@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import emptyTabIcon from "../../../../assets/icons/empty_tab.svg";
+import archiveIcon from "../../../../assets/icons/archive.svg";
 import type { AppSettingsWorkspaceEmptyStateProps } from "./appSettingsWorkspace.type";
 
 export function AppSettingsWorkspaceEmptyState({
@@ -13,8 +13,8 @@ export function AppSettingsWorkspaceEmptyState({
                     aria-hidden="true"
                     className="mx-auto h-24 w-24 bg-fumi-600"
                     style={{
-                        mask: `url("${emptyTabIcon}") center / contain no-repeat`,
-                        WebkitMask: `url("${emptyTabIcon}") center / contain no-repeat`,
+                        mask: `url("${archiveIcon}") center / contain no-repeat`,
+                        WebkitMask: `url("${archiveIcon}") center / contain no-repeat`,
                     }}
                 />
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
