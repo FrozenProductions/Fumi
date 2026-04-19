@@ -4,6 +4,7 @@ export type AutomaticExecutionEditorProps = {
     appTheme: "system" | "light" | "dark";
     editorFontSize: number;
     script: AutomaticExecutionScript | null;
+    onCreateScript: () => void;
     onChange: (content: string) => void;
     onCursorChange: (cursor: {
         line: number;

@@ -1,6 +1,5 @@
-import { ArchiveRestoreIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import { AppIcon } from "../../AppIcon";
+import emptyTabIcon from "../../../../assets/icons/empty_tab.svg";
 import type { AppSettingsWorkspaceEmptyStateProps } from "./appSettingsWorkspace.type";
 
 export function AppSettingsWorkspaceEmptyState({
@@ -8,19 +7,23 @@ export function AppSettingsWorkspaceEmptyState({
     description,
 }: AppSettingsWorkspaceEmptyStateProps): ReactElement {
     return (
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8 text-center">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-fumi-100 ring-1 ring-fumi-200">
-                <AppIcon
-                    icon={ArchiveRestoreIcon}
-                    size={22}
-                    strokeWidth={2}
-                    className="text-fumi-400"
+        <div className="flex min-h-0 flex-1 items-center justify-center p-8">
+            <div className="mx-auto flex max-w-lg flex-col items-center text-center">
+                <div
+                    aria-hidden="true"
+                    className="mx-auto h-24 w-24 bg-fumi-600"
+                    style={{
+                        mask: `url("${emptyTabIcon}") center / contain no-repeat`,
+                        WebkitMask: `url("${emptyTabIcon}") center / contain no-repeat`,
+                    }}
                 />
+                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
+                    {title}
+                </p>
+                <p className="mt-4 max-w-lg text-base leading-7 text-fumi-400">
+                    {description}
+                </p>
             </div>
-            <p className="mt-4 text-sm font-semibold text-fumi-500">{title}</p>
-            <p className="mt-2 max-w-sm text-sm leading-[1.6] text-fumi-400">
-                {description}
-            </p>
         </div>
     );
 }

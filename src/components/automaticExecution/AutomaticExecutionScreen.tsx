@@ -128,16 +128,18 @@ export function AutomaticExecutionScreen(): ReactElement {
 
     return (
         <section className="flex h-full min-h-0 bg-fumi-50">
-            <AutomaticExecutionSidebar
-                scripts={scripts}
-                activeScriptId={activeScriptId}
-                resolvedPath={resolvedPath}
-                onCreateScript={handleCreateScript}
-                onOpenInFinder={handleOpenInFinder}
-                onSelectScript={handleSelectScript}
-                onRenameScript={handleRenameScript}
-                onDeleteScript={handleDeleteScript}
-            />
+            {scripts.length > 0 ? (
+                <AutomaticExecutionSidebar
+                    scripts={scripts}
+                    activeScriptId={activeScriptId}
+                    resolvedPath={resolvedPath}
+                    onCreateScript={handleCreateScript}
+                    onOpenInFinder={handleOpenInFinder}
+                    onSelectScript={handleSelectScript}
+                    onRenameScript={handleRenameScript}
+                    onDeleteScript={handleDeleteScript}
+                />
+            ) : null}
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {activeScript ? (
@@ -263,6 +265,7 @@ export function AutomaticExecutionScreen(): ReactElement {
                         appTheme={appTheme}
                         editorFontSize={editorFontSize}
                         script={activeScript}
+                        onCreateScript={handleCreateScript}
                         onChange={updateActiveScriptContent}
                         onCursorChange={updateActiveScriptCursor}
                     />

@@ -1,4 +1,6 @@
 import type { ReactElement } from "react";
+import nothingFoundIcon from "../../assets/icons/nothing_found.svg";
+import warningIcon from "../../assets/icons/warning.svg";
 import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import { useScriptLibrary } from "../../hooks/scriptLibrary/useScriptLibrary";
 import { copyTextToClipboard } from "../../lib/platform/clipboard";
@@ -216,29 +218,41 @@ export function ScriptLibraryScreen({
                         </div>
                     </div>
                 ) : errorMessage ? (
-                    <div className="flex flex-1 items-center justify-center">
-                        <div className="max-w-md rounded-[1.35rem] border border-fumi-200 bg-fumi-50 px-7 py-8 text-center shadow-[var(--shadow-app-card)]">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-red-500">
+                    <div className="flex flex-1 items-center justify-center p-8">
+                        <div className="mx-auto flex max-w-lg flex-col items-center text-center">
+                            <div
+                                aria-hidden="true"
+                                className="mx-auto h-24 w-24 bg-fumi-600"
+                                style={{
+                                    mask: `url("${warningIcon}") center / contain no-repeat`,
+                                    WebkitMask: `url("${warningIcon}") center / contain no-repeat`,
+                                }}
+                            />
+                            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                 Fetch Error
                             </p>
-                            <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-fumi-900">
-                                Something went wrong
-                            </h3>
-                            <p className="mt-3 text-sm leading-6 text-fumi-400">
-                                {errorMessage}
+                            <p className="mt-4 text-sm leading-6 text-fumi-400">
+                                Fumi could not reach the script source right
+                                now. Check your connection, then try again in a
+                                moment.
                             </p>
                         </div>
                     </div>
                 ) : scripts.length === 0 ? (
-                    <div className="flex flex-1 items-center justify-center">
-                        <div className="max-w-md text-center">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
+                    <div className="flex flex-1 items-center justify-center p-8">
+                        <div className="mx-auto flex max-w-lg flex-col items-center text-center">
+                            <div
+                                aria-hidden="true"
+                                className="mx-auto h-24 w-24 bg-fumi-600"
+                                style={{
+                                    mask: `url("${nothingFoundIcon}") center / contain no-repeat`,
+                                    WebkitMask: `url("${nothingFoundIcon}") center / contain no-repeat`,
+                                }}
+                            />
+                            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                 {emptyState.eyebrow}
                             </p>
-                            <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-fumi-900">
-                                {emptyState.title}
-                            </h3>
-                            <p className="mt-3 text-sm leading-6 text-fumi-400">
+                            <p className="mt-4 text-sm leading-6 text-fumi-400">
                                 {emptyState.description}
                             </p>
                         </div>

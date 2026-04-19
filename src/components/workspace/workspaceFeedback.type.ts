@@ -6,8 +6,9 @@ export type WorkspaceErrorBannerProps = {
 
 export type WorkspaceMessageStateProps = {
     eyebrow: string;
-    title: string;
+    title?: string;
     description: string;
+    illustrationUrl?: string;
     action?: {
         label: string;
         onClick: () => void;

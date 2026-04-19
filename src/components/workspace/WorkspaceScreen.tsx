@@ -8,6 +8,7 @@ import {
     useRef,
     useState,
 } from "react";
+import emptyTabIcon from "../../assets/icons/empty_tab.svg";
 import {
     SPLIT_DROP_IDS,
     TAB_BAR_MODIFIERS,
@@ -617,14 +618,15 @@ export function WorkspaceScreen({
                             }
                             title={
                                 workspace.archivedTabs.length > 0
-                                    ? "All tabs are archived"
-                                    : "Create your first script file"
+                                    ? undefined
+                                    : undefined
                             }
                             description={
                                 workspace.archivedTabs.length > 0
                                     ? "Restore archived tabs from Settings, or create a new file to keep working."
                                     : "Scripts are stored directly in this workspace directory. Create a file, then edit it in the editor."
                             }
+                            illustrationUrl={emptyTabIcon}
                             action={createFileAction}
                         />
                     ) : activeTab ? (

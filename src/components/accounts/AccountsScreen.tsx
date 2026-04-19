@@ -5,6 +5,7 @@ import {
     UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
+import emptyAddIcon from "../../assets/icons/empty_add.svg";
 import { useAccounts } from "../../hooks/accounts/useAccounts";
 import type { AccountSummary } from "../../lib/accounts/accounts.type";
 import { confirmAction } from "../../lib/platform/dialog";
@@ -58,7 +59,11 @@ export function AccountsScreen(): ReactElement {
 
     return (
         <section className="relative flex h-full min-h-0 flex-col bg-fumi-50">
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-fumi-50/30 p-4 pb-24 [&::-webkit-scrollbar-thumb:hover]:bg-[rgb(var(--color-scrollbar-thumb-hover)/1)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-[rgb(var(--color-scrollbar-thumb)/1)] [&::-webkit-scrollbar-thumb]:bg-clip-padding [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[6px]">
+            <div
+                className={`flex min-h-0 flex-1 flex-col overflow-y-auto bg-fumi-50/30 p-4 [&::-webkit-scrollbar-thumb:hover]:bg-[rgb(var(--color-scrollbar-thumb-hover)/1)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-[rgb(var(--color-scrollbar-thumb)/1)] [&::-webkit-scrollbar-thumb]:bg-clip-padding [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar]:w-[6px] ${
+                    accounts.length > 0 ? "pb-24" : "pb-4"
+                }`}
+            >
                 <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4">
                     {errorMessage ? (
                         <div className="rounded-[1rem] border border-red-200 bg-red-50 px-4 py-3 shadow-[var(--shadow-app-card)]">
@@ -94,22 +99,39 @@ export function AccountsScreen(): ReactElement {
                             </div>
                         </div>
                     ) : accounts.length === 0 ? (
-                        <div className="flex flex-1 items-center justify-center bg-fumi-50 px-8 py-14">
-                            <div className="max-w-md text-center">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
+                        <div className="flex flex-1 items-center justify-center bg-fumi-50 p-8">
+                            <div className="mx-auto flex max-w-lg flex-col items-center text-center">
+                                <div
+                                    aria-hidden="true"
+                                    className="mx-auto h-24 w-24 bg-fumi-600"
+                                    style={{
+                                        mask: `url("${emptyAddIcon}") center / contain no-repeat`,
+                                        WebkitMask: `url("${emptyAddIcon}") center / contain no-repeat`,
+                                    }}
+                                />
+                                <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                     No Accounts
                                 </p>
-                                <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-fumi-900">
-                                    Save Roblox accounts for one-click launch
-                                </h3>
-                                <p className="mt-3 text-sm leading-6 text-fumi-400">
+                                <p className="mt-4 text-base leading-7 text-fumi-400">
                                     Add a{" "}
                                     <span className="font-semibold text-fumi-600">
                                         .ROBLOSECURITY
                                     </span>{" "}
-                                    cookie to store it in Fumi and launch Roblox
-                                    with that account later.
+                                    cookie to keep a Roblox account ready for
+                                    quick launch whenever you need it.
                                 </p>
+                                <button
+                                    type="button"
+                                    onClick={openAddModal}
+                                    className="app-select-none mt-6 inline-flex h-10 items-center gap-2 rounded-[0.8rem] border border-fumi-200 bg-fumi-600 px-4 text-sm font-semibold tracking-[0.01em] text-white transition-[background-color,border-color,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-fumi-700 hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+                                >
+                                    <AppIcon
+                                        icon={Add01Icon}
+                                        size={16}
+                                        strokeWidth={2.4}
+                                    />
+                                    Add Account
+                                </button>
                             </div>
                         </div>
                     ) : (
@@ -205,20 +227,22 @@ export function AccountsScreen(): ReactElement {
                 </div>
             </div>
 
-            <div className="pointer-events-none absolute bottom-5 right-5 z-10">
-                <button
-                    type="button"
-                    onClick={openAddModal}
-                    className="app-select-none pointer-events-auto flex h-10 items-center gap-2 rounded-[0.85rem] bg-fumi-600 px-4 text-xs font-semibold text-fumi-50 shadow-[var(--shadow-app-card)] transition-colors hover:bg-fumi-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
-                >
-                    <AppIcon
-                        icon={Add01Icon}
-                        className="size-[1.1rem]"
-                        strokeWidth={2}
-                    />
-                    Add Account
-                </button>
-            </div>
+            {accounts.length > 0 ? (
+                <div className="pointer-events-none absolute bottom-5 right-5 z-10">
+                    <button
+                        type="button"
+                        onClick={openAddModal}
+                        className="app-select-none pointer-events-auto flex h-10 items-center gap-2 rounded-[0.85rem] bg-fumi-600 px-4 text-xs font-semibold text-fumi-50 shadow-[var(--shadow-app-card)] transition-colors hover:bg-fumi-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+                    >
+                        <AppIcon
+                            icon={Add01Icon}
+                            className="size-[1.1rem]"
+                            strokeWidth={2}
+                        />
+                        Add Account
+                    </button>
+                </div>
+            ) : null}
 
             {isAddModalOpen ? (
                 <div className="absolute inset-0 z-10 flex items-center justify-center px-4">
