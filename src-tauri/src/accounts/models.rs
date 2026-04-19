@@ -159,9 +159,7 @@ pub(crate) struct PersistedAccountsDocumentV2 {
 pub(crate) struct PersistedAccountsDocumentV3 {
     #[serde(flatten)]
     pub(super) header: MetadataHeader,
-    #[serde(default)]
     pub(super) accounts: Vec<StoredAccountRecord>,
-    #[serde(default)]
     pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
     #[serde(flatten, default)]
     pub(super) extra_fields: Map<String, Value>,

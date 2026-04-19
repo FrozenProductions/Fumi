@@ -336,6 +336,7 @@ fn migrate_workspace_document(
 ) -> Result<(
     PersistedWorkspaceDocumentV5,
     WorkspaceMetadata,
+    bool,
     Option<MigrationReport>,
 )> {
     let (stored_metadata, extra_fields, migrated_from_version) = match version {
@@ -378,16 +379,7 @@ fn migrate_workspace_document(
                 document
             };
 
-            return Ok((
-                current_document,
-                runtime_metadata,
-                needs_rewrite.then_some(MigrationReport {
-                    kind: MetadataKind::Workspace,
-                    from_version: CURRENT_WORKSPACE_METADATA_VERSION,
-                    to_version: CURRENT_WORKSPACE_METADATA_VERSION,
-                    created_backup: false,
-                }),
-            ));
+            return Ok((current_document, runtime_metadata, needs_rewrite, None));
         }
         unsupported_version => {
             return Err(MetadataError::UnsupportedVersion {
@@ -414,6 +406,7 @@ fn migrate_workspace_document(
     Ok((
         current_document,
         runtime_metadata,
+        true,
         migrated_from_version.map(|from_version| MigrationReport {
             kind: MetadataKind::Workspace,
             from_version,
@@ -435,7 +428,9 @@ fn write_workspace_document(
         &serde_json::to_value(document).context("failed to serialize workspace metadata")?,
     )?;
 
-    if let Some(version) = existing_version {
+    if let Some(version) =
+        existing_version.filter(|version| *version != CURRENT_WORKSPACE_METADATA_VERSION)
+    {
         let timestamp = current_unix_timestamp()?;
         let created_backup = create_backup(
             metadata_path,
@@ -681,9 +676,8 @@ fn read_workspace_metadata_impl(
     };
 
     let version = detect_workspace_metadata_version(&raw_value)?;
-    let (document, value, mut migration_report) =
+    let (document, value, should_write, mut migration_report) =
         migrate_workspace_document(raw_value, version, timestamp)?;
-    let should_write = migration_report.is_some();
 
     if persist_normalized_metadata && should_write {
         write_workspace_document(

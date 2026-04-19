@@ -80,7 +80,6 @@ pub(crate) struct PersistedAutomaticExecutionDocumentV2 {
     pub(super) header: MetadataHeader,
     #[serde(default)]
     pub(super) active_script_id: Option<String>,
-    #[serde(default)]
     pub(super) scripts: Vec<AutomaticExecutionScriptState>,
     #[serde(flatten, default)]
     pub(super) extra_fields: Map<String, Value>,

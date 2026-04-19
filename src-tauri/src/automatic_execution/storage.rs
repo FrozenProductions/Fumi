@@ -15,7 +15,7 @@ use crate::metadata::{
     current_unix_timestamp,
     io::{atomic_write_json, read_json_value},
     schema::validate_instance,
-    MetadataError, MetadataHeader, MetadataKind, MigrationReport,
+    MetadataError, MetadataHeader, MetadataKind, MetadataReadResult, MigrationReport,
     AUTOMATIC_EXECUTION_METADATA_VERSION,
 };
 
@@ -483,6 +483,7 @@ fn migrate_automatic_execution_document(
 ) -> Result<(
     PersistedAutomaticExecutionDocumentV2,
     AutomaticExecutionMetadata,
+    bool,
     Option<MigrationReport>,
 )> {
     let version = detect_automatic_execution_version(&raw_value)?;
@@ -514,6 +515,7 @@ fn migrate_automatic_execution_document(
             Ok((
                 current_document,
                 normalized_metadata,
+                true,
                 Some(MigrationReport {
                     kind: MetadataKind::AutomaticExecution,
                     from_version: 1,
@@ -550,16 +552,7 @@ fn migrate_automatic_execution_document(
                 document
             };
 
-            Ok((
-                current_document,
-                runtime_metadata,
-                needs_rewrite.then_some(MigrationReport {
-                    kind: MetadataKind::AutomaticExecution,
-                    from_version: AUTOMATIC_EXECUTION_METADATA_VERSION,
-                    to_version: AUTOMATIC_EXECUTION_METADATA_VERSION,
-                    created_backup: false,
-                }),
-            ))
+            Ok((current_document, runtime_metadata, needs_rewrite, None))
         }
         unsupported_version => Err(MetadataError::UnsupportedVersion {
             kind: MetadataKind::AutomaticExecution,
@@ -582,7 +575,9 @@ fn write_automatic_execution_document(
             .context("failed to serialize automatic execution metadata")?,
     )?;
 
-    if let Some(version) = existing_version {
+    if let Some(version) =
+        existing_version.filter(|version| *version != AUTOMATIC_EXECUTION_METADATA_VERSION)
+    {
         let timestamp = current_unix_timestamp()?;
         let created_backup = create_backup(
             metadata_path,
@@ -597,9 +592,9 @@ fn write_automatic_execution_document(
     atomic_write_json(metadata_path, document)
 }
 
-pub(super) fn read_automatic_execution_metadata(
+pub(super) fn read_automatic_execution_metadata_with_report(
     automatic_execution_path: &Path,
-) -> Result<AutomaticExecutionMetadata> {
+) -> Result<MetadataReadResult<AutomaticExecutionMetadata>> {
     ensure_directory(automatic_execution_path)?;
     let metadata_path = get_metadata_path(automatic_execution_path);
     let on_disk_file_names = read_disk_script_file_names(automatic_execution_path)?;
@@ -622,14 +617,18 @@ pub(super) fn read_automatic_execution_metadata(
             &mut migration_report,
         )?;
 
-        return Ok(metadata);
+        return Ok(MetadataReadResult {
+            value: metadata,
+            wrote_document: true,
+            migration_report,
+        });
     };
 
     let existing_version = detect_automatic_execution_version(&raw_value)?;
-    let (document, metadata, mut migration_report) =
+    let (document, metadata, should_write, mut migration_report) =
         migrate_automatic_execution_document(raw_value, &on_disk_file_names, timestamp)?;
 
-    if migration_report.is_some() {
+    if should_write {
         write_automatic_execution_document(
             automatic_execution_path,
             &metadata_path,
@@ -639,7 +638,17 @@ pub(super) fn read_automatic_execution_metadata(
         )?;
     }
 
-    Ok(metadata)
+    Ok(MetadataReadResult {
+        value: metadata,
+        wrote_document: should_write,
+        migration_report,
+    })
+}
+
+pub(super) fn read_automatic_execution_metadata(
+    automatic_execution_path: &Path,
+) -> Result<AutomaticExecutionMetadata> {
+    Ok(read_automatic_execution_metadata_with_report(automatic_execution_path)?.value)
 }
 
 pub(super) fn write_automatic_execution_metadata(
@@ -1022,6 +1031,57 @@ mod tests {
         assert!(automatic_execution_dir.path().is_dir());
         assert_eq!(metadata.version, AUTOMATIC_EXECUTION_METADATA_VERSION);
         assert!(get_metadata_path(automatic_execution_dir.path()).exists());
+        Ok(())
+    }
+
+    #[test]
+    fn read_automatic_execution_metadata_reports_repairs_without_marking_a_migration(
+    ) -> anyhow::Result<()> {
+        let automatic_execution_dir = TestAutomaticExecutionDir::new("repair-current-version");
+        let metadata_path = get_metadata_path(automatic_execution_dir.path());
+        let current_document = PersistedAutomaticExecutionDocumentV2 {
+            header: MetadataHeader::new(
+                MetadataKind::AutomaticExecution,
+                AUTOMATIC_EXECUTION_METADATA_VERSION,
+                1,
+                1,
+                None,
+            ),
+            active_script_id: Some("script-1".to_string()),
+            scripts: vec![
+                script("script-1", "alpha.lua", create_empty_cursor_state()),
+                script("script-2", "alpha.lua", create_empty_cursor_state()),
+            ],
+            extra_fields: serde_json::Map::new(),
+        };
+
+        ensure_directory(automatic_execution_dir.path())?;
+        write_script_file(
+            &automatic_execution_dir.path().join("alpha.lua"),
+            "print('alpha')",
+        )?;
+        atomic_write_json(&metadata_path, &current_document)?;
+
+        let result = read_automatic_execution_metadata_with_report(automatic_execution_dir.path())?;
+        let persisted_document = crate::metadata::io::read_json_file::<
+            PersistedAutomaticExecutionDocumentV2,
+        >(&metadata_path)?
+        .expect("repaired metadata should be persisted");
+
+        assert!(result.wrote_document);
+        assert!(result.migration_report.is_none());
+        assert_eq!(result.value.active_script_id.as_deref(), Some("script-1"));
+        assert_eq!(result.value.scripts.len(), 1);
+        assert_eq!(
+            persisted_document.active_script_id.as_deref(),
+            Some("script-1")
+        );
+        assert_eq!(persisted_document.scripts.len(), 1);
+        assert!(!automatic_execution_dir
+            .path()
+            .join(".fumi/backups/automatic-execution")
+            .exists());
+
         Ok(())
     }
 

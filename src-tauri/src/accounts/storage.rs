@@ -728,7 +728,8 @@ fn write_accounts_document(
     )?;
 
     let mut created_backup = false;
-    if let Some(version) = existing_version {
+    if let Some(version) = existing_version.filter(|version| *version != ACCOUNTS_METADATA_VERSION)
+    {
         let timestamp = current_unix_timestamp()?;
         created_backup = create_backup(
             manifest_path,
@@ -1674,6 +1675,30 @@ mod tests {
             ))?,
             "cookie-two"
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn write_accounts_manifest_does_not_create_backups_for_current_version_updates() -> Result<()> {
+        let accounts_dir = TestAccountsDir::new("current-version-write");
+
+        let summary = upsert_account_at(
+            accounts_dir.path(),
+            &resolved_account(42, "alpha", "Alpha"),
+            "cookie-alpha",
+        )?;
+        let mut manifest = read_accounts_manifest(accounts_dir.path())?;
+        manifest.roblox_bindings.push(StoredRobloxBindingRecord {
+            pid: 101,
+            started_at: 1,
+            port: 5553,
+            account_id: Some(summary.id),
+        });
+
+        write_accounts_manifest(accounts_dir.path(), &manifest)?;
+
+        assert!(!accounts_dir.path().join("backups/accounts").exists());
 
         Ok(())
     }

@@ -3,6 +3,7 @@ use std::{
     io::{ErrorKind, Write},
     path::Path,
     process,
+    sync::atomic::{AtomicU64, Ordering},
 };
 
 use anyhow::{Context, Result};
@@ -10,6 +11,8 @@ use serde::{de::DeserializeOwned, Serialize};
 use serde_json::Value;
 
 use super::current_unix_timestamp;
+
+static TEMP_FILE_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 pub(crate) fn ensure_directory(path: &Path) -> Result<()> {
     fs::create_dir_all(path)
@@ -49,7 +52,9 @@ pub(crate) fn atomic_write_json<T: Serialize>(file_path: &Path, value: &T) -> Re
 pub(crate) fn atomic_write_bytes(file_path: &Path, bytes: &[u8]) -> Result<()> {
     ensure_file_parent_directory(file_path)?;
     let timestamp = current_unix_timestamp()?;
-    let temp_path = file_path.with_extension(format!("tmp-{}-{timestamp}", process::id()));
+    let counter = TEMP_FILE_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let temp_path =
+        file_path.with_extension(format!("tmp-{}-{timestamp}-{counter}", process::id()));
 
     let write_result = (|| -> Result<()> {
         let mut file = OpenOptions::new()

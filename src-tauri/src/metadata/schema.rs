@@ -56,6 +56,29 @@ where
         "$id".to_string(),
         Value::String(metadata_schema_id(kind, version).to_string()),
     );
+    if let Some(properties) = object.get_mut("properties").and_then(Value::as_object_mut) {
+        properties.insert(
+            "$schema".to_string(),
+            serde_json::json!({
+                "const": metadata_schema_id(kind, version),
+                "type": "string",
+            }),
+        );
+        properties.insert(
+            "kind".to_string(),
+            serde_json::json!({
+                "const": kind.to_string(),
+                "type": "string",
+            }),
+        );
+        properties.insert(
+            "version".to_string(),
+            serde_json::json!({
+                "const": version,
+                "type": "integer",
+            }),
+        );
+    }
 
     Ok(sort_json_value(value))
 }

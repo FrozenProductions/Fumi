@@ -205,11 +205,8 @@ pub(crate) struct PersistedWorkspaceDocumentV5 {
     pub(super) active_tab_id: Option<String>,
     #[serde(default)]
     pub(super) split_view: Option<WorkspaceSplitView>,
-    #[serde(default)]
     pub(super) tabs: Vec<WorkspaceTabState>,
-    #[serde(default)]
     pub(super) archived_tabs: Vec<WorkspaceTabState>,
-    #[serde(default)]
     pub(super) execution_history: Vec<WorkspaceExecutionHistoryEntry>,
     #[serde(flatten, default)]
     pub(super) extra_fields: Map<String, Value>,
