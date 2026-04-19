@@ -34,6 +34,7 @@ export type UseWorkspaceCodeCompletionResult = {
         tabId: string,
     ) => (value: string, delta?: AceChangeDelta) => void;
     createHandleEditorLoad: (tabId: string) => (editor: unknown) => void;
+    createHandleEditorUnmount: (tabId: string) => () => void;
     createHandleScroll: (tabId: string) => (editor: unknown) => void;
     acceptCompletion: (completionIndex: number) => void;
     goToLine: (lineNumber: number) => boolean;

@@ -54,6 +54,7 @@ export type WorkspaceEditorProps = {
     | "createHandleCursorChange"
     | "createHandleEditorChange"
     | "createHandleEditorLoad"
+    | "createHandleEditorUnmount"
     | "createHandleScroll"
     | "handleCompletionHover"
 >;

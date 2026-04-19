@@ -293,6 +293,7 @@ export function WorkspaceScreen({
         createHandleCursorChange,
         createHandleEditorChange,
         createHandleEditorLoad,
+        createHandleEditorUnmount,
         createHandleScroll,
         handleCompletionHover,
         searchPanel,
@@ -649,6 +650,9 @@ export function WorkspaceScreen({
                                     }
                                     createHandleEditorLoad={
                                         createHandleEditorLoad
+                                    }
+                                    createHandleEditorUnmount={
+                                        createHandleEditorUnmount
                                     }
                                     createHandleScroll={createHandleScroll}
                                     handleCompletionHover={

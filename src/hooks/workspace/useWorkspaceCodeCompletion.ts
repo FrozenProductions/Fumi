@@ -201,6 +201,17 @@ export function useWorkspaceCodeCompletion({
         [closeCompletionPopup, toggleSearch],
     );
 
+    const createHandleEditorUnmount = useCallback(
+        (tabId: string) => (): void => {
+            editorByTabIdRef.current.delete(tabId);
+
+            if (activeTabIdRef.current === tabId) {
+                closeCompletionPopup();
+            }
+        },
+        [closeCompletionPopup],
+    );
+
     const createHandleEditorChange = useCallback(
         (tabId: string) =>
             (value: string, delta?: AceChangeDelta): void => {
@@ -310,6 +321,7 @@ export function useWorkspaceCodeCompletion({
         createHandleCursorChange,
         createHandleEditorChange,
         createHandleEditorLoad,
+        createHandleEditorUnmount,
         createHandleScroll,
         acceptCompletion,
         goToLine,

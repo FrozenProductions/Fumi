@@ -4,7 +4,7 @@ import type {
     ReactElement,
     PointerEvent as ReactPointerEvent,
 } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -36,6 +36,81 @@ import type {
     WorkspaceEditorProps,
     WorkspaceSplitDropZoneProps,
 } from "./workspaceEditor.type";
+
+type WorkspaceAcePaneProps = {
+    AceEditorComponent: AceEditorComponent;
+    aceRuntime: LoadedAceRuntime;
+    appTheme: WorkspaceEditorProps["appTheme"];
+    createHandleCursorChange: WorkspaceEditorProps["createHandleCursorChange"];
+    createHandleEditorChange: WorkspaceEditorProps["createHandleEditorChange"];
+    createHandleEditorLoad: WorkspaceEditorProps["createHandleEditorLoad"];
+    createHandleEditorUnmount: WorkspaceEditorProps["createHandleEditorUnmount"];
+    createHandleScroll: WorkspaceEditorProps["createHandleScroll"];
+    editorFontSize: number;
+    isActiveTab: boolean;
+    isVisible: boolean;
+    onActiveTabLuauChange: WorkspaceEditorProps["onActiveTabLuauChange"];
+    tab: WorkspaceEditorProps["tabs"][number];
+};
+
+function WorkspaceAcePane({
+    AceEditorComponent,
+    aceRuntime,
+    appTheme,
+    createHandleCursorChange,
+    createHandleEditorChange,
+    createHandleEditorLoad,
+    createHandleEditorUnmount,
+    createHandleScroll,
+    editorFontSize,
+    isActiveTab,
+    isVisible,
+    onActiveTabLuauChange,
+    tab,
+}: WorkspaceAcePaneProps): ReactElement {
+    const editorChangeHandler = createHandleEditorChange(tab.id);
+
+    useEffect(
+        () => createHandleEditorUnmount(tab.id),
+        [createHandleEditorUnmount, tab.id],
+    );
+
+    return (
+        <div aria-hidden={!isVisible} className="absolute inset-0 z-10">
+            <AceEditorComponent
+                className="workspace-ace-editor"
+                name={`workspace-editor-${tab.id}`}
+                mode={aceRuntime.getMode(tab.fileName)}
+                theme={aceRuntime.getTheme(appTheme)}
+                width="100%"
+                height="100%"
+                value={tab.content}
+                onLoad={createHandleEditorLoad(tab.id)}
+                onChange={(value: string, delta?: AceChangeDelta) => {
+                    if (isActiveTab) {
+                        onActiveTabLuauChange(normalizeOutlineChange(delta));
+                    }
+
+                    editorChangeHandler(value, delta);
+                }}
+                onCursorChange={createHandleCursorChange(tab.id)}
+                onScroll={createHandleScroll(tab.id)}
+                enableBasicAutocompletion={false}
+                enableLiveAutocompletion={false}
+                enableSnippets={false}
+                fontSize={editorFontSize}
+                showGutter
+                showPrintMargin={false}
+                highlightActiveLine
+                tabSize={4}
+                wrapEnabled={false}
+                setOptions={WORKSPACE_EDITOR_OPTIONS}
+                editorProps={WORKSPACE_EDITOR_PROPS}
+                style={WORKSPACE_EDITOR_STYLE}
+            />
+        </div>
+    );
+}
 
 function WorkspaceSplitDropZone({
     alignment,
@@ -87,6 +162,7 @@ export function WorkspaceEditor({
     createHandleCursorChange,
     createHandleEditorChange,
     createHandleEditorLoad,
+    createHandleEditorUnmount,
     createHandleScroll,
     handleCompletionHover,
     isOutlinePanelVisible,
@@ -175,6 +251,17 @@ export function WorkspaceEditor({
     const primaryWidth = `${splitRatio * 100}%`;
     const secondaryWidth = `${(1 - splitRatio) * 100}%`;
     const dividerLeft = `${splitRatio * 100}%`;
+    const visibleTabIds = useMemo(() => {
+        if (!isSplit) {
+            return new Set([activeTabId]);
+        }
+
+        return new Set(
+            [primaryTabId, secondaryTabId].filter(
+                (tabId): tabId is string => tabId !== null,
+            ),
+        );
+    }, [activeTabId, isSplit, primaryTabId, secondaryTabId]);
 
     const getTabLayoutClass = (tabId: string): string => {
         if (!isSplit) {
@@ -401,77 +488,71 @@ export function WorkspaceEditor({
                 />
 
                 {AceEditorComponent && aceRuntime
-                    ? tabs.map((tab) => {
-                          const editorChangeHandler = createHandleEditorChange(
-                              tab.id,
-                          );
-                          const layoutClass = getTabLayoutClass(tab.id);
-                          const isPrimaryPane =
-                              isSplit && tab.id === primaryTabId;
-                          const isSecondaryPane =
-                              isSplit && tab.id === secondaryTabId;
-                          const isVisible = !isSplit
-                              ? tab.id === activeTabId
-                              : isPrimaryPane || isSecondaryPane;
-                          return (
-                              <div
-                                  key={tab.id}
-                                  aria-hidden={!isVisible}
-                                  className={layoutClass}
-                                  style={getTabLayoutStyle(tab.id)}
-                                  onClick={
-                                      isSplit
-                                          ? () => {
-                                                if (isPrimaryPane) {
-                                                    onFocusPane("primary");
-                                                } else if (isSecondaryPane) {
-                                                    onFocusPane("secondary");
+                    ? tabs
+                          .filter((tab) => visibleTabIds.has(tab.id))
+                          .map((tab) => {
+                              const layoutClass = getTabLayoutClass(tab.id);
+                              const isPrimaryPane =
+                                  isSplit && tab.id === primaryTabId;
+                              const isSecondaryPane =
+                                  isSplit && tab.id === secondaryTabId;
+                              const isVisible = !isSplit
+                                  ? tab.id === activeTabId
+                                  : isPrimaryPane || isSecondaryPane;
+                              return (
+                                  <div
+                                      key={tab.id}
+                                      aria-hidden={!isVisible}
+                                      className={layoutClass}
+                                      style={getTabLayoutStyle(tab.id)}
+                                      onClick={
+                                          isSplit
+                                              ? () => {
+                                                    if (isPrimaryPane) {
+                                                        onFocusPane("primary");
+                                                    } else if (
+                                                        isSecondaryPane
+                                                    ) {
+                                                        onFocusPane(
+                                                            "secondary",
+                                                        );
+                                                    }
                                                 }
-                                            }
-                                          : undefined
-                                  }
-                              >
-                                  <AceEditorComponent
-                                      className="workspace-ace-editor"
-                                      name={`workspace-editor-${tab.id}`}
-                                      mode={aceRuntime.getMode(tab.fileName)}
-                                      theme={aceRuntime.getTheme(appTheme)}
-                                      width="100%"
-                                      height="100%"
-                                      value={tab.content}
-                                      onLoad={createHandleEditorLoad(tab.id)}
-                                      onChange={(
-                                          value: string,
-                                          delta?: AceChangeDelta,
-                                      ) => {
-                                          if (tab.id === activeTabId) {
-                                              onActiveTabLuauChange(
-                                                  normalizeOutlineChange(delta),
-                                              );
+                                              : undefined
+                                      }
+                                  >
+                                      <WorkspaceAcePane
+                                          AceEditorComponent={
+                                              AceEditorComponent
                                           }
-
-                                          editorChangeHandler(value, delta);
-                                      }}
-                                      onCursorChange={createHandleCursorChange(
-                                          tab.id,
-                                      )}
-                                      onScroll={createHandleScroll(tab.id)}
-                                      enableBasicAutocompletion={false}
-                                      enableLiveAutocompletion={false}
-                                      enableSnippets={false}
-                                      fontSize={editorFontSize}
-                                      showGutter
-                                      showPrintMargin={false}
-                                      highlightActiveLine
-                                      tabSize={4}
-                                      wrapEnabled={false}
-                                      setOptions={WORKSPACE_EDITOR_OPTIONS}
-                                      editorProps={WORKSPACE_EDITOR_PROPS}
-                                      style={WORKSPACE_EDITOR_STYLE}
-                                  />
-                              </div>
-                          );
-                      })
+                                          aceRuntime={aceRuntime}
+                                          appTheme={appTheme}
+                                          createHandleCursorChange={
+                                              createHandleCursorChange
+                                          }
+                                          createHandleEditorChange={
+                                              createHandleEditorChange
+                                          }
+                                          createHandleEditorLoad={
+                                              createHandleEditorLoad
+                                          }
+                                          createHandleEditorUnmount={
+                                              createHandleEditorUnmount
+                                          }
+                                          createHandleScroll={
+                                              createHandleScroll
+                                          }
+                                          editorFontSize={editorFontSize}
+                                          isActiveTab={tab.id === activeTabId}
+                                          isVisible={isVisible}
+                                          onActiveTabLuauChange={
+                                              onActiveTabLuauChange
+                                          }
+                                          tab={tab}
+                                      />
+                                  </div>
+                              );
+                          })
                     : null}
                 {completionPopup ? (
                     <AppCodeCompletion
