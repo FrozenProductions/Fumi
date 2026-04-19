@@ -7,12 +7,23 @@ use std::{
 };
 
 use anyhow::{anyhow, Context, Result};
-use serde::{de::DeserializeOwned, Serialize};
+use serde_json::Value;
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
+use crate::metadata::{
+    backup::{create_backup, join_backup_path},
+    current_unix_timestamp,
+    io::{atomic_write_json, ensure_file_parent_directory, read_json_file, read_json_value},
+    schema::validate_instance,
+    MetadataError, MetadataHeader, MetadataKind, MetadataReadResult, MigrationReport,
+    CURRENT_WORKSPACE_METADATA_VERSION,
+};
+
 use super::models::{
-    StoredAppState, StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceExecutionHistoryEntry,
+    PersistedWorkspaceDocumentV1, PersistedWorkspaceDocumentV2, PersistedWorkspaceDocumentV3,
+    PersistedWorkspaceDocumentV4, PersistedWorkspaceDocumentV5, StoredAppState,
+    StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceExecutionHistoryEntry,
     WorkspaceMetadata, WorkspacePaneId, WorkspaceSnapshot, WorkspaceSplitView,
     WorkspaceTabSnapshot, WorkspaceTabState, APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME,
     DEFAULT_WORKSPACE_FILE_EXTENSION, DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES,
@@ -34,18 +45,6 @@ impl std::error::Error for WorkspaceMissingError {}
 
 static WORKSPACE_METADATA_APPEND_LOCKS: OnceLock<Mutex<HashMap<PathBuf, Arc<Mutex<()>>>>> =
     OnceLock::new();
-
-fn ensure_directory(path: &Path) -> Result<()> {
-    fs::create_dir_all(path)
-        .with_context(|| format!("failed to create directory {}", path.display()))
-}
-
-fn ensure_file_parent_directory(path: &Path) -> Result<()> {
-    match path.parent() {
-        Some(parent) => ensure_directory(parent),
-        None => Ok(()),
-    }
-}
 
 fn workspace_missing_error() -> anyhow::Error {
     WorkspaceMissingError.into()
@@ -185,6 +184,270 @@ fn create_default_metadata() -> WorkspaceMetadata {
         archived_tabs: Vec::new(),
         execution_history: Vec::new(),
     }
+}
+
+fn workspace_backup_path(workspace_path: &Path, version: u8, timestamp: i64) -> PathBuf {
+    join_backup_path(
+        workspace_path,
+        ".fumi/backups/workspace",
+        version,
+        timestamp,
+    )
+}
+
+fn detect_workspace_metadata_version(raw_value: &Value) -> Result<u8> {
+    let version = raw_value
+        .get("version")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| MetadataError::InvalidDocument {
+            kind: MetadataKind::Workspace,
+            message: "missing numeric version".to_string(),
+        })?;
+
+    u8::try_from(version).map_err(|_| {
+        MetadataError::UnsupportedVersion {
+            kind: MetadataKind::Workspace,
+            version,
+        }
+        .into()
+    })
+}
+
+fn workspace_metadata_to_stored(metadata: WorkspaceMetadata) -> StoredWorkspaceMetadata {
+    StoredWorkspaceMetadata {
+        version: metadata.version,
+        active_tab_id: metadata.active_tab_id,
+        split_view: metadata.split_view,
+        tabs: Some(metadata.tabs),
+        archived_tabs: Some(metadata.archived_tabs),
+        execution_history: Some(metadata.execution_history),
+    }
+}
+
+fn workspace_document_matches_runtime(
+    document: &PersistedWorkspaceDocumentV5,
+    metadata: &WorkspaceMetadata,
+) -> bool {
+    document.active_tab_id == metadata.active_tab_id
+        && document.split_view == metadata.split_view
+        && document.tabs == metadata.tabs
+        && document.archived_tabs == metadata.archived_tabs
+        && document.execution_history == metadata.execution_history
+}
+
+fn stored_workspace_from_v1(document: PersistedWorkspaceDocumentV1) -> StoredWorkspaceMetadata {
+    StoredWorkspaceMetadata {
+        version: document.version,
+        active_tab_id: document.active_tab_id,
+        split_view: None,
+        tabs: document.tabs,
+        archived_tabs: None,
+        execution_history: None,
+    }
+}
+
+fn stored_workspace_from_v2(document: PersistedWorkspaceDocumentV2) -> StoredWorkspaceMetadata {
+    StoredWorkspaceMetadata {
+        version: document.version,
+        active_tab_id: document.active_tab_id,
+        split_view: None,
+        tabs: document.tabs,
+        archived_tabs: document.archived_tabs,
+        execution_history: None,
+    }
+}
+
+fn stored_workspace_from_v3(document: PersistedWorkspaceDocumentV3) -> StoredWorkspaceMetadata {
+    StoredWorkspaceMetadata {
+        version: document.version,
+        active_tab_id: document.active_tab_id,
+        split_view: document.split_view,
+        tabs: document.tabs,
+        archived_tabs: document.archived_tabs,
+        execution_history: None,
+    }
+}
+
+fn stored_workspace_from_v4(document: PersistedWorkspaceDocumentV4) -> StoredWorkspaceMetadata {
+    StoredWorkspaceMetadata {
+        version: document.version,
+        active_tab_id: document.active_tab_id,
+        split_view: document.split_view,
+        tabs: document.tabs,
+        archived_tabs: document.archived_tabs,
+        execution_history: document.execution_history,
+    }
+}
+
+fn current_workspace_document_from_runtime(
+    metadata: WorkspaceMetadata,
+    existing_document: Option<&PersistedWorkspaceDocumentV5>,
+    migrated_from_version: Option<u8>,
+    timestamp: i64,
+) -> PersistedWorkspaceDocumentV5 {
+    let preserve_updated_at = existing_document.is_some_and(|document| {
+        migrated_from_version.is_none() && workspace_document_matches_runtime(document, &metadata)
+    });
+    let header = existing_document
+        .map(|document| MetadataHeader {
+            schema: crate::metadata::metadata_schema_id(
+                MetadataKind::Workspace,
+                CURRENT_WORKSPACE_METADATA_VERSION,
+            )
+            .to_string(),
+            kind: MetadataKind::Workspace,
+            version: CURRENT_WORKSPACE_METADATA_VERSION,
+            created_at: document.header.created_at,
+            updated_at: if preserve_updated_at {
+                document.header.updated_at
+            } else {
+                timestamp
+            },
+            migrated_from_version: migrated_from_version.or(document.header.migrated_from_version),
+            written_by_app_version: if preserve_updated_at {
+                document.header.written_by_app_version.clone()
+            } else {
+                crate::metadata::CURRENT_APP_VERSION.to_string()
+            },
+        })
+        .unwrap_or_else(|| {
+            MetadataHeader::new(
+                MetadataKind::Workspace,
+                CURRENT_WORKSPACE_METADATA_VERSION,
+                timestamp,
+                timestamp,
+                migrated_from_version,
+            )
+        });
+
+    PersistedWorkspaceDocumentV5::from_runtime(
+        metadata,
+        header,
+        existing_document
+            .map(|document| document.extra_fields.clone())
+            .unwrap_or_default(),
+    )
+}
+
+fn migrate_workspace_document(
+    raw_value: Value,
+    version: u8,
+    timestamp: i64,
+) -> Result<(
+    PersistedWorkspaceDocumentV5,
+    WorkspaceMetadata,
+    Option<MigrationReport>,
+)> {
+    let (stored_metadata, extra_fields, migrated_from_version) = match version {
+        1 => {
+            let document = serde_json::from_value::<PersistedWorkspaceDocumentV1>(raw_value)?;
+            let extra_fields = document.extra_fields.clone();
+            (stored_workspace_from_v1(document), extra_fields, Some(1))
+        }
+        2 => {
+            let document = serde_json::from_value::<PersistedWorkspaceDocumentV2>(raw_value)?;
+            let extra_fields = document.extra_fields.clone();
+            (stored_workspace_from_v2(document), extra_fields, Some(2))
+        }
+        3 => {
+            let document = serde_json::from_value::<PersistedWorkspaceDocumentV3>(raw_value)?;
+            let extra_fields = document.extra_fields.clone();
+            (stored_workspace_from_v3(document), extra_fields, Some(3))
+        }
+        4 => {
+            let document = serde_json::from_value::<PersistedWorkspaceDocumentV4>(raw_value)?;
+            let extra_fields = document.extra_fields.clone();
+            (stored_workspace_from_v4(document), extra_fields, Some(4))
+        }
+        CURRENT_WORKSPACE_METADATA_VERSION => {
+            let document =
+                serde_json::from_value::<PersistedWorkspaceDocumentV5>(raw_value.clone())?;
+            validate_instance(MetadataKind::Workspace, &raw_value)?;
+            let runtime_metadata = normalize_workspace_metadata(Some(
+                workspace_metadata_to_stored(document.clone().into_runtime()),
+            ));
+            let needs_rewrite = runtime_metadata != document.clone().into_runtime();
+            let current_document = if needs_rewrite {
+                current_workspace_document_from_runtime(
+                    runtime_metadata.clone(),
+                    Some(&document),
+                    None,
+                    timestamp,
+                )
+            } else {
+                document
+            };
+
+            return Ok((
+                current_document,
+                runtime_metadata,
+                needs_rewrite.then_some(MigrationReport {
+                    kind: MetadataKind::Workspace,
+                    from_version: CURRENT_WORKSPACE_METADATA_VERSION,
+                    to_version: CURRENT_WORKSPACE_METADATA_VERSION,
+                    created_backup: false,
+                }),
+            ));
+        }
+        unsupported_version => {
+            return Err(MetadataError::UnsupportedVersion {
+                kind: MetadataKind::Workspace,
+                version: u64::from(unsupported_version),
+            }
+            .into());
+        }
+    };
+
+    let runtime_metadata = normalize_workspace_metadata(Some(stored_metadata));
+    let current_document = PersistedWorkspaceDocumentV5::from_runtime(
+        runtime_metadata.clone(),
+        MetadataHeader::new(
+            MetadataKind::Workspace,
+            CURRENT_WORKSPACE_METADATA_VERSION,
+            timestamp,
+            timestamp,
+            migrated_from_version,
+        ),
+        extra_fields,
+    );
+
+    Ok((
+        current_document,
+        runtime_metadata,
+        migrated_from_version.map(|from_version| MigrationReport {
+            kind: MetadataKind::Workspace,
+            from_version,
+            to_version: CURRENT_WORKSPACE_METADATA_VERSION,
+            created_backup: false,
+        }),
+    ))
+}
+
+fn write_workspace_document(
+    workspace_path: &Path,
+    metadata_path: &Path,
+    document: &PersistedWorkspaceDocumentV5,
+    existing_version: Option<u8>,
+    migration_report: &mut Option<MigrationReport>,
+) -> Result<()> {
+    validate_instance(
+        MetadataKind::Workspace,
+        &serde_json::to_value(document).context("failed to serialize workspace metadata")?,
+    )?;
+
+    if let Some(version) = existing_version {
+        let timestamp = current_unix_timestamp()?;
+        let created_backup = create_backup(
+            metadata_path,
+            &workspace_backup_path(workspace_path, version, timestamp),
+        )?;
+
+        if let Some(report) = migration_report {
+            report.created_backup = created_backup;
+        }
+    }
+
+    atomic_write_json(metadata_path, document)
 }
 
 fn normalize_workspace_execution_history(
@@ -363,39 +626,79 @@ pub(super) fn normalize_workspace_metadata(
     }
 }
 
-fn read_json_file<T: DeserializeOwned>(file_path: &Path) -> Result<Option<T>> {
-    match fs::read_to_string(file_path) {
-        Ok(text) => serde_json::from_str(&text)
-            .with_context(|| format!("failed to parse json from {}", file_path.display()))
-            .map(Some),
-        Err(error) if error.kind() == ErrorKind::NotFound => Ok(None),
-        Err(error) => Err(error).with_context(|| format!("failed to read {}", file_path.display())),
-    }
-}
+#[cfg(test)]
+fn write_json_file<T: serde::Serialize>(file_path: &Path, value: &T) -> Result<()> {
+    let json_value = serde_json::to_value(value).context("failed to serialize json payload")?;
+    let is_workspace_metadata_path = file_path.file_name().and_then(|value| value.to_str())
+        == Some(WORKSPACE_METADATA_FILE_NAME);
 
-fn write_json_file<T: Serialize>(file_path: &Path, value: &T) -> Result<()> {
-    ensure_file_parent_directory(file_path)?;
-    let text = format!(
-        "{}\n",
-        serde_json::to_string_pretty(value).context("failed to serialize json payload")?
-    );
-    fs::write(file_path, text).with_context(|| format!("failed to write {}", file_path.display()))
+    if is_workspace_metadata_path
+        && json_value.get("$schema").is_none()
+        && json_value.get("version").and_then(Value::as_u64)
+            == Some(u64::from(WORKSPACE_METADATA_VERSION))
+    {
+        let metadata = serde_json::from_value::<WorkspaceMetadata>(json_value)?;
+        let workspace_path = file_path
+            .parent()
+            .and_then(Path::parent)
+            .context("failed to resolve workspace root for metadata file")?;
+
+        return write_workspace_metadata(workspace_path, &metadata);
+    }
+
+    atomic_write_json(file_path, value)
 }
 
 fn read_workspace_metadata_impl(
     workspace_path: &Path,
     persist_normalized_metadata: bool,
-) -> Result<WorkspaceMetadata> {
+) -> Result<MetadataReadResult<WorkspaceMetadata>> {
     ensure_workspace_exists(workspace_path)?;
     let metadata_path = get_workspace_metadata_path(workspace_path);
-    let stored_metadata = read_json_file::<StoredWorkspaceMetadata>(&metadata_path)?;
-    let normalized_metadata = normalize_workspace_metadata(stored_metadata);
+    let timestamp = current_unix_timestamp()?;
+    let Some(raw_value) = read_json_value(&metadata_path)? else {
+        let value = create_default_metadata();
+        let document =
+            current_workspace_document_from_runtime(value.clone(), None, None, timestamp);
 
-    if persist_normalized_metadata {
-        write_json_file(&metadata_path, &normalized_metadata)?;
+        if persist_normalized_metadata {
+            let mut migration_report = None;
+            write_workspace_document(
+                workspace_path,
+                &metadata_path,
+                &document,
+                None,
+                &mut migration_report,
+            )?;
+        }
+
+        return Ok(MetadataReadResult {
+            value,
+            wrote_document: persist_normalized_metadata,
+            migration_report: None,
+        });
+    };
+
+    let version = detect_workspace_metadata_version(&raw_value)?;
+    let (document, value, mut migration_report) =
+        migrate_workspace_document(raw_value, version, timestamp)?;
+    let should_write = migration_report.is_some();
+
+    if persist_normalized_metadata && should_write {
+        write_workspace_document(
+            workspace_path,
+            &metadata_path,
+            &document,
+            Some(version),
+            &mut migration_report,
+        )?;
     }
 
-    Ok(normalized_metadata)
+    Ok(MetadataReadResult {
+        value,
+        wrote_document: persist_normalized_metadata && should_write,
+        migration_report,
+    })
 }
 
 fn get_workspace_metadata_append_lock(workspace_path: &Path) -> Result<Arc<Mutex<()>>> {
@@ -412,7 +715,7 @@ fn get_workspace_metadata_append_lock(workspace_path: &Path) -> Result<Arc<Mutex
 }
 
 pub(super) fn read_workspace_metadata(workspace_path: &Path) -> Result<WorkspaceMetadata> {
-    read_workspace_metadata_impl(workspace_path, true)
+    Ok(read_workspace_metadata_impl(workspace_path, true)?.value)
 }
 
 pub(super) fn write_workspace_metadata(
@@ -420,7 +723,39 @@ pub(super) fn write_workspace_metadata(
     metadata: &WorkspaceMetadata,
 ) -> Result<()> {
     ensure_workspace_exists(workspace_path)?;
-    write_json_file(&get_workspace_metadata_path(workspace_path), metadata)
+    let metadata_path = get_workspace_metadata_path(workspace_path);
+    let timestamp = current_unix_timestamp()?;
+    let existing_value = read_json_value(&metadata_path)?;
+    let existing_version = existing_value
+        .as_ref()
+        .map(detect_workspace_metadata_version)
+        .transpose()?;
+    let existing_document = match existing_value {
+        Some(raw_value) if existing_version == Some(CURRENT_WORKSPACE_METADATA_VERSION) => Some(
+            serde_json::from_value::<PersistedWorkspaceDocumentV5>(raw_value)?,
+        ),
+        _ => None,
+    };
+    let document = current_workspace_document_from_runtime(
+        normalize_workspace_metadata(Some(workspace_metadata_to_stored(metadata.clone()))),
+        existing_document.as_ref(),
+        None,
+        timestamp,
+    );
+
+    if existing_document.as_ref() == Some(&document) {
+        return Ok(());
+    }
+
+    let mut migration_report = None;
+
+    write_workspace_document(
+        workspace_path,
+        &metadata_path,
+        &document,
+        existing_version,
+        &mut migration_report,
+    )
 }
 
 pub(super) fn append_workspace_execution_history(
@@ -431,7 +766,7 @@ pub(super) fn append_workspace_execution_history(
     let _append_guard = append_lock
         .lock()
         .map_err(|_| anyhow!("workspace metadata append lock poisoned"))?;
-    let metadata = read_workspace_metadata_impl(workspace_path, false)?;
+    let metadata = read_workspace_metadata_impl(workspace_path, false)?.value;
     let next_execution_history = normalize_workspace_execution_history(Some(
         std::iter::once(entry)
             .chain(metadata.execution_history)
@@ -474,7 +809,7 @@ fn import_legacy_app_state<R: tauri::Runtime>(
             continue;
         };
 
-        write_json_file(app_state_path, &legacy_state)?;
+        atomic_write_json(app_state_path, &legacy_state)?;
         return Ok(Some(legacy_state));
     }
 
@@ -504,7 +839,7 @@ fn write_app_state<R: tauri::Runtime>(
     app: &AppHandle<R>,
     app_state: &StoredAppState,
 ) -> Result<()> {
-    write_json_file(&get_app_state_path(app)?, app_state)
+    atomic_write_json(&get_app_state_path(app)?, app_state)
 }
 
 pub(super) fn persist_workspace_launch_state<R: tauri::Runtime>(

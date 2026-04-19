@@ -79,7 +79,7 @@ export type WorkspaceExecutionHistoryEntry = {
 };
 
 export type WorkspaceMetadata = {
-    version: 2 | 3 | 4;
+    version: 2 | 3 | 4 | 5;
     activeTabId: string | null;
     splitView: WorkspaceSplitView | null;
     tabs: WorkspaceTabState[];

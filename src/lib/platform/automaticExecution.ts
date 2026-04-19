@@ -105,7 +105,7 @@ function parseMetadata(
 ): AutomaticExecutionMetadata {
     if (
         !isRecord(value) ||
-        value.version !== 1 ||
+        value.version !== 2 ||
         !Array.isArray(value.scripts) ||
         !(value.activeScriptId === null || isString(value.activeScriptId))
     ) {
@@ -113,7 +113,7 @@ function parseMetadata(
     }
 
     return {
-        version: 1,
+        version: 2,
         activeScriptId: value.activeScriptId,
         scripts: value.scripts.map((script) =>
             parseScriptState(script, operation),

@@ -1,0 +1,215 @@
+{
+    "$defs": {
+        "ExecutorKind": {
+            "enum": ["macsploit", "opiumware", "unsupported"],
+            "type": "string"
+        },
+        "MetadataKind": {
+            "enum": ["workspace", "automatic_execution", "accounts"],
+            "type": "string"
+        },
+        "WorkspaceCursorState": {
+            "properties": {
+                "column": {
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "line": {
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "scrollTop": {
+                    "format": "double",
+                    "type": "number"
+                }
+            },
+            "required": ["line", "column", "scrollTop"],
+            "type": "object"
+        },
+        "WorkspaceExecutionHistoryEntry": {
+            "properties": {
+                "accountDisplayName": {
+                    "type": ["string", "null"]
+                },
+                "accountId": {
+                    "type": ["string", "null"]
+                },
+                "executedAt": {
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "executorKind": {
+                    "$ref": "#/$defs/ExecutorKind"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isBoundToUnknownAccount": {
+                    "type": "boolean"
+                },
+                "port": {
+                    "format": "uint16",
+                    "maximum": 65535,
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "scriptContent": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "executedAt",
+                "executorKind",
+                "port",
+                "isBoundToUnknownAccount",
+                "fileName",
+                "scriptContent"
+            ],
+            "type": "object"
+        },
+        "WorkspacePaneId": {
+            "enum": ["primary", "secondary"],
+            "type": "string"
+        },
+        "WorkspaceSplitView": {
+            "properties": {
+                "direction": {
+                    "type": "string"
+                },
+                "focusedPane": {
+                    "$ref": "#/$defs/WorkspacePaneId"
+                },
+                "primaryTabId": {
+                    "type": "string"
+                },
+                "secondaryTabId": {
+                    "type": "string"
+                },
+                "secondaryTabIds": {
+                    "default": [],
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "splitRatio": {
+                    "default": 0.5,
+                    "format": "double",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "direction",
+                "primaryTabId",
+                "secondaryTabId",
+                "focusedPane"
+            ],
+            "type": "object"
+        },
+        "WorkspaceTabState": {
+            "properties": {
+                "archivedAt": {
+                    "default": null,
+                    "format": "int64",
+                    "type": ["integer", "null"]
+                },
+                "cursor": {
+                    "$ref": "#/$defs/WorkspaceCursorState"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            },
+            "required": ["id", "fileName", "cursor"],
+            "type": "object"
+        }
+    },
+    "$id": "https://fumi.app/schemas/workspace.v5.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": true,
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "activeTabId": {
+            "default": null,
+            "type": ["string", "null"]
+        },
+        "archivedTabs": {
+            "default": [],
+            "items": {
+                "$ref": "#/$defs/WorkspaceTabState"
+            },
+            "type": "array"
+        },
+        "createdAt": {
+            "format": "int64",
+            "type": "integer"
+        },
+        "executionHistory": {
+            "default": [],
+            "items": {
+                "$ref": "#/$defs/WorkspaceExecutionHistoryEntry"
+            },
+            "type": "array"
+        },
+        "kind": {
+            "$ref": "#/$defs/MetadataKind"
+        },
+        "migratedFromVersion": {
+            "default": null,
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": ["integer", "null"]
+        },
+        "splitView": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/WorkspaceSplitView"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null
+        },
+        "tabs": {
+            "default": [],
+            "items": {
+                "$ref": "#/$defs/WorkspaceTabState"
+            },
+            "type": "array"
+        },
+        "updatedAt": {
+            "format": "int64",
+            "type": "integer"
+        },
+        "version": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+        },
+        "writtenByAppVersion": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "$schema",
+        "kind",
+        "version",
+        "createdAt",
+        "updatedAt",
+        "writtenByAppVersion"
+    ],
+    "title": "PersistedWorkspaceDocumentV5",
+    "type": "object"
+}

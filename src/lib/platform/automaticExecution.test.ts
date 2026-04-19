@@ -33,7 +33,7 @@ function createSnapshotPayload(
         executorKind: "opiumware",
         resolvedPath: "/Users/dayte/Opiumware/autoexec",
         metadata: {
-            version: 1,
+            version: 2,
             activeScriptId: "script-1",
             scripts: [
                 {
@@ -96,7 +96,7 @@ describe("automatic execution platform commands", () => {
             executorKind: "opiumware",
             resolvedPath: "/Users/dayte/Opiumware/autoexec",
             metadata: {
-                version: 1,
+                version: 2,
                 activeScriptId: null,
                 scripts: "bad",
             },

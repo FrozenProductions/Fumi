@@ -1,5 +1,5 @@
 pub(crate) mod commands;
-mod models;
+pub(crate) mod models;
 mod storage;
 
 pub use models::{
