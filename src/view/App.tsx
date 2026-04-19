@@ -158,6 +158,7 @@ export function App(): ReactElement {
                 <AppTopbar
                     title={APP_TITLE}
                     isSidebarOpen={isSidebarOpen}
+                    sidebarPosition={sidebarPosition}
                     onToggleSidebar={toggleSidebar}
                     workspaceName={topbarWorkspaceContext.workspaceName}
                     workspacePath={topbarWorkspaceContext.workspacePath}

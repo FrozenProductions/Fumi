@@ -45,6 +45,7 @@ export type AppTopbarExecutorControlsProps = {
 export type AppTopbarProps = {
     title: string;
     isSidebarOpen: boolean;
+    sidebarPosition: AppSidebarPosition;
     onToggleSidebar: () => void;
     workspaceName?: string | null;
     workspacePath?: string | null;

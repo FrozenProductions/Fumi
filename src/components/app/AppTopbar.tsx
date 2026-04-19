@@ -47,6 +47,7 @@ function createTitleLetterStyle(offsetX: number): AppTopbarTitleLetterStyle {
 export function AppTopbar({
     title,
     isSidebarOpen,
+    sidebarPosition,
     onToggleSidebar,
     workspaceName,
     workspacePath,
@@ -103,14 +104,14 @@ export function AppTopbar({
                             <AppIcon
                                 aria-hidden="true"
                                 icon={PanelLeftCloseIcon}
-                                className="pointer-events-none block size-[1.15rem] [-webkit-user-drag:none]"
+                                className={`pointer-events-none block size-[1.15rem] [-webkit-user-drag:none] ${sidebarPosition === "right" ? "rotate-180" : ""}`}
                                 strokeWidth={2.25}
                             />
                         ) : (
                             <AppIcon
                                 aria-hidden="true"
                                 icon={PanelLeftOpenIcon}
-                                className="pointer-events-none block size-[1.15rem] [-webkit-user-drag:none]"
+                                className={`pointer-events-none block size-[1.15rem] [-webkit-user-drag:none] ${sidebarPosition === "right" ? "rotate-180" : ""}`}
                                 strokeWidth={2.25}
                             />
                         )}
