@@ -571,6 +571,7 @@ pub(super) fn normalize_workspace_metadata(
     if metadata.version != 1
         && metadata.version != 2
         && metadata.version != 3
+        && metadata.version != 4
         && metadata.version != WORKSPACE_METADATA_VERSION
     {
         return create_default_metadata();
@@ -596,7 +597,7 @@ pub(super) fn normalize_workspace_metadata(
     } else {
         None
     };
-    let normalized_execution_history = if metadata.version >= WORKSPACE_METADATA_VERSION {
+    let normalized_execution_history = if metadata.version >= 4 {
         normalize_workspace_execution_history(metadata.execution_history)
     } else {
         Vec::new()
