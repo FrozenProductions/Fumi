@@ -10,18 +10,26 @@ use std::{
 };
 
 use anyhow::{anyhow, Context, Result};
-use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tauri::{AppHandle, Manager, Runtime};
 use uuid::Uuid;
 
 use crate::{
     binarycookies::{read_roblosecurity_cookie_value, write_minimal_roblosecurity_cookie_file},
     executor::{self, ExecutorKind, ExecutorPortPool, ExecutorPortSummary},
+    metadata::{
+        backup::{create_backup, join_backup_path},
+        current_unix_timestamp,
+        io::{atomic_write_json, read_json_value},
+        schema::validate_instance,
+        MetadataError, MetadataHeader, MetadataKind, ACCOUNTS_METADATA_VERSION,
+    },
 };
 
 use super::models::{
-    AccountListResponse, AccountSummary, ResolvedRobloxAccount, RobloxAccountIdentity,
-    RobloxProcessInfo, StoredAccountRecord, StoredAccountsManifest, StoredRobloxBindingRecord,
+    AccountListResponse, AccountSummary, PersistedAccountsDocumentV1, PersistedAccountsDocumentV2,
+    PersistedAccountsDocumentV3, ResolvedRobloxAccount, RobloxAccountIdentity, RobloxProcessInfo,
+    StoredAccountRecord, StoredAccountsManifest, StoredRobloxBindingRecord,
     ACCOUNTS_COOKIES_DIR_NAME, ACCOUNTS_DIR_NAME, ACCOUNTS_MANIFEST_FILE_NAME,
     ACCOUNTS_MANIFEST_VERSION,
 };
@@ -37,20 +45,17 @@ const PROCESS_DISCOVERY_POLL_INTERVAL: Duration = Duration::from_millis(200);
 const PROCESS_DISCOVERY_POLL_ATTEMPTS: usize = 120;
 static ROBLOX_LAUNCH_FLOW_MUTEX: Mutex<()> = Mutex::new(());
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-struct LegacyStoredAccountsManifest {
-    version: u8,
-    active_account_id: Option<String>,
-    accounts: Vec<StoredAccountRecord>,
-}
-
+#[cfg(test)]
 #[derive(Debug, PartialEq, Eq)]
 enum StoredAccountsManifestState {
     Missing,
-    V1(LegacyStoredAccountsManifest),
-    V2(StoredAccountsManifest),
+    V1(PersistedAccountsDocumentV1),
+    V2(PersistedAccountsDocumentV2),
+    V3(PersistedAccountsDocumentV3),
 }
+
+#[cfg(test)]
+type LegacyStoredAccountsManifest = PersistedAccountsDocumentV1;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct InferredRobloxBindingAccount {
@@ -632,6 +637,111 @@ fn first_free_port(ports: &[u16], used_ports: &HashSet<u16>) -> Option<u16> {
         .find(|port| !used_ports.contains(port))
 }
 
+fn accounts_backup_path(accounts_root: &Path, version: u8, timestamp: i64) -> PathBuf {
+    join_backup_path(accounts_root, "backups/accounts", version, timestamp)
+}
+
+fn detect_accounts_manifest_version(raw_value: &Value) -> Result<u8> {
+    let version = raw_value
+        .get("version")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| MetadataError::InvalidDocument {
+            kind: MetadataKind::Accounts,
+            message: "missing numeric version".to_string(),
+        })?;
+
+    u8::try_from(version).map_err(|_| {
+        MetadataError::UnsupportedVersion {
+            kind: MetadataKind::Accounts,
+            version,
+        }
+        .into()
+    })
+}
+
+fn accounts_manifest_matches_document(
+    document: &PersistedAccountsDocumentV3,
+    manifest: &StoredAccountsManifest,
+) -> bool {
+    document.accounts == manifest.accounts && document.roblox_bindings == manifest.roblox_bindings
+}
+
+fn current_accounts_document_from_manifest(
+    manifest: StoredAccountsManifest,
+    existing_document: Option<&PersistedAccountsDocumentV3>,
+    migrated_from_version: Option<u8>,
+    timestamp: i64,
+) -> PersistedAccountsDocumentV3 {
+    let preserve_updated_at = existing_document.is_some_and(|document| {
+        migrated_from_version.is_none() && accounts_manifest_matches_document(document, &manifest)
+    });
+    let header = existing_document
+        .map(|document| MetadataHeader {
+            schema: crate::metadata::metadata_schema_id(
+                MetadataKind::Accounts,
+                ACCOUNTS_METADATA_VERSION,
+            )
+            .to_string(),
+            kind: MetadataKind::Accounts,
+            version: ACCOUNTS_METADATA_VERSION,
+            created_at: document.header.created_at,
+            updated_at: if preserve_updated_at {
+                document.header.updated_at
+            } else {
+                timestamp
+            },
+            migrated_from_version: migrated_from_version.or(document.header.migrated_from_version),
+            written_by_app_version: if preserve_updated_at {
+                document.header.written_by_app_version.clone()
+            } else {
+                crate::metadata::CURRENT_APP_VERSION.to_string()
+            },
+        })
+        .unwrap_or_else(|| {
+            MetadataHeader::new(
+                MetadataKind::Accounts,
+                ACCOUNTS_METADATA_VERSION,
+                timestamp,
+                timestamp,
+                migrated_from_version,
+            )
+        });
+
+    PersistedAccountsDocumentV3::from_runtime(
+        manifest,
+        header,
+        existing_document
+            .map(|document| document.extra_fields.clone())
+            .unwrap_or_default(),
+    )
+}
+
+fn write_accounts_document(
+    accounts_root: &Path,
+    manifest_path: &Path,
+    document: &PersistedAccountsDocumentV3,
+    existing_version: Option<u8>,
+) -> Result<bool> {
+    validate_instance(
+        MetadataKind::Accounts,
+        &serde_json::to_value(document).context("failed to serialize accounts metadata")?,
+    )?;
+
+    let mut created_backup = false;
+    if let Some(version) = existing_version.filter(|version| *version != ACCOUNTS_METADATA_VERSION)
+    {
+        let timestamp = current_unix_timestamp()?;
+        created_backup = create_backup(
+            manifest_path,
+            &accounts_backup_path(accounts_root, version, timestamp),
+        )?;
+    }
+
+    atomic_write_json(manifest_path, document)?;
+
+    Ok(created_backup)
+}
+
 fn sync_accounts_manifest(
     accounts_root: &Path,
     executor_port_pool: &ExecutorPortPool,
@@ -639,23 +749,81 @@ fn sync_accounts_manifest(
 ) -> Result<StoredAccountsManifest> {
     let mut sorted_processes = running_processes.to_vec();
     sort_roblox_processes(&mut sorted_processes);
+    let manifest_path = get_manifest_path(accounts_root);
+    let raw_value = read_json_value(&manifest_path)?;
+    let timestamp = current_unix_timestamp()?;
+    let (manifest, current_document, existing_version, should_write_from_load) = match raw_value {
+        None => (StoredAccountsManifest::default(), None, None, true),
+        Some(raw_value) => {
+            let version = detect_accounts_manifest_version(&raw_value)?;
 
-    let manifest_state = read_accounts_manifest_state(accounts_root)?;
-    let previous_manifest = match &manifest_state {
-        StoredAccountsManifestState::V2(manifest) => Some(manifest.clone()),
-        _ => None,
-    };
-    let should_write_from_load = matches!(
-        manifest_state,
-        StoredAccountsManifestState::Missing | StoredAccountsManifestState::V1(_)
-    );
-    let (manifest, should_write) = match manifest_state {
-        StoredAccountsManifestState::Missing => (StoredAccountsManifest::default(), false),
-        StoredAccountsManifestState::V2(manifest) => (manifest, false),
-        StoredAccountsManifestState::V1(legacy_manifest) => (
-            migrate_accounts_manifest(legacy_manifest, &sorted_processes, executor_port_pool),
-            true,
-        ),
+            match version {
+                1 => {
+                    let legacy_manifest =
+                        serde_json::from_value::<PersistedAccountsDocumentV1>(raw_value)?;
+                    let migrated_manifest = migrate_accounts_manifest(
+                        legacy_manifest.clone(),
+                        &sorted_processes,
+                        executor_port_pool,
+                    );
+                    let current_document = PersistedAccountsDocumentV3::from_runtime(
+                        migrated_manifest.clone(),
+                        MetadataHeader::new(
+                            MetadataKind::Accounts,
+                            ACCOUNTS_METADATA_VERSION,
+                            timestamp,
+                            timestamp,
+                            Some(1),
+                        ),
+                        legacy_manifest.extra_fields,
+                    );
+
+                    (migrated_manifest, Some(current_document), Some(1), true)
+                }
+                2 => {
+                    let persisted_manifest =
+                        serde_json::from_value::<PersistedAccountsDocumentV2>(raw_value)?;
+                    let manifest = StoredAccountsManifest {
+                        version: ACCOUNTS_MANIFEST_VERSION,
+                        accounts: persisted_manifest.accounts,
+                        roblox_bindings: persisted_manifest.roblox_bindings,
+                    };
+                    let current_document = PersistedAccountsDocumentV3::from_runtime(
+                        manifest.clone(),
+                        MetadataHeader::new(
+                            MetadataKind::Accounts,
+                            ACCOUNTS_METADATA_VERSION,
+                            timestamp,
+                            timestamp,
+                            Some(2),
+                        ),
+                        persisted_manifest.extra_fields,
+                    );
+
+                    (manifest, Some(current_document), Some(2), true)
+                }
+                ACCOUNTS_METADATA_VERSION => {
+                    let persisted_manifest =
+                        serde_json::from_value::<PersistedAccountsDocumentV3>(raw_value.clone())?;
+                    validate_instance(MetadataKind::Accounts, &raw_value)?;
+                    let manifest = persisted_manifest.clone().into_runtime();
+
+                    (
+                        manifest,
+                        Some(persisted_manifest),
+                        Some(ACCOUNTS_METADATA_VERSION),
+                        false,
+                    )
+                }
+                unsupported_version => {
+                    return Err(MetadataError::UnsupportedVersion {
+                        kind: MetadataKind::Accounts,
+                        version: u64::from(unsupported_version),
+                    }
+                    .into());
+                }
+            }
+        }
     };
     let inferred_binding = has_new_unbound_running_process(&manifest, sorted_processes.as_slice())
         .then(|| {
@@ -673,14 +841,22 @@ fn sync_accounts_manifest(
         executor_port_pool,
         inferred_binding.as_ref(),
     );
-    let should_persist = should_write
-        || should_write_from_load
-        || previous_manifest
-            .as_ref()
-            .is_some_and(|existing_manifest| existing_manifest != &reconciled_manifest);
+    let next_document = current_accounts_document_from_manifest(
+        reconciled_manifest.clone(),
+        current_document.as_ref(),
+        None,
+        timestamp,
+    );
+    let should_persist =
+        should_write_from_load || current_document.as_ref() != Some(&next_document);
 
     if should_persist {
-        write_accounts_manifest(accounts_root, &reconciled_manifest)?;
+        write_accounts_document(
+            accounts_root,
+            &manifest_path,
+            &next_document,
+            existing_version,
+        )?;
     }
 
     Ok(reconciled_manifest)
@@ -928,7 +1104,7 @@ fn find_saved_account_id_by_cookie_value(
 }
 
 fn migrate_accounts_manifest(
-    legacy_manifest: LegacyStoredAccountsManifest,
+    legacy_manifest: PersistedAccountsDocumentV1,
     running_processes: &[RobloxProcessInfo],
     executor_port_pool: &ExecutorPortPool,
 ) -> StoredAccountsManifest {
@@ -961,35 +1137,31 @@ fn migrate_accounts_manifest(
     manifest
 }
 
+#[cfg(test)]
 fn read_accounts_manifest_state(accounts_root: &Path) -> Result<StoredAccountsManifestState> {
     let manifest_path = get_manifest_path(accounts_root);
-    let manifest_contents = match fs::read_to_string(&manifest_path) {
-        Ok(contents) => contents,
-        Err(error) if error.kind() == ErrorKind::NotFound => {
-            return Ok(StoredAccountsManifestState::Missing);
-        }
-        Err(error) => {
-            return Err(error)
-                .with_context(|| format!("failed to read {}", manifest_path.display()));
-        }
+    let Some(raw_value) = read_json_value(&manifest_path)? else {
+        return Ok(StoredAccountsManifestState::Missing);
     };
-
-    let version = serde_json::from_str::<serde_json::Value>(&manifest_contents)
-        .with_context(|| format!("failed to parse {}", manifest_path.display()))?
-        .get("version")
-        .and_then(serde_json::Value::as_u64)
-        .ok_or_else(|| anyhow!("unsupported accounts manifest version"))?;
+    let version = detect_accounts_manifest_version(&raw_value)?;
 
     match version {
-        1 => serde_json::from_str::<LegacyStoredAccountsManifest>(&manifest_contents)
+        1 => serde_json::from_value::<PersistedAccountsDocumentV1>(raw_value)
             .map(StoredAccountsManifestState::V1)
             .with_context(|| format!("failed to parse {}", manifest_path.display())),
-        version if version == u64::from(ACCOUNTS_MANIFEST_VERSION) => {
-            serde_json::from_str::<StoredAccountsManifest>(&manifest_contents)
-                .map(StoredAccountsManifestState::V2)
+        2 => serde_json::from_value::<PersistedAccountsDocumentV2>(raw_value)
+            .map(StoredAccountsManifestState::V2)
+            .with_context(|| format!("failed to parse {}", manifest_path.display())),
+        ACCOUNTS_METADATA_VERSION => {
+            serde_json::from_value::<PersistedAccountsDocumentV3>(raw_value)
+                .map(StoredAccountsManifestState::V3)
                 .with_context(|| format!("failed to parse {}", manifest_path.display()))
         }
-        _ => Err(anyhow!("unsupported accounts manifest version")),
+        unsupported_version => Err(MetadataError::UnsupportedVersion {
+            kind: MetadataKind::Accounts,
+            version: u64::from(unsupported_version),
+        }
+        .into()),
     }
 }
 
@@ -998,21 +1170,41 @@ fn read_accounts_manifest(accounts_root: &Path) -> Result<StoredAccountsManifest
     let manifest_state = read_accounts_manifest_state(accounts_root)?;
     match manifest_state {
         StoredAccountsManifestState::Missing => Ok(StoredAccountsManifest::default()),
-        StoredAccountsManifestState::V2(manifest) => Ok(manifest),
-        StoredAccountsManifestState::V1(_) => {
+        StoredAccountsManifestState::V1(_) | StoredAccountsManifestState::V2(_) => {
             Err(anyhow!("accounts manifest must be migrated before reading"))
         }
+        StoredAccountsManifestState::V3(manifest) => Ok(manifest.into_runtime()),
     }
 }
 
 fn write_accounts_manifest(accounts_root: &Path, manifest: &StoredAccountsManifest) -> Result<()> {
     ensure_accounts_directory(accounts_root)?;
     let manifest_path = get_manifest_path(accounts_root);
-    let manifest_contents =
-        serde_json::to_string_pretty(manifest).context("failed to encode accounts manifest")?;
+    let timestamp = current_unix_timestamp()?;
+    let existing_value = read_json_value(&manifest_path)?;
+    let existing_version = existing_value
+        .as_ref()
+        .map(detect_accounts_manifest_version)
+        .transpose()?;
+    let existing_document = match existing_value {
+        Some(raw_value) if existing_version == Some(ACCOUNTS_METADATA_VERSION) => Some(
+            serde_json::from_value::<PersistedAccountsDocumentV3>(raw_value)?,
+        ),
+        _ => None,
+    };
+    let document = current_accounts_document_from_manifest(
+        manifest.clone(),
+        existing_document.as_ref(),
+        None,
+        timestamp,
+    );
 
-    fs::write(&manifest_path, manifest_contents)
-        .with_context(|| format!("failed to write {}", manifest_path.display()))
+    if existing_document.as_ref() == Some(&document) {
+        return Ok(());
+    }
+
+    let _ = write_accounts_document(accounts_root, &manifest_path, &document, existing_version)?;
+    Ok(())
 }
 
 fn lock_roblox_launch_flow() -> std::sync::MutexGuard<'static, ()> {
@@ -1488,6 +1680,30 @@ mod tests {
     }
 
     #[test]
+    fn write_accounts_manifest_does_not_create_backups_for_current_version_updates() -> Result<()> {
+        let accounts_dir = TestAccountsDir::new("current-version-write");
+
+        let summary = upsert_account_at(
+            accounts_dir.path(),
+            &resolved_account(42, "alpha", "Alpha"),
+            "cookie-alpha",
+        )?;
+        let mut manifest = read_accounts_manifest(accounts_dir.path())?;
+        manifest.roblox_bindings.push(StoredRobloxBindingRecord {
+            pid: 101,
+            started_at: 1,
+            port: 5553,
+            account_id: Some(summary.id),
+        });
+
+        write_accounts_manifest(accounts_dir.path(), &manifest)?;
+
+        assert!(!accounts_dir.path().join("backups/accounts").exists());
+
+        Ok(())
+    }
+
+    #[test]
     fn launching_saved_account_while_another_pid_exists_assigns_the_next_free_port() -> Result<()> {
         let accounts_dir = TestAccountsDir::new("launch-next-free");
         let first_account = upsert_account_at(
@@ -1856,6 +2072,7 @@ mod tests {
             version: 1,
             active_account_id: Some(legacy_account.id.clone()),
             accounts: vec![legacy_account.clone()],
+            extra_fields: Default::default(),
         };
 
         fs::write(
@@ -1869,7 +2086,7 @@ mod tests {
             &[roblox_process(101, 1)],
         )?;
 
-        assert_eq!(manifest.version, 2);
+        assert_eq!(manifest.version, ACCOUNTS_METADATA_VERSION);
         assert_eq!(manifest.accounts, vec![legacy_account]);
         assert_eq!(
             manifest.roblox_bindings,

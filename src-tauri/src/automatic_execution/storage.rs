@@ -6,17 +6,26 @@ use std::{
 };
 
 use anyhow::{anyhow, Context, Result};
-use serde::{de::DeserializeOwned, Serialize};
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::executor::ExecutorKind;
+use crate::metadata::{
+    backup::{create_backup, join_backup_path},
+    current_unix_timestamp,
+    io::{atomic_write_json, read_json_value},
+    schema::validate_instance,
+    MetadataError, MetadataHeader, MetadataKind, MetadataReadResult, MigrationReport,
+    AUTOMATIC_EXECUTION_METADATA_VERSION,
+};
 
 use super::models::{
     AutomaticExecutionCursorState, AutomaticExecutionMetadata, AutomaticExecutionScriptSnapshot,
-    AutomaticExecutionScriptState, AutomaticExecutionSnapshot, StoredAutomaticExecutionMetadata,
-    AUTOMATIC_EXECUTION_METADATA_DIR_NAME, AUTOMATIC_EXECUTION_METADATA_FILE_NAME,
-    DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME, DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION,
-    MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH,
+    AutomaticExecutionScriptState, AutomaticExecutionSnapshot,
+    PersistedAutomaticExecutionDocumentV1, PersistedAutomaticExecutionDocumentV2,
+    StoredAutomaticExecutionMetadata, AUTOMATIC_EXECUTION_METADATA_DIR_NAME,
+    AUTOMATIC_EXECUTION_METADATA_FILE_NAME, DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME,
+    DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION, MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH,
 };
 
 #[derive(Debug)]
@@ -220,29 +229,109 @@ pub(super) fn create_script_id(seen_ids: &HashSet<String>) -> String {
 
 fn create_default_metadata() -> AutomaticExecutionMetadata {
     AutomaticExecutionMetadata {
-        version: 1,
+        version: AUTOMATIC_EXECUTION_METADATA_VERSION,
         active_script_id: None,
         scripts: Vec::new(),
     }
 }
 
-fn read_json_file<T: DeserializeOwned>(file_path: &Path) -> Result<Option<T>> {
-    match fs::read_to_string(file_path) {
-        Ok(text) => serde_json::from_str(&text)
-            .with_context(|| format!("failed to parse json from {}", file_path.display()))
-            .map(Some),
-        Err(error) if error.kind() == ErrorKind::NotFound => Ok(None),
-        Err(error) => Err(error).with_context(|| format!("failed to read {}", file_path.display())),
+fn automatic_execution_backup_path(
+    automatic_execution_path: &Path,
+    version: u8,
+    timestamp: i64,
+) -> PathBuf {
+    join_backup_path(
+        automatic_execution_path,
+        ".fumi/backups/automatic-execution",
+        version,
+        timestamp,
+    )
+}
+
+fn detect_automatic_execution_version(raw_value: &Value) -> Result<u8> {
+    let version = raw_value
+        .get("version")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| MetadataError::InvalidDocument {
+            kind: MetadataKind::AutomaticExecution,
+            message: "missing numeric version".to_string(),
+        })?;
+
+    u8::try_from(version).map_err(|_| {
+        MetadataError::UnsupportedVersion {
+            kind: MetadataKind::AutomaticExecution,
+            version,
+        }
+        .into()
+    })
+}
+
+fn automatic_execution_metadata_to_stored(
+    metadata: AutomaticExecutionMetadata,
+) -> StoredAutomaticExecutionMetadata {
+    StoredAutomaticExecutionMetadata {
+        version: metadata.version,
+        active_script_id: metadata.active_script_id,
+        scripts: Some(metadata.scripts),
     }
 }
 
-fn write_json_file<T: Serialize>(file_path: &Path, value: &T) -> Result<()> {
-    ensure_file_parent_directory(file_path)?;
-    let text = format!(
-        "{}\n",
-        serde_json::to_string_pretty(value).context("failed to serialize json payload")?
-    );
-    fs::write(file_path, text).with_context(|| format!("failed to write {}", file_path.display()))
+fn automatic_execution_document_matches_runtime(
+    document: &PersistedAutomaticExecutionDocumentV2,
+    metadata: &AutomaticExecutionMetadata,
+) -> bool {
+    document.active_script_id == metadata.active_script_id && document.scripts == metadata.scripts
+}
+
+fn current_automatic_execution_document_from_runtime(
+    metadata: AutomaticExecutionMetadata,
+    existing_document: Option<&PersistedAutomaticExecutionDocumentV2>,
+    migrated_from_version: Option<u8>,
+    timestamp: i64,
+) -> PersistedAutomaticExecutionDocumentV2 {
+    let preserve_updated_at = existing_document.is_some_and(|document| {
+        migrated_from_version.is_none()
+            && automatic_execution_document_matches_runtime(document, &metadata)
+    });
+    let header = existing_document
+        .map(|document| MetadataHeader {
+            schema: crate::metadata::metadata_schema_id(
+                MetadataKind::AutomaticExecution,
+                AUTOMATIC_EXECUTION_METADATA_VERSION,
+            )
+            .to_string(),
+            kind: MetadataKind::AutomaticExecution,
+            version: AUTOMATIC_EXECUTION_METADATA_VERSION,
+            created_at: document.header.created_at,
+            updated_at: if preserve_updated_at {
+                document.header.updated_at
+            } else {
+                timestamp
+            },
+            migrated_from_version: migrated_from_version.or(document.header.migrated_from_version),
+            written_by_app_version: if preserve_updated_at {
+                document.header.written_by_app_version.clone()
+            } else {
+                crate::metadata::CURRENT_APP_VERSION.to_string()
+            },
+        })
+        .unwrap_or_else(|| {
+            MetadataHeader::new(
+                MetadataKind::AutomaticExecution,
+                AUTOMATIC_EXECUTION_METADATA_VERSION,
+                timestamp,
+                timestamp,
+                migrated_from_version,
+            )
+        });
+
+    PersistedAutomaticExecutionDocumentV2::from_runtime(
+        metadata,
+        header,
+        existing_document
+            .map(|document| document.extra_fields.clone())
+            .unwrap_or_default(),
+    )
 }
 
 fn write_script_file(file_path: &Path, content: &str) -> Result<()> {
@@ -301,12 +390,12 @@ pub(super) fn normalize_automatic_execution_metadata(
                 })
                 .collect(),
             active_script_id: on_disk_file_names.first().map(|_| String::new()),
-            version: 1,
+            version: AUTOMATIC_EXECUTION_METADATA_VERSION,
         }
         .with_repaired_active_script_id();
     };
 
-    if metadata.version != 1 {
+    if metadata.version != 1 && metadata.version != AUTOMATIC_EXECUTION_METADATA_VERSION {
         return create_default_metadata();
     }
 
@@ -366,7 +455,7 @@ pub(super) fn normalize_automatic_execution_metadata(
     }
 
     AutomaticExecutionMetadata {
-        version: 1,
+        version: AUTOMATIC_EXECUTION_METADATA_VERSION,
         active_script_id: metadata.active_script_id,
         scripts: normalized_scripts,
     }
@@ -387,26 +476,179 @@ impl AutomaticExecutionMetadataExt for AutomaticExecutionMetadata {
     }
 }
 
+fn migrate_automatic_execution_document(
+    raw_value: Value,
+    on_disk_file_names: &[String],
+    timestamp: i64,
+) -> Result<(
+    PersistedAutomaticExecutionDocumentV2,
+    AutomaticExecutionMetadata,
+    bool,
+    Option<MigrationReport>,
+)> {
+    let version = detect_automatic_execution_version(&raw_value)?;
+
+    match version {
+        1 => {
+            let document =
+                serde_json::from_value::<PersistedAutomaticExecutionDocumentV1>(raw_value)?;
+            let normalized_metadata = normalize_automatic_execution_metadata(
+                Some(StoredAutomaticExecutionMetadata {
+                    version: document.version,
+                    active_script_id: document.active_script_id,
+                    scripts: document.scripts,
+                }),
+                on_disk_file_names,
+            );
+            let current_document = PersistedAutomaticExecutionDocumentV2::from_runtime(
+                normalized_metadata.clone(),
+                MetadataHeader::new(
+                    MetadataKind::AutomaticExecution,
+                    AUTOMATIC_EXECUTION_METADATA_VERSION,
+                    timestamp,
+                    timestamp,
+                    Some(1),
+                ),
+                document.extra_fields,
+            );
+
+            Ok((
+                current_document,
+                normalized_metadata,
+                true,
+                Some(MigrationReport {
+                    kind: MetadataKind::AutomaticExecution,
+                    from_version: 1,
+                    to_version: AUTOMATIC_EXECUTION_METADATA_VERSION,
+                    created_backup: false,
+                }),
+            ))
+        }
+        AUTOMATIC_EXECUTION_METADATA_VERSION => {
+            let document =
+                serde_json::from_value::<PersistedAutomaticExecutionDocumentV2>(raw_value.clone())?;
+            validate_instance(MetadataKind::AutomaticExecution, &raw_value)?;
+            let runtime_metadata = normalize_automatic_execution_metadata(
+                Some(StoredAutomaticExecutionMetadata {
+                    version: document.header.version,
+                    active_script_id: document.active_script_id.clone(),
+                    scripts: Some(document.scripts.clone()),
+                }),
+                on_disk_file_names,
+            );
+            let needs_rewrite = runtime_metadata
+                != document
+                    .clone()
+                    .into_runtime()
+                    .with_repaired_active_script_id();
+            let current_document = if needs_rewrite {
+                current_automatic_execution_document_from_runtime(
+                    runtime_metadata.clone(),
+                    Some(&document),
+                    None,
+                    timestamp,
+                )
+            } else {
+                document
+            };
+
+            Ok((current_document, runtime_metadata, needs_rewrite, None))
+        }
+        unsupported_version => Err(MetadataError::UnsupportedVersion {
+            kind: MetadataKind::AutomaticExecution,
+            version: u64::from(unsupported_version),
+        }
+        .into()),
+    }
+}
+
+fn write_automatic_execution_document(
+    automatic_execution_path: &Path,
+    metadata_path: &Path,
+    document: &PersistedAutomaticExecutionDocumentV2,
+    existing_version: Option<u8>,
+    migration_report: &mut Option<MigrationReport>,
+) -> Result<()> {
+    validate_instance(
+        MetadataKind::AutomaticExecution,
+        &serde_json::to_value(document)
+            .context("failed to serialize automatic execution metadata")?,
+    )?;
+
+    if let Some(version) =
+        existing_version.filter(|version| *version != AUTOMATIC_EXECUTION_METADATA_VERSION)
+    {
+        let timestamp = current_unix_timestamp()?;
+        let created_backup = create_backup(
+            metadata_path,
+            &automatic_execution_backup_path(automatic_execution_path, version, timestamp),
+        )?;
+
+        if let Some(report) = migration_report {
+            report.created_backup = created_backup;
+        }
+    }
+
+    atomic_write_json(metadata_path, document)
+}
+
+pub(super) fn read_automatic_execution_metadata_with_report(
+    automatic_execution_path: &Path,
+) -> Result<MetadataReadResult<AutomaticExecutionMetadata>> {
+    ensure_directory(automatic_execution_path)?;
+    let metadata_path = get_metadata_path(automatic_execution_path);
+    let on_disk_file_names = read_disk_script_file_names(automatic_execution_path)?;
+    let timestamp = current_unix_timestamp()?;
+    let Some(raw_value) = read_json_value(&metadata_path)? else {
+        let metadata = normalize_automatic_execution_metadata(None, &on_disk_file_names);
+        let document = current_automatic_execution_document_from_runtime(
+            metadata.clone(),
+            None,
+            None,
+            timestamp,
+        );
+        let mut migration_report = None;
+
+        write_automatic_execution_document(
+            automatic_execution_path,
+            &metadata_path,
+            &document,
+            None,
+            &mut migration_report,
+        )?;
+
+        return Ok(MetadataReadResult {
+            value: metadata,
+            wrote_document: true,
+            migration_report,
+        });
+    };
+
+    let existing_version = detect_automatic_execution_version(&raw_value)?;
+    let (document, metadata, should_write, mut migration_report) =
+        migrate_automatic_execution_document(raw_value, &on_disk_file_names, timestamp)?;
+
+    if should_write {
+        write_automatic_execution_document(
+            automatic_execution_path,
+            &metadata_path,
+            &document,
+            Some(existing_version),
+            &mut migration_report,
+        )?;
+    }
+
+    Ok(MetadataReadResult {
+        value: metadata,
+        wrote_document: should_write,
+        migration_report,
+    })
+}
+
 pub(super) fn read_automatic_execution_metadata(
     automatic_execution_path: &Path,
 ) -> Result<AutomaticExecutionMetadata> {
-    ensure_directory(automatic_execution_path)?;
-    let metadata_path = get_metadata_path(automatic_execution_path);
-    let stored_metadata = read_json_file::<StoredAutomaticExecutionMetadata>(&metadata_path)?;
-    let on_disk_file_names = read_disk_script_file_names(automatic_execution_path)?;
-    let normalized_metadata =
-        normalize_automatic_execution_metadata(stored_metadata.clone(), &on_disk_file_names);
-    let normalized_stored_metadata = StoredAutomaticExecutionMetadata {
-        version: normalized_metadata.version,
-        active_script_id: normalized_metadata.active_script_id.clone(),
-        scripts: Some(normalized_metadata.scripts.clone()),
-    };
-
-    if stored_metadata.as_ref() != Some(&normalized_stored_metadata) {
-        write_json_file(&metadata_path, &normalized_metadata)?;
-    }
-
-    Ok(normalized_metadata)
+    Ok(read_automatic_execution_metadata_with_report(automatic_execution_path)?.value)
 }
 
 pub(super) fn write_automatic_execution_metadata(
@@ -414,7 +656,47 @@ pub(super) fn write_automatic_execution_metadata(
     metadata: &AutomaticExecutionMetadata,
 ) -> Result<()> {
     ensure_directory(automatic_execution_path)?;
-    write_json_file(&get_metadata_path(automatic_execution_path), metadata)
+    let metadata_path = get_metadata_path(automatic_execution_path);
+    let timestamp = current_unix_timestamp()?;
+    let existing_value = read_json_value(&metadata_path)?;
+    let existing_version = existing_value
+        .as_ref()
+        .map(detect_automatic_execution_version)
+        .transpose()?;
+    let existing_document = match existing_value {
+        Some(raw_value) if existing_version == Some(AUTOMATIC_EXECUTION_METADATA_VERSION) => {
+            Some(serde_json::from_value::<
+                PersistedAutomaticExecutionDocumentV2,
+            >(raw_value)?)
+        }
+        _ => None,
+    };
+    let document = current_automatic_execution_document_from_runtime(
+        normalize_automatic_execution_metadata(
+            Some(automatic_execution_metadata_to_stored(metadata.clone())),
+            &metadata
+                .scripts
+                .iter()
+                .map(|script| script.file_name.clone())
+                .collect::<Vec<_>>(),
+        ),
+        existing_document.as_ref(),
+        None,
+        timestamp,
+    );
+
+    if existing_document.as_ref() == Some(&document) {
+        return Ok(());
+    }
+
+    let mut migration_report = None;
+    write_automatic_execution_document(
+        automatic_execution_path,
+        &metadata_path,
+        &document,
+        existing_version,
+        &mut migration_report,
+    )
 }
 
 pub(super) fn read_automatic_execution_snapshot(
@@ -747,8 +1029,59 @@ mod tests {
         let metadata = read_automatic_execution_metadata(automatic_execution_dir.path())?;
 
         assert!(automatic_execution_dir.path().is_dir());
-        assert_eq!(metadata.version, 1);
+        assert_eq!(metadata.version, AUTOMATIC_EXECUTION_METADATA_VERSION);
         assert!(get_metadata_path(automatic_execution_dir.path()).exists());
+        Ok(())
+    }
+
+    #[test]
+    fn read_automatic_execution_metadata_reports_repairs_without_marking_a_migration(
+    ) -> anyhow::Result<()> {
+        let automatic_execution_dir = TestAutomaticExecutionDir::new("repair-current-version");
+        let metadata_path = get_metadata_path(automatic_execution_dir.path());
+        let current_document = PersistedAutomaticExecutionDocumentV2 {
+            header: MetadataHeader::new(
+                MetadataKind::AutomaticExecution,
+                AUTOMATIC_EXECUTION_METADATA_VERSION,
+                1,
+                1,
+                None,
+            ),
+            active_script_id: Some("script-1".to_string()),
+            scripts: vec![
+                script("script-1", "alpha.lua", create_empty_cursor_state()),
+                script("script-2", "alpha.lua", create_empty_cursor_state()),
+            ],
+            extra_fields: serde_json::Map::new(),
+        };
+
+        ensure_directory(automatic_execution_dir.path())?;
+        write_script_file(
+            &automatic_execution_dir.path().join("alpha.lua"),
+            "print('alpha')",
+        )?;
+        atomic_write_json(&metadata_path, &current_document)?;
+
+        let result = read_automatic_execution_metadata_with_report(automatic_execution_dir.path())?;
+        let persisted_document = crate::metadata::io::read_json_file::<
+            PersistedAutomaticExecutionDocumentV2,
+        >(&metadata_path)?
+        .expect("repaired metadata should be persisted");
+
+        assert!(result.wrote_document);
+        assert!(result.migration_report.is_none());
+        assert_eq!(result.value.active_script_id.as_deref(), Some("script-1"));
+        assert_eq!(result.value.scripts.len(), 1);
+        assert_eq!(
+            persisted_document.active_script_id.as_deref(),
+            Some("script-1")
+        );
+        assert_eq!(persisted_document.scripts.len(), 1);
+        assert!(!automatic_execution_dir
+            .path()
+            .join(".fumi/backups/automatic-execution")
+            .exists());
+
         Ok(())
     }
 
@@ -776,7 +1109,7 @@ mod tests {
             &on_disk_file_names,
         );
 
-        assert_eq!(metadata.version, 1);
+        assert_eq!(metadata.version, AUTOMATIC_EXECUTION_METADATA_VERSION);
         assert_eq!(metadata.scripts.len(), 3);
         assert_eq!(metadata.scripts[0].id, "script-1");
         assert_eq!(metadata.scripts[0].file_name, "alpha.lua");

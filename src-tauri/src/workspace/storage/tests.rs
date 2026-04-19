@@ -1,5 +1,6 @@
 use super::*;
 use crate::executor::ExecutorKind;
+use serde_json::Map;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 struct TestWorkspaceDir {
@@ -203,6 +204,121 @@ fn normalize_workspace_metadata_upgrades_legacy_versions_to_v4_with_empty_histor
         assert_eq!(metadata.version, WORKSPACE_METADATA_VERSION);
         assert!(metadata.execution_history.is_empty());
     }
+}
+
+#[test]
+fn read_workspace_metadata_migrates_v4_documents_without_dropping_saved_state() -> anyhow::Result<()>
+{
+    let workspace_dir = TestWorkspaceDir::new("migrate-v4-workspace");
+    let metadata_path = get_workspace_metadata_path(workspace_dir.path());
+
+    let legacy_document = PersistedWorkspaceDocumentV4 {
+        version: 4,
+        active_tab_id: Some("tab-2".to_string()),
+        split_view: Some(WorkspaceSplitView {
+            direction: "vertical".to_string(),
+            primary_tab_id: "tab-2".to_string(),
+            secondary_tab_id: "tab-1".to_string(),
+            secondary_tab_ids: vec!["tab-1".to_string()],
+            split_ratio: 0.61,
+            focused_pane: WorkspacePaneId::Primary,
+        }),
+        tabs: Some(vec![
+            tab("tab-1", "one.lua", create_empty_cursor_state(), None),
+            tab("tab-2", "two.lua", create_empty_cursor_state(), None),
+        ]),
+        archived_tabs: Some(vec![tab(
+            "arch-1",
+            "archived.lua",
+            create_empty_cursor_state(),
+            Some(10),
+        )]),
+        execution_history: Some(vec![history_entry("history-1", 123)]),
+        extra_fields: Map::new(),
+    };
+
+    write_json_file(&metadata_path, &legacy_document)?;
+
+    let metadata = read_workspace_metadata(workspace_dir.path())?;
+    let persisted_document = read_json_file::<PersistedWorkspaceDocumentV5>(&metadata_path)?
+        .expect("migrated workspace metadata should be persisted");
+
+    assert_eq!(metadata.version, WORKSPACE_METADATA_VERSION);
+    assert_eq!(metadata.active_tab_id.as_deref(), Some("tab-2"));
+    assert_eq!(metadata.tabs.len(), 2);
+    assert_eq!(metadata.archived_tabs.len(), 1);
+    assert_eq!(
+        metadata
+            .split_view
+            .as_ref()
+            .map(|split| split.primary_tab_id.as_str()),
+        Some("tab-2")
+    );
+    assert_eq!(
+        metadata
+            .split_view
+            .as_ref()
+            .map(|split| split.secondary_tab_id.as_str()),
+        Some("tab-1")
+    );
+    assert_eq!(
+        metadata.execution_history,
+        vec![history_entry("history-1", 123)]
+    );
+    assert_eq!(persisted_document.header.migrated_from_version, Some(4));
+    assert_eq!(persisted_document.active_tab_id.as_deref(), Some("tab-2"));
+    assert_eq!(persisted_document.tabs.len(), 2);
+    assert_eq!(persisted_document.archived_tabs.len(), 1);
+    assert_eq!(
+        persisted_document.execution_history,
+        vec![history_entry("history-1", 123)]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn read_workspace_metadata_repairs_current_documents_without_reporting_a_migration(
+) -> anyhow::Result<()> {
+    let workspace_dir = TestWorkspaceDir::new("repair-current-version");
+    let metadata_path = get_workspace_metadata_path(workspace_dir.path());
+    let current_document = PersistedWorkspaceDocumentV5 {
+        header: MetadataHeader::new(
+            MetadataKind::Workspace,
+            CURRENT_WORKSPACE_METADATA_VERSION,
+            1,
+            1,
+            None,
+        ),
+        active_tab_id: Some("missing-tab".to_string()),
+        split_view: None,
+        tabs: vec![
+            tab("tab-1", "one.lua", create_empty_cursor_state(), None),
+            tab("tab-2", "one.lua", create_empty_cursor_state(), None),
+        ],
+        archived_tabs: vec![],
+        execution_history: vec![],
+        extra_fields: Map::new(),
+    };
+
+    write_json_file(&metadata_path, &current_document)?;
+
+    let result = read_workspace_metadata_impl(workspace_dir.path(), true)?;
+    let persisted_document = read_json_file::<PersistedWorkspaceDocumentV5>(&metadata_path)?
+        .expect("repaired workspace metadata should be persisted");
+
+    assert!(result.wrote_document);
+    assert!(result.migration_report.is_none());
+    assert_eq!(result.value.active_tab_id.as_deref(), Some("tab-1"));
+    assert_eq!(result.value.tabs.len(), 1);
+    assert_eq!(persisted_document.active_tab_id.as_deref(), Some("tab-1"));
+    assert_eq!(persisted_document.tabs.len(), 1);
+    assert!(!workspace_dir
+        .path()
+        .join(".fumi/backups/workspace")
+        .exists());
+
+    Ok(())
 }
 
 #[test]

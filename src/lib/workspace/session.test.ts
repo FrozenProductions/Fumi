@@ -208,7 +208,7 @@ describe("buildWorkspaceSession", () => {
     it("carries execution history from the snapshot metadata", () => {
         const snapshot = createWorkspaceSnapshot({
             metadata: {
-                version: 4,
+                version: 5,
                 activeTabId: "tab-1",
                 splitView: null,
                 tabs: [createTabState("tab-1")],

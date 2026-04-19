@@ -8,6 +8,7 @@ mod executor;
 mod lifecycle;
 mod luau;
 mod menu;
+mod metadata;
 mod state;
 mod workspace;
 

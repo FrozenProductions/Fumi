@@ -6,6 +6,7 @@ use tauri::command;
 use crate::{
     command::{run_command, CommandResponse},
     executor::ExecutorKind,
+    metadata::AUTOMATIC_EXECUTION_METADATA_VERSION,
 };
 
 use super::{
@@ -272,7 +273,7 @@ pub fn delete_automatic_execution_script(
             .filter(|item| item.id != script_id)
             .collect::<Vec<_>>();
         let next_metadata = AutomaticExecutionMetadata {
-            version: 1,
+            version: AUTOMATIC_EXECUTION_METADATA_VERSION,
             active_script_id: metadata
                 .active_script_id
                 .filter(|active_script_id| active_script_id != &script_id),
@@ -331,7 +332,7 @@ pub fn persist_automatic_execution_state(
         write_automatic_execution_metadata(
             &automatic_execution_path,
             &AutomaticExecutionMetadata {
-                version: 1,
+                version: AUTOMATIC_EXECUTION_METADATA_VERSION,
                 active_script_id,
                 scripts: normalized_scripts,
             },

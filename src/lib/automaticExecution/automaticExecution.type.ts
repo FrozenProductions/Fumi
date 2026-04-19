@@ -18,7 +18,7 @@ export type AutomaticExecutionScriptSnapshot = AutomaticExecutionScriptState & {
 };
 
 export type AutomaticExecutionMetadata = {
-    version: 1;
+    version: 2;
     activeScriptId: string | null;
     scripts: AutomaticExecutionScriptState[];
 };

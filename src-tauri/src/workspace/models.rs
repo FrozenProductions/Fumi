@@ -1,6 +1,9 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 
 use crate::executor::ExecutorKind;
+use crate::metadata::{MetadataHeader, CURRENT_WORKSPACE_METADATA_VERSION};
 
 pub(super) const WORKSPACE_METADATA_DIR_NAME: &str = ".fumi";
 pub(super) const WORKSPACE_METADATA_FILE_NAME: &str = "workspace.json";
@@ -13,10 +16,10 @@ pub(super) const LEGACY_STATE_DIRECTORIES: [&str; 2] = ["Fumi", "frozenproductio
 pub(super) const DEFAULT_WORKSPACE_SPLIT_RATIO: f64 = 0.5;
 pub(super) const MIN_WORKSPACE_SPLIT_RATIO: f64 = 0.12;
 pub(super) const MAX_WORKSPACE_SPLIT_RATIO: f64 = 0.88;
-pub(super) const WORKSPACE_METADATA_VERSION: u8 = 4;
+pub(super) const WORKSPACE_METADATA_VERSION: u8 = CURRENT_WORKSPACE_METADATA_VERSION;
 pub(super) const MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES: usize = 100;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceCursorState {
     pub line: i64,
@@ -24,7 +27,7 @@ pub struct WorkspaceCursorState {
     pub scroll_top: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceTabState {
     pub id: String,
@@ -34,7 +37,7 @@ pub struct WorkspaceTabState {
     pub archived_at: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceTabSnapshot {
     pub id: String,
@@ -44,14 +47,14 @@ pub struct WorkspaceTabSnapshot {
     pub is_dirty: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum WorkspacePaneId {
     Primary,
     Secondary,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceSplitView {
     pub direction: String,
@@ -68,7 +71,7 @@ fn default_workspace_split_ratio() -> f64 {
     DEFAULT_WORKSPACE_SPLIT_RATIO
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceMetadata {
     pub version: u8,
@@ -81,7 +84,7 @@ pub struct WorkspaceMetadata {
     pub execution_history: Vec<WorkspaceExecutionHistoryEntry>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceSnapshot {
     pub workspace_path: String,
@@ -90,21 +93,21 @@ pub struct WorkspaceSnapshot {
     pub tabs: Vec<WorkspaceTabSnapshot>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceBootstrapResponse {
     pub last_workspace_path: Option<String>,
     pub workspace: Option<WorkspaceSnapshot>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct DroppedWorkspaceScriptDraft {
     pub file_name: String,
     pub content: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceExecutionHistoryEntry {
     pub id: String,
@@ -124,7 +127,7 @@ pub(super) struct StoredAppState {
     pub(super) last_workspace_path: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct StoredWorkspaceMetadata {
     pub(super) version: u8,
@@ -135,4 +138,105 @@ pub(super) struct StoredWorkspaceMetadata {
     pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(default)]
     pub(super) execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedWorkspaceDocumentV1 {
+    pub(super) version: u8,
+    pub(super) active_tab_id: Option<String>,
+    #[serde(default)]
+    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedWorkspaceDocumentV2 {
+    pub(super) version: u8,
+    pub(super) active_tab_id: Option<String>,
+    #[serde(default)]
+    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(default)]
+    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedWorkspaceDocumentV3 {
+    pub(super) version: u8,
+    pub(super) active_tab_id: Option<String>,
+    #[serde(default)]
+    pub(super) split_view: Option<WorkspaceSplitView>,
+    #[serde(default)]
+    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(default)]
+    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedWorkspaceDocumentV4 {
+    pub(super) version: u8,
+    pub(super) active_tab_id: Option<String>,
+    #[serde(default)]
+    pub(super) split_view: Option<WorkspaceSplitView>,
+    #[serde(default)]
+    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(default)]
+    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    #[serde(default)]
+    pub(super) execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedWorkspaceDocumentV5 {
+    #[serde(flatten)]
+    pub(super) header: MetadataHeader,
+    #[serde(default)]
+    pub(super) active_tab_id: Option<String>,
+    #[serde(default)]
+    pub(super) split_view: Option<WorkspaceSplitView>,
+    pub(super) tabs: Vec<WorkspaceTabState>,
+    pub(super) archived_tabs: Vec<WorkspaceTabState>,
+    pub(super) execution_history: Vec<WorkspaceExecutionHistoryEntry>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+impl PersistedWorkspaceDocumentV5 {
+    pub(super) fn into_runtime(self) -> WorkspaceMetadata {
+        WorkspaceMetadata {
+            version: self.header.version,
+            active_tab_id: self.active_tab_id,
+            split_view: self.split_view,
+            tabs: self.tabs,
+            archived_tabs: self.archived_tabs,
+            execution_history: self.execution_history,
+        }
+    }
+
+    pub(super) fn from_runtime(
+        metadata: WorkspaceMetadata,
+        header: MetadataHeader,
+        extra_fields: Map<String, Value>,
+    ) -> Self {
+        Self {
+            header,
+            active_tab_id: metadata.active_tab_id,
+            split_view: metadata.split_view,
+            tabs: metadata.tabs,
+            archived_tabs: metadata.archived_tabs,
+            execution_history: metadata.execution_history,
+            extra_fields,
+        }
+    }
 }

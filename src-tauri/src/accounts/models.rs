@@ -1,18 +1,22 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
+
+use crate::metadata::{registry::ACCOUNTS_METADATA_VERSION, MetadataHeader};
 
 pub(super) const ACCOUNTS_DIR_NAME: &str = "accounts";
 pub(super) const ACCOUNTS_MANIFEST_FILE_NAME: &str = "accounts.json";
 pub(super) const ACCOUNTS_COOKIES_DIR_NAME: &str = "cookies";
-pub(super) const ACCOUNTS_MANIFEST_VERSION: u8 = 2;
+pub(super) const ACCOUNTS_MANIFEST_VERSION: u8 = ACCOUNTS_METADATA_VERSION;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum AccountStatus {
     Active,
     Offline,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountSummary {
     pub id: String,
@@ -25,14 +29,14 @@ pub struct AccountSummary {
     pub last_launched_at: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountListResponse {
     pub accounts: Vec<AccountSummary>,
     pub is_roblox_running: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RobloxProcessInfo {
     pub pid: u32,
@@ -42,7 +46,7 @@ pub struct RobloxProcessInfo {
     pub is_bound_to_unknown_account: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RobloxAccountIdentity {
     pub user_id: i64,
@@ -70,7 +74,7 @@ impl ResolvedRobloxAccount {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct StoredAccountRecord {
     pub(super) id: String,
@@ -84,7 +88,7 @@ pub(super) struct StoredAccountRecord {
     pub(super) last_launched_at: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct StoredRobloxBindingRecord {
     pub(super) pid: u32,
@@ -93,7 +97,7 @@ pub(super) struct StoredRobloxBindingRecord {
     pub(super) account_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct StoredAccountsManifest {
     pub(super) version: u8,
@@ -126,6 +130,60 @@ impl StoredAccountRecord {
             },
             bound_port: bound_port,
             last_launched_at: self.last_launched_at,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedAccountsDocumentV1 {
+    pub(super) version: u8,
+    pub(super) active_account_id: Option<String>,
+    pub(super) accounts: Vec<StoredAccountRecord>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedAccountsDocumentV2 {
+    pub(super) version: u8,
+    pub(super) accounts: Vec<StoredAccountRecord>,
+    pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PersistedAccountsDocumentV3 {
+    #[serde(flatten)]
+    pub(super) header: MetadataHeader,
+    pub(super) accounts: Vec<StoredAccountRecord>,
+    pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
+    #[serde(flatten, default)]
+    pub(super) extra_fields: Map<String, Value>,
+}
+
+impl PersistedAccountsDocumentV3 {
+    pub(super) fn into_runtime(self) -> StoredAccountsManifest {
+        StoredAccountsManifest {
+            version: self.header.version,
+            accounts: self.accounts,
+            roblox_bindings: self.roblox_bindings,
+        }
+    }
+
+    pub(super) fn from_runtime(
+        manifest: StoredAccountsManifest,
+        header: MetadataHeader,
+        extra_fields: Map<String, Value>,
+    ) -> Self {
+        Self {
+            header,
+            accounts: manifest.accounts,
+            roblox_bindings: manifest.roblox_bindings,
+            extra_fields,
         }
     }
 }
