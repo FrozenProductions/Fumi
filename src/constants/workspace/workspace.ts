@@ -33,6 +33,8 @@ export const SPLIT_DROP_IDS = new Set([
 export const WORKSPACE_TAB_LIST_DROPDOWN_STYLE = {
     "--workspace-menu-radius": `${WORKSPACE_MENU_RADIUS_REM}rem`,
     "--workspace-menu-inset": `${WORKSPACE_MENU_INSET_REM}rem`,
+    "--workspace-menu-item-radius":
+        "calc(var(--workspace-menu-radius) - var(--workspace-menu-inset))",
     paddingBottom: `${WORKSPACE_TAB_LIST_BOTTOM_PADDING_REM}rem`,
     paddingInline: `${WORKSPACE_TAB_LIST_HORIZONTAL_PADDING_REM}rem`,
     paddingTop: `${WORKSPACE_TAB_LIST_TOP_PADDING_REM}rem`,
