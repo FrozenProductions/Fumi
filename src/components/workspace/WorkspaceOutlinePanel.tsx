@@ -9,6 +9,7 @@ import {
     WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT,
     WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT,
     WORKSPACE_OUTLINE_VIRTUAL_OVERSCAN,
+    WORKSPACE_OUTLINE_VIRTUAL_PADDING,
 } from "../../constants/workspace/outline";
 import type { LuauFileSymbol } from "../../lib/luau/luau.type";
 import { searchWorkspaceOutlineGroups } from "../../lib/workspace/outlineSearch";
@@ -56,6 +57,12 @@ function getSymbolColor(kind: LuauFileSymbol["kind"]): string {
         default:
             return "text-fumi-600";
     }
+}
+
+function getOutlineEntrySize(entry: OutlineEntry | undefined): number {
+    return entry?.type === "group"
+        ? WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT
+        : WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT;
 }
 
 const OutlineSymbolRow = memo(function OutlineSymbolRow({
@@ -187,18 +194,18 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     const virtualizerOptions = useMemo(
         () => ({
             count: entries.length,
-            estimateSize: (index: number) => {
-                const entry = entries[index];
-                return entry?.type === "group"
-                    ? WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT
-                    : WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT;
-            },
+            estimateSize: (index: number) =>
+                getOutlineEntrySize(entries[index]),
+            getItemKey: (index: number) => entries[index]?.id ?? index,
             getScrollElement: () => scrollRef.current,
             overscan: WORKSPACE_OUTLINE_VIRTUAL_OVERSCAN,
+            paddingEnd: WORKSPACE_OUTLINE_VIRTUAL_PADDING,
+            paddingStart: WORKSPACE_OUTLINE_VIRTUAL_PADDING,
         }),
         [entries],
     );
     const rowVirtualizer = useVirtualizer(virtualizerOptions);
+    const virtualItems = rowVirtualizer.getVirtualItems();
 
     const isQueryActive = outlineSearchQuery.trim().length > 0;
 
@@ -253,7 +260,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
             </div>
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto scroll-smooth py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="flex-1 overflow-y-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
                 {entries.length > 0 ? (
                     <div
@@ -262,7 +269,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                             height: `${rowVirtualizer.getTotalSize()}px`,
                         }}
                     >
-                        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                        {virtualItems.map((virtualItem) => {
                             const entry = entries[virtualItem.index];
 
                             if (!entry) {
@@ -271,10 +278,9 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
 
                             return (
                                 <div
-                                    key={entry.id}
+                                    key={virtualItem.key}
                                     data-index={virtualItem.index}
                                     className="absolute left-0 top-0 w-full px-2"
-                                    ref={rowVirtualizer.measureElement}
                                     style={{
                                         height: `${virtualItem.size}px`,
                                         transform: `translateY(${virtualItem.start}px)`,
