@@ -19,11 +19,11 @@ Fumi is an elegant and soft UI wrapper for MacSploit and Opiumware.
 ## Current Feature Set
 
 - Workspace editor for local folders with tab creation, rename, duplicate, reorder, archive, restore, delete, and session restore flows
-- Luau-focused editing with Ace, completion support, outline analysis, editor search, split panes, and persisted workspace state
+- Luau-focused editing with Ace, completion support, outline panel, execution history, editor search, split panes, and persisted workspace state
 - Script Library screen backed by Rscripts.net with search, filters, sorting, favorites, copy-link, copy-script, and add-to-workspace actions
 - Accounts screen for saving roblox cookies, resolving Roblox profiles, launching saved accounts, and deleting stored accounts
 - Roblox process controls from the desktop shell, including launch, process listing, and kill actions
-- Executor integration for attach, detach, reattach, execute, and executor setting updates
+- Executor integration for attach, detach, reattach, automatic execution, and execute
 - Settings for theme, zoom, updater behavior, editor preferences, hotkeys, and archived workspace tabs
 - Native Tauri menus, dialogs, clipboard writes, updater flow, opener integration, and desktop window lifecycle handling
 
