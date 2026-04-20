@@ -1,8 +1,5 @@
-import { useEffect } from "react";
-import {
-    WORKSPACE_PERSIST_DELAY_MS,
-    WORKSPACE_REFRESH_INTERVAL_MS,
-} from "../../constants/workspace/workspace";
+import { useEffect, useRef } from "react";
+import { WORKSPACE_PERSIST_DELAY_MS } from "../../constants/workspace/workspace";
 import {
     getLastPersistedWorkspaceSignature,
     markWorkspacePersistedSignature,
@@ -27,6 +24,8 @@ export function useWorkspaceStoreLifecycle(): void {
     const workspaceSignature = useWorkspaceStore(
         selectWorkspacePersistSignature,
     );
+    const refreshTimeoutRef = useRef<number | null>(null);
+    const lastWorkspaceRefreshAtRef = useRef(0);
 
     useEffect(() => {
         void bootstrapWorkspaceSession();
@@ -70,17 +69,33 @@ export function useWorkspaceStoreLifecycle(): void {
             return;
         }
 
-        const intervalId = window.setInterval(() => {
-            void refreshWorkspaceFromFilesystem();
-        }, WORKSPACE_REFRESH_INTERVAL_MS);
+        const scheduleWorkspaceRefresh = (): void => {
+            if (refreshTimeoutRef.current !== null) {
+                window.clearTimeout(refreshTimeoutRef.current);
+            }
+
+            refreshTimeoutRef.current = window.setTimeout(() => {
+                refreshTimeoutRef.current = null;
+
+                const now = Date.now();
+
+                // Focus and visibility events often arrive back-to-back.
+                if (now - lastWorkspaceRefreshAtRef.current < 250) {
+                    return;
+                }
+
+                lastWorkspaceRefreshAtRef.current = now;
+                void refreshWorkspaceFromFilesystem();
+            }, 100);
+        };
 
         const handleWindowFocus = (): void => {
-            void refreshWorkspaceFromFilesystem();
+            scheduleWorkspaceRefresh();
         };
 
         const handleVisibilityChange = (): void => {
             if (document.visibilityState === "visible") {
-                void refreshWorkspaceFromFilesystem();
+                scheduleWorkspaceRefresh();
             }
         };
 
@@ -88,7 +103,11 @@ export function useWorkspaceStoreLifecycle(): void {
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
-            window.clearInterval(intervalId);
+            if (refreshTimeoutRef.current !== null) {
+                window.clearTimeout(refreshTimeoutRef.current);
+                refreshTimeoutRef.current = null;
+            }
+
             window.removeEventListener("focus", handleWindowFocus);
             document.removeEventListener(
                 "visibilitychange",

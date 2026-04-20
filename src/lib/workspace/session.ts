@@ -661,14 +661,15 @@ export function mergeWorkspaceSession(
     const currentTabsById = new Map(
         currentWorkspace.tabs.map((tab) => [tab.id, tab] as const),
     );
+    const snapshotTabsById = new Map(
+        snapshot.tabs.map((tab) => [tab.id, tab] as const),
+    );
     const snapshotTabIds = new Set(
         snapshot.metadata.tabs.map((tabState) => tabState.id),
     );
     const refreshedTabs = snapshot.metadata.tabs
         .map((tabState) => {
-            const snapshotTab = snapshot.tabs.find(
-                (tab) => tab.id === tabState.id,
-            );
+            const snapshotTab = snapshotTabsById.get(tabState.id);
 
             if (!snapshotTab) {
                 return null;
