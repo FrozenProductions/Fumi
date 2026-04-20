@@ -1,4 +1,9 @@
 import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
+import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+
+export type AutomaticExecutionScreenProps = {
+    executorKind: ExecutorKind;
+};
 
 export type AutomaticExecutionSidebarProps = {
     scripts: AutomaticExecutionScript[];

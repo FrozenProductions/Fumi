@@ -13,7 +13,6 @@ import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
 import { useAppUpdater } from "../hooks/app/useAppUpdater";
 import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
-import { useAutomaticExecutionLifecycle } from "../hooks/automaticExecution/useAutomaticExecutionLifecycle";
 import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
@@ -24,7 +23,7 @@ import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStore } from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
-import { createAppScreenMap, getAppTopbarWorkspaceContext } from "./appScreens";
+import { getAppScreen, getAppTopbarWorkspaceContext } from "./appScreens";
 
 export function App(): ReactElement {
     useWorkspaceStoreLifecycle();
@@ -80,7 +79,6 @@ export function App(): ReactElement {
             : null,
         onExecutionHistoryUpdated: replaceWorkspaceExecutionHistory,
     });
-    useAutomaticExecutionLifecycle(workspaceExecutor.state.executorKind);
     const automaticExecutionHasUnsavedChanges = useAutomaticExecutionStore(
         selectAutomaticExecutionHasUnsavedChanges,
     );
@@ -124,7 +122,8 @@ export function App(): ReactElement {
         activeSidebarItem,
         workspaceSession,
     );
-    const appScreens = createAppScreenMap(
+    const activeScreen = getAppScreen(
+        activeSidebarItem,
         workspaceSession,
         workspaceExecutor,
         updater,
@@ -186,31 +185,12 @@ export function App(): ReactElement {
                     ) : null}
                     <main className="min-w-0 flex-1 bg-fumi-50">
                         <div className="relative h-full w-full overflow-hidden">
-                            {(
-                                [
-                                    "workspace",
-                                    "automatic-execution",
-                                    "script-library",
-                                    "accounts",
-                                    "settings",
-                                ] as const
-                            ).map((screenId) => {
-                                const isActive = activeSidebarItem === screenId;
-
-                                return (
-                                    <div
-                                        key={screenId}
-                                        aria-hidden={!isActive}
-                                        className={`absolute inset-0 h-full w-full transition-[opacity,transform] duration-200 ${
-                                            isActive
-                                                ? "z-10 opacity-100 translate-y-0"
-                                                : "pointer-events-none z-0 translate-y-1 opacity-0"
-                                        }`}
-                                    >
-                                        {appScreens[screenId]}
-                                    </div>
-                                );
-                            })}
+                            <div
+                                key={activeSidebarItem}
+                                className="absolute inset-0 h-full w-full"
+                            >
+                                {activeScreen}
+                            </div>
                         </div>
                     </main>
                     {sidebarPosition === "right" ? (

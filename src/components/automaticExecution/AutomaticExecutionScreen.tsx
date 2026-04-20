@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { useEffect } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useAutomaticExecution } from "../../hooks/automaticExecution/useAutomaticExecution";
+import { useAutomaticExecutionLifecycle } from "../../hooks/automaticExecution/useAutomaticExecutionLifecycle";
 import { confirmAction } from "../../lib/platform/dialog";
 import { openDirectoryPath } from "../../lib/platform/opener";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
@@ -10,13 +11,17 @@ import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { AutomaticExecutionEditor } from "./AutomaticExecutionEditor";
 import { AutomaticExecutionSidebar } from "./AutomaticExecutionSidebar";
+import type { AutomaticExecutionScreenProps } from "./automaticExecution.type";
 
 /**
  * The main automatic execution screen with script editor and sidebar.
  *
  * @returns A React component
  */
-export function AutomaticExecutionScreen(): ReactElement {
+export function AutomaticExecutionScreen({
+    executorKind: lifecycleExecutorKind,
+}: AutomaticExecutionScreenProps): ReactElement {
+    useAutomaticExecutionLifecycle(lifecycleExecutorKind);
     const automaticExecution = useAutomaticExecution();
     const appTheme = useAppStore((state) => state.theme);
     const editorFontSize = useAppStore(

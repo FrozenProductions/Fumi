@@ -35,7 +35,8 @@ export function getAppTopbarWorkspaceContext(
     };
 }
 
-export function createAppScreenMap(
+export function getAppScreen(
+    activeSidebarItem: AppSidebarItem,
     workspaceSession: UseWorkspaceSessionResult,
     workspaceExecutor: UseWorkspaceExecutorResult,
     updater: UseAppUpdaterResult,
@@ -43,27 +44,34 @@ export function createAppScreenMap(
         WorkspaceScreenProps,
         "executionHistoryModal"
     >,
-): Record<AppSidebarItem, ReactElement> {
-    return {
-        workspace: (
-            <WorkspaceScreen
-                session={workspaceSession}
-                executor={workspaceExecutor}
-                executionHistoryModal={
-                    workspaceScreenOverlays.executionHistoryModal
-                }
-            />
-        ),
-        "automatic-execution": <AutomaticExecutionScreen />,
-        "script-library": (
-            <ScriptLibraryScreen workspaceSession={workspaceSession} />
-        ),
-        accounts: <AccountsScreen />,
-        settings: (
-            <AppSettingsScreen
-                updater={updater}
-                workspaceSession={workspaceSession}
-            />
-        ),
-    };
+): ReactElement {
+    switch (activeSidebarItem) {
+        case "workspace":
+            return (
+                <WorkspaceScreen
+                    session={workspaceSession}
+                    executor={workspaceExecutor}
+                    executionHistoryModal={
+                        workspaceScreenOverlays.executionHistoryModal
+                    }
+                />
+            );
+        case "automatic-execution":
+            return (
+                <AutomaticExecutionScreen
+                    executorKind={workspaceExecutor.state.executorKind}
+                />
+            );
+        case "script-library":
+            return <ScriptLibraryScreen workspaceSession={workspaceSession} />;
+        case "accounts":
+            return <AccountsScreen />;
+        case "settings":
+            return (
+                <AppSettingsScreen
+                    updater={updater}
+                    workspaceSession={workspaceSession}
+                />
+            );
+    }
 }
