@@ -3,7 +3,6 @@ import type { AccountSummary } from "../../lib/accounts/accounts.type";
 export type UseAccountsResult = {
     accounts: AccountSummary[];
     isRobloxRunning: boolean;
-    isLoading: boolean;
     errorMessage: string | null;
     isAddModalOpen: boolean;
     draftCookie: string;

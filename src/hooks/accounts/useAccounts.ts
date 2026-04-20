@@ -25,7 +25,6 @@ export function useAccounts(): UseAccountsResult {
         () => [] as ReturnType<typeof sortAccounts>,
     );
     const [isRobloxRunning, setIsRobloxRunning] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [draftCookie, setDraftCookie] = useState("");
@@ -61,10 +60,6 @@ export function useAccounts(): UseAccountsResult {
                 setErrorMessage(
                     getErrorMessage(error, "Could not load saved accounts."),
                 );
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
             }
         }
 
@@ -168,7 +163,6 @@ export function useAccounts(): UseAccountsResult {
     return {
         accounts,
         isRobloxRunning,
-        isLoading,
         errorMessage,
         isAddModalOpen,
         draftCookie,

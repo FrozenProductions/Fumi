@@ -29,7 +29,6 @@ function getAccountStatusLabel(account: AccountSummary): string {
 export function AccountsScreen(): ReactElement {
     const {
         accounts,
-        isLoading,
         errorMessage,
         isAddModalOpen,
         draftCookie,
@@ -87,18 +86,7 @@ export function AccountsScreen(): ReactElement {
                         </div>
                     ) : null}
 
-                    {isLoading ? (
-                        <div className="flex flex-1 items-center justify-center rounded-[1.35rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-card)]">
-                            <div className="py-10 text-center">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
-                                    Loading
-                                </p>
-                                <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-fumi-900">
-                                    Loading saved accounts
-                                </h3>
-                            </div>
-                        </div>
-                    ) : accounts.length === 0 ? (
+                    {accounts.length === 0 ? (
                         <div className="flex flex-1 items-center justify-center bg-fumi-50 p-8">
                             <div className="mx-auto flex max-w-lg flex-col items-center text-center">
                                 <div
