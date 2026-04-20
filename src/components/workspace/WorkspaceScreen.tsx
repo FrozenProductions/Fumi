@@ -130,6 +130,10 @@ export function WorkspaceScreen({
         useState<RobloxAccountIdentity | null>(null);
     const [isLaunching, setIsLaunching] = useState(false);
     const [isKillingRoblox, setIsKillingRoblox] = useState(false);
+    const robloxProcessesRequestIdRef = useRef(0);
+    const robloxProcessesRefreshTimeoutRef = useRef<number | null>(null);
+    const lastRobloxProcessesRefreshAtRef = useRef(0);
+    const liveRobloxAccountRequestIdRef = useRef(0);
     const isDesktopShell = isTauriEnvironment();
     const launchRobloxHotkey = getAppHotkeyBinding(
         "LAUNCH_ROBLOX",
@@ -141,55 +145,110 @@ export function WorkspaceScreen({
         hotkeyBindings,
     );
 
-    useEffect(() => {
-        let isMounted = true;
+    const refreshRobloxProcesses = useCallback(async (): Promise<void> => {
+        const requestId = robloxProcessesRequestIdRef.current + 1;
+        robloxProcessesRequestIdRef.current = requestId;
 
-        async function pollRobloxState(): Promise<void> {
-            try {
-                const processes = await listRobloxProcesses();
-                if (isMounted) {
-                    setRobloxProcesses(processes);
-                }
-            } catch {}
-        }
+        try {
+            const processes = await listRobloxProcesses();
 
-        void pollRobloxState();
-        const intervalId = window.setInterval(() => {
-            void pollRobloxState();
-        }, 2_000);
-
-        return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
-        };
+            if (robloxProcessesRequestIdRef.current === requestId) {
+                setRobloxProcesses(processes);
+            }
+        } catch {}
     }, []);
 
     useEffect(() => {
-        let isMounted = true;
+        const scheduleRobloxProcessesRefresh = (): void => {
+            if (robloxProcessesRefreshTimeoutRef.current !== null) {
+                window.clearTimeout(robloxProcessesRefreshTimeoutRef.current);
+            }
 
-        async function pollLiveRobloxAccount(): Promise<void> {
-            try {
-                const account = await getLiveRobloxAccount();
-                if (isMounted) {
-                    setLiveRobloxAccount(account);
+            robloxProcessesRefreshTimeoutRef.current = window.setTimeout(() => {
+                robloxProcessesRefreshTimeoutRef.current = null;
+
+                const now = Date.now();
+
+                // Focus and visibility events often arrive together.
+                if (now - lastRobloxProcessesRefreshAtRef.current < 250) {
+                    return;
                 }
-            } catch {
-                if (isMounted) {
-                    setLiveRobloxAccount(null);
-                }
+
+                lastRobloxProcessesRefreshAtRef.current = now;
+                void refreshRobloxProcesses();
+            }, 100);
+        };
+
+        const refreshFromVisibility = (): void => {
+            if (document.visibilityState !== "visible") {
+                return;
+            }
+
+            scheduleRobloxProcessesRefresh();
+        };
+
+        void refreshRobloxProcesses();
+        window.addEventListener("focus", refreshFromVisibility);
+        document.addEventListener("visibilitychange", refreshFromVisibility);
+
+        return () => {
+            if (robloxProcessesRefreshTimeoutRef.current !== null) {
+                window.clearTimeout(robloxProcessesRefreshTimeoutRef.current);
+                robloxProcessesRefreshTimeoutRef.current = null;
+            }
+
+            window.removeEventListener("focus", refreshFromVisibility);
+            document.removeEventListener(
+                "visibilitychange",
+                refreshFromVisibility,
+            );
+        };
+    }, [refreshRobloxProcesses]);
+
+    const refreshLiveRobloxAccount = useCallback(async (): Promise<void> => {
+        const requestId = liveRobloxAccountRequestIdRef.current + 1;
+        liveRobloxAccountRequestIdRef.current = requestId;
+
+        try {
+            const account = await getLiveRobloxAccount();
+
+            if (liveRobloxAccountRequestIdRef.current === requestId) {
+                setLiveRobloxAccount(account);
+            }
+        } catch {
+            if (liveRobloxAccountRequestIdRef.current === requestId) {
+                setLiveRobloxAccount(null);
             }
         }
+    }, []);
 
-        void pollLiveRobloxAccount();
-        const intervalId = window.setInterval(() => {
-            void pollLiveRobloxAccount();
-        }, 15_000);
+    useEffect(() => {
+        if (robloxProcesses.length === 0) {
+            liveRobloxAccountRequestIdRef.current += 1;
+            setLiveRobloxAccount(null);
+            return;
+        }
+
+        const refreshFromVisibility = (): void => {
+            if (document.visibilityState !== "visible") {
+                return;
+            }
+
+            void refreshLiveRobloxAccount();
+        };
+
+        void refreshLiveRobloxAccount();
+        window.addEventListener("focus", refreshFromVisibility);
+        document.addEventListener("visibilitychange", refreshFromVisibility);
 
         return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
+            window.removeEventListener("focus", refreshFromVisibility);
+            document.removeEventListener(
+                "visibilitychange",
+                refreshFromVisibility,
+            );
         };
-    }, []);
+    }, [refreshLiveRobloxAccount, robloxProcesses.length]);
 
     const handleLaunchRoblox = async (): Promise<void> => {
         if (isLaunching) {
@@ -200,6 +259,7 @@ export function WorkspaceScreen({
             await launchRoblox();
         } finally {
             setIsLaunching(false);
+            void refreshRobloxProcesses();
         }
     };
 
@@ -212,11 +272,13 @@ export function WorkspaceScreen({
             await killRobloxProcesses();
         } finally {
             setIsKillingRoblox(false);
+            void refreshRobloxProcesses();
         }
     };
 
     const handleKillRobloxProcess = async (pid: number): Promise<void> => {
         await killRobloxProcess(pid);
+        void refreshRobloxProcesses();
     };
 
     const handleConfirmKillRoblox = async (): Promise<void> => {
