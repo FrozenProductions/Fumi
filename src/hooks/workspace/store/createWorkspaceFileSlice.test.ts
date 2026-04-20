@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => ({
     createWorkspaceFile: vi.fn(),
     deleteWorkspaceFile: vi.fn(),
     importWorkspaceFile: vi.fn(),
-    markWorkspacePersistedSignature: vi.fn(),
     renameWorkspaceFile: vi.fn(),
 }));
 
@@ -20,20 +19,6 @@ vi.mock("../../../lib/platform/workspace", () => ({
     importWorkspaceFile: mocks.importWorkspaceFile,
     renameWorkspaceFile: mocks.renameWorkspaceFile,
 }));
-
-vi.mock("../../../lib/workspace/persistence", async () => {
-    const actual = await vi.importActual<
-        typeof import("../../../lib/workspace/persistence")
-    >("../../../lib/workspace/persistence");
-
-    return {
-        ...actual,
-        getWorkspacePersistSignature: vi.fn(
-            () => "signature:/workspace/current",
-        ),
-        markWorkspacePersistedSignature: mocks.markWorkspacePersistedSignature,
-    };
-});
 
 function createWorkspaceStoreState(
     overrides: Partial<WorkspaceStore> = {},
@@ -151,7 +136,6 @@ describe("createWorkspaceFileSlice", () => {
         mocks.createWorkspaceFile.mockReset();
         mocks.deleteWorkspaceFile.mockReset();
         mocks.importWorkspaceFile.mockReset();
-        mocks.markWorkspacePersistedSignature.mockReset();
         mocks.renameWorkspaceFile.mockReset();
     });
 
@@ -173,9 +157,8 @@ describe("createWorkspaceFileSlice", () => {
         await store.getState().createWorkspaceFile();
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-2");
-        expect(mocks.markWorkspacePersistedSignature).toHaveBeenCalledWith(
-            "signature:/workspace/current",
-        );
+        expect(store.getState().persistRevision).toBe(1);
+        expect(store.getState().lastPersistedRevision).toBe(1);
     });
 
     it("imports dropped lua files in order and activates the last imported tab", async () => {

@@ -7,7 +7,6 @@ import type {
 import type { WorkspaceStore } from "./workspaceStore.type";
 
 const mocks = vi.hoisted(() => ({
-    markWorkspacePersistedSignature: vi.fn(),
     openWorkspace: vi.fn(),
     persistRecentWorkspacePaths: vi.fn(),
     persistWorkspaceState: vi.fn(),
@@ -29,11 +28,6 @@ vi.mock("../../../lib/workspace/persistence", async () => {
 
     return {
         ...actual,
-        getWorkspacePersistSignature: vi.fn(
-            (workspace: WorkspaceSession | null) =>
-                workspace ? `signature:${workspace.workspacePath}` : null,
-        ),
-        markWorkspacePersistedSignature: mocks.markWorkspacePersistedSignature,
         persistRecentWorkspacePaths: mocks.persistRecentWorkspacePaths,
     };
 });
@@ -126,6 +120,8 @@ async function createLifecycleStore(initialWorkspace?: WorkspaceSession) {
     let state = {
         workspace: initialWorkspace ?? null,
         recentWorkspacePaths: ["/workspace/recent"],
+        persistRevision: 0,
+        lastPersistedRevision: 0,
         isBootstrapping: false,
         isHydrated: false,
         errorMessage: "old error",
@@ -163,7 +159,6 @@ async function createLifecycleStore(initialWorkspace?: WorkspaceSession) {
 describe("createWorkspaceLifecycleSlice", () => {
     afterEach(() => {
         vi.restoreAllMocks();
-        mocks.markWorkspacePersistedSignature.mockReset();
         mocks.openWorkspace.mockReset();
         mocks.persistRecentWorkspacePaths.mockReset();
         mocks.persistWorkspaceState.mockReset();
@@ -186,9 +181,6 @@ describe("createWorkspaceLifecycleSlice", () => {
             "/workspace/next",
             "/workspace/recent",
         ]);
-        expect(mocks.markWorkspacePersistedSignature).toHaveBeenLastCalledWith(
-            "signature:/workspace/next",
-        );
         expect(store.getState().workspace).toMatchObject({
             workspacePath: "/workspace/next",
             workspaceName: "next",
@@ -198,6 +190,8 @@ describe("createWorkspaceLifecycleSlice", () => {
             "/workspace/next",
             "/workspace/recent",
         ]);
+        expect(store.getState().persistRevision).toBe(0);
+        expect(store.getState().lastPersistedRevision).toBe(0);
         expect(store.getState().errorMessage).toBeNull();
         expect(store.getState().isHydrated).toBe(true);
     });
@@ -231,9 +225,8 @@ describe("createWorkspaceLifecycleSlice", () => {
         expect(store.getState().workspace?.executionHistory).toEqual(
             nextHistory,
         );
-        expect(mocks.markWorkspacePersistedSignature).toHaveBeenCalledWith(
-            "signature:/workspace/current",
-        );
+        expect(store.getState().persistRevision).toBe(1);
+        expect(store.getState().lastPersistedRevision).toBe(1);
     });
 
     it("preserves a dirty workspace and shows the unavailable error when the backend reports it missing", async () => {
@@ -263,6 +256,7 @@ describe("createWorkspaceLifecycleSlice", () => {
         expect(store.getState().errorMessage).toBe(
             WORKSPACE_UNAVAILABLE_ERROR_MESSAGE,
         );
-        expect(mocks.markWorkspacePersistedSignature).not.toHaveBeenCalled();
+        expect(store.getState().persistRevision).toBe(0);
+        expect(store.getState().lastPersistedRevision).toBe(0);
     });
 });
