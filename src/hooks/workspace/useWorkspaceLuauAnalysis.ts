@@ -1,15 +1,13 @@
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import {
-    startTransition,
-    useDeferredValue,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import { WORKSPACE_OUTLINE_SCAN_IDLE_TIMEOUT_MS } from "../../constants/workspace/outline";
+    WORKSPACE_OUTLINE_LARGE_FILE_THRESHOLD,
+    WORKSPACE_OUTLINE_SCAN_IDLE_TIMEOUT_MS,
+    WORKSPACE_OUTLINE_SCAN_LARGE_FILE_DEBOUNCE_MS,
+    WORKSPACE_OUTLINE_SCAN_STANDARD_DEBOUNCE_MS,
+} from "../../constants/workspace/outline";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
-import { scanLuauFileAnalysis } from "../../lib/platform/luau";
+import { analyzeLuauFileInBackground } from "../../lib/luau/workerAnalysis";
 import { hashString } from "../../lib/shared/hash";
 import {
     getWorkspaceOutlineCacheHit,
@@ -21,6 +19,7 @@ import type {
     WorkspaceOutlineChange,
 } from "../../lib/workspace/outline.type";
 import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
+import { useDebouncedValue } from "../shared/useDebouncedValue";
 import type { UseWorkspaceLuauAnalysisResult } from "./useWorkspaceLuauAnalysis.type";
 
 /**
@@ -53,10 +52,17 @@ export function useWorkspaceLuauAnalysis(
     const activeTabId = activeTab?.id ?? null;
     const activeFileName = activeTab?.fileName ?? null;
     const activeContent = activeTab?.content ?? "";
-    const deferredContent = useDeferredValue(activeContent);
+    const analysisDebounceMs =
+        activeContent.length >= WORKSPACE_OUTLINE_LARGE_FILE_THRESHOLD
+            ? WORKSPACE_OUTLINE_SCAN_LARGE_FILE_DEBOUNCE_MS
+            : WORKSPACE_OUTLINE_SCAN_STANDARD_DEBOUNCE_MS;
+    const debouncedContent = useDebouncedValue(
+        activeContent,
+        analysisDebounceMs,
+    );
     const outlineContent =
         previousActiveTabIdRef.current === activeTabId
-            ? deferredContent
+            ? debouncedContent
             : activeContent;
     const outlineContentHash = useMemo(
         () => hashString(outlineContent),
@@ -170,7 +176,7 @@ export function useWorkspaceLuauAnalysis(
                 return;
             }
 
-            void scanLuauFileAnalysis({
+            void analyzeLuauFileInBackground({
                 content: outlineContent,
             })
                 .then((nextAnalysis) => {
