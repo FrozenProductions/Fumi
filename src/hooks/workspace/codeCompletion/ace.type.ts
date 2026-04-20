@@ -12,6 +12,13 @@ export type AceRendererInstance = Ace.VirtualRenderer & {
             top: number;
         };
     };
+    gutterWidth: number;
+    lineHeight: number;
+    layerConfig: {
+        lineHeight: number;
+        offset: number;
+    };
+    scrollLeft: number;
 };
 
 export type AceSessionWithMode = Ace.EditSession & {

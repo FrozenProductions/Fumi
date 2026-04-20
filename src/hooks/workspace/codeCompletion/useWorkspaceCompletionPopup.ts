@@ -137,10 +137,24 @@ export function useWorkspaceCompletionPopup({
             const renderer = editor.renderer as AceRendererInstance;
             const caret = renderer.$cursorLayer.getPixelPosition(cursor, true);
             const editorBounds = editor.container.getBoundingClientRect();
+            const caretHeight = Math.max(
+                renderer.layerConfig?.lineHeight ?? renderer.lineHeight ?? 0,
+                16,
+            );
+            const caretLeft =
+                editorBounds.left +
+                caret.left -
+                (renderer.scrollLeft ?? 0) +
+                (renderer.gutterWidth ?? 0);
+            const caretTop =
+                editorBounds.top +
+                caret.top -
+                (renderer.layerConfig?.offset ?? 0);
             setCompletionPopup((currentPopup) => ({
                 position: getLuauCompletionPopupPosition(
-                    editorBounds.left + caret.left,
-                    editorBounds.top + caret.top,
+                    caretLeft,
+                    caretTop,
+                    caretHeight,
                     query.items,
                     intellisenseWidth,
                     currentPopup?.position.verticalPlacement,
