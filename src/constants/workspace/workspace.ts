@@ -46,7 +46,6 @@ export const WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS = 120;
 export const WORKSPACE_TAB_DUPLICATE_SUFFIX = " copy";
 export const WORKSPACE_TAB_DUPLICATE_PATTERN = / copy(?:-(\d+))?$/;
 export const WORKSPACE_PERSIST_DELAY_MS = 200;
-export const EXECUTOR_STATUS_POLL_INTERVAL_MS = 2_000;
 export const STARTUP_UPDATE_CHECK_RETRY_DELAY_MS = 5_000;
 export const TAB_BAR_SENSORS = [
     PointerSensor.configure({

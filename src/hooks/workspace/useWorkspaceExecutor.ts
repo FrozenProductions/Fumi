@@ -4,7 +4,6 @@ import {
     DEFAULT_EXECUTOR_PORT,
     getExecutorPorts,
 } from "../../constants/workspace/executor";
-import { EXECUTOR_STATUS_POLL_INTERVAL_MS } from "../../constants/workspace/workspace";
 import {
     attachExecutor,
     detachExecutor,
@@ -123,9 +122,9 @@ const EXECUTOR_MESSAGE_LIMIT = 200;
  * Manages executor connection lifecycle including attach, detach, and script execution.
  *
  * @remarks
- * Polls executor status every 2 seconds, subscribes to status changes and messages,
- * and persists the selected port. Coordinates with the workspace to execute scripts
- * on the active tab when connected.
+ * Hydrates executor status on mount, refreshes it when the window regains focus,
+ * subscribes to status changes and messages, and persists the selected port.
+ * Coordinates with the workspace to execute scripts on the active tab when connected.
  */
 export function useWorkspaceExecutor({
     workspacePath,
@@ -148,6 +147,8 @@ export function useWorkspaceExecutor({
         ExecutorConsoleMessage[]
     >([]);
     const wasAttachedRef = useRef(false);
+    const refreshTimeoutRef = useRef<number | null>(null);
+    const lastExecutorRefreshAtRef = useRef(0);
     const syncExecutionHistoryUpdate = useEffectEvent(
         (
             requestedWorkspacePath: string,
@@ -187,39 +188,69 @@ export function useWorkspaceExecutor({
         },
     );
 
-    useEffect(() => {
-        let intervalId: number | null = null;
-        let isCancelled = false;
-
-        const refreshExecutorStatus = async (): Promise<void> => {
+    const refreshExecutorStatus = useEffectEvent(
+        async (failureMessage: string): Promise<void> => {
             try {
                 const status = await getExecutorStatus();
-
-                if (!isCancelled) {
-                    applyExecutorStatus(status);
-                }
+                applyExecutorStatus(status);
+                setErrorMessage(null);
             } catch (error) {
-                if (!isCancelled) {
-                    setErrorMessage(
-                        getErrorMessage(
-                            error,
-                            "Could not restore the executor status.",
-                        ),
-                    );
+                setErrorMessage(getErrorMessage(error, failureMessage));
+            }
+        },
+    );
+
+    useEffect(() => {
+        void refreshExecutorStatus("Could not restore the executor status.");
+    }, []);
+
+    useEffect(() => {
+        const scheduleExecutorRefresh = (): void => {
+            if (refreshTimeoutRef.current !== null) {
+                window.clearTimeout(refreshTimeoutRef.current);
+            }
+
+            refreshTimeoutRef.current = window.setTimeout(() => {
+                refreshTimeoutRef.current = null;
+
+                const now = Date.now();
+
+                // Focus and visibility events often fire as a pair.
+                if (now - lastExecutorRefreshAtRef.current < 250) {
+                    return;
                 }
+
+                lastExecutorRefreshAtRef.current = now;
+                void refreshExecutorStatus(
+                    "Could not refresh the executor status.",
+                );
+            }, 100);
+        };
+
+        const handleWindowFocus = (): void => {
+            scheduleExecutorRefresh();
+        };
+
+        const handleVisibilityChange = (): void => {
+            if (document.visibilityState === "visible") {
+                scheduleExecutorRefresh();
             }
         };
 
-        void refreshExecutorStatus();
-        intervalId = window.setInterval(() => {
-            void refreshExecutorStatus();
-        }, EXECUTOR_STATUS_POLL_INTERVAL_MS);
+        window.addEventListener("focus", handleWindowFocus);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
-            isCancelled = true;
-            if (intervalId !== null) {
-                window.clearInterval(intervalId);
+            if (refreshTimeoutRef.current !== null) {
+                window.clearTimeout(refreshTimeoutRef.current);
+                refreshTimeoutRef.current = null;
             }
+
+            window.removeEventListener("focus", handleWindowFocus);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
         };
     }, []);
 
