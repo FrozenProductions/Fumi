@@ -9,8 +9,6 @@ import {
 } from "../../../lib/platform/workspace";
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
 import {
-    getWorkspacePersistSignature,
-    markWorkspacePersistedSignature,
     persistRecentWorkspacePaths,
     updateRecentWorkspacePaths,
 } from "../../../lib/workspace/persistence";
@@ -59,13 +57,12 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
         );
 
         persistRecentWorkspacePaths(nextRecentWorkspacePaths);
-        markWorkspacePersistedSignature(
-            getWorkspacePersistSignature(nextWorkspace),
-        );
 
         set({
             workspace: nextWorkspace,
             recentWorkspacePaths: nextRecentWorkspacePaths,
+            persistRevision: 0,
+            lastPersistedRevision: 0,
             errorMessage: null,
             isHydrated: true,
         });
@@ -83,9 +80,10 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
             if (!isTauriEnvironment()) {
                 lifecycleRuntime.hasBootstrappedWorkspaceSession = true;
-                markWorkspacePersistedSignature(null);
                 set({
                     workspace: null,
+                    persistRevision: 0,
+                    lastPersistedRevision: 0,
                     errorMessage: null,
                     isHydrated: true,
                     isBootstrapping: false,
@@ -108,20 +106,20 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                             : get().recentWorkspacePaths;
 
                     persistRecentWorkspacePaths(nextRecentWorkspacePaths);
-                    markWorkspacePersistedSignature(
-                        getWorkspacePersistSignature(nextWorkspace),
-                    );
 
                     set({
                         workspace: nextWorkspace,
                         recentWorkspacePaths: nextRecentWorkspacePaths,
+                        persistRevision: 0,
+                        lastPersistedRevision: 0,
                         errorMessage: null,
                         isHydrated: true,
                     });
                 } catch (error) {
-                    markWorkspacePersistedSignature(null);
                     set({
                         workspace: null,
+                        persistRevision: 0,
+                        lastPersistedRevision: 0,
                         errorMessage: getErrorMessage(
                             error,
                             "Could not restore the workspace session.",
@@ -138,16 +136,13 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
             return lifecycleRuntime.bootstrapWorkspacePromise;
         },
         persistWorkspaceState: async (): Promise<boolean> => {
-            const { workspace } = get();
+            const { persistRevision, workspace } = get();
 
             if (!workspace) {
                 return false;
             }
 
             try {
-                const workspaceSignature =
-                    getWorkspacePersistSignature(workspace);
-
                 await persistWorkspaceStateCommand({
                     workspacePath: workspace.workspacePath,
                     activeTabId: workspace.activeTabId,
@@ -157,7 +152,12 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     executionHistory: workspace.executionHistory,
                 });
 
-                markWorkspacePersistedSignature(workspaceSignature);
+                set((state) => ({
+                    lastPersistedRevision: Math.max(
+                        state.lastPersistedRevision,
+                        persistRevision,
+                    ),
+                }));
                 return true;
             } catch (error) {
                 console.error("Failed to persist workspace state.", error);
@@ -191,14 +191,10 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
                 return {
                     workspace: nextWorkspace,
+                    persistRevision: state.persistRevision + 1,
+                    lastPersistedRevision: state.persistRevision + 1,
                 };
             });
-
-            if (nextWorkspace) {
-                markWorkspacePersistedSignature(
-                    getWorkspacePersistSignature(nextWorkspace),
-                );
-            }
         },
         refreshWorkspaceFromFilesystem: async (): Promise<void> => {
             const currentWorkspace = get().workspace;
@@ -244,9 +240,10 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                         return;
                     }
 
-                    markWorkspacePersistedSignature(null);
                     set({
                         workspace: null,
+                        persistRevision: 0,
+                        lastPersistedRevision: 0,
                         errorMessage: null,
                     });
                     return;
@@ -277,15 +274,11 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
                     return {
                         workspace: nextWorkspace,
+                        persistRevision: state.persistRevision + 1,
+                        lastPersistedRevision: state.persistRevision + 1,
                         errorMessage: null,
                     };
                 });
-
-                if (nextWorkspace) {
-                    markWorkspacePersistedSignature(
-                        getWorkspacePersistSignature(nextWorkspace),
-                    );
-                }
             } catch (error) {
                 if (
                     requestId !==

@@ -1,18 +1,11 @@
 import { saveWorkspaceFile as saveWorkspaceFileCommand } from "../../../lib/platform/workspace";
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
 import {
-    getWorkspacePersistSignature,
-    markWorkspacePersistedSignature,
-} from "../../../lib/workspace/persistence";
-import {
     clampCursorToContent,
     updateActiveWorkspaceTab,
     updateWorkspaceTab,
 } from "../../../lib/workspace/session";
-import type {
-    WorkspaceCursorState,
-    WorkspaceSession,
-} from "../../../lib/workspace/workspace.type";
+import type { WorkspaceCursorState } from "../../../lib/workspace/workspace.type";
 import { getActiveTabFromWorkspace, isMatchingWorkspacePath } from "./helpers";
 import type {
     WorkspaceEditorSlice,
@@ -38,8 +31,6 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                 cursor: activeTab.cursor,
             });
 
-            let nextWorkspace: WorkspaceSession | null = null;
-
             set((state) => {
                 if (
                     !isMatchingWorkspacePath(
@@ -56,26 +47,18 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                     return {};
                 }
 
-                nextWorkspace = updateWorkspaceTab(
-                    currentWorkspace,
-                    activeTab.id,
-                    (tab) => ({
-                        ...tab,
-                        savedContent: tab.content,
-                    }),
-                );
-
                 return {
-                    workspace: nextWorkspace,
+                    workspace: updateWorkspaceTab(
+                        currentWorkspace,
+                        activeTab.id,
+                        (tab) => ({
+                            ...tab,
+                            savedContent: tab.content,
+                        }),
+                    ),
                     errorMessage: null,
                 };
             });
-
-            if (nextWorkspace) {
-                markWorkspacePersistedSignature(
-                    getWorkspacePersistSignature(nextWorkspace),
-                );
-            }
         } catch (error) {
             console.error("Failed to save workspace file.", error);
             set({
@@ -97,27 +80,63 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
         }));
     },
     updateActiveTabCursor: (cursor: WorkspaceCursorState): void => {
-        set((state) => ({
-            workspace: state.workspace
-                ? updateActiveWorkspaceTab(state.workspace, (tab) => ({
-                      ...tab,
-                      cursor: clampCursorToContent(tab.content, cursor),
-                  }))
-                : state.workspace,
-        }));
+        set((state) => {
+            if (!state.workspace) {
+                return {
+                    workspace: state.workspace,
+                };
+            }
+
+            const nextWorkspace = updateActiveWorkspaceTab(
+                state.workspace,
+                (tab) => ({
+                    ...tab,
+                    cursor: clampCursorToContent(tab.content, cursor),
+                }),
+            );
+
+            if (nextWorkspace === state.workspace) {
+                return {
+                    workspace: state.workspace,
+                };
+            }
+
+            return {
+                workspace: nextWorkspace,
+                persistRevision: state.persistRevision + 1,
+            };
+        });
     },
     updateActiveTabScrollTop: (scrollTop: number): void => {
-        set((state) => ({
-            workspace: state.workspace
-                ? updateActiveWorkspaceTab(state.workspace, (tab) => ({
-                      ...tab,
-                      cursor: {
-                          ...tab.cursor,
-                          scrollTop: Math.max(scrollTop, 0),
-                      },
-                  }))
-                : state.workspace,
-        }));
+        set((state) => {
+            if (!state.workspace) {
+                return {
+                    workspace: state.workspace,
+                };
+            }
+
+            const nextWorkspace = updateActiveWorkspaceTab(
+                state.workspace,
+                (tab) => ({
+                    ...tab,
+                    cursor: {
+                        ...tab.cursor,
+                        scrollTop: Math.max(scrollTop, 0),
+                    },
+                }),
+            );
+
+            if (nextWorkspace === state.workspace) {
+                return {
+                    workspace: state.workspace,
+                };
+            }
+
+            return {
+                workspace: nextWorkspace,
+                persistRevision: state.persistRevision + 1,
+            };
+        });
     },
     setErrorMessage: (errorMessage: string | null): void => {
         set({ errorMessage });

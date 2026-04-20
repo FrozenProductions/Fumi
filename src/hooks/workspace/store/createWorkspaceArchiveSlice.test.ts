@@ -56,6 +56,8 @@ function createWorkspaceStoreState(): WorkspaceStore {
             ],
         },
         recentWorkspacePaths: [],
+        persistRevision: 0,
+        lastPersistedRevision: 0,
         isBootstrapping: false,
         isHydrated: true,
         errorMessage: null,

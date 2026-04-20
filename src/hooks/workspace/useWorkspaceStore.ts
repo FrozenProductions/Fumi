@@ -16,6 +16,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get, store) => {
     const workspaceStore: WorkspaceStore = {
         workspace: null,
         recentWorkspacePaths: readRecentWorkspacePaths(),
+        persistRevision: 0,
+        lastPersistedRevision: 0,
         isBootstrapping: true,
         isHydrated: false,
         errorMessage: null,

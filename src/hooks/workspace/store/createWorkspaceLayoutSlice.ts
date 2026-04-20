@@ -85,15 +85,21 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                     return {};
                 }
 
+                const nextSplitRatio = normalizeWorkspaceSplitRatio(splitRatio);
+
+                if (state.workspace.splitView.splitRatio === nextSplitRatio) {
+                    return {};
+                }
+
                 return {
                     workspace: {
                         ...state.workspace,
                         splitView: {
                             ...state.workspace.splitView,
-                            splitRatio:
-                                normalizeWorkspaceSplitRatio(splitRatio),
+                            splitRatio: nextSplitRatio,
                         },
                     },
+                    persistRevision: state.persistRevision + 1,
                 };
             });
         },
@@ -124,6 +130,7 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                             splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
                         },
                     },
+                    persistRevision: state.persistRevision + 1,
                 };
             });
 
@@ -177,6 +184,7 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                             focusedPane: pane,
                         },
                     },
+                    persistRevision: state.persistRevision + 1,
                 };
             });
 
@@ -208,6 +216,7 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                         activeTabId: keepTabId,
                         splitView: null,
                     },
+                    persistRevision: state.persistRevision + 1,
                 };
             });
 

@@ -1,12 +1,8 @@
 import { useEffect, useRef } from "react";
 import { WORKSPACE_PERSIST_DELAY_MS } from "../../constants/workspace/workspace";
 import {
-    getLastPersistedWorkspaceSignature,
-    markWorkspacePersistedSignature,
-} from "../../lib/workspace/persistence";
-import {
     selectWorkspacePath,
-    selectWorkspacePersistSignature,
+    selectWorkspacePersistRevision,
 } from "./store/selectors";
 import { useWorkspaceStore } from "./useWorkspaceStore";
 
@@ -21,8 +17,8 @@ export function useWorkspaceStoreLifecycle(): void {
         (state) => state.refreshWorkspaceFromFilesystem,
     );
     const workspacePath = useWorkspaceStore(selectWorkspacePath);
-    const workspaceSignature = useWorkspaceStore(
-        selectWorkspacePersistSignature,
+    const pendingPersistRevision = useWorkspaceStore(
+        selectWorkspacePersistRevision,
     );
     const refreshTimeoutRef = useRef<number | null>(null);
     const lastWorkspaceRefreshAtRef = useRef(0);
@@ -32,37 +28,26 @@ export function useWorkspaceStoreLifecycle(): void {
     }, [bootstrapWorkspaceSession]);
 
     useEffect(() => {
-        if (
-            !workspaceSignature ||
-            workspaceSignature === getLastPersistedWorkspaceSignature()
-        ) {
+        if (pendingPersistRevision === null) {
             return;
         }
 
         const timeoutId = window.setTimeout(() => {
-            const latestWorkspaceSignature = selectWorkspacePersistSignature(
+            const latestPendingPersistRevision = selectWorkspacePersistRevision(
                 useWorkspaceStore.getState(),
             );
 
-            if (
-                !latestWorkspaceSignature ||
-                latestWorkspaceSignature ===
-                    getLastPersistedWorkspaceSignature()
-            ) {
+            if (latestPendingPersistRevision === null) {
                 return;
             }
 
-            void persistWorkspaceState().then((didPersist) => {
-                if (didPersist) {
-                    markWorkspacePersistedSignature(latestWorkspaceSignature);
-                }
-            });
+            void persistWorkspaceState();
         }, WORKSPACE_PERSIST_DELAY_MS);
 
         return () => {
             window.clearTimeout(timeoutId);
         };
-    }, [persistWorkspaceState, workspaceSignature]);
+    }, [pendingPersistRevision, persistWorkspaceState]);
 
     useEffect(() => {
         if (!workspacePath) {

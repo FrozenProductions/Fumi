@@ -9,6 +9,8 @@ import type {
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;
     recentWorkspacePaths: string[];
+    persistRevision: number;
+    lastPersistedRevision: number;
     isBootstrapping: boolean;
     isHydrated: boolean;
     errorMessage: string | null;

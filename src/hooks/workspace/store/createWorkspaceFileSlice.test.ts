@@ -38,6 +38,12 @@ vi.mock("../../../lib/workspace/persistence", async () => {
 function createWorkspaceStoreState(
     overrides: Partial<WorkspaceStore> = {},
 ): WorkspaceStore {
+    const {
+        persistRevision = 0,
+        lastPersistedRevision = 0,
+        ...restOverrides
+    } = overrides;
+
     return {
         workspace: {
             workspacePath: "/workspace/current",
@@ -62,6 +68,8 @@ function createWorkspaceStoreState(
             ],
         },
         recentWorkspacePaths: [],
+        persistRevision,
+        lastPersistedRevision,
         isBootstrapping: false,
         isHydrated: true,
         errorMessage: null,
@@ -96,7 +104,7 @@ function createWorkspaceStoreState(
         updateActiveTabScrollTop: vi.fn(),
         setErrorMessage: vi.fn(),
         clearErrorMessage: vi.fn(),
-        ...overrides,
+        ...restOverrides,
     };
 }
 

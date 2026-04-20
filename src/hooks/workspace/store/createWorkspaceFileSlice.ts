@@ -29,11 +29,8 @@ import type {
 export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
     WorkspaceFileSlice
 > = (set, get) => {
-    const {
-        markNextWorkspaceAsPersisted,
-        setWorkspaceError,
-        updateWorkspaceForPath,
-    } = createWorkspaceStoreSupport(set, get);
+    const { setWorkspaceError, updatePersistedWorkspaceForPath } =
+        createWorkspaceStoreSupport(set, get);
     const getDroppedFileName = (filePath: string): string => {
         const normalizedPath = filePath.replace(/\\/g, "/");
         return normalizedPath.split("/").pop() ?? normalizedPath;
@@ -54,13 +51,11 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                     workspacePath: workspace.workspacePath,
                 });
 
-                const nextWorkspace = updateWorkspaceForPath(
+                updatePersistedWorkspaceForPath(
                     workspace.workspacePath,
                     (currentWorkspace) =>
                         upsertWorkspaceTab(currentWorkspace, createdTab),
                 );
-
-                markNextWorkspaceAsPersisted(nextWorkspace);
             } catch (error) {
                 setWorkspaceError(
                     error,
@@ -92,13 +87,11 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                     initialContent: content,
                 });
 
-                const nextWorkspace = updateWorkspaceForPath(
+                updatePersistedWorkspaceForPath(
                     workspace.workspacePath,
                     (currentWorkspace) =>
                         upsertWorkspaceTab(currentWorkspace, createdTab),
                 );
-
-                markNextWorkspaceAsPersisted(nextWorkspace);
                 return true;
             } catch (error) {
                 setWorkspaceError(
@@ -184,13 +177,11 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                     initialContent: duplicateDraft.initialContent,
                 });
 
-                const nextWorkspace = updateWorkspaceForPath(
+                updatePersistedWorkspaceForPath(
                     workspace.workspacePath,
                     (currentWorkspace) =>
                         upsertWorkspaceTab(currentWorkspace, duplicatedTab),
                 );
-
-                markNextWorkspaceAsPersisted(nextWorkspace);
             } catch (error) {
                 setWorkspaceError(
                     error,
@@ -234,7 +225,7 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                     tabId,
                 });
 
-                const nextWorkspace = updateWorkspaceForPath(
+                updatePersistedWorkspaceForPath(
                     workspace.workspacePath,
                     (currentWorkspace) => {
                         const currentDeletedTabIndex =
@@ -270,8 +261,6 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                         };
                     },
                 );
-
-                markNextWorkspaceAsPersisted(nextWorkspace);
             } catch (error) {
                 setWorkspaceError(
                     error,
@@ -327,7 +316,7 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                     fileName: nextFileName,
                 });
 
-                const nextWorkspace = updateWorkspaceForPath(
+                updatePersistedWorkspaceForPath(
                     workspace.workspacePath,
                     (currentWorkspace) =>
                         updateWorkspaceTab(
@@ -343,7 +332,6 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                         ),
                 );
 
-                markNextWorkspaceAsPersisted(nextWorkspace);
                 return true;
             } catch (error) {
                 setWorkspaceError(

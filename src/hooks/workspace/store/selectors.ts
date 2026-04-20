@@ -1,4 +1,3 @@
-import { getWorkspacePersistSignature } from "../../../lib/workspace/persistence";
 import { getActiveTabIndex } from "../../../lib/workspace/session";
 import type {
     WorkspacePaneId,
@@ -39,10 +38,12 @@ export const selectWorkspaceShouldGuardExit = (
 export const selectWorkspacePath = (state: WorkspaceStore): string | null =>
     state.workspace?.workspacePath ?? null;
 
-export const selectWorkspacePersistSignature = (
+export const selectWorkspacePersistRevision = (
     state: WorkspaceStore,
-): string | null =>
-    state.isHydrated ? getWorkspacePersistSignature(state.workspace) : null;
+): number | null =>
+    state.isHydrated && state.persistRevision !== state.lastPersistedRevision
+        ? state.persistRevision
+        : null;
 
 export const selectWorkspaceSplitView = (
     state: WorkspaceStore,
