@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context, Result};
 use tauri::command;
 
 use crate::{
-    command::{run_command, CommandResponse},
+    command::{run_blocking_command, CommandResponse},
     executor::ExecutorKind,
     metadata::AUTOMATIC_EXECUTION_METADATA_VERSION,
 };
@@ -31,30 +31,30 @@ fn load_metadata(
 
 /// Bootstraps the automatic execution system by reading all scripts and metadata.
 #[command]
-pub fn bootstrap_automatic_execution(
+pub async fn bootstrap_automatic_execution(
     executor_kind: ExecutorKind,
 ) -> CommandResponse<AutomaticExecutionSnapshot> {
-    run_command(|| read_automatic_execution_snapshot(executor_kind))
+    run_blocking_command(move || read_automatic_execution_snapshot(executor_kind)).await
 }
 
 /// Refreshes automatic execution by re-reading scripts and metadata from disk.
 #[command]
-pub fn refresh_automatic_execution(
+pub async fn refresh_automatic_execution(
     executor_kind: ExecutorKind,
 ) -> CommandResponse<AutomaticExecutionSnapshot> {
-    run_command(|| read_automatic_execution_snapshot(executor_kind))
+    run_blocking_command(move || read_automatic_execution_snapshot(executor_kind)).await
 }
 
 /// Creates a new automatic execution script with optional initial content.
 #[command]
-pub fn create_automatic_execution_script(
+pub async fn create_automatic_execution_script(
     executor_kind: ExecutorKind,
     file_name: Option<String>,
     initial_content: Option<String>,
 ) -> CommandResponse<AutomaticExecutionScriptSnapshot> {
     let initial_content = initial_content.unwrap_or_default();
 
-    run_command(|| {
+    run_blocking_command(move || {
         let (_, automatic_execution_path, metadata) = load_metadata(executor_kind)?;
         let created_script = create_script(
             &automatic_execution_path,
@@ -79,17 +79,18 @@ pub fn create_automatic_execution_script(
 
         Ok(created_script)
     })
+    .await
 }
 
 /// Saves script content and cursor state to disk.
 #[command]
-pub fn save_automatic_execution_script(
+pub async fn save_automatic_execution_script(
     executor_kind: ExecutorKind,
     script_id: String,
     content: String,
     cursor: super::AutomaticExecutionCursorState,
 ) -> CommandResponse<()> {
-    run_command(|| {
+    run_blocking_command(move || {
         let (_, automatic_execution_path, metadata) = load_metadata(executor_kind)?;
         let script = find_script(&metadata, &script_id)?;
         let file_path = automatic_execution_path.join(&script.file_name);
@@ -120,16 +121,17 @@ pub fn save_automatic_execution_script(
             },
         )
     })
+    .await
 }
 
 /// Renames a script file with case-only rename support on macOS.
 #[command]
-pub fn rename_automatic_execution_script(
+pub async fn rename_automatic_execution_script(
     executor_kind: ExecutorKind,
     script_id: String,
     file_name: String,
 ) -> CommandResponse<AutomaticExecutionScriptState> {
-    run_command(|| {
+    run_blocking_command(move || {
         let (_, automatic_execution_path, metadata) = load_metadata(executor_kind)?;
         let script = find_script(&metadata, &script_id)?;
         let normalized_file_name = normalize_script_file_name(&file_name);
@@ -245,15 +247,16 @@ pub fn rename_automatic_execution_script(
 
         Ok(next_script)
     })
+    .await
 }
 
 /// Deletes a script file and removes it from metadata.
 #[command]
-pub fn delete_automatic_execution_script(
+pub async fn delete_automatic_execution_script(
     executor_kind: ExecutorKind,
     script_id: String,
 ) -> CommandResponse<()> {
-    run_command(|| {
+    run_blocking_command(move || {
         let (_, automatic_execution_path, metadata) = load_metadata(executor_kind)?;
         let script = find_script(&metadata, &script_id)?;
         let file_path = automatic_execution_path.join(&script.file_name);
@@ -282,16 +285,17 @@ pub fn delete_automatic_execution_script(
 
         write_automatic_execution_metadata(&automatic_execution_path, &next_metadata)
     })
+    .await
 }
 
 /// Persists the automatic execution state including active script and all script IDs.
 #[command]
-pub fn persist_automatic_execution_state(
+pub async fn persist_automatic_execution_state(
     executor_kind: ExecutorKind,
     active_script_id: Option<String>,
     scripts: Vec<AutomaticExecutionScriptState>,
 ) -> CommandResponse<()> {
-    run_command(|| {
+    run_blocking_command(move || {
         let (_, automatic_execution_path, existing_metadata) = load_metadata(executor_kind)?;
         let on_disk_file_names = existing_metadata
             .scripts
@@ -338,4 +342,5 @@ pub fn persist_automatic_execution_state(
             },
         )
     })
+    .await
 }

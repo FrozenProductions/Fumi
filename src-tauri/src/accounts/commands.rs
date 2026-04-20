@@ -12,12 +12,12 @@ use crate::accounts::{
     list_accounts as list_accounts_operation,
     list_roblox_processes_with_bindings as list_roblox_processes_operation,
 };
-use crate::command::{format_command_error, run_command, CommandResponse};
+use crate::command::{format_command_error, run_blocking_command, CommandResponse};
 
 /// Lists all saved Roblox accounts and whether Roblox is currently running.
 #[command]
-pub fn list_accounts(app: AppHandle) -> CommandResponse<AccountListResponse> {
-    run_command(|| list_accounts_operation(&app))
+pub async fn list_accounts(app: AppHandle) -> CommandResponse<AccountListResponse> {
+    run_blocking_command(move || list_accounts_operation(&app)).await
 }
 
 /// Adds a new Roblox account from a browser cookie string.
@@ -30,38 +30,38 @@ pub async fn add_account(app: AppHandle, cookie: String) -> CommandResponse<Acco
 
 /// Launches a saved Roblox account by ID, returning the updated account summary.
 #[command]
-pub fn launch_account(app: AppHandle, account_id: String) -> CommandResponse<AccountSummary> {
-    run_command(|| launch_account_operation(&app, &account_id))
+pub async fn launch_account(app: AppHandle, account_id: String) -> CommandResponse<AccountSummary> {
+    run_blocking_command(move || launch_account_operation(&app, &account_id)).await
 }
 
 /// Deletes a saved Roblox account by ID.
 #[command]
-pub fn delete_account(app: AppHandle, account_id: String) -> CommandResponse<()> {
-    run_command(|| delete_account_operation(&app, &account_id))
+pub async fn delete_account(app: AppHandle, account_id: String) -> CommandResponse<()> {
+    run_blocking_command(move || delete_account_operation(&app, &account_id)).await
 }
 
 /// Kills all running Roblox processes.
 #[command]
-pub fn kill_roblox_processes(app: AppHandle) -> CommandResponse<()> {
-    run_command(|| kill_roblox_processes_operation(&app))
+pub async fn kill_roblox_processes(app: AppHandle) -> CommandResponse<()> {
+    run_blocking_command(move || kill_roblox_processes_operation(&app)).await
 }
 
 /// Launches a new Roblox client instance.
 #[command]
-pub fn launch_roblox(app: AppHandle) -> CommandResponse<()> {
-    run_command(|| launch_roblox_operation(&app))
+pub async fn launch_roblox(app: AppHandle) -> CommandResponse<()> {
+    run_blocking_command(move || launch_roblox_operation(&app)).await
 }
 
 /// Lists all Roblox processes with their PIDs and bound account info.
 #[command]
-pub fn list_roblox_processes(app: AppHandle) -> CommandResponse<Vec<RobloxProcessInfo>> {
-    run_command(|| list_roblox_processes_operation(&app))
+pub async fn list_roblox_processes(app: AppHandle) -> CommandResponse<Vec<RobloxProcessInfo>> {
+    run_blocking_command(move || list_roblox_processes_operation(&app)).await
 }
 
 /// Kills a specific Roblox process by PID.
 #[command]
-pub fn kill_roblox_process(app: AppHandle, pid: u32) -> CommandResponse<()> {
-    run_command(|| kill_roblox_process_operation(&app, pid))
+pub async fn kill_roblox_process(app: AppHandle, pid: u32) -> CommandResponse<()> {
+    run_blocking_command(move || kill_roblox_process_operation(&app, pid)).await
 }
 
 /// Gets the currently logged-in Roblox account from the live client.

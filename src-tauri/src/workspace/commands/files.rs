@@ -19,8 +19,9 @@ use super::super::{
 };
 use super::{
     delete_workspace_tab_by_id, find_workspace_tab, load_workspace_metadata,
-    persist_workspace_metadata, require_workspace_tab_file_path, run_command, CommandResponse,
+    persist_workspace_metadata, require_workspace_tab_file_path, CommandResponse,
 };
+use crate::command::run_blocking_command;
 
 fn is_supported_dropped_workspace_script(file_path: &Path) -> bool {
     matches!(
@@ -60,15 +61,17 @@ fn build_dropped_workspace_script_draft(
 
 /// Imports a dropped file as a workspace script draft (.lua or .luau only).
 #[command]
-pub fn import_workspace_file(file_path: String) -> CommandResponse<DroppedWorkspaceScriptDraft> {
+pub async fn import_workspace_file(
+    file_path: String,
+) -> CommandResponse<DroppedWorkspaceScriptDraft> {
     let file_path = PathBuf::from(file_path);
 
-    run_command(|| build_dropped_workspace_script_draft(&file_path))
+    run_blocking_command(move || build_dropped_workspace_script_draft(&file_path)).await
 }
 
 /// Creates a new workspace file with optional initial content.
 #[command]
-pub fn create_workspace_file(
+pub async fn create_workspace_file(
     app: AppHandle,
     workspace_path: String,
     file_name: Option<String>,
@@ -77,7 +80,7 @@ pub fn create_workspace_file(
     let workspace_path = PathBuf::from(workspace_path);
     let initial_content = initial_content.unwrap_or_default();
 
-    run_command(|| {
+    run_blocking_command(move || {
         let metadata = load_workspace_metadata(&workspace_path)?;
         let trimmed_file_name = file_name.as_deref().map(str::trim).unwrap_or_default();
         let preferred_workspace_file_name = if trimmed_file_name.is_empty() {
@@ -136,11 +139,12 @@ pub fn create_workspace_file(
             is_dirty: false,
         })
     })
+    .await
 }
 
 /// Saves workspace tab content and cursor state to disk.
 #[command]
-pub fn save_workspace_file(
+pub async fn save_workspace_file(
     app: AppHandle,
     workspace_path: String,
     tab_id: String,
@@ -149,7 +153,7 @@ pub fn save_workspace_file(
 ) -> CommandResponse<()> {
     let workspace_path = PathBuf::from(workspace_path);
 
-    run_command(|| {
+    run_blocking_command(move || {
         let metadata = load_workspace_metadata(&workspace_path)?;
         let tab = find_workspace_tab(&metadata, &tab_id)?;
         let file_path = require_workspace_tab_file_path(
@@ -186,11 +190,12 @@ pub fn save_workspace_file(
 
         persist_workspace_metadata(&app, &workspace_path, &next_metadata)
     })
+    .await
 }
 
 /// Renames a workspace tab file with case-only rename support on macOS.
 #[command]
-pub fn rename_workspace_file(
+pub async fn rename_workspace_file(
     app: AppHandle,
     workspace_path: String,
     tab_id: String,
@@ -198,7 +203,7 @@ pub fn rename_workspace_file(
 ) -> CommandResponse<WorkspaceTabState> {
     let workspace_path = PathBuf::from(workspace_path);
 
-    run_command(|| {
+    run_blocking_command(move || {
         let metadata = load_workspace_metadata(&workspace_path)?;
         let tab = find_workspace_tab(&metadata, &tab_id)?;
 
@@ -313,18 +318,19 @@ pub fn rename_workspace_file(
 
         Ok(next_tab)
     })
+    .await
 }
 
 /// Deletes a workspace tab and its file from disk.
 #[command]
-pub fn delete_workspace_file(
+pub async fn delete_workspace_file(
     app: AppHandle,
     workspace_path: String,
     tab_id: String,
 ) -> CommandResponse<()> {
     let workspace_path = PathBuf::from(workspace_path);
 
-    run_command(|| delete_workspace_tab_by_id(&app, &workspace_path, &tab_id))
+    run_blocking_command(move || delete_workspace_tab_by_id(&app, &workspace_path, &tab_id)).await
 }
 
 #[cfg(test)]
