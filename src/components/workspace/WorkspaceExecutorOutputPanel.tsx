@@ -21,16 +21,20 @@ export function WorkspaceExecutorOutputPanel({
     onClear,
 }: WorkspaceExecutorOutputPanelProps): ReactElement | null {
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const previousMessageCountRef = useRef(0);
 
     useEffect(() => {
         const container = scrollContainerRef.current;
+        const previousMessageCount = previousMessageCountRef.current;
 
-        if (!container) {
+        previousMessageCountRef.current = messages.length;
+
+        if (!container || messages.length <= previousMessageCount) {
             return;
         }
 
         container.scrollTop = container.scrollHeight;
-    });
+    }, [messages.length]);
 
     if (messages.length === 0) {
         return null;
