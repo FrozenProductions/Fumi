@@ -236,9 +236,8 @@ pub(super) fn delete_account<R: Runtime>(app: &AppHandle<R>, account_id: &str) -
 }
 
 pub(super) fn kill_roblox_processes<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
-    for pid in list_roblox_process_ids()? {
-        terminate_process(pid).with_context(|| format!("failed to kill roblox process {pid}"))?;
-    }
+    let pids = list_roblox_process_ids()?;
+    terminate_processes(&pids)?;
 
     let _ = executor::emit_current_executor_status(app)?;
     Ok(())
@@ -1394,23 +1393,54 @@ fn is_roblox_process_command(command: &str) -> bool {
 }
 
 fn terminate_process(pid: u32) -> Result<()> {
-    if !is_process_running(pid)? {
+    terminate_processes(&[pid]).with_context(|| format!("failed to kill roblox process {pid}"))
+}
+
+fn terminate_processes(pids: &[u32]) -> Result<()> {
+    terminate_processes_with_callbacks(pids, send_process_signal, wait_for_processes_exit)
+}
+
+fn terminate_processes_with_callbacks<SendSignal, WaitForExit>(
+    pids: &[u32],
+    mut send_signal: SendSignal,
+    mut wait_for_exit: WaitForExit,
+) -> Result<()>
+where
+    SendSignal: FnMut(u32, &str) -> Result<()>,
+    WaitForExit: FnMut(&[u32]) -> Result<Vec<u32>>,
+{
+    if pids.is_empty() {
         return Ok(());
     }
 
-    send_process_signal(pid, "-TERM")
-        .with_context(|| format!("failed to send TERM signal to process {pid}"))?;
-    if wait_for_process_exit(pid)? {
+    for &pid in pids {
+        send_signal(pid, "-TERM")
+            .with_context(|| format!("failed to send TERM signal to process {pid}"))?;
+    }
+
+    let remaining_pids = wait_for_exit(pids)?;
+    if remaining_pids.is_empty() {
         return Ok(());
     }
 
-    send_process_signal(pid, "-KILL")
-        .with_context(|| format!("failed to send KILL signal to process {pid}"))?;
-    if wait_for_process_exit(pid)? {
+    for &pid in &remaining_pids {
+        send_signal(pid, "-KILL")
+            .with_context(|| format!("failed to send KILL signal to process {pid}"))?;
+    }
+
+    let stubborn_pids = wait_for_exit(&remaining_pids)?;
+    if stubborn_pids.is_empty() {
         return Ok(());
     }
 
-    Err(anyhow!("process {pid} is still running after SIGKILL"))
+    Err(anyhow!(
+        "processes still running after SIGKILL: {}",
+        stubborn_pids
+            .iter()
+            .map(u32::to_string)
+            .collect::<Vec<_>>()
+            .join(", ")
+    ))
 }
 
 fn send_process_signal(pid: u32, signal: &str) -> Result<()> {
@@ -1427,16 +1457,32 @@ fn send_process_signal(pid: u32, signal: &str) -> Result<()> {
     Err(anyhow!("kill {signal} {pid} exited with status {status}"))
 }
 
-fn wait_for_process_exit(pid: u32) -> Result<bool> {
+fn wait_for_processes_exit(pids: &[u32]) -> Result<Vec<u32>> {
+    let mut remaining_pids = pids.to_vec();
+
     for _ in 0..PROCESS_EXIT_POLL_ATTEMPTS {
-        if !is_process_running(pid)? {
-            return Ok(true);
+        let mut next_remaining_pids = Vec::with_capacity(remaining_pids.len());
+        for pid in remaining_pids {
+            if is_process_running(pid)? {
+                next_remaining_pids.push(pid);
+            }
+        }
+        remaining_pids = next_remaining_pids;
+        if remaining_pids.is_empty() {
+            return Ok(remaining_pids);
         }
 
         thread::sleep(PROCESS_EXIT_POLL_INTERVAL);
     }
 
-    Ok(!is_process_running(pid)?)
+    let mut next_remaining_pids = Vec::with_capacity(remaining_pids.len());
+    for pid in remaining_pids {
+        if is_process_running(pid)? {
+            next_remaining_pids.push(pid);
+        }
+    }
+    remaining_pids = next_remaining_pids;
+    Ok(remaining_pids)
 }
 
 fn is_process_running(pid: u32) -> Result<bool> {
@@ -1871,6 +1917,50 @@ mod tests {
                 account_id: None,
             }]
         );
+    }
+
+    #[test]
+    fn terminate_processes_sends_term_to_all_before_killing_survivors() -> Result<()> {
+        let operations = std::cell::RefCell::new(Vec::new());
+        let wait_calls = std::cell::Cell::new(0);
+
+        terminate_processes_with_callbacks(
+            &[101, 202, 303],
+            |pid, signal| {
+                operations.borrow_mut().push(format!("{signal}:{pid}"));
+                Ok(())
+            },
+            |pids| {
+                wait_calls.set(wait_calls.get() + 1);
+                operations.borrow_mut().push(format!(
+                    "wait:{}",
+                    pids.iter()
+                        .map(u32::to_string)
+                        .collect::<Vec<_>>()
+                        .join(",")
+                ));
+
+                match wait_calls.get() {
+                    1 => Ok(vec![202]),
+                    2 => Ok(Vec::new()),
+                    _ => unreachable!("unexpected wait call"),
+                }
+            },
+        )?;
+
+        assert_eq!(
+            operations.into_inner(),
+            vec![
+                "-TERM:101".to_string(),
+                "-TERM:202".to_string(),
+                "-TERM:303".to_string(),
+                "wait:101,202,303".to_string(),
+                "-KILL:202".to_string(),
+                "wait:202".to_string(),
+            ]
+        );
+
+        Ok(())
     }
 
     #[test]
