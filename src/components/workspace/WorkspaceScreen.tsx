@@ -15,6 +15,7 @@ import {
     TAB_BAR_SENSORS,
 } from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
+import { useWindowResume } from "../../hooks/shared/useWindowResume";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
@@ -131,8 +132,6 @@ export function WorkspaceScreen({
     const [isLaunching, setIsLaunching] = useState(false);
     const [isKillingRoblox, setIsKillingRoblox] = useState(false);
     const robloxProcessesRequestIdRef = useRef(0);
-    const robloxProcessesRefreshTimeoutRef = useRef<number | null>(null);
-    const lastRobloxProcessesRefreshAtRef = useRef(0);
     const liveRobloxAccountRequestIdRef = useRef(0);
     const isDesktopShell = isTauriEnvironment();
     const launchRobloxHotkey = getAppHotkeyBinding(
@@ -158,52 +157,14 @@ export function WorkspaceScreen({
         } catch {}
     }, []);
 
-    useEffect(() => {
-        const scheduleRobloxProcessesRefresh = (): void => {
-            if (robloxProcessesRefreshTimeoutRef.current !== null) {
-                window.clearTimeout(robloxProcessesRefreshTimeoutRef.current);
-            }
-
-            robloxProcessesRefreshTimeoutRef.current = window.setTimeout(() => {
-                robloxProcessesRefreshTimeoutRef.current = null;
-
-                const now = Date.now();
-
-                // Focus and visibility events often arrive together.
-                if (now - lastRobloxProcessesRefreshAtRef.current < 250) {
-                    return;
-                }
-
-                lastRobloxProcessesRefreshAtRef.current = now;
-                void refreshRobloxProcesses();
-            }, 100);
-        };
-
-        const refreshFromVisibility = (): void => {
-            if (document.visibilityState !== "visible") {
-                return;
-            }
-
-            scheduleRobloxProcessesRefresh();
-        };
-
-        void refreshRobloxProcesses();
-        window.addEventListener("focus", refreshFromVisibility);
-        document.addEventListener("visibilitychange", refreshFromVisibility);
-
-        return () => {
-            if (robloxProcessesRefreshTimeoutRef.current !== null) {
-                window.clearTimeout(robloxProcessesRefreshTimeoutRef.current);
-                robloxProcessesRefreshTimeoutRef.current = null;
-            }
-
-            window.removeEventListener("focus", refreshFromVisibility);
-            document.removeEventListener(
-                "visibilitychange",
-                refreshFromVisibility,
-            );
-        };
-    }, [refreshRobloxProcesses]);
+    useWindowResume(
+        () => {
+            void refreshRobloxProcesses();
+        },
+        {
+            triggerOnMount: true,
+        },
+    );
 
     const refreshLiveRobloxAccount = useCallback(async (): Promise<void> => {
         const requestId = liveRobloxAccountRequestIdRef.current + 1;
@@ -223,32 +184,23 @@ export function WorkspaceScreen({
     }, []);
 
     useEffect(() => {
-        if (robloxProcesses.length === 0) {
-            liveRobloxAccountRequestIdRef.current += 1;
-            setLiveRobloxAccount(null);
+        if (robloxProcesses.length > 0) {
             return;
         }
 
-        const refreshFromVisibility = (): void => {
-            if (document.visibilityState !== "visible") {
-                return;
-            }
+        liveRobloxAccountRequestIdRef.current += 1;
+        setLiveRobloxAccount(null);
+    }, [robloxProcesses.length]);
 
+    useWindowResume(
+        () => {
             void refreshLiveRobloxAccount();
-        };
-
-        void refreshLiveRobloxAccount();
-        window.addEventListener("focus", refreshFromVisibility);
-        document.addEventListener("visibilitychange", refreshFromVisibility);
-
-        return () => {
-            window.removeEventListener("focus", refreshFromVisibility);
-            document.removeEventListener(
-                "visibilitychange",
-                refreshFromVisibility,
-            );
-        };
-    }, [refreshLiveRobloxAccount, robloxProcesses.length]);
+        },
+        {
+            isEnabled: robloxProcesses.length > 0,
+            triggerOnMount: robloxProcesses.length > 0,
+        },
+    );
 
     const handleLaunchRoblox = async (): Promise<void> => {
         if (isLaunching) {

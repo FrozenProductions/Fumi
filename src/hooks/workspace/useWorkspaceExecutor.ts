@@ -29,6 +29,7 @@ import type {
     ExecutorStatusPayload,
     WorkspaceExecutionHistoryEntry,
 } from "../../lib/workspace/workspace.type";
+import { useWindowResume } from "../shared/useWindowResume";
 import type {
     AsyncUnsubscribe,
     UseWorkspaceExecutorOptions,
@@ -147,8 +148,6 @@ export function useWorkspaceExecutor({
         ExecutorConsoleMessage[]
     >([]);
     const wasAttachedRef = useRef(false);
-    const refreshTimeoutRef = useRef<number | null>(null);
-    const lastExecutorRefreshAtRef = useRef(0);
     const syncExecutionHistoryUpdate = useEffectEvent(
         (
             requestedWorkspacePath: string,
@@ -204,55 +203,9 @@ export function useWorkspaceExecutor({
         void refreshExecutorStatus("Could not restore the executor status.");
     }, []);
 
-    useEffect(() => {
-        const scheduleExecutorRefresh = (): void => {
-            if (refreshTimeoutRef.current !== null) {
-                window.clearTimeout(refreshTimeoutRef.current);
-            }
-
-            refreshTimeoutRef.current = window.setTimeout(() => {
-                refreshTimeoutRef.current = null;
-
-                const now = Date.now();
-
-                // Focus and visibility events often fire as a pair.
-                if (now - lastExecutorRefreshAtRef.current < 250) {
-                    return;
-                }
-
-                lastExecutorRefreshAtRef.current = now;
-                void refreshExecutorStatus(
-                    "Could not refresh the executor status.",
-                );
-            }, 100);
-        };
-
-        const handleWindowFocus = (): void => {
-            scheduleExecutorRefresh();
-        };
-
-        const handleVisibilityChange = (): void => {
-            if (document.visibilityState === "visible") {
-                scheduleExecutorRefresh();
-            }
-        };
-
-        window.addEventListener("focus", handleWindowFocus);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            if (refreshTimeoutRef.current !== null) {
-                window.clearTimeout(refreshTimeoutRef.current);
-                refreshTimeoutRef.current = null;
-            }
-
-            window.removeEventListener("focus", handleWindowFocus);
-            document.removeEventListener(
-                "visibilitychange",
-                handleVisibilityChange,
-            );
-        };
-    }, []);
+    useWindowResume(() => {
+        void refreshExecutorStatus("Could not refresh the executor status.");
+    });
 
     useEffect(() => {
         return manageAsyncSubscription(

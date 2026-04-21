@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { WORKSPACE_PERSIST_DELAY_MS } from "../../constants/workspace/workspace";
+import { useWindowResume } from "../shared/useWindowResume";
 import {
     selectWorkspacePath,
     selectWorkspacePersistRevision,
@@ -20,8 +21,6 @@ export function useWorkspaceStoreLifecycle(): void {
     const pendingPersistRevision = useWorkspaceStore(
         selectWorkspacePersistRevision,
     );
-    const refreshTimeoutRef = useRef<number | null>(null);
-    const lastWorkspaceRefreshAtRef = useRef(0);
 
     useEffect(() => {
         void bootstrapWorkspaceSession();
@@ -49,55 +48,12 @@ export function useWorkspaceStoreLifecycle(): void {
         };
     }, [pendingPersistRevision, persistWorkspaceState]);
 
-    useEffect(() => {
-        if (!workspacePath) {
-            return;
-        }
-
-        const scheduleWorkspaceRefresh = (): void => {
-            if (refreshTimeoutRef.current !== null) {
-                window.clearTimeout(refreshTimeoutRef.current);
-            }
-
-            refreshTimeoutRef.current = window.setTimeout(() => {
-                refreshTimeoutRef.current = null;
-
-                const now = Date.now();
-
-                // Focus and visibility events often arrive back-to-back.
-                if (now - lastWorkspaceRefreshAtRef.current < 250) {
-                    return;
-                }
-
-                lastWorkspaceRefreshAtRef.current = now;
-                void refreshWorkspaceFromFilesystem();
-            }, 100);
-        };
-
-        const handleWindowFocus = (): void => {
-            scheduleWorkspaceRefresh();
-        };
-
-        const handleVisibilityChange = (): void => {
-            if (document.visibilityState === "visible") {
-                scheduleWorkspaceRefresh();
-            }
-        };
-
-        window.addEventListener("focus", handleWindowFocus);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            if (refreshTimeoutRef.current !== null) {
-                window.clearTimeout(refreshTimeoutRef.current);
-                refreshTimeoutRef.current = null;
-            }
-
-            window.removeEventListener("focus", handleWindowFocus);
-            document.removeEventListener(
-                "visibilitychange",
-                handleVisibilityChange,
-            );
-        };
-    }, [refreshWorkspaceFromFilesystem, workspacePath]);
+    useWindowResume(
+        () => {
+            void refreshWorkspaceFromFilesystem();
+        },
+        {
+            isEnabled: workspacePath !== null,
+        },
+    );
 }
