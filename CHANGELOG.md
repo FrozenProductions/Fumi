@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-04-21
+
 ### Added
 
 - Add live Roblox account details in the accounts screen and bind executor ports to Roblox accounts across the backend and UI.
@@ -164,7 +166,8 @@ _First public release._
 - Fix Ace loading in production builds.
 - Fix Ace interop and Escape hotkeys.
 
-[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.5...HEAD
+[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.6...HEAD
+[1.0.6]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.5...app-v1.0.6
 [1.0.5]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.4...app-v1.0.5
 [1.0.4]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.3...app-v1.0.4
 [1.0.3]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.2...app-v1.0.3
