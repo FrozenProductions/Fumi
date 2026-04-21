@@ -1056,14 +1056,6 @@ fn infer_saved_account_binding_for_new_processes_with_cookie_value(
     };
     let account_id =
         find_saved_account_id_by_cookie_value(accounts_root, manifest, &normalized_live_cookie)?;
-    let account_is_already_bound = manifest.roblox_bindings.iter().any(|binding| {
-        running_pids.contains(&binding.pid)
-            && binding.account_id.as_deref() == Some(account_id.as_str())
-    });
-
-    if account_is_already_bound {
-        return None;
-    }
 
     Some(InferredRobloxBindingAccount {
         pid: newest_unbound_process.pid,
@@ -1946,8 +1938,9 @@ mod tests {
     }
 
     #[test]
-    fn live_cookie_inference_does_not_duplicate_an_already_bound_account() -> Result<()> {
-        let accounts_dir = TestAccountsDir::new("infer-live-cookie-duplicate");
+    fn live_cookie_inference_can_bind_the_same_saved_account_to_multiple_processes(
+    ) -> Result<()> {
+        let accounts_dir = TestAccountsDir::new("infer-live-cookie-repeat");
         let account = upsert_account_at(
             accounts_dir.path(),
             &resolved_account(42, "alpha", "Alpha"),
@@ -1962,14 +1955,44 @@ mod tests {
             account_id: Some(account.id.clone()),
         });
 
+        let running_processes = [roblox_process(101, 1), roblox_process(202, 2)];
         let inferred_binding = infer_saved_account_binding_for_new_processes_with_cookie_value(
             accounts_dir.path(),
             &manifest,
-            &[roblox_process(101, 1), roblox_process(202, 2)],
+            &running_processes,
             Some("cookie-alpha"),
         );
+        let reconciled_manifest = reconcile_manifest_bindings(
+            manifest,
+            &running_processes,
+            &macsploit_pool(),
+            inferred_binding.as_ref(),
+        );
 
-        assert_eq!(inferred_binding, None);
+        assert_eq!(
+            inferred_binding,
+            Some(InferredRobloxBindingAccount {
+                pid: 202,
+                account_id: account.id.clone(),
+            })
+        );
+        assert_eq!(
+            reconciled_manifest.roblox_bindings,
+            vec![
+                StoredRobloxBindingRecord {
+                    pid: 101,
+                    started_at: 1,
+                    port: 5553,
+                    account_id: Some(account.id.clone()),
+                },
+                StoredRobloxBindingRecord {
+                    pid: 202,
+                    started_at: 2,
+                    port: 5554,
+                    account_id: Some(account.id),
+                },
+            ]
+        );
 
         Ok(())
     }
