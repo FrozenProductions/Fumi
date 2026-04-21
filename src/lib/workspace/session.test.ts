@@ -123,6 +123,20 @@ describe("clampCursorToContent", () => {
             scrollTop: 0,
         });
     });
+
+    it("clamps to the final unterminated line without allocating split line arrays", () => {
+        expect(
+            clampCursorToContent("alpha\nbeta\ngamma", {
+                line: 40,
+                column: 40,
+                scrollTop: 12,
+            }),
+        ).toEqual({
+            line: 2,
+            column: 5,
+            scrollTop: 12,
+        });
+    });
 });
 
 describe("buildWorkspaceSession", () => {
