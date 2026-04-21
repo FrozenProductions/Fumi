@@ -25,6 +25,19 @@ import type {
     WorkspaceTabContextMenuState,
 } from "./workspaceTabBar.type";
 
+function isTabFullyVisible(
+    container: HTMLElement,
+    tabElement: HTMLElement,
+): boolean {
+    const containerRect = container.getBoundingClientRect();
+    const tabRect = tabElement.getBoundingClientRect();
+
+    return (
+        tabRect.left >= containerRect.left &&
+        tabRect.right <= containerRect.right
+    );
+}
+
 /**
  * The tab bar for workspace files with drag-and-drop reordering.
  *
@@ -151,13 +164,25 @@ export function WorkspaceTabBar({
         }
 
         const animationFrameId = window.requestAnimationFrame(() => {
-            const tabElement =
-                tabListContainerRef.current?.querySelector<HTMLElement>(
-                    `[data-tab-id="${activeTabId}"]`,
-                );
+            const tabListContainer = tabListContainerRef.current;
 
-            tabElement?.scrollIntoView({
-                behavior: "smooth",
+            if (!tabListContainer) {
+                return;
+            }
+
+            const tabElement = tabListContainer.querySelector<HTMLElement>(
+                `[data-tab-id="${activeTabId}"]`,
+            );
+
+            if (
+                !tabElement ||
+                isTabFullyVisible(tabListContainer, tabElement)
+            ) {
+                return;
+            }
+
+            tabElement.scrollIntoView({
+                behavior: "auto",
                 block: "nearest",
                 inline: "nearest",
             });
