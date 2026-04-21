@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Emitter, Runtime};
 
-use crate::executor::{ExecutorMessagePayload, ExecutorStatusPayload};
+use crate::executor::ExecutorStatusPayload;
 
 pub(crate) const MAIN_WINDOW_LABEL: &str = "main";
 pub(crate) const OPEN_SETTINGS_EVENT: &str = "app://open-settings";
@@ -10,7 +10,6 @@ pub(crate) const REQUEST_EXIT_GUARD_SYNC_EVENT: &str = "app://request-exit-guard
 pub(crate) const ZOOM_IN_EVENT: &str = "app://zoom-in";
 pub(crate) const ZOOM_OUT_EVENT: &str = "app://zoom-out";
 pub(crate) const ZOOM_RESET_EVENT: &str = "app://zoom-reset";
-pub(crate) const EXECUTOR_MESSAGE_EVENT: &str = "executor://message";
 pub(crate) const EXECUTOR_STATUS_CHANGED_EVENT: &str = "executor://status-changed";
 
 fn emit_event<R: Runtime>(app: &AppHandle<R>, event: &str) -> tauri::Result<()> {
@@ -46,13 +45,6 @@ pub(crate) fn emit_zoom_out<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()>
 
 pub(crate) fn emit_zoom_reset<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     emit_event(app, ZOOM_RESET_EVENT)
-}
-
-pub(crate) fn emit_executor_message<R: Runtime>(
-    app: &AppHandle<R>,
-    payload: &ExecutorMessagePayload,
-) -> tauri::Result<()> {
-    app.emit(EXECUTOR_MESSAGE_EVENT, payload)
 }
 
 pub(crate) fn emit_executor_status_changed<R: Runtime>(

@@ -21,7 +21,6 @@ const mocks = vi.hoisted(() => ({
     detachExecutor: vi.fn(),
     executeExecutorScript: vi.fn(),
     getExecutorStatus: vi.fn(),
-    subscribeToExecutorMessages: vi.fn(),
     subscribeToExecutorStatusChanged: vi.fn(),
 }));
 
@@ -30,7 +29,6 @@ vi.mock("../../lib/platform/executor", () => ({
     detachExecutor: mocks.detachExecutor,
     executeExecutorScript: mocks.executeExecutorScript,
     getExecutorStatus: mocks.getExecutorStatus,
-    subscribeToExecutorMessages: mocks.subscribeToExecutorMessages,
     subscribeToExecutorStatusChanged: mocks.subscribeToExecutorStatusChanged,
 }));
 
@@ -89,10 +87,8 @@ describe("useWorkspaceExecutor", () => {
         mocks.detachExecutor.mockReset();
         mocks.executeExecutorScript.mockReset();
         mocks.getExecutorStatus.mockReset();
-        mocks.subscribeToExecutorMessages.mockReset();
         mocks.subscribeToExecutorStatusChanged.mockReset();
         mocks.getExecutorStatus.mockResolvedValue(createExecutorStatus());
-        mocks.subscribeToExecutorMessages.mockResolvedValue(() => undefined);
         mocks.subscribeToExecutorStatusChanged.mockResolvedValue(
             () => undefined,
         );

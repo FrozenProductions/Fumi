@@ -17,19 +17,15 @@ use tauri::{AppHandle, Manager, Runtime};
 
 use crate::{
     accounts,
-    events::{emit_executor_message, emit_executor_status_changed},
+    events::emit_executor_status_changed,
 };
 
-pub use self::models::{
-    ExecutorKind, ExecutorMessagePayload, ExecutorMessageType, ExecutorPortSummary,
-    ExecutorStatusPayload,
-};
+pub use self::models::{ExecutorKind, ExecutorPortSummary, ExecutorStatusPayload};
 
 const LOCALHOST: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
 const HEADER_LENGTH: usize = 16;
 const FRAME_TERMINATOR_LENGTH: usize = 1;
 const SOCKET_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
-const MAX_MESSAGE_LENGTH_BYTES: usize = 8 * 1024 * 1024;
 const POST_RECONNECT_SETTLE_DURATION: Duration = Duration::from_millis(75);
 const MACSPLOIT_DETECTION_PATH: &str = "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
 const OPIUMWARE_DETECTION_PATH: &str =
@@ -719,7 +715,6 @@ fn run_reader_loop<R: Runtime>(
     log_executor_debug(format!(
         "reader loop started; connection_id={connection_id}"
     ));
-    let mut pending = Vec::new();
     let mut chunk = [0_u8; 4096];
 
     loop {
@@ -734,31 +729,6 @@ fn run_reader_loop<R: Runtime>(
                 log_executor_debug(format!(
                     "reader received bytes; connection_id={connection_id}, bytes_read={bytes_read}"
                 ));
-                pending.extend_from_slice(&chunk[..bytes_read]);
-
-                match extract_complete_messages(&mut pending) {
-                    Ok(messages) => {
-                        log_executor_debug(format!(
-                            "reader decoded messages; connection_id={connection_id}, count={}",
-                            messages.len()
-                        ));
-                        for message in messages {
-                            log_executor_debug(format!(
-                                "emitting executor message; connection_id={connection_id}, type={:?}, message_bytes={}",
-                                message.message_type,
-                                message.message.len()
-                            ));
-                            let _ = emit_executor_message(&app, &message);
-                        }
-                    }
-                    Err(error) => {
-                        log_executor_debug(format!(
-                            "reader decode failed; connection_id={connection_id}; error={error:#}"
-                        ));
-                        eprintln!("Failed to decode a MacSploit IPC frame: {error:#}");
-                        break;
-                    }
-                }
             }
             Err(error) if error.kind() == ErrorKind::Interrupted => continue,
             Err(error)
@@ -831,54 +801,6 @@ fn run_reader_loop<R: Runtime>(
     }
 }
 
-fn extract_complete_messages(pending: &mut Vec<u8>) -> Result<Vec<ExecutorMessagePayload>> {
-    let mut messages = Vec::new();
-    let mut cursor = 0;
-
-    while pending.len().saturating_sub(cursor) >= HEADER_LENGTH {
-        let payload_length = u64::from_le_bytes(
-            pending[cursor + 8..cursor + HEADER_LENGTH]
-                .try_into()
-                .context("invalid MacSploit IPC frame header")?,
-        );
-        let payload_length = usize::try_from(payload_length)
-            .context("MacSploit IPC frame length does not fit in usize")?;
-
-        if payload_length > MAX_MESSAGE_LENGTH_BYTES {
-            return Err(anyhow!("MacSploit IPC frame exceeds the maximum size"));
-        }
-
-        let frame_length = HEADER_LENGTH
-            .checked_add(payload_length)
-            .context("MacSploit IPC frame length overflow")?;
-
-        if pending.len().saturating_sub(cursor) < frame_length {
-            break;
-        }
-
-        let payload_start = cursor + HEADER_LENGTH;
-        let payload_end = payload_start + payload_length;
-        let optional_terminator_length =
-            usize::from(pending.get(payload_end).is_some_and(|byte| *byte == 0));
-        let message_type = ExecutorMessageType::try_from(pending[cursor]).ok();
-
-        if let Some(message_type) = message_type {
-            messages.push(ExecutorMessagePayload {
-                message: String::from_utf8_lossy(&pending[payload_start..payload_end]).into_owned(),
-                message_type,
-            });
-        }
-
-        cursor = payload_end + optional_terminator_length;
-    }
-
-    if cursor > 0 {
-        pending.drain(..cursor);
-    }
-
-    Ok(messages)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -888,23 +810,6 @@ mod tests {
     };
 
     use flate2::read::ZlibDecoder;
-
-    fn build_incoming_message(
-        message_type: ExecutorMessageType,
-        payload: &str,
-        include_terminator: bool,
-    ) -> Vec<u8> {
-        let mut frame = vec![0_u8; HEADER_LENGTH + payload.len() + usize::from(include_terminator)];
-
-        frame[0] = match message_type {
-            ExecutorMessageType::Print => 1,
-            ExecutorMessageType::Error => 2,
-        };
-        frame[8..16].copy_from_slice(&(payload.len() as u64).to_le_bytes());
-        frame[HEADER_LENGTH..HEADER_LENGTH + payload.len()].copy_from_slice(payload.as_bytes());
-
-        frame
-    }
 
     fn create_temp_path(prefix: &str) -> std::path::PathBuf {
         let timestamp = SystemTime::now()
@@ -924,33 +829,6 @@ mod tests {
         assert_eq!(u64::from_le_bytes(frame[8..16].try_into().unwrap()), 11);
         assert_eq!(&frame[16..27], b"print('hi')");
         assert_eq!(frame[27], 0);
-    }
-
-    #[test]
-    fn extract_complete_messages_handles_back_to_back_frames() {
-        let mut buffer = build_incoming_message(ExecutorMessageType::Print, "hello", true);
-        buffer.extend(build_incoming_message(
-            ExecutorMessageType::Error,
-            "goodbye",
-            false,
-        ));
-
-        let messages = extract_complete_messages(&mut buffer).expect("messages should parse");
-
-        assert_eq!(
-            messages,
-            vec![
-                ExecutorMessagePayload {
-                    message: "hello".to_string(),
-                    message_type: ExecutorMessageType::Print,
-                },
-                ExecutorMessagePayload {
-                    message: "goodbye".to_string(),
-                    message_type: ExecutorMessageType::Error,
-                },
-            ]
-        );
-        assert!(buffer.is_empty());
     }
 
     #[test]

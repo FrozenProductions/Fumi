@@ -9,7 +9,6 @@ import {
     detachExecutor,
     executeExecutorScript,
     getExecutorStatus,
-    subscribeToExecutorMessages,
     subscribeToExecutorStatusChanged,
 } from "../../lib/platform/executor";
 import { appendWorkspaceExecutionHistory } from "../../lib/platform/workspace";
@@ -25,7 +24,6 @@ import {
     resolvePersistedExecutorPort,
 } from "../../lib/workspace/executorPersistence";
 import type {
-    ExecutorConsoleMessage,
     ExecutorStatusPayload,
     WorkspaceExecutionHistoryEntry,
 } from "../../lib/workspace/workspace.type";
@@ -117,8 +115,6 @@ function createExecutionHistoryEntry(options: {
     };
 }
 
-const EXECUTOR_MESSAGE_LIMIT = 200;
-
 /**
  * Manages executor connection lifecycle including attach, detach, and script execution.
  *
@@ -144,9 +140,6 @@ export function useWorkspaceExecutor({
     const [didRecentAttachFail, setDidRecentAttachFail] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [recentMessages, setRecentMessages] = useState<
-        ExecutorConsoleMessage[]
-    >([]);
     const wasAttachedRef = useRef(false);
     const syncExecutionHistoryUpdate = useEffectEvent(
         (
@@ -238,38 +231,6 @@ export function useWorkspaceExecutor({
     }, []);
 
     useEffect(() => {
-        return manageAsyncSubscription(
-            () =>
-                subscribeToExecutorMessages((payload) => {
-                    setRecentMessages((currentMessages) => {
-                        const nextMessages = [
-                            ...currentMessages,
-                            {
-                                ...payload,
-                                id: crypto.randomUUID(),
-                                receivedAt: Date.now(),
-                            } satisfies ExecutorConsoleMessage,
-                        ];
-
-                        return nextMessages.slice(-EXECUTOR_MESSAGE_LIMIT);
-                    });
-
-                    if (payload.messageType === "error") {
-                        console.error("[Executor Error]", payload.message);
-                    }
-                }),
-            (error) => {
-                console.error(
-                    getErrorMessage(
-                        error,
-                        "Could not subscribe to executor messages.",
-                    ),
-                );
-            },
-        );
-    }, []);
-
-    useEffect(() => {
         if (!didRecentAttachFail) {
             return;
         }
@@ -296,10 +257,6 @@ export function useWorkspaceExecutor({
 
     const clearErrorMessage = (): void => {
         setErrorMessage(null);
-    };
-
-    const clearRecentMessages = (): void => {
-        setRecentMessages([]);
     };
 
     const hasSupportedExecutor = executorKind !== "unsupported";
@@ -473,7 +430,6 @@ export function useWorkspaceExecutor({
             didRecentAttachFail,
             isBusy,
             errorMessage,
-            recentMessages,
         },
         actions: {
             updatePort,
@@ -481,7 +437,6 @@ export function useWorkspaceExecutor({
             toggleConnection,
             executeActiveTab,
             executeHistoryEntry,
-            clearRecentMessages,
         },
     };
 }

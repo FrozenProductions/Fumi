@@ -1,16 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import {
-    EXECUTOR_MESSAGE_EVENT,
-    EXECUTOR_STATUS_CHANGED_EVENT,
-} from "../../constants/platform/platform";
+import { EXECUTOR_STATUS_CHANGED_EVENT } from "../../constants/platform/platform";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
     getExecutorPorts,
 } from "../../constants/workspace/executor";
 import type {
-    ExecutorMessagePayload,
     ExecutorPortSummary,
     ExecutorStatusPayload,
 } from "../../lib/workspace/workspace.type";
@@ -207,30 +203,6 @@ export function executeExecutorScript(script: string): Promise<void> {
             "executeExecutorScript",
             error,
             "Could not execute the active script.",
-        );
-    });
-}
-
-/**
- * Subscribes to executor messages (stdout/stderr from executed scripts).
- *
- * @param listener - Callback invoked with each executor message payload
- * @returns Unsubscribe function
- */
-export function subscribeToExecutorMessages(
-    listener: (payload: ExecutorMessagePayload) => void,
-): Promise<() => void> {
-    if (!isTauriEnvironment()) {
-        return Promise.resolve(() => undefined);
-    }
-
-    return listen<ExecutorMessagePayload>(EXECUTOR_MESSAGE_EVENT, (event) => {
-        listener(event.payload);
-    }).catch((error) => {
-        throw createExecutorCommandError(
-            "subscribeToExecutorMessages",
-            error,
-            "Could not subscribe to executor messages.",
         );
     });
 }

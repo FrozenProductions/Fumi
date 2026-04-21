@@ -146,7 +146,6 @@ function createWorkspaceExecutor(
             didRecentAttachFail: false,
             isBusy: false,
             errorMessage: null,
-            recentMessages: [],
             ...overrides.state,
         },
         actions: {
@@ -155,7 +154,6 @@ function createWorkspaceExecutor(
             toggleConnection: vi.fn().mockResolvedValue(undefined),
             executeActiveTab: vi.fn().mockResolvedValue(undefined),
             executeHistoryEntry: vi.fn().mockResolvedValue(undefined),
-            clearRecentMessages: vi.fn(),
             ...overrides.actions,
         },
     };

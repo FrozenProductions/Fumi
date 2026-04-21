@@ -97,40 +97,23 @@ describe("executor platform commands", () => {
         );
     });
 
-    it("subscribes to executor events and forwards backend payloads", async () => {
+    it("subscribes to executor status changes and forwards backend payloads", async () => {
         const executorModule = await loadExecutorModule();
-        const handleMessage = vi.fn();
         const handleStatusChanged = vi.fn();
 
-        await executorModule.subscribeToExecutorMessages(handleMessage);
         await executorModule.subscribeToExecutorStatusChanged(
             handleStatusChanged,
         );
 
-        mocks.eventHandlers.get("executor://message")?.({
-            payload: {
-                kind: "stdout",
-                text: "print('hello')",
-            },
-        });
         mocks.eventHandlers.get("executor://status-changed")?.({
             payload: createExecutorStatusPayload(),
         });
 
         expect(mocks.listen).toHaveBeenNthCalledWith(
             1,
-            "executor://message",
-            expect.any(Function),
-        );
-        expect(mocks.listen).toHaveBeenNthCalledWith(
-            2,
             "executor://status-changed",
             expect.any(Function),
         );
-        expect(handleMessage).toHaveBeenCalledWith({
-            kind: "stdout",
-            text: "print('hello')",
-        });
         expect(handleStatusChanged).toHaveBeenCalledWith(
             createExecutorStatusPayload(),
         );

@@ -47,7 +47,6 @@ import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceExecutionHistoryModal } from "./WorkspaceExecutionHistoryModal";
-import { WorkspaceExecutorOutputPanel } from "./WorkspaceExecutorOutputPanel";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
 import type { WorkspaceScreenProps } from "./workspaceScreen.type";
@@ -763,11 +762,6 @@ export function WorkspaceScreen({
                                     }}
                                 />
                             </div>
-                            <WorkspaceExecutorOutputPanel
-                                isAttached={executorState.isAttached}
-                                messages={executorState.recentMessages}
-                                onClear={executor.actions.clearRecentMessages}
-                            />
                         </div>
                     ) : (
                         <WorkspaceMessageState

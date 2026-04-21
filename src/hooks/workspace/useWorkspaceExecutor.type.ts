@@ -1,5 +1,4 @@
 import type {
-    ExecutorConsoleMessage,
     ExecutorKind,
     ExecutorPortSummary,
     WorkspaceExecutionHistoryEntry,
@@ -29,7 +28,6 @@ export type WorkspaceExecutorState = {
     didRecentAttachFail: boolean;
     isBusy: boolean;
     errorMessage: string | null;
-    recentMessages: readonly ExecutorConsoleMessage[];
 };
 
 export type WorkspaceExecutorActions = {
@@ -40,7 +38,6 @@ export type WorkspaceExecutorActions = {
     executeHistoryEntry: (
         entry: WorkspaceExecutionHistoryEntry,
     ) => Promise<void>;
-    clearRecentMessages: () => void;
 };
 
 export type UseWorkspaceExecutorResult = {

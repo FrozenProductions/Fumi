@@ -4,19 +4,7 @@ export type ArchivedTabsSortOption =
     | "nameAsc"
     | "nameDesc";
 
-export type ExecutorMessageType = "print" | "error";
-
 export type ExecutorKind = "macsploit" | "opiumware" | "unsupported";
-
-export type ExecutorMessagePayload = {
-    message: string;
-    messageType: ExecutorMessageType;
-};
-
-export type ExecutorConsoleMessage = ExecutorMessagePayload & {
-    id: string;
-    receivedAt: number;
-};
 
 export type ExecutorPortSummary = {
     port: number;
