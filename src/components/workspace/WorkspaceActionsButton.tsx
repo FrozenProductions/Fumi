@@ -10,6 +10,7 @@ import {
     type CSSProperties,
     type FocusEvent,
     type ReactElement,
+    type MouseEvent as ReactMouseEvent,
     useEffect,
     useRef,
     useState,
@@ -161,13 +162,17 @@ export function WorkspaceActionsButton({
         }, 2_000);
     }
 
-    function handleLaunchClick(): void {
+    function handleLaunchClick(
+        event: ReactMouseEvent<HTMLButtonElement>,
+    ): void {
         if (!canLaunch) {
             return;
         }
         clearPendingConfirm();
-        setIsDropdownOpen(false);
         setRevealedProcessPid(null);
+        if (!event.shiftKey) {
+            setIsDropdownOpen(false);
+        }
         void onLaunchRoblox();
     }
 
