@@ -332,7 +332,7 @@ export function WorkspaceActionsButton({
         if (killingRobloxProcessPid !== null) {
             return "Killing Roblox instance…";
         }
-        return "Attempt to close roblox";
+        return "Attempt to close all Roblox instances";
     }
 
     function renderProcessRows(): ReactElement[] {
