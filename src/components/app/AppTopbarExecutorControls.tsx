@@ -207,13 +207,12 @@ export function AppTopbarExecutorControls({
                                         isStreamerModeEnabled &&
                                         revealedPort !==
                                             availablePortSummary.port;
-                                    const label =
-                                        getExecutorPortLabel(
-                                            availablePortSummary,
-                                            {
-                                                isMasked,
-                                            },
-                                        );
+                                    const label = getExecutorPortLabel(
+                                        availablePortSummary,
+                                        {
+                                            isMasked,
+                                        },
+                                    );
                                     const shouldBlurPortLabel =
                                         isMasked &&
                                         availablePortSummary.boundAccountDisplayName !==
