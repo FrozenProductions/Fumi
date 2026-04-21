@@ -1,3 +1,4 @@
+import { getRobloxProcessBoundAccountLabel } from "../../lib/accounts/accountPrivacy";
 import type {
     RobloxAccountIdentity,
     RobloxProcessInfo,
@@ -14,16 +15,11 @@ export function getRobloxProcessAccountLabel(
         RobloxProcessInfo,
         "boundAccountDisplayName" | "isBoundToUnknownAccount"
     >,
+    options?: {
+        isMasked?: boolean;
+    },
 ): string {
-    if (process.boundAccountDisplayName) {
-        return process.boundAccountDisplayName;
-    }
-
-    if (process.isBoundToUnknownAccount) {
-        return "Unknown account";
-    }
-
-    return "Unknown account";
+    return getRobloxProcessBoundAccountLabel(process, options);
 }
 
 /**

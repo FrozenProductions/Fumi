@@ -8,6 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import {
     type CSSProperties,
+    type FocusEvent,
     type ReactElement,
     useEffect,
     useRef,
@@ -57,6 +58,9 @@ export function WorkspaceActionsButton({
 }: WorkspaceActionsButtonProps): ReactElement {
     const theme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
+    const isStreamerModeEnabled = useAppStore(
+        (state) => state.isStreamerModeEnabled,
+    );
     const toggleOutlinePanelShortcutLabel = getAppHotkeyShortcutLabel(
         "TOGGLE_OUTLINE_PANEL",
         hotkeyBindings,
@@ -64,6 +68,9 @@ export function WorkspaceActionsButton({
     const isDark = theme === "dark";
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [revealedProcessPid, setRevealedProcessPid] = useState<number | null>(
+        null,
+    );
     const [confirmingAction, setConfirmingAction] =
         useState<ConfirmAction | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -97,6 +104,7 @@ export function WorkspaceActionsButton({
                 !containerRef.current.contains(event.target as Node)
             ) {
                 setIsDropdownOpen(false);
+                setRevealedProcessPid(null);
                 if (confirmTimeoutRef.current !== null) {
                     window.clearTimeout(confirmTimeoutRef.current);
                     confirmTimeoutRef.current = null;
@@ -141,6 +149,7 @@ export function WorkspaceActionsButton({
         }
         clearPendingConfirm();
         setIsDropdownOpen(false);
+        setRevealedProcessPid(null);
         void onLaunchRoblox();
     }
 
@@ -150,6 +159,7 @@ export function WorkspaceActionsButton({
         }
         clearPendingConfirm();
         setIsDropdownOpen(false);
+        setRevealedProcessPid(null);
         void executeActiveTab();
     }
 
@@ -160,6 +170,7 @@ export function WorkspaceActionsButton({
         if (confirmingAction === "kill") {
             clearPendingConfirm();
             setIsDropdownOpen(false);
+            setRevealedProcessPid(null);
             void onKillRoblox();
         } else {
             startConfirm("kill");
@@ -179,13 +190,51 @@ export function WorkspaceActionsButton({
     function handleToggleOutlinePanelClick(): void {
         clearPendingConfirm();
         setIsDropdownOpen(false);
+        setRevealedProcessPid(null);
         onToggleOutlinePanel();
     }
 
     function handleOpenExecutionHistoryClick(): void {
         clearPendingConfirm();
         setIsDropdownOpen(false);
+        setRevealedProcessPid(null);
         onOpenExecutionHistory();
+    }
+
+    function handleRevealProcess(pid: number): void {
+        setRevealedProcessPid(pid);
+    }
+
+    function handleHideProcess(
+        pid: number,
+        currentTarget: HTMLDivElement,
+        relatedTarget: EventTarget | null = null,
+    ): void {
+        if (
+            relatedTarget instanceof Node &&
+            currentTarget.contains(relatedTarget)
+        ) {
+            return;
+        }
+
+        if (currentTarget.contains(document.activeElement)) {
+            return;
+        }
+
+        if (currentTarget.matches(":hover")) {
+            return;
+        }
+
+        setRevealedProcessPid((currentPid) =>
+            currentPid === pid ? null : currentPid,
+        );
+    }
+
+    function handleProcessRowBlur(
+        event: FocusEvent<HTMLDivElement>,
+        pid: number,
+    ): void {
+        handleHideProcess(pid, event.currentTarget, event.relatedTarget);
     }
 
     const containerClass = isDark
@@ -261,7 +310,19 @@ export function WorkspaceActionsButton({
             const confirmKey = `kill-pid-${process.pid}` as const;
             const isConfirming = confirmingAction === confirmKey;
             const canKillProcess = isDesktopShell && !isKillingRoblox;
-            const processAccountLabel = getRobloxProcessAccountLabel(process);
+            const isMasked =
+                isStreamerModeEnabled && revealedProcessPid !== process.pid;
+            const processAccountLabel = getRobloxProcessAccountLabel(process, {
+                isMasked,
+            });
+            const maskedProcessAccountLabel = getRobloxProcessAccountLabel(
+                process,
+                {
+                    isMasked: true,
+                },
+            );
+            const shouldBlurProcessAccountLabel =
+                isMasked && process.boundAccountDisplayName !== null;
             return (
                 <div
                     key={process.pid}
@@ -292,10 +353,35 @@ export function WorkspaceActionsButton({
                             <>
                                 <div>{`Instance ${index + 1}`}</div>
                                 <div
-                                    className={`mt-0.5 truncate text-[10px] ${
+                                    tabIndex={
+                                        isStreamerModeEnabled &&
+                                        process.boundAccountDisplayName !== null
+                                            ? 0
+                                            : -1
+                                    }
+                                    onPointerEnter={() =>
+                                        handleRevealProcess(process.pid)
+                                    }
+                                    onPointerLeave={(event) =>
+                                        handleHideProcess(
+                                            process.pid,
+                                            event.currentTarget,
+                                        )
+                                    }
+                                    onFocus={() =>
+                                        handleRevealProcess(process.pid)
+                                    }
+                                    onBlur={(event) =>
+                                        handleProcessRowBlur(event, process.pid)
+                                    }
+                                    className={`mt-0.5 truncate rounded-[0.4rem] text-[10px] transition-[filter] duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-fumi-600 ${
                                         isDark
                                             ? "text-fumi-500"
                                             : "text-fumi-400"
+                                    } ${
+                                        shouldBlurProcessAccountLabel
+                                            ? "blur-[0.20rem]"
+                                            : "blur-0"
                                     }`}
                                 >
                                     {processAccountLabel}
@@ -309,7 +395,7 @@ export function WorkspaceActionsButton({
                                 ? "Roblox controls require the Tauri desktop shell"
                                 : isConfirming
                                   ? "Click to confirm kill"
-                                  : `Kill instance ${index + 1} (${processAccountLabel})`
+                                  : `Kill instance ${index + 1} (${isMasked ? maskedProcessAccountLabel : processAccountLabel})`
                         }
                         side="left"
                     >
@@ -374,7 +460,15 @@ export function WorkspaceActionsButton({
                                 return;
                             }
 
-                            setIsDropdownOpen((open) => !open);
+                            setIsDropdownOpen((open) => {
+                                const nextIsOpen = !open;
+
+                                if (!nextIsOpen) {
+                                    setRevealedProcessPid(null);
+                                }
+
+                                return nextIsOpen;
+                            });
                         }}
                         disabled={!canOpenMenu}
                         className={`${rightButtonClass} ${!canOpenMenu ? "cursor-not-allowed opacity-60 hover:bg-transparent" : ""}`}
