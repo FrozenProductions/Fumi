@@ -16,6 +16,14 @@ import type {
 } from "./codeCompletion/workspaceCodeCompletion.type";
 import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
 
+type StoredAceSessionState = {
+    content: string;
+    scrollLeft: number;
+    scrollTop: number;
+    selection: unknown;
+    undoHistory: object;
+};
+
 /**
  * Orchestrates Ace editor code completion, search, and cursor go-to functionality.
  *
@@ -38,6 +46,9 @@ export function useWorkspaceCodeCompletion({
     updateActiveTabScrollTop,
 }: UseWorkspaceCodeCompletionOptions): UseWorkspaceCodeCompletionResult {
     const editorByTabIdRef = useRef(new Map<string, AceEditorInstance>());
+    const sessionStateByTabIdRef = useRef(
+        new Map<string, StoredAceSessionState>(),
+    );
     const suppressNextPassiveCompletionRef = useRef(false);
     const activeTabIdRef = useRef<string | null>(activeTabId);
     const activeLuauAnalysisRef = useRef<LuauFileAnalysis | null>(
@@ -171,6 +182,12 @@ export function useWorkspaceCodeCompletion({
                 editorByTabIdRef.current.delete(tabId);
             }
         }
+
+        for (const tabId of sessionStateByTabIdRef.current.keys()) {
+            if (!openTabIds.has(tabId)) {
+                sessionStateByTabIdRef.current.delete(tabId);
+            }
+        }
     }, [tabs]);
 
     const createHandleEditorLoad = useCallback(
@@ -186,10 +203,36 @@ export function useWorkspaceCodeCompletion({
                     return;
                 }
 
+                const session = aceEditor.getSession();
+                const storedSessionState =
+                    sessionStateByTabIdRef.current.get(tabId);
+
+                if (
+                    storedSessionState &&
+                    storedSessionState.content === tab.content
+                ) {
+                    session
+                        .getUndoManager()
+                        .fromJSON(storedSessionState.undoHistory);
+                    session.selection.fromJSON(storedSessionState.selection);
+                    session.setScrollLeft(storedSessionState.scrollLeft);
+                    session.setScrollTop(storedSessionState.scrollTop);
+                } else {
+                    sessionStateByTabIdRef.current.delete(tabId);
+                }
+
                 window.requestAnimationFrame(() => {
-                    aceEditor.moveCursorTo(tab.cursor.line, tab.cursor.column);
-                    aceEditor.clearSelection();
-                    aceEditor.session.setScrollTop(tab.cursor.scrollTop);
+                    if (
+                        !storedSessionState ||
+                        storedSessionState.content !== tab.content
+                    ) {
+                        aceEditor.moveCursorTo(
+                            tab.cursor.line,
+                            tab.cursor.column,
+                        );
+                        aceEditor.clearSelection();
+                        aceEditor.session.setScrollTop(tab.cursor.scrollTop);
+                    }
 
                     if (activeTabIdRef.current === tabId) {
                         aceEditor.resize();
@@ -203,6 +246,20 @@ export function useWorkspaceCodeCompletion({
 
     const createHandleEditorUnmount = useCallback(
         (tabId: string) => (): void => {
+            const editor = editorByTabIdRef.current.get(tabId);
+
+            if (editor) {
+                const session = editor.getSession();
+
+                sessionStateByTabIdRef.current.set(tabId, {
+                    content: editor.getValue(),
+                    scrollLeft: session.getScrollLeft(),
+                    scrollTop: session.getScrollTop(),
+                    selection: session.selection.toJSON(),
+                    undoHistory: session.getUndoManager().toJSON(),
+                });
+            }
+
             editorByTabIdRef.current.delete(tabId);
 
             if (activeTabIdRef.current === tabId) {
