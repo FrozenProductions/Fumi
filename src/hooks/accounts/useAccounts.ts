@@ -65,6 +65,7 @@ export function useAccounts(): UseAccountsResult {
     );
 
     useEffect(() => {
+        isMountedRef.current = true;
         void loadAccounts();
 
         const scheduleAccountsRefresh = (): void => {
