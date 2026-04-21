@@ -11,10 +11,7 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
-import {
-    EXECUTION_HISTORY_EDITOR_OPTIONS,
-    EXECUTION_HISTORY_LARGE_SCRIPT_EDITOR_OPTIONS,
-} from "../../constants/workspace/executionHistory";
+import { EXECUTION_HISTORY_EDITOR_OPTIONS } from "../../constants/workspace/executionHistory";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
@@ -22,7 +19,6 @@ import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
-import { isLargeExecutionHistoryScript } from "../../lib/workspace/executionHistory";
 import type { WorkspaceExecutionHistoryEntry } from "../../lib/workspace/workspace.type";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
@@ -101,9 +97,6 @@ export function WorkspaceExecutionHistoryModal({
         entries.find((entry) => entry.id === selectedEntryId) ??
         entries[0] ??
         null;
-    const isLargeScript =
-        selectedEntry !== null &&
-        isLargeExecutionHistoryScript(selectedEntry.scriptContent);
 
     useEffect(() => {
         if (!isOpen) {
@@ -395,15 +388,6 @@ export function WorkspaceExecutionHistoryModal({
                                 <div className="min-h-0 flex-1">
                                     {AceEditorComp && aceRuntime ? (
                                         <div className="flex h-full min-h-0 flex-col">
-                                            {isLargeScript ? (
-                                                <div className="shrink-0 border-b border-fumi-200 px-4 py-1.5">
-                                                    <p className="text-[10px] font-semibold text-fumi-500">
-                                                        Large snapshot loaded in
-                                                        optimized editor mode to
-                                                        keep the app responsive.
-                                                    </p>
-                                                </div>
-                                            ) : null}
                                             <AceEditorComp
                                                 key={selectedEntry.id}
                                                 className="workspace-ace-editor"
@@ -411,13 +395,9 @@ export function WorkspaceExecutionHistoryModal({
                                                 defaultValue={
                                                     selectedEntry.scriptContent
                                                 }
-                                                mode={
-                                                    isLargeScript
-                                                        ? aceRuntime.getTextMode()
-                                                        : aceRuntime.getMode(
-                                                              selectedEntry.fileName,
-                                                          )
-                                                }
+                                                mode={aceRuntime.getMode(
+                                                    selectedEntry.fileName,
+                                                )}
                                                 theme={aceRuntime.getTheme(
                                                     appTheme,
                                                 )}
@@ -440,9 +420,7 @@ export function WorkspaceExecutionHistoryModal({
                                                 tabSize={4}
                                                 wrapEnabled={isWordWrapEnabled}
                                                 setOptions={
-                                                    isLargeScript
-                                                        ? EXECUTION_HISTORY_LARGE_SCRIPT_EDITOR_OPTIONS
-                                                        : EXECUTION_HISTORY_EDITOR_OPTIONS
+                                                    EXECUTION_HISTORY_EDITOR_OPTIONS
                                                 }
                                                 style={WORKSPACE_EDITOR_STYLE}
                                                 onLoad={(
