@@ -1,5 +1,17 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test";
-import { useAppStore } from "./useAppStore";
+import { DEFAULT_APP_STREAMER_MODE_ENABLED } from "../../constants/app/settings";
+import {
+    getPersistedAppStoreState,
+    mergeAppStoreState,
+    useAppStore,
+} from "./useAppStore";
+
+beforeEach(() => {
+    globalThis.localStorage?.clear();
+    useAppStore.setState({
+        isStreamerModeEnabled: DEFAULT_APP_STREAMER_MODE_ENABLED,
+    });
+});
 
 describe("useAppStore renameCurrentTabRequest", () => {
     beforeEach(() => {
@@ -25,6 +37,38 @@ describe("useAppStore renameCurrentTabRequest", () => {
         useAppStore.getState().clearRenameCurrentTabRequest();
 
         expect(useAppStore.getState().renameCurrentTabRequest).toBeNull();
+    });
+});
+
+describe("useAppStore streamer mode", () => {
+    it("defaults streamer mode to disabled", () => {
+        expect(useAppStore.getState().isStreamerModeEnabled).toBe(false);
+    });
+
+    it("stores streamer mode changes", () => {
+        useAppStore.getState().setStreamerModeEnabled(true);
+
+        expect(useAppStore.getState().isStreamerModeEnabled).toBe(true);
+    });
+
+    it("keeps streamer mode disabled when old persisted state lacks the field", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                theme: "dark",
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.isStreamerModeEnabled).toBe(false);
+    });
+
+    it("includes streamer mode in the persisted slice", () => {
+        useAppStore.getState().setStreamerModeEnabled(true);
+        expect(getPersistedAppStoreState(useAppStore.getState())).toMatchObject(
+            {
+                isStreamerModeEnabled: true,
+            },
+        );
     });
 });
 

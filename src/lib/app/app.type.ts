@@ -90,6 +90,10 @@ export type AppWorkspaceSettings = {
     middleClickTabAction: AppMiddleClickTabAction;
 };
 
+export type AppAccountPrivacySettings = {
+    isStreamerModeEnabled: boolean;
+};
+
 export type AppSidebarItem =
     | "workspace"
     | "automatic-execution"

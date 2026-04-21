@@ -4,9 +4,15 @@ import {
     PlayIcon,
     UserCircleIcon,
 } from "@hugeicons/core-free-icons";
-import type { ReactElement } from "react";
+import { type FocusEvent, type ReactElement, useState } from "react";
 import emptyAddIcon from "../../assets/icons/empty_add.svg";
 import { useAccounts } from "../../hooks/accounts/useAccounts";
+import { useAppStore } from "../../hooks/app/useAppStore";
+import {
+    getAccountAvatarAltText,
+    getAccountRowDisplayName,
+    getAccountRowIdentityLabel,
+} from "../../lib/accounts/accountPrivacy";
 import type { AccountSummary } from "../../lib/accounts/accounts.type";
 import { confirmAction } from "../../lib/platform/dialog";
 import { AppIcon } from "../app/AppIcon";
@@ -27,6 +33,9 @@ function getAccountStatusLabel(account: AccountSummary): string {
  * @returns A React component
  */
 export function AccountsScreen(): ReactElement {
+    const isStreamerModeEnabled = useAppStore(
+        (state) => state.isStreamerModeEnabled,
+    );
     const {
         accounts,
         errorMessage,
@@ -43,6 +52,45 @@ export function AccountsScreen(): ReactElement {
         deleteAccount,
         clearErrorMessage,
     } = useAccounts();
+    const [revealedAccountId, setRevealedAccountId] = useState<string | null>(
+        null,
+    );
+
+    function handleRevealAccount(accountId: string): void {
+        setRevealedAccountId(accountId);
+    }
+
+    function handleHideAccount(
+        accountId: string,
+        currentTarget: HTMLDivElement,
+        relatedTarget: EventTarget | null = null,
+    ): void {
+        if (
+            relatedTarget instanceof Node &&
+            currentTarget.contains(relatedTarget)
+        ) {
+            return;
+        }
+
+        if (currentTarget.contains(document.activeElement)) {
+            return;
+        }
+
+        if (currentTarget.matches(":hover")) {
+            return;
+        }
+
+        setRevealedAccountId((currentAccountId) =>
+            currentAccountId === accountId ? null : currentAccountId,
+        );
+    }
+
+    function handleAccountRowBlur(
+        event: FocusEvent<HTMLDivElement>,
+        accountId: string,
+    ): void {
+        handleHideAccount(accountId, event.currentTarget, event.relatedTarget);
+    }
 
     async function handleDeleteAccount(account: AccountSummary): Promise<void> {
         const shouldDelete = await confirmAction(
@@ -127,6 +175,18 @@ export function AccountsScreen(): ReactElement {
                             const isLaunching =
                                 launchingAccountId === account.id;
                             const isDeleting = deletingAccountId === account.id;
+                            const isMasked =
+                                isStreamerModeEnabled &&
+                                revealedAccountId !== account.id;
+                            const accountDisplayName =
+                                getAccountRowDisplayName(account);
+                            const accountIdentityLabel =
+                                getAccountRowIdentityLabel(account);
+                            const accountAvatarAltText =
+                                getAccountAvatarAltText(account, { isMasked });
+                            const identityBlurClassName = isMasked
+                                ? "blur-[0.20rem]"
+                                : "blur-0";
 
                             return (
                                 <div
@@ -138,7 +198,7 @@ export function AccountsScreen(): ReactElement {
                                             {account.avatarUrl ? (
                                                 <img
                                                     src={account.avatarUrl}
-                                                    alt={`${account.displayName} avatar`}
+                                                    alt={accountAvatarAltText}
                                                     className="h-full w-full object-cover"
                                                 />
                                             ) : (
@@ -149,10 +209,35 @@ export function AccountsScreen(): ReactElement {
                                                 />
                                             )}
                                         </div>
-                                        <div className="min-w-0">
+                                        <div
+                                            tabIndex={
+                                                isStreamerModeEnabled ? 0 : -1
+                                            }
+                                            onPointerEnter={() =>
+                                                handleRevealAccount(account.id)
+                                            }
+                                            onPointerLeave={(event) =>
+                                                handleHideAccount(
+                                                    account.id,
+                                                    event.currentTarget,
+                                                )
+                                            }
+                                            onFocus={() =>
+                                                handleRevealAccount(account.id)
+                                            }
+                                            onBlur={(event) =>
+                                                handleAccountRowBlur(
+                                                    event,
+                                                    account.id,
+                                                )
+                                            }
+                                            className="min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fumi-600 focus-visible:outline-offset-2"
+                                        >
                                             <div className="flex items-center gap-2">
-                                                <h3 className="truncate text-sm font-semibold tracking-[-0.01em] text-fumi-900">
-                                                    {account.displayName}
+                                                <h3
+                                                    className={`truncate text-sm font-semibold tracking-[-0.01em] text-fumi-900 transition-[filter] duration-150 ${identityBlurClassName}`}
+                                                >
+                                                    {accountDisplayName}
                                                 </h3>
                                                 <span
                                                     className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${getAccountStatusTone(account)}`}
@@ -167,8 +252,10 @@ export function AccountsScreen(): ReactElement {
                                                     </span>
                                                 ) : null}
                                             </div>
-                                            <p className="mt-1 text-xs text-fumi-500">
-                                                @{account.username}
+                                            <p
+                                                className={`mt-1 text-xs text-fumi-500 transition-[filter] duration-150 ${identityBlurClassName}`}
+                                            >
+                                                {accountIdentityLabel}
                                             </p>
                                         </div>
                                     </div>

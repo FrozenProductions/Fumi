@@ -52,6 +52,12 @@ export function AppSettingsGeneralSection({
     const setAutoUpdateEnabled = useAppStore(
         (state) => state.setAutoUpdateEnabled,
     );
+    const isStreamerModeEnabled = useAppStore(
+        (state) => state.isStreamerModeEnabled,
+    );
+    const setStreamerModeEnabled = useAppStore(
+        (state) => state.setStreamerModeEnabled,
+    );
     const {
         status: updaterStatus,
         availableUpdate,
@@ -125,6 +131,10 @@ export function AppSettingsGeneralSection({
 
     const handleAutoUpdateToggle = (): void => {
         setAutoUpdateEnabled(!isAutoUpdateEnabled);
+    };
+
+    const handleStreamerModeToggle = (): void => {
+        setStreamerModeEnabled(!isStreamerModeEnabled);
     };
 
     const handleOpenAuthorUrl = (): void => {
@@ -296,6 +306,12 @@ export function AppSettingsGeneralSection({
                 description="Auto-download updates and prompt before restart."
                 isEnabled={isAutoUpdateEnabled}
                 onChange={handleAutoUpdateToggle}
+            />
+            <AppSettingsToggle
+                label="Streamer mode"
+                description="Hide bound account identities until you hover or focus them."
+                isEnabled={isStreamerModeEnabled}
+                onChange={handleStreamerModeToggle}
             />
             <div className="flex items-center justify-between gap-6 py-4">
                 <div className="min-w-0">

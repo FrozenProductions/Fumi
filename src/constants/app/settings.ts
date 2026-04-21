@@ -66,6 +66,7 @@ export const DEFAULT_APP_THEME = "system" satisfies AppTheme;
 export const DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION =
     "archive" satisfies AppMiddleClickTabAction;
 export const DEFAULT_APP_SIDEBAR_POSITION = "left" satisfies AppSidebarPosition;
+export const DEFAULT_APP_STREAMER_MODE_ENABLED = false;
 
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,

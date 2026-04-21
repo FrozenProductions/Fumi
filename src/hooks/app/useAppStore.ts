@@ -4,6 +4,7 @@ import {
     APP_ZOOM_DEFAULT,
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_SIDEBAR_POSITION,
+    DEFAULT_APP_STREAMER_MODE_ENABLED,
     DEFAULT_APP_THEME,
     DEFAULT_APP_UPDATER_SETTINGS,
     DEFAULT_APP_WORKSPACE_SETTINGS,
@@ -22,6 +23,90 @@ import {
     normalizeAppOutlinePanelWidth,
 } from "../../lib/app/store";
 import type { AppStore, AppStoreState } from "./appStore.type";
+
+export function mergeAppStoreState(
+    persistedState: unknown,
+    currentState: AppStore,
+): AppStore {
+    const persistedAppState = (persistedState as Partial<AppStoreState>) ?? {};
+    const zoomPercent = clampAppZoomPercent(
+        typeof persistedAppState.zoomPercent === "number"
+            ? persistedAppState.zoomPercent
+            : APP_ZOOM_DEFAULT,
+    );
+    const activeSidebarItem = isAppSidebarItem(
+        persistedAppState.activeSidebarItem,
+    )
+        ? persistedAppState.activeSidebarItem
+        : currentState.activeSidebarItem;
+    const theme = isAppTheme(persistedAppState.theme)
+        ? persistedAppState.theme
+        : currentState.theme;
+    const hotkeyBindings = normalizeAppHotkeyBindings(
+        persistedAppState.hotkeyBindings,
+    );
+    const intellisenseWidth = normalizeAppIntellisenseWidth(
+        persistedAppState.editorSettings?.intellisenseWidth,
+    );
+    const outlinePanelWidth = normalizeAppOutlinePanelWidth(
+        persistedAppState.editorSettings?.outlinePanelWidth,
+    );
+    const middleClickTabAction = normalizeAppMiddleClickTabAction(
+        persistedAppState.workspaceSettings?.middleClickTabAction,
+    );
+    const sidebarPosition = isAppSidebarPosition(
+        persistedAppState.sidebarPosition,
+    )
+        ? persistedAppState.sidebarPosition
+        : currentState.sidebarPosition;
+    const isStreamerModeEnabled =
+        typeof persistedAppState.isStreamerModeEnabled === "boolean"
+            ? persistedAppState.isStreamerModeEnabled
+            : currentState.isStreamerModeEnabled;
+
+    return {
+        ...currentState,
+        ...persistedAppState,
+        activeSidebarItem,
+        zoomPercent,
+        theme,
+        isStreamerModeEnabled,
+        hotkeyBindings,
+        sidebarPosition,
+        updaterSettings: {
+            ...currentState.updaterSettings,
+            ...persistedAppState.updaterSettings,
+        },
+        editorSettings: {
+            ...currentState.editorSettings,
+            ...persistedAppState.editorSettings,
+            intellisenseWidth,
+            outlinePanelWidth,
+        },
+        workspaceSettings: {
+            ...currentState.workspaceSettings,
+            ...persistedAppState.workspaceSettings,
+            middleClickTabAction,
+        },
+    };
+}
+
+export function getPersistedAppStoreState(
+    state: AppStore,
+): Partial<AppStoreState> {
+    return {
+        isSidebarOpen: state.isSidebarOpen,
+        activeSidebarItem: state.activeSidebarItem,
+        zoomPercent: state.zoomPercent,
+        theme: state.theme,
+        isStreamerModeEnabled: state.isStreamerModeEnabled,
+        hotkeyBindings: state.hotkeyBindings,
+        updaterSettings: state.updaterSettings,
+        editorSettings: state.editorSettings,
+        workspaceSettings: state.workspaceSettings,
+        sidebarPosition: state.sidebarPosition,
+    };
+}
 
 /**
  * Global application state store for Fumi.
@@ -43,6 +128,7 @@ export const useAppStore = create<AppStore>()(
             nextRenameCurrentTabRequestId: 0,
             zoomPercent: APP_ZOOM_DEFAULT,
             theme: DEFAULT_APP_THEME,
+            isStreamerModeEnabled: DEFAULT_APP_STREAMER_MODE_ENABLED,
             hotkeyBindings: {},
             editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
             updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
@@ -213,6 +299,9 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setStreamerModeEnabled: (isEnabled) => {
+                set({ isStreamerModeEnabled: isEnabled });
+            },
             setEditorFontSize: (fontSize) => {
                 set((state) => ({
                     editorSettings: {
@@ -296,76 +385,8 @@ export const useAppStore = create<AppStore>()(
         {
             name: "fumi-app-store",
             storage: createJSONStorage(() => localStorage),
-            merge: (persistedState, currentState) => {
-                const persistedAppState =
-                    (persistedState as Partial<AppStoreState>) ?? {};
-                const zoomPercent = clampAppZoomPercent(
-                    typeof persistedAppState.zoomPercent === "number"
-                        ? persistedAppState.zoomPercent
-                        : APP_ZOOM_DEFAULT,
-                );
-                const activeSidebarItem = isAppSidebarItem(
-                    persistedAppState.activeSidebarItem,
-                )
-                    ? persistedAppState.activeSidebarItem
-                    : currentState.activeSidebarItem;
-                const theme = isAppTheme(persistedAppState.theme)
-                    ? persistedAppState.theme
-                    : currentState.theme;
-                const hotkeyBindings = normalizeAppHotkeyBindings(
-                    persistedAppState.hotkeyBindings,
-                );
-                const intellisenseWidth = normalizeAppIntellisenseWidth(
-                    persistedAppState.editorSettings?.intellisenseWidth,
-                );
-                const outlinePanelWidth = normalizeAppOutlinePanelWidth(
-                    persistedAppState.editorSettings?.outlinePanelWidth,
-                );
-                const middleClickTabAction = normalizeAppMiddleClickTabAction(
-                    persistedAppState.workspaceSettings?.middleClickTabAction,
-                );
-                const sidebarPosition = isAppSidebarPosition(
-                    persistedAppState.sidebarPosition,
-                )
-                    ? persistedAppState.sidebarPosition
-                    : currentState.sidebarPosition;
-
-                return {
-                    ...currentState,
-                    ...persistedAppState,
-                    activeSidebarItem,
-                    zoomPercent,
-                    theme,
-                    hotkeyBindings,
-                    sidebarPosition,
-                    updaterSettings: {
-                        ...currentState.updaterSettings,
-                        ...persistedAppState.updaterSettings,
-                    },
-                    editorSettings: {
-                        ...currentState.editorSettings,
-                        ...persistedAppState.editorSettings,
-                        intellisenseWidth,
-                        outlinePanelWidth,
-                    },
-                    workspaceSettings: {
-                        ...currentState.workspaceSettings,
-                        ...persistedAppState.workspaceSettings,
-                        middleClickTabAction,
-                    },
-                };
-            },
-            partialize: (state) => ({
-                isSidebarOpen: state.isSidebarOpen,
-                activeSidebarItem: state.activeSidebarItem,
-                zoomPercent: state.zoomPercent,
-                theme: state.theme,
-                hotkeyBindings: state.hotkeyBindings,
-                updaterSettings: state.updaterSettings,
-                editorSettings: state.editorSettings,
-                workspaceSettings: state.workspaceSettings,
-                sidebarPosition: state.sidebarPosition,
-            }),
+            merge: mergeAppStoreState,
+            partialize: getPersistedAppStoreState,
         },
     ),
 );

@@ -1,13 +1,13 @@
+import { getExecutorBoundAccountLabel } from "../../lib/accounts/accountPrivacy";
 import type { ExecutorPortSummary } from "../../lib/workspace/workspace.type";
 
-export function getExecutorPortLabel(summary: ExecutorPortSummary): string {
-    if (summary.boundAccountDisplayName) {
-        return summary.boundAccountDisplayName;
-    }
+type ExecutorPortLabelOptions = {
+    isMasked?: boolean;
+};
 
-    if (summary.isBoundToUnknownAccount) {
-        return "Unknown account";
-    }
-
-    return "Available";
+export function getExecutorPortLabel(
+    summary: ExecutorPortSummary,
+    options?: ExecutorPortLabelOptions,
+): string {
+    return getExecutorBoundAccountLabel(summary, options);
 }

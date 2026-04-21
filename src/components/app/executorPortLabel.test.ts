@@ -13,6 +13,20 @@ describe("getExecutorPortLabel", () => {
         ).toBe("Alpha");
     });
 
+    it("masks real bound account display names when requested", () => {
+        expect(
+            getExecutorPortLabel(
+                {
+                    port: 5553,
+                    boundAccountId: "account-1",
+                    boundAccountDisplayName: "Alpha",
+                    isBoundToUnknownAccount: false,
+                },
+                { isMasked: true },
+            ),
+        ).toBe("Hidden account");
+    });
+
     it("marks unknown bound ports clearly", () => {
         expect(
             getExecutorPortLabel({
@@ -21,6 +35,20 @@ describe("getExecutorPortLabel", () => {
                 boundAccountDisplayName: null,
                 isBoundToUnknownAccount: true,
             }),
+        ).toBe("Unknown account");
+    });
+
+    it("keeps unknown bound ports visible while masked", () => {
+        expect(
+            getExecutorPortLabel(
+                {
+                    port: 5554,
+                    boundAccountId: null,
+                    boundAccountDisplayName: null,
+                    isBoundToUnknownAccount: true,
+                },
+                { isMasked: true },
+            ),
         ).toBe("Unknown account");
     });
 

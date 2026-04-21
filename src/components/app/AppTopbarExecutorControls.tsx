@@ -1,6 +1,7 @@
 import { ArrowDown01Icon, ConnectIcon } from "@hugeicons/core-free-icons";
 import {
     type CSSProperties,
+    type FocusEvent,
     type ReactElement,
     useEffect,
     useRef,
@@ -43,7 +44,11 @@ export function AppTopbarExecutorControls({
     } = state;
     const { toggleConnection, updatePort } = actions;
     const theme = useAppStore((state) => state.theme);
+    const isStreamerModeEnabled = useAppStore(
+        (state) => state.isStreamerModeEnabled,
+    );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [revealedPort, setRevealedPort] = useState<number | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const isExecutorUnavailable = !hasSupportedExecutor;
     const isPrimaryButtonDisabled = isBusy || isExecutorUnavailable;
@@ -64,6 +69,7 @@ export function AppTopbarExecutorControls({
                 !containerRef.current.contains(event.target as Node)
             ) {
                 setIsDropdownOpen(false);
+                setRevealedPort(null);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -144,7 +150,17 @@ export function AppTopbarExecutorControls({
                 <AppTooltip content="Select executor port" side="bottom">
                     <button
                         type="button"
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        onClick={() =>
+                            setIsDropdownOpen((open) => {
+                                const nextIsOpen = !open;
+
+                                if (!nextIsOpen) {
+                                    setRevealedPort(null);
+                                }
+
+                                return nextIsOpen;
+                            })
+                        }
                         disabled={isDropdownDisabled}
                         data-topbar-interactive="true"
                         className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-r-md text-fumi-700 transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
@@ -187,18 +203,77 @@ export function AppTopbarExecutorControls({
                                         availablePortSummary.port,
                                     );
                                     const isSelected = port === portValue;
+                                    const isMasked =
+                                        isStreamerModeEnabled &&
+                                        revealedPort !==
+                                            availablePortSummary.port;
                                     const label =
                                         getExecutorPortLabel(
                                             availablePortSummary,
                                         );
+                                    const shouldBlurPortLabel =
+                                        isMasked &&
+                                        availablePortSummary.boundAccountDisplayName !==
+                                            null;
+
+                                    function handleRevealExecutorPort(): void {
+                                        setRevealedPort(
+                                            availablePortSummary.port,
+                                        );
+                                    }
+
+                                    function handleHideExecutorPort(
+                                        currentTarget: HTMLButtonElement,
+                                        relatedTarget: EventTarget | null = null,
+                                    ): void {
+                                        if (
+                                            relatedTarget instanceof Node &&
+                                            currentTarget.contains(
+                                                relatedTarget,
+                                            )
+                                        ) {
+                                            return;
+                                        }
+
+                                        if (
+                                            currentTarget.contains(
+                                                document.activeElement,
+                                            )
+                                        ) {
+                                            return;
+                                        }
+
+                                        if (currentTarget.matches(":hover")) {
+                                            return;
+                                        }
+
+                                        setRevealedPort((currentPort) =>
+                                            currentPort ===
+                                            availablePortSummary.port
+                                                ? null
+                                                : currentPort,
+                                        );
+                                    }
+
+                                    function handleExecutorPortBlur(
+                                        event: FocusEvent<HTMLButtonElement>,
+                                    ): void {
+                                        handleHideExecutorPort(
+                                            event.currentTarget,
+                                            event.relatedTarget,
+                                        );
+                                    }
 
                                     return (
                                         <button
                                             key={availablePortSummary.port}
                                             type="button"
+                                            onFocus={handleRevealExecutorPort}
+                                            onBlur={handleExecutorPortBlur}
                                             onClick={() => {
                                                 updatePort(portValue);
                                                 setIsDropdownOpen(false);
+                                                setRevealedPort(null);
                                             }}
                                             className={`app-select-none flex h-10 w-full items-center justify-between gap-3 rounded-[calc(var(--executor-port-menu-radius)-var(--executor-port-menu-inset))] px-2.5 text-left transition-colors ${
                                                 isSelected
@@ -210,7 +285,25 @@ export function AppTopbarExecutorControls({
                                                 <span className="block text-xs">
                                                     {availablePortSummary.port}
                                                 </span>
-                                                <span className="mt-0.5 block truncate text-[10px] font-medium text-fumi-400">
+                                                <span
+                                                    onPointerEnter={
+                                                        handleRevealExecutorPort
+                                                    }
+                                                    onPointerLeave={() =>
+                                                        setRevealedPort(
+                                                            (currentPort) =>
+                                                                currentPort ===
+                                                                availablePortSummary.port
+                                                                    ? null
+                                                                    : currentPort,
+                                                        )
+                                                    }
+                                                    className={`mt-0.5 block truncate text-[10px] font-medium text-fumi-400 transition-[filter] duration-150 ${
+                                                        shouldBlurPortLabel
+                                                            ? "blur-[0.20rem]"
+                                                            : "blur-0"
+                                                    }`}
+                                                >
                                                     {label}
                                                 </span>
                                             </div>

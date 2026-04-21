@@ -1,4 +1,5 @@
 import type {
+    AppAccountPrivacySettings,
     AppCommandPaletteMode,
     AppCommandPaletteScope,
     AppEditorSettings,
@@ -16,7 +17,7 @@ import type {
     AppWorkspaceSettings,
 } from "../../lib/app/app.type";
 
-export type AppStoreState = {
+export type AppStoreState = AppAccountPrivacySettings & {
     isSidebarOpen: boolean;
     isCommandPaletteOpen: boolean;
     commandPaletteScope: AppCommandPaletteScope | null;
@@ -58,6 +59,7 @@ export type AppStoreActions = {
     resetHotkeyBinding: (action: AppHotkeyAction) => void;
     resetAllHotkeyBindings: () => void;
     setAutoUpdateEnabled: (isEnabled: boolean) => void;
+    setStreamerModeEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
