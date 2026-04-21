@@ -134,6 +134,9 @@ export function WorkspaceScreen({
         useState<RobloxAccountIdentity | null>(null);
     const [isLaunching, setIsLaunching] = useState(false);
     const [isKillingRoblox, setIsKillingRoblox] = useState(false);
+    const [killingRobloxProcessPid, setKillingRobloxProcessPid] = useState<
+        number | null
+    >(null);
     const robloxProcessesRequestIdRef = useRef(0);
     const liveRobloxAccountRequestIdRef = useRef(0);
     const isDesktopShell = isTauriEnvironment();
@@ -219,7 +222,7 @@ export function WorkspaceScreen({
     };
 
     const handleKillRoblox = async (): Promise<void> => {
-        if (isKillingRoblox) {
+        if (isKillingRoblox || killingRobloxProcessPid !== null) {
             return;
         }
         setIsKillingRoblox(true);
@@ -232,8 +235,20 @@ export function WorkspaceScreen({
     };
 
     const handleKillRobloxProcess = async (pid: number): Promise<void> => {
-        await killRobloxProcess(pid);
-        void refreshRobloxProcesses();
+        if (isKillingRoblox || killingRobloxProcessPid !== null) {
+            return;
+        }
+
+        setKillingRobloxProcessPid(pid);
+
+        try {
+            await killRobloxProcess(pid);
+        } finally {
+            setKillingRobloxProcessPid((currentPid) =>
+                currentPid === pid ? null : currentPid,
+            );
+            void refreshRobloxProcesses();
+        }
     };
 
     const handleConfirmKillRoblox = async (): Promise<void> => {
@@ -265,7 +280,10 @@ export function WorkspaceScreen({
         },
         {
             enabled:
-                isDesktopShell && !isCommandPaletteOpen && !isKillingRoblox,
+                isDesktopShell &&
+                !isCommandPaletteOpen &&
+                !isKillingRoblox &&
+                killingRobloxProcessPid === null,
         },
     );
 
@@ -748,6 +766,7 @@ export function WorkspaceScreen({
                                         isLaunching,
                                         onLaunchRoblox: handleLaunchRoblox,
                                         isKillingRoblox,
+                                        killingRobloxProcessPid,
                                         onKillRoblox: handleKillRoblox,
                                         isOutlinePanelVisible:
                                             editorSettings.isOutlinePanelVisible,

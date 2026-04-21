@@ -27,6 +27,7 @@ export type WorkspaceActionsButtonProps = {
     isLaunching: boolean;
     onLaunchRoblox: () => Promise<void>;
     isKillingRoblox: boolean;
+    killingRobloxProcessPid: number | null;
     onKillRoblox: () => Promise<void>;
     isOutlinePanelVisible: boolean;
     onToggleOutlinePanel: () => void;

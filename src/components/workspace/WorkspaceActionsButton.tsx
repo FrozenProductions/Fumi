@@ -14,6 +14,7 @@ import {
     useRef,
     useState,
 } from "react";
+import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import {
     WORKSPACE_MENU_INSET_REM,
     WORKSPACE_MENU_RADIUS_REM,
@@ -40,6 +41,7 @@ import type {
  * @param props.isLaunching - Whether Roblox is launching
  * @param props.onLaunchRoblox - Launch Roblox handler
  * @param props.isKillingRoblox - Whether Roblox is being killed
+ * @param props.killingRobloxProcessPid - PID for the Roblox instance being killed
  * @param props.onKillRoblox - Kill all Roblox handler
  * @returns A React component
  */
@@ -48,6 +50,7 @@ export function WorkspaceActionsButton({
     isLaunching,
     onLaunchRoblox,
     isKillingRoblox,
+    killingRobloxProcessPid,
     onKillRoblox,
     isOutlinePanelVisible,
     onToggleOutlinePanel,
@@ -82,9 +85,11 @@ export function WorkspaceActionsButton({
     const { executeActiveTab } = executor.actions;
 
     const isDesktopShell = isTauriEnvironment();
+    const isAnyRobloxKillPending =
+        isKillingRoblox || killingRobloxProcessPid !== null;
     const canLaunch = isDesktopShell && !isLaunching;
     const canExecute = hasSupportedExecutor && isAttached && !isBusy;
-    const canKill = isDesktopShell && !isKillingRoblox;
+    const canKill = isDesktopShell && !isAnyRobloxKillPending;
     const canOpenMenu = isDesktopShell;
 
     const hasProcesses = robloxProcesses.length > 0;
@@ -125,6 +130,19 @@ export function WorkspaceActionsButton({
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!isAnyRobloxKillPending || confirmingAction === null) {
+            return;
+        }
+
+        if (confirmTimeoutRef.current !== null) {
+            window.clearTimeout(confirmTimeoutRef.current);
+            confirmTimeoutRef.current = null;
+        }
+
+        setConfirmingAction(null);
+    }, [confirmingAction, isAnyRobloxKillPending]);
 
     function clearPendingConfirm(): void {
         if (confirmTimeoutRef.current !== null) {
@@ -169,7 +187,6 @@ export function WorkspaceActionsButton({
         }
         if (confirmingAction === "kill") {
             clearPendingConfirm();
-            setIsDropdownOpen(false);
             setRevealedProcessPid(null);
             void onKillRoblox();
         } else {
@@ -178,9 +195,14 @@ export function WorkspaceActionsButton({
     }
 
     function handleKillProcessClick(pid: number): void {
+        if (!canKill) {
+            return;
+        }
+
         const confirmKey = `kill-pid-${pid}` as const;
         if (confirmingAction === confirmKey) {
             clearPendingConfirm();
+            setRevealedProcessPid(null);
             void onKillRobloxProcess(pid);
         } else {
             startConfirm(confirmKey);
@@ -302,14 +324,19 @@ export function WorkspaceActionsButton({
         if (isKillingRoblox) {
             return "Killing Roblox processes…";
         }
+        if (killingRobloxProcessPid !== null) {
+            return "Killing Roblox instance…";
+        }
         return "Attempt to close roblox";
     }
 
     function renderProcessRows(): ReactElement[] {
         return robloxProcesses.map((process, index) => {
             const confirmKey = `kill-pid-${process.pid}` as const;
-            const isConfirming = confirmingAction === confirmKey;
-            const canKillProcess = isDesktopShell && !isKillingRoblox;
+            const isKillingProcess = killingRobloxProcessPid === process.pid;
+            const isConfirming =
+                !isKillingProcess && confirmingAction === confirmKey;
+            const canKillProcess = isDesktopShell && !isAnyRobloxKillPending;
             const isMasked =
                 isStreamerModeEnabled && revealedProcessPid !== process.pid;
             const processAccountLabel = getRobloxProcessAccountLabel(process, {
@@ -327,27 +354,37 @@ export function WorkspaceActionsButton({
                 <div
                     key={process.pid}
                     className={`flex items-center justify-between rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] pl-2.5 pr-1 py-1 transition-colors ${
-                        isConfirming
+                        isKillingProcess
                             ? isDark
-                                ? "bg-red-950/60"
-                                : "bg-red-50"
-                            : isDark
-                              ? "hover:bg-fumi-200/70"
-                              : "hover:bg-fumi-100/60"
+                                ? "bg-fumi-200/80"
+                                : "bg-fumi-100"
+                            : isConfirming
+                              ? isDark
+                                  ? "bg-red-950/60"
+                                  : "bg-red-50"
+                              : isDark
+                                ? "hover:bg-fumi-200/70"
+                                : "hover:bg-fumi-100/60"
                     }`}
                 >
                     <div
                         className={`min-w-0 text-[11px] font-medium ${
-                            isConfirming
+                            isKillingProcess
                                 ? isDark
-                                    ? "text-red-200"
-                                    : "text-red-700"
-                                : isDark
-                                  ? "text-fumi-900"
-                                  : "text-fumi-700"
+                                    ? "text-fumi-900"
+                                    : "text-fumi-700"
+                                : isConfirming
+                                  ? isDark
+                                      ? "text-red-200"
+                                      : "text-red-700"
+                                  : isDark
+                                    ? "text-fumi-900"
+                                    : "text-fumi-700"
                         }`}
                     >
-                        {isConfirming ? (
+                        {isKillingProcess ? (
+                            "Killing…"
+                        ) : isConfirming ? (
                             "Confirm kill?"
                         ) : (
                             <>
@@ -393,9 +430,11 @@ export function WorkspaceActionsButton({
                         content={
                             !isDesktopShell
                                 ? "Roblox controls require the Tauri desktop shell"
-                                : isConfirming
-                                  ? "Click to confirm kill"
-                                  : `Kill instance ${index + 1} (${isMasked ? maskedProcessAccountLabel : processAccountLabel})`
+                                : isKillingProcess
+                                  ? `Killing instance ${index + 1}…`
+                                  : isConfirming
+                                    ? "Click to confirm kill"
+                                    : `Kill instance ${index + 1} (${isMasked ? maskedProcessAccountLabel : processAccountLabel})`
                         }
                         side="left"
                     >
@@ -406,21 +445,32 @@ export function WorkspaceActionsButton({
                             className={`flex size-5 shrink-0 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-fumi-600 ${
                                 !canKillProcess
                                     ? "cursor-not-allowed opacity-60"
-                                    : isConfirming
+                                    : isKillingProcess
                                       ? isDark
-                                          ? "text-red-300 hover:bg-red-900/60 hover:text-red-100"
-                                          : "text-red-600 hover:bg-red-100 hover:text-red-800"
-                                      : isDark
-                                        ? "text-fumi-500 hover:bg-fumi-200 hover:text-fumi-900"
-                                        : "text-fumi-400 hover:bg-fumi-200 hover:text-fumi-700"
+                                          ? "text-fumi-500"
+                                          : "text-fumi-400"
+                                      : isConfirming
+                                        ? isDark
+                                            ? "text-red-300 hover:bg-red-900/60 hover:text-red-100"
+                                            : "text-red-600 hover:bg-red-100 hover:text-red-800"
+                                        : isDark
+                                          ? "text-fumi-500 hover:bg-fumi-200 hover:text-fumi-900"
+                                          : "text-fumi-400 hover:bg-fumi-200 hover:text-fumi-700"
                             }`}
                             aria-label={`Kill Roblox instance ${index + 1}`}
                         >
-                            <AppIcon
-                                icon={Cancel01Icon}
-                                className="size-3 shrink-0"
-                                strokeWidth={2.5}
-                            />
+                            {isKillingProcess ? (
+                                <div
+                                    className="size-3 shrink-0 animate-spin bg-current"
+                                    style={SCRIPT_LIBRARY_SPINNER_MASK_STYLE}
+                                />
+                            ) : (
+                                <AppIcon
+                                    icon={Cancel01Icon}
+                                    className="size-3 shrink-0"
+                                    strokeWidth={2.5}
+                                />
+                            )}
                         </button>
                     </AppTooltip>
                 </div>
@@ -607,15 +657,24 @@ export function WorkspaceActionsButton({
                                             : "text-fumi-700 hover:bg-fumi-100"
                                 }`}
                             >
-                                <AppIcon
-                                    icon={
-                                        killIsConfirming
-                                            ? Cancel01Icon
-                                            : Logout01Icon
-                                    }
-                                    className="size-3.5 shrink-0 -translate-y-[0.5px]"
-                                    strokeWidth={2.5}
-                                />
+                                {isKillingRoblox ? (
+                                    <div
+                                        className="size-3.5 shrink-0 animate-spin bg-current"
+                                        style={
+                                            SCRIPT_LIBRARY_SPINNER_MASK_STYLE
+                                        }
+                                    />
+                                ) : (
+                                    <AppIcon
+                                        icon={
+                                            killIsConfirming
+                                                ? Cancel01Icon
+                                                : Logout01Icon
+                                        }
+                                        className="size-3.5 shrink-0 -translate-y-[0.5px]"
+                                        strokeWidth={2.5}
+                                    />
+                                )}
                                 <span>
                                     {isKillingRoblox
                                         ? "Killing…"
