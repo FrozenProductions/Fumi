@@ -103,19 +103,21 @@ const OutlineSymbolRow = memo(function OutlineSymbolRow({
 const OutlineGroupRow = memo(function OutlineGroupRow({
     count,
     isExpanded,
-    onToggle,
+    onToggleExpandedGroup,
     title,
 }: {
     count: number;
     isExpanded: boolean;
-    onToggle: () => void;
+    onToggleExpandedGroup: (title: string) => void;
     title: string;
 }): ReactElement {
     return (
         <button
             type="button"
             className="flex h-[30px] w-full items-center gap-1 px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-fumi-500 transition-colors duration-150 ease-out hover:text-fumi-700 focus-visible:outline-none"
-            onClick={onToggle}
+            onClick={() => {
+                onToggleExpandedGroup(title);
+            }}
         >
             <AppIcon
                 icon={ArrowDown01Icon}
@@ -293,11 +295,9 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                                                 expandedGroups[entry.title] ??
                                                 true
                                             }
-                                            onToggle={() => {
-                                                onToggleExpandedGroup(
-                                                    entry.title,
-                                                );
-                                            }}
+                                            onToggleExpandedGroup={
+                                                onToggleExpandedGroup
+                                            }
                                             title={entry.title}
                                         />
                                     ) : (
