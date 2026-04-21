@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     removeAccountSummary,
     sortAccounts,
@@ -17,8 +17,8 @@ import type { UseAccountsResult } from "./useAccounts.type";
  * Manages Roblox account lifecycle including listing, adding, launching, and deleting accounts.
  *
  * @remarks
- * Polls for account updates every 2 seconds and coordinates with the accounts
- * platform layer to persist and launch Roblox sessions.
+ * Hydrates accounts on mount and refreshes on focus/visibility changes while
+ * coordinating with the platform layer to persist and launch Roblox sessions.
  */
 export function useAccounts(): UseAccountsResult {
     const [accounts, setAccounts] = useState(
@@ -35,17 +35,16 @@ export function useAccounts(): UseAccountsResult {
     const [deletingAccountId, setDeletingAccountId] = useState<string | null>(
         null,
     );
+    const isMountedRef = useRef(true);
+    const refreshTimeoutRef = useRef<number | null>(null);
+    const lastRefreshAtRef = useRef(0);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadAccounts(options?: {
-            suppressError?: boolean;
-        }): Promise<void> {
+    const loadAccounts = useCallback(
+        async (options?: { suppressError?: boolean }): Promise<void> => {
             try {
                 const response = await listAccounts();
 
-                if (!isMounted) {
+                if (!isMountedRef.current) {
                     return;
                 }
 
@@ -53,7 +52,7 @@ export function useAccounts(): UseAccountsResult {
                 setIsRobloxRunning(response.isRobloxRunning);
                 setErrorMessage(null);
             } catch (error) {
-                if (!isMounted || options?.suppressError) {
+                if (!isMountedRef.current || options?.suppressError) {
                     return;
                 }
 
@@ -61,18 +60,60 @@ export function useAccounts(): UseAccountsResult {
                     getErrorMessage(error, "Could not load saved accounts."),
                 );
             }
-        }
+        },
+        [],
+    );
 
+    useEffect(() => {
         void loadAccounts();
-        const intervalId = window.setInterval(() => {
-            void loadAccounts({ suppressError: true });
-        }, 2_000);
+
+        const scheduleAccountsRefresh = (): void => {
+            if (refreshTimeoutRef.current !== null) {
+                window.clearTimeout(refreshTimeoutRef.current);
+            }
+
+            refreshTimeoutRef.current = window.setTimeout(() => {
+                refreshTimeoutRef.current = null;
+
+                const now = Date.now();
+
+                if (now - lastRefreshAtRef.current < 250) {
+                    return;
+                }
+
+                lastRefreshAtRef.current = now;
+                void loadAccounts({ suppressError: true });
+            }, 100);
+        };
+
+        const handleWindowFocus = (): void => {
+            scheduleAccountsRefresh();
+        };
+
+        const handleVisibilityChange = (): void => {
+            if (document.visibilityState === "visible") {
+                scheduleAccountsRefresh();
+            }
+        };
+
+        window.addEventListener("focus", handleWindowFocus);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
+            isMountedRef.current = false;
+
+            if (refreshTimeoutRef.current !== null) {
+                window.clearTimeout(refreshTimeoutRef.current);
+                refreshTimeoutRef.current = null;
+            }
+
+            window.removeEventListener("focus", handleWindowFocus);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
         };
-    }, []);
+    }, [loadAccounts]);
 
     const openAddModal = (): void => {
         setIsAddModalOpen(true);
@@ -129,6 +170,7 @@ export function useAccounts(): UseAccountsResult {
             setAccounts((currentAccounts) =>
                 upsertAccountSummary(currentAccounts, account),
             );
+            setIsRobloxRunning(true);
         } catch (error) {
             setErrorMessage(
                 getErrorMessage(error, "Could not launch the Roblox account."),
