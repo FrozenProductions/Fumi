@@ -47,6 +47,7 @@ type WorkspaceAcePaneProps = {
     createHandleEditorUnmount: WorkspaceEditorProps["createHandleEditorUnmount"];
     createHandleScroll: WorkspaceEditorProps["createHandleScroll"];
     editorFontSize: number;
+    isWordWrapEnabled: boolean;
     isActiveTab: boolean;
     isVisible: boolean;
     onActiveTabLuauChange: WorkspaceEditorProps["onActiveTabLuauChange"];
@@ -63,6 +64,7 @@ function WorkspaceAcePane({
     createHandleEditorUnmount,
     createHandleScroll,
     editorFontSize,
+    isWordWrapEnabled,
     isActiveTab,
     isVisible,
     onActiveTabLuauChange,
@@ -103,7 +105,7 @@ function WorkspaceAcePane({
                 showPrintMargin={false}
                 highlightActiveLine
                 tabSize={4}
-                wrapEnabled={false}
+                wrapEnabled={isWordWrapEnabled}
                 setOptions={WORKSPACE_EDITOR_OPTIONS}
                 editorProps={WORKSPACE_EDITOR_PROPS}
                 style={WORKSPACE_EDITOR_STYLE}
@@ -154,6 +156,7 @@ export function WorkspaceEditor({
     activeTabId,
     appTheme,
     editorFontSize,
+    isWordWrapEnabled,
     tabs,
     splitView,
     searchPanel,
@@ -543,6 +546,7 @@ export function WorkspaceEditor({
                                               createHandleScroll
                                           }
                                           editorFontSize={editorFontSize}
+                                          isWordWrapEnabled={isWordWrapEnabled}
                                           isActiveTab={tab.id === activeTabId}
                                           isVisible={isVisible}
                                           onActiveTabLuauChange={

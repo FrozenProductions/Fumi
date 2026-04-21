@@ -129,10 +129,40 @@ describe("useAppStore editorSettings", () => {
         useAppStore.setState((state) => ({
             editorSettings: {
                 ...state.editorSettings,
+                isWordWrapEnabled: false,
                 isOutlinePanelVisible: true,
                 outlinePanelWidth: 256,
             },
         }));
+    });
+
+    it("defaults word wrap to disabled when old persisted state lacks the field", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                editorSettings: {
+                    fontSize: 16,
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.editorSettings.isWordWrapEnabled).toBe(false);
+    });
+
+    it("stores word wrap changes", () => {
+        useAppStore.getState().setEditorWordWrapEnabled(true);
+
+        expect(useAppStore.getState().editorSettings.isWordWrapEnabled).toBe(
+            true,
+        );
+
+        expect(getPersistedAppStoreState(useAppStore.getState())).toMatchObject(
+            {
+                editorSettings: {
+                    isWordWrapEnabled: true,
+                },
+            },
+        );
     });
 
     it("toggles the outline panel visibility", () => {

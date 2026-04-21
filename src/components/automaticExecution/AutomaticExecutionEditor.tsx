@@ -29,6 +29,7 @@ import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.t
 export function AutomaticExecutionEditor({
     appTheme,
     editorFontSize,
+    isWordWrapEnabled,
     script,
     onCreateScript,
     onChange,
@@ -145,7 +146,7 @@ export function AutomaticExecutionEditor({
                 showPrintMargin={false}
                 highlightActiveLine
                 tabSize={4}
-                wrapEnabled={false}
+                wrapEnabled={isWordWrapEnabled}
                 setOptions={WORKSPACE_EDITOR_OPTIONS}
                 style={WORKSPACE_EDITOR_STYLE}
                 onChange={(value: string) => {

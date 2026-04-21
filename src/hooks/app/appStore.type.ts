@@ -61,6 +61,7 @@ export type AppStoreActions = {
     setAutoUpdateEnabled: (isEnabled: boolean) => void;
     setStreamerModeEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
+    setEditorWordWrapEnabled: (isEnabled: boolean) => void;
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
     setEditorIntellisenseWidth: (width: AppIntellisenseWidth) => void;

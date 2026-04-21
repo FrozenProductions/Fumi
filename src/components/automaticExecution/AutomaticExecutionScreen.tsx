@@ -27,6 +27,9 @@ export function AutomaticExecutionScreen({
     const editorFontSize = useAppStore(
         (state) => state.editorSettings.fontSize,
     );
+    const isWordWrapEnabled = useAppStore(
+        (state) => state.editorSettings.isWordWrapEnabled,
+    );
     const {
         activeScript,
         activeScriptId,
@@ -269,6 +272,7 @@ export function AutomaticExecutionScreen({
                     <AutomaticExecutionEditor
                         appTheme={appTheme}
                         editorFontSize={editorFontSize}
+                        isWordWrapEnabled={isWordWrapEnabled}
                         script={activeScript}
                         onCreateScript={handleCreateScript}
                         onChange={updateActiveScriptContent}

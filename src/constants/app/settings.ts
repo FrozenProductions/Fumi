@@ -70,6 +70,7 @@ export const DEFAULT_APP_STREAMER_MODE_ENABLED = false;
 
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,
+    isWordWrapEnabled: false,
     isIntellisenseEnabled: true,
     intellisensePriority: "balanced",
     intellisenseWidth: "large",

@@ -82,6 +82,9 @@ export function WorkspaceExecutionHistoryModal({
     const editorFontSize = useAppStore(
         (state) => state.editorSettings.fontSize,
     );
+    const isWordWrapEnabled = useAppStore(
+        (state) => state.editorSettings.isWordWrapEnabled,
+    );
 
     const [selectedEntryId, setSelectedEntryId] = useState<string | null>(
         entries[0]?.id ?? null,
@@ -435,7 +438,7 @@ export function WorkspaceExecutionHistoryModal({
                                                 showPrintMargin={false}
                                                 navigateToFileEnd={false}
                                                 tabSize={4}
-                                                wrapEnabled={false}
+                                                wrapEnabled={isWordWrapEnabled}
                                                 setOptions={
                                                     isLargeScript
                                                         ? EXECUTION_HISTORY_LARGE_SCRIPT_EDITOR_OPTIONS

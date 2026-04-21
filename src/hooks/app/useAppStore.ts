@@ -48,6 +48,10 @@ export function mergeAppStoreState(
     const intellisenseWidth = normalizeAppIntellisenseWidth(
         persistedAppState.editorSettings?.intellisenseWidth,
     );
+    const isWordWrapEnabled =
+        typeof persistedAppState.editorSettings?.isWordWrapEnabled === "boolean"
+            ? persistedAppState.editorSettings.isWordWrapEnabled
+            : currentState.editorSettings.isWordWrapEnabled;
     const outlinePanelWidth = normalizeAppOutlinePanelWidth(
         persistedAppState.editorSettings?.outlinePanelWidth,
     );
@@ -80,6 +84,7 @@ export function mergeAppStoreState(
         editorSettings: {
             ...currentState.editorSettings,
             ...persistedAppState.editorSettings,
+            isWordWrapEnabled,
             intellisenseWidth,
             outlinePanelWidth,
         },
@@ -307,6 +312,14 @@ export const useAppStore = create<AppStore>()(
                     editorSettings: {
                         ...state.editorSettings,
                         fontSize,
+                    },
+                }));
+            },
+            setEditorWordWrapEnabled: (isEnabled) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        isWordWrapEnabled: isEnabled,
                     },
                 }));
             },

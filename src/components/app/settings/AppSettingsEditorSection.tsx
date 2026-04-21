@@ -20,6 +20,9 @@ import { AppSettingsToggle } from "../AppSettingsToggle";
 export function AppSettingsEditorSection(): ReactElement {
     const editorSettings = useAppStore((state) => state.editorSettings);
     const setEditorFontSize = useAppStore((state) => state.setEditorFontSize);
+    const setEditorWordWrapEnabled = useAppStore(
+        (state) => state.setEditorWordWrapEnabled,
+    );
     const setEditorIntellisenseEnabled = useAppStore(
         (state) => state.setEditorIntellisenseEnabled,
     );
@@ -42,6 +45,10 @@ export function AppSettingsEditorSection(): ReactElement {
 
     const handleIntellisenseToggle = (): void => {
         setEditorIntellisenseEnabled(!editorSettings.isIntellisenseEnabled);
+    };
+
+    const handleWordWrapToggle = (): void => {
+        setEditorWordWrapEnabled(!editorSettings.isWordWrapEnabled);
     };
 
     const handleIntellisensePriorityChange = (
@@ -102,6 +109,12 @@ export function AppSettingsEditorSection(): ReactElement {
                     className="shrink-0"
                 />
             </div>
+            <AppSettingsToggle
+                label="Word wrap"
+                description="Wrap long lines in editor panes instead of forcing horizontal scrolling."
+                isEnabled={editorSettings.isWordWrapEnabled}
+                onChange={handleWordWrapToggle}
+            />
             <AppSettingsToggle
                 label="IntelliSense"
                 description="Show Luau completion suggestions while typing."

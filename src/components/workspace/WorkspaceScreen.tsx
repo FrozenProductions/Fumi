@@ -651,6 +651,9 @@ export function WorkspaceScreen({
                                     activeTabId={activeTab.id}
                                     appTheme={appTheme}
                                     editorFontSize={editorSettings.fontSize}
+                                    isWordWrapEnabled={
+                                        editorSettings.isWordWrapEnabled
+                                    }
                                     tabs={workspace.tabs}
                                     splitView={resolvedSplitView}
                                     searchPanel={searchPanel}

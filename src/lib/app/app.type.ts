@@ -73,6 +73,7 @@ export type AppIntellisenseWidth = "small" | "normal" | "large";
 
 export type AppEditorSettings = {
     fontSize: number;
+    isWordWrapEnabled: boolean;
     isIntellisenseEnabled: boolean;
     intellisensePriority: AppIntellisensePriority;
     intellisenseWidth: AppIntellisenseWidth;

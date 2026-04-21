@@ -26,6 +26,7 @@ export type WorkspaceEditorProps = {
     activeTabId: string;
     appTheme: AppTheme;
     editorFontSize: number;
+    isWordWrapEnabled: boolean;
     tabs: WorkspaceTab[];
     splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
