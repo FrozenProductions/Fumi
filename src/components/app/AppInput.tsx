@@ -5,7 +5,7 @@ import type {
     MouseEvent,
     ReactElement,
 } from "react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import {
     APP_INPUT_SIZE_MIN_WIDTH_MAP,
     APP_TEXT_INPUT_PROPS,
@@ -52,31 +52,41 @@ export function AppInput({
     className = "",
 }: AppInputProps): ReactElement {
     const [draftValue, setDraftValue] = useState(value);
+    const [isEditing, setIsEditing] = useState(false);
+    const displayedValue = isEditing ? draftValue : value;
+    const latestDisplayedValueRef = useRef(displayedValue);
 
-    useEffect(() => {
-        setDraftValue(value);
-    }, [value]);
+    latestDisplayedValueRef.current = displayedValue;
 
-    const commitValue = (): void => {
-        const { nextDraftValue, nextValue } = resolveCommittedTextInputValue({
-            draftValue,
+    const commitValue = (
+        currentDraftValue = latestDisplayedValueRef.current,
+    ): void => {
+        const resolvedValue = resolveCommittedTextInputValue({
+            draftValue: currentDraftValue,
             value,
             minValue,
             maxValue,
         });
 
-        setDraftValue(nextDraftValue);
+        setDraftValue(resolvedValue.nextDraftValue);
+        setIsEditing(false);
 
-        if (nextValue !== null && nextValue !== value) {
-            onChange(nextValue);
+        if (
+            resolvedValue.nextValue !== null &&
+            resolvedValue.nextValue !== value
+        ) {
+            onChange(resolvedValue.nextValue);
         }
     };
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
+        setIsEditing(true);
         setDraftValue(event.target.value);
     };
 
     const handleFocus = (event: FocusEvent<HTMLInputElement>): void => {
+        setDraftValue(value);
+        setIsEditing(true);
         event.currentTarget.select();
     };
 
@@ -86,13 +96,15 @@ export function AppInput({
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
         if (event.key === "Enter") {
-            commitValue();
+            commitValue(event.currentTarget.value);
             event.currentTarget.blur();
             return;
         }
 
         if (event.key === "Escape") {
             setDraftValue(value);
+            setIsEditing(false);
+            latestDisplayedValueRef.current = value;
             event.currentTarget.blur();
             return;
         }
@@ -111,14 +123,16 @@ export function AppInput({
             });
 
             if (next !== null) {
+                setIsEditing(true);
                 setDraftValue(next);
+                latestDisplayedValueRef.current = next;
                 onChange(next);
             }
         }
     };
 
     const sizeClass = size ? APP_INPUT_SIZE_MIN_WIDTH_MAP[size] : "min-w-[1ch]";
-    const measuredValue = draftValue || placeholder || value || " ";
+    const measuredValue = displayedValue || placeholder || value || " ";
 
     return (
         <label
@@ -135,14 +149,16 @@ export function AppInput({
                 </span>
                 <input
                     type="text"
-                    value={draftValue}
+                    value={displayedValue}
                     aria-label={ariaLabel}
                     inputMode={inputMode}
                     maxLength={maxLength}
                     placeholder={placeholder}
                     readOnly={isReadOnly}
                     onChange={handleChange}
-                    onBlur={commitValue}
+                    onBlur={(event) => {
+                        commitValue(event.currentTarget.value);
+                    }}
                     onFocus={handleFocus}
                     onClick={handleClick}
                     onKeyDown={handleKeyDown}
