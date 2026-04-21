@@ -2,9 +2,6 @@ import { create } from "zustand";
 import { INITIAL_TOOLTIP_POSITION } from "../../constants/tooltip/tooltip";
 import type { TooltipStore } from "./useTooltipStore.type";
 
-export const selectActiveTooltipId = (state: TooltipStore): string | null =>
-    state.activeTooltip?.id ?? null;
-
 /**
  * Global tooltip state store managing visibility, positioning, and tooltip content.
  *

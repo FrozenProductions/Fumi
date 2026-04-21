@@ -6,15 +6,13 @@ import {
     useEffect,
     useId,
     useRef,
+    useState,
 } from "react";
 import {
     DEFAULT_TOOLTIP_DELAY_MS,
     DEFAULT_TOOLTIP_OFFSET,
 } from "../../constants/tooltip/tooltip";
-import {
-    selectActiveTooltipId,
-    useTooltipStore,
-} from "../../hooks/tooltip/useTooltipStore";
+import { useTooltipStore } from "../../hooks/tooltip/useTooltipStore";
 import {
     assignRef,
     markTooltipWarm,
@@ -46,14 +44,13 @@ export function AppTooltip({
     delayMs = DEFAULT_TOOLTIP_DELAY_MS,
     disabled = false,
 }: AppTooltipProps): ReactElement {
-    const activeTooltipId = useTooltipStore(selectActiveTooltipId);
     const hideTooltip = useTooltipStore((state) => state.hideTooltip);
     const showTooltip = useTooltipStore((state) => state.showTooltip);
     const tooltipId = useId();
     const openTimerRef = useRef<number | null>(null);
     const triggerElementRef = useRef<HTMLElement | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
     const childElement = children;
-    const isVisible = !disabled && activeTooltipId === tooltipId;
 
     const clearOpenTimer = (): void => {
         if (openTimerRef.current === null) {
@@ -77,6 +74,7 @@ export function AppTooltip({
             }
 
             markTooltipWarm();
+            setIsVisible(true);
 
             showTooltip({
                 id: tooltipId,
@@ -101,6 +99,7 @@ export function AppTooltip({
 
     const closeTooltip = (): void => {
         clearOpenTimer();
+        setIsVisible(false);
         hideTooltip(tooltipId);
         scheduleTooltipCooldown();
     };
@@ -111,17 +110,19 @@ export function AppTooltip({
                 window.clearTimeout(openTimerRef.current);
             }
 
+            setIsVisible(false);
             hideTooltip(tooltipId);
         };
     }, [hideTooltip, tooltipId]);
 
     useEffect(() => {
-        if (!disabled || activeTooltipId !== tooltipId) {
+        if (!disabled || !isVisible) {
             return;
         }
 
+        setIsVisible(false);
         hideTooltip(tooltipId);
-    }, [activeTooltipId, disabled, hideTooltip, tooltipId]);
+    }, [disabled, hideTooltip, isVisible, tooltipId]);
 
     useEffect(() => {
         if (!isVisible || !triggerElementRef.current) {
@@ -137,6 +138,18 @@ export function AppTooltip({
             triggerElement: triggerElementRef.current,
         });
     }, [content, shortcut, isVisible, offset, showTooltip, side, tooltipId]);
+
+    useEffect(() => {
+        if (!isVisible) {
+            return;
+        }
+
+        return useTooltipStore.subscribe((state) => {
+            if (state.activeTooltip?.id !== tooltipId) {
+                setIsVisible(false);
+            }
+        });
+    }, [isVisible, tooltipId]);
 
     if (disabled) {
         return children;
