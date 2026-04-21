@@ -52,6 +52,7 @@ function createWorkspaceStoreState(
                 },
             ],
         },
+        dirtyTabCount: 0,
         recentWorkspacePaths: [],
         persistRevision,
         lastPersistedRevision,

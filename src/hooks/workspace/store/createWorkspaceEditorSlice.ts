@@ -56,6 +56,13 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                             savedContent: tab.content,
                         }),
                     ),
+                    dirtyTabCount: Math.max(
+                        0,
+                        state.dirtyTabCount -
+                            Number(
+                                activeTab.content !== activeTab.savedContent,
+                            ),
+                    ),
                     errorMessage: null,
                 };
             });
@@ -70,14 +77,38 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
         }
     },
     updateActiveTabContent: (content: string): void => {
-        set((state) => ({
-            workspace: state.workspace
-                ? updateActiveWorkspaceTab(state.workspace, (tab) => ({
-                      ...tab,
-                      content,
-                  }))
-                : state.workspace,
-        }));
+        set((state) => {
+            const currentWorkspace = state.workspace;
+
+            if (!currentWorkspace) {
+                return {
+                    workspace: currentWorkspace,
+                };
+            }
+
+            const activeTab = getActiveTabFromWorkspace(currentWorkspace);
+
+            if (!activeTab || activeTab.content === content) {
+                return {
+                    workspace: currentWorkspace,
+                };
+            }
+
+            const wasDirty = activeTab.content !== activeTab.savedContent;
+            const isDirty = content !== activeTab.savedContent;
+
+            return {
+                workspace: updateActiveWorkspaceTab(
+                    currentWorkspace,
+                    (tab) => ({
+                        ...tab,
+                        content,
+                    }),
+                ),
+                dirtyTabCount:
+                    state.dirtyTabCount + Number(isDirty) - Number(wasDirty),
+            };
+        });
     },
     updateActiveTabCursor: (cursor: WorkspaceCursorState): void => {
         set((state) => {

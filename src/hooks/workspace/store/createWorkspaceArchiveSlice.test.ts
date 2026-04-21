@@ -55,6 +55,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
                 },
             ],
         },
+        dirtyTabCount: 1,
         recentWorkspacePaths: [],
         persistRevision: 0,
         lastPersistedRevision: 0,

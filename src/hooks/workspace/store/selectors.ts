@@ -26,10 +26,7 @@ export const selectWorkspaceActiveTab = (
 
 export const selectWorkspaceHasUnsavedChanges = (
     state: WorkspaceStore,
-): boolean =>
-    Boolean(
-        state.workspace?.tabs.some((tab) => tab.content !== tab.savedContent),
-    );
+): boolean => state.dirtyTabCount > 0;
 
 export const selectWorkspaceShouldGuardExit = (
     state: WorkspaceStore,

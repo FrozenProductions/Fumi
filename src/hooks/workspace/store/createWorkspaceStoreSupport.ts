@@ -1,4 +1,5 @@
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
+import { getWorkspaceDirtyTabCount } from "../../../lib/workspace/session";
 import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
 import { isMatchingWorkspacePath } from "./helpers";
 import type {
@@ -40,6 +41,7 @@ export function createWorkspaceStoreSupport(
 
             return {
                 workspace: nextWorkspace,
+                dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
                 errorMessage: null,
                 persistRevision: nextPersistRevision,
                 lastPersistedRevision: shouldMarkPersisted

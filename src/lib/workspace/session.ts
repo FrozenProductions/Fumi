@@ -198,6 +198,18 @@ export function hasWorkspaceDraftChanges(workspace: WorkspaceSession): boolean {
     return workspace.tabs.some((tab) => tab.content !== tab.savedContent);
 }
 
+export function getWorkspaceDirtyTabCount(
+    workspace: WorkspaceSession | null,
+): number {
+    if (!workspace) {
+        return 0;
+    }
+
+    return workspace.tabs.reduce((count, tab) => {
+        return count + Number(tab.content !== tab.savedContent);
+    }, 0);
+}
+
 /**
  * Inserts or updates a tab in the workspace session.
  *

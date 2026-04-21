@@ -15,6 +15,7 @@ import type { WorkspaceStore } from "./store/workspaceStore.type";
 export const useWorkspaceStore = create<WorkspaceStore>((set, get, store) => {
     const workspaceStore: WorkspaceStore = {
         workspace: null,
+        dirtyTabCount: 0,
         recentWorkspacePaths: readRecentWorkspacePaths(),
         persistRevision: 0,
         lastPersistedRevision: 0,

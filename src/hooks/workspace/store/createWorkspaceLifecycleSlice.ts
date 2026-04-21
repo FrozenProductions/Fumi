@@ -14,6 +14,7 @@ import {
 } from "../../../lib/workspace/persistence";
 import {
     buildWorkspaceSession,
+    getWorkspaceDirtyTabCount,
     hasWorkspaceDraftChanges,
     mergeWorkspaceSession,
     serializeTabState,
@@ -60,6 +61,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
         set({
             workspace: nextWorkspace,
+            dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
             recentWorkspacePaths: nextRecentWorkspacePaths,
             persistRevision: 0,
             lastPersistedRevision: 0,
@@ -82,6 +84,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 lifecycleRuntime.hasBootstrappedWorkspaceSession = true;
                 set({
                     workspace: null,
+                    dirtyTabCount: 0,
                     persistRevision: 0,
                     lastPersistedRevision: 0,
                     errorMessage: null,
@@ -109,6 +112,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
                     set({
                         workspace: nextWorkspace,
+                        dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
                         recentWorkspacePaths: nextRecentWorkspacePaths,
                         persistRevision: 0,
                         lastPersistedRevision: 0,
@@ -118,6 +122,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 } catch (error) {
                     set({
                         workspace: null,
+                        dirtyTabCount: 0,
                         persistRevision: 0,
                         lastPersistedRevision: 0,
                         errorMessage: getErrorMessage(
@@ -242,6 +247,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
                     set({
                         workspace: null,
+                        dirtyTabCount: 0,
                         persistRevision: 0,
                         lastPersistedRevision: 0,
                         errorMessage: null,
@@ -274,6 +280,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
 
                     return {
                         workspace: nextWorkspace,
+                        dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
                         persistRevision: state.persistRevision + 1,
                         lastPersistedRevision: state.persistRevision + 1,
                         errorMessage: null,

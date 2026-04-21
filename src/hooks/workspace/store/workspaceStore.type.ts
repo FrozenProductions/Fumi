@@ -8,6 +8,7 @@ import type {
 
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;
+    dirtyTabCount: number;
     recentWorkspacePaths: string[];
     persistRevision: number;
     lastPersistedRevision: number;
