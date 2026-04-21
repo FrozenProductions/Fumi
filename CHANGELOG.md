@@ -8,19 +8,25 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Added
 
-- Add live Roblox account details in the accounts screen.
-- Bind executor ports to Roblox accounts across the backend and UI.
+- Add live Roblox account details in the accounts screen and bind executor ports to Roblox accounts across the backend and UI.
+- Add workspace execution history.
+- Add comments into outline panel.
+- Add a developer settings section.
 
 ### Changed
 
-- Refine Roblox account binding inference.
-- Polish the accounts screen empty and modal states.
-- Constrain the account cookie textarea height.
+- Migrate workspace, account, and automatic execution metadata to schema-backed storage.
+- Reduce IPC, move blocking Tauri work off hot paths, and cut refresh overhead.
+- Speed up workspace rendering, virtualization, and dirty-state tracking.
+- Make workspace state retention and UI behavior more reliable.
+- Polish accounts, command palette, workspace, and sidebar UX.
 
 ### Fixed
 
-- Treat zombie Roblox processes as exited.
-- Harden Roblox launch and executor status flows.
+- Preserve undo history across tab switches.
+- Fix Luau completion popup positioning and disable intellisense inside Luau strings.
+- Improve the runtime error screen and fix right sidebar toggle icon direction, execute button resize lag, and outline resize direction.
+- Treat zombie Roblox processes as exited and harden Roblox launch and executor status flows.
 
 ## [1.0.5] - 2026-04-17
 
