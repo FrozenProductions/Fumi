@@ -16,6 +16,7 @@
         "test": "bun run test:frontend && bun run test:backend",
         "test:frontend": "vp test run",
         "test:backend": "cargo test --manifest-path src-tauri/Cargo.toml",
+        "metadata:schemas": "cargo test --manifest-path src-tauri/Cargo.toml export_metadata_schemas -- --ignored --nocapture && biome check --write src/shared/metadata/schemas && biome check src/shared/metadata/schemas",
         "typecheck": "tsc --noEmit",
         "lint": "biome check",
         "format": "biome format --write"
