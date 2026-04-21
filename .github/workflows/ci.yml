@@ -4,7 +4,29 @@ on:
     push:
         branches:
             - main
+        paths:
+            - ".github/workflows/ci.yml"
+            - "biome.json"
+            - "bun.lock"
+            - "package.json"
+            - "postcss.config.js"
+            - "src/**"
+            - "src-tauri/**"
+            - "tailwind.config.js"
+            - "tsconfig.json"
+            - "vite.config.mts"
     pull_request:
+        paths:
+            - ".github/workflows/ci.yml"
+            - "biome.json"
+            - "bun.lock"
+            - "package.json"
+            - "postcss.config.js"
+            - "src/**"
+            - "src-tauri/**"
+            - "tailwind.config.js"
+            - "tsconfig.json"
+            - "vite.config.mts"
 
 jobs:
     frontend:
