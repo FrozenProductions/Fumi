@@ -312,7 +312,9 @@ export function WorkspaceActionsButton({
             const canKillProcess = isDesktopShell && !isKillingRoblox;
             const isMasked =
                 isStreamerModeEnabled && revealedProcessPid !== process.pid;
-            const processAccountLabel = getRobloxProcessAccountLabel(process);
+            const processAccountLabel = getRobloxProcessAccountLabel(process, {
+                isMasked,
+            });
             const maskedProcessAccountLabel = getRobloxProcessAccountLabel(
                 process,
                 {

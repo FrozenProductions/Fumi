@@ -179,9 +179,13 @@ export function AccountsScreen(): ReactElement {
                                 isStreamerModeEnabled &&
                                 revealedAccountId !== account.id;
                             const accountDisplayName =
-                                getAccountRowDisplayName(account);
+                                getAccountRowDisplayName(account, {
+                                    isMasked,
+                                });
                             const accountIdentityLabel =
-                                getAccountRowIdentityLabel(account);
+                                getAccountRowIdentityLabel(account, {
+                                    isMasked,
+                                });
                             const accountAvatarAltText =
                                 getAccountAvatarAltText(account, { isMasked });
                             const identityBlurClassName = isMasked

@@ -210,6 +210,9 @@ export function AppTopbarExecutorControls({
                                     const label =
                                         getExecutorPortLabel(
                                             availablePortSummary,
+                                            {
+                                                isMasked,
+                                            },
                                         );
                                     const shouldBlurPortLabel =
                                         isMasked &&
@@ -268,6 +271,14 @@ export function AppTopbarExecutorControls({
                                         <button
                                             key={availablePortSummary.port}
                                             type="button"
+                                            onPointerEnter={
+                                                handleRevealExecutorPort
+                                            }
+                                            onPointerLeave={(event) =>
+                                                handleHideExecutorPort(
+                                                    event.currentTarget,
+                                                )
+                                            }
                                             onFocus={handleRevealExecutorPort}
                                             onBlur={handleExecutorPortBlur}
                                             onClick={() => {
@@ -286,18 +297,6 @@ export function AppTopbarExecutorControls({
                                                     {availablePortSummary.port}
                                                 </span>
                                                 <span
-                                                    onPointerEnter={
-                                                        handleRevealExecutorPort
-                                                    }
-                                                    onPointerLeave={() =>
-                                                        setRevealedPort(
-                                                            (currentPort) =>
-                                                                currentPort ===
-                                                                availablePortSummary.port
-                                                                    ? null
-                                                                    : currentPort,
-                                                        )
-                                                    }
                                                     className={`mt-0.5 block truncate text-[10px] font-medium text-fumi-400 transition-[filter] duration-150 ${
                                                         shouldBlurPortLabel
                                                             ? "blur-[0.20rem]"
