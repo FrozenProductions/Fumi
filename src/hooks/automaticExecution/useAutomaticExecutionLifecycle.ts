@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { AUTOMATIC_EXECUTION_REFRESH_INTERVAL_MS } from "../../constants/automaticExecution/automaticExecution";
 import type { ExecutorKind } from "../../lib/workspace/workspace.type";
 import { useAutomaticExecutionStore } from "./useAutomaticExecutionStore";
 
@@ -39,11 +38,6 @@ export function useAutomaticExecutionLifecycle(
             void refreshAutomaticExecution(executorKind);
         };
 
-        const intervalId = window.setInterval(
-            refreshFromFilesystem,
-            AUTOMATIC_EXECUTION_REFRESH_INTERVAL_MS,
-        );
-
         const handleWindowFocus = (): void => {
             refreshFromFilesystem();
         };
@@ -58,7 +52,6 @@ export function useAutomaticExecutionLifecycle(
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
-            window.clearInterval(intervalId);
             window.removeEventListener("focus", handleWindowFocus);
             document.removeEventListener(
                 "visibilitychange",
