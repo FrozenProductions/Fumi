@@ -332,7 +332,7 @@ export function WorkspaceActionsButton({
                                 ? "bg-red-950/60"
                                 : "bg-red-50"
                             : isDark
-                              ? "hover:bg-fumi-800/50"
+                              ? "hover:bg-fumi-200/70"
                               : "hover:bg-fumi-100/60"
                     }`}
                 >
@@ -343,7 +343,7 @@ export function WorkspaceActionsButton({
                                     ? "text-red-200"
                                     : "text-red-700"
                                 : isDark
-                                  ? "text-fumi-200"
+                                  ? "text-fumi-900"
                                   : "text-fumi-700"
                         }`}
                     >
@@ -411,7 +411,7 @@ export function WorkspaceActionsButton({
                                           ? "text-red-300 hover:bg-red-900/60 hover:text-red-100"
                                           : "text-red-600 hover:bg-red-100 hover:text-red-800"
                                       : isDark
-                                        ? "text-fumi-500 hover:bg-fumi-700 hover:text-fumi-200"
+                                        ? "text-fumi-500 hover:bg-fumi-200 hover:text-fumi-900"
                                         : "text-fumi-400 hover:bg-fumi-200 hover:text-fumi-700"
                             }`}
                             aria-label={`Kill Roblox instance ${index + 1}`}
@@ -491,7 +491,7 @@ export function WorkspaceActionsButton({
                     style={dropdownStyle}
                     className={`pointer-events-auto absolute bottom-[calc(100%+0.5rem)] right-0 z-50 origin-bottom-right overflow-hidden rounded-[var(--workspace-actions-menu-radius)] border bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] animate-fade-in ${
                         hasProcesses ? "w-52" : "w-44"
-                    } ${isDark ? "border-fumi-700 bg-fumi-800" : "border-fumi-200 bg-fumi-50"}`}
+                    } ${isDark ? "border-fumi-200 bg-fumi-100" : "border-fumi-200 bg-fumi-50"}`}
                 >
                     <div
                         className={`app-select-none mb-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-fumi-500" : "text-fumi-400"}`}
@@ -514,7 +514,7 @@ export function WorkspaceActionsButton({
                                 onClick={handleToggleOutlinePanelClick}
                                 className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     isDark
-                                        ? "text-fumi-200 hover:bg-fumi-700"
+                                        ? "text-fumi-900 hover:bg-fumi-200"
                                         : "text-fumi-700 hover:bg-fumi-100"
                                 }`}
                             >
@@ -541,7 +541,7 @@ export function WorkspaceActionsButton({
                                 onClick={handleOpenExecutionHistoryClick}
                                 className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     isDark
-                                        ? "text-fumi-200 hover:bg-fumi-700"
+                                        ? "text-fumi-900 hover:bg-fumi-200"
                                         : "text-fumi-700 hover:bg-fumi-100"
                                 }`}
                             >
@@ -568,7 +568,7 @@ export function WorkspaceActionsButton({
                                     !canLaunch
                                         ? "cursor-not-allowed opacity-60"
                                         : isDark
-                                          ? "text-fumi-200 hover:bg-fumi-700"
+                                          ? "text-fumi-900 hover:bg-fumi-200"
                                           : "text-fumi-700 hover:bg-fumi-100"
                                 }`}
                             >
@@ -603,7 +603,7 @@ export function WorkspaceActionsButton({
                                               ? "bg-red-950/70 text-red-100 hover:bg-red-900/80"
                                               : "bg-red-50 text-red-700 hover:bg-red-100"
                                           : isDark
-                                            ? "text-fumi-200 hover:bg-fumi-700"
+                                            ? "text-fumi-900 hover:bg-fumi-200"
                                             : "text-fumi-700 hover:bg-fumi-100"
                                 }`}
                             >
