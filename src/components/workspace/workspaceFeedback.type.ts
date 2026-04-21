@@ -2,6 +2,7 @@ import type { AppIconGlyph } from "../../lib/app/app.type";
 
 export type WorkspaceErrorBannerProps = {
     errorMessage: string;
+    onClose: () => void;
 };
 
 export type WorkspaceMessageStateProps = {

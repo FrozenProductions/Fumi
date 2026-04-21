@@ -10,6 +10,7 @@ type UseWorkspaceSessionStoreFields = Pick<
     | "deleteAllArchivedWorkspaceTabs"
     | "deleteArchivedWorkspaceTab"
     | "deleteWorkspaceTab"
+    | "clearErrorMessage"
     | "errorMessage"
     | "isBootstrapping"
     | "openWorkspaceDirectory"
@@ -82,6 +83,7 @@ export type WorkspaceSessionEditorActions = Pick<
     | "updateActiveTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
+    | "clearErrorMessage"
 >;
 
 export type UseWorkspaceSessionResult = {

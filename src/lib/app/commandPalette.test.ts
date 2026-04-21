@@ -114,6 +114,7 @@ function createWorkspaceSession(
             ...overrides.archiveActions,
         },
         editorActions: {
+            clearErrorMessage: vi.fn(),
             updateActiveTabContent: vi.fn(),
             updateActiveTabCursor: vi.fn(),
             updateActiveTabScrollTop: vi.fn(),

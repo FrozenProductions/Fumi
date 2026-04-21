@@ -120,9 +120,13 @@ export function WorkspaceScreen({
         updateActiveTabContent,
         updateActiveTabCursor,
         updateActiveTabScrollTop,
+        clearErrorMessage,
     } = session.editorActions;
     const executorState = executor.state;
-    const { executeHistoryEntry } = executor.actions;
+    const {
+        clearErrorMessage: clearExecutorErrorMessage,
+        executeHistoryEntry,
+    } = executor.actions;
 
     const [robloxProcesses, setRobloxProcesses] = useState<
         readonly RobloxProcessInfo[]
@@ -567,11 +571,15 @@ export function WorkspaceScreen({
         return (
             <section className="flex h-full min-h-0 flex-col bg-gradient-to-br from-fumi-50 via-fumi-50 to-fumi-100/80">
                 {errorMessage ? (
-                    <WorkspaceErrorBanner errorMessage={errorMessage} />
+                    <WorkspaceErrorBanner
+                        errorMessage={errorMessage}
+                        onClose={clearErrorMessage}
+                    />
                 ) : null}
                 {executorState.errorMessage ? (
                     <WorkspaceErrorBanner
                         errorMessage={executorState.errorMessage}
+                        onClose={clearExecutorErrorMessage}
                     />
                 ) : null}
                 <WorkspaceMessageState
@@ -587,11 +595,15 @@ export function WorkspaceScreen({
     return (
         <section className="flex h-full min-h-0 flex-col bg-fumi-50">
             {errorMessage ? (
-                <WorkspaceErrorBanner errorMessage={errorMessage} />
+                <WorkspaceErrorBanner
+                    errorMessage={errorMessage}
+                    onClose={clearErrorMessage}
+                />
             ) : null}
             {executorState.errorMessage ? (
                 <WorkspaceErrorBanner
                     errorMessage={executorState.errorMessage}
+                    onClose={clearExecutorErrorMessage}
                 />
             ) : null}
             <DragDropProvider
