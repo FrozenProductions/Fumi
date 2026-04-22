@@ -8,18 +8,7 @@ export type WorkspaceTabContextMenuState = {
     y: number;
 };
 
-export type WorkspaceTabBarDragCallbacks = {
-    onDragPreview: (draggedTabId: string, targetTabId: string) => void;
-    onDragStart: () => void;
-    onDragEnd: (
-        canceled: boolean,
-        draggedTabId: string | undefined,
-        rawTargetTabId: string | undefined,
-    ) => void;
+export type WorkspaceTabBarInternalProps = WorkspaceTabBarProps & {
+    previewTabs: WorkspaceTabBarProps["workspace"]["tabs"];
+    isTabDragActive: boolean;
 };
-
-export type WorkspaceTabBarInternalProps = WorkspaceTabBarProps &
-    WorkspaceTabBarDragCallbacks & {
-        previewTabs: WorkspaceTabBarProps["workspace"]["tabs"];
-        isTabDragActive: boolean;
-    };
