@@ -24,27 +24,31 @@ import type { WorkspaceTabItemProps } from "./workspaceTabBar.type";
  * @returns A React component
  */
 export function WorkspaceTabItem({
-    index,
-    sortableGroup,
-    tab,
-    isActive,
-    isVisibleInSplit,
-    isTabDragActive,
-    middleClickTabAction,
-    onOpenContextMenu,
-    onArchiveTab,
-    onDeleteTab,
-    onSelectTab,
-    handleRenameInputBlur,
-    handleRenameInputChange,
-    handleRenameInputKeyDown,
-    handleStartRename,
-    hasRenameError,
-    isRenameSubmitting,
-    renameInputRef,
-    renameValue,
-    renamingTabId,
+    item,
+    state,
+    actions,
+    rename,
 }: WorkspaceTabItemProps): ReactElement {
+    const { index, sortableGroup, tab } = item;
+    const { isActive, isVisibleInSplit, isTabDragActive } = state;
+    const {
+        middleClickTabAction,
+        onOpenContextMenu,
+        onArchiveTab,
+        onDeleteTab,
+        onSelectTab,
+    } = actions;
+    const {
+        handleRenameInputBlur,
+        handleRenameInputChange,
+        handleRenameInputKeyDown,
+        handleStartRename,
+        hasRenameError,
+        isRenameSubmitting,
+        renameInputRef,
+        renameValue,
+        renamingTabId,
+    } = rename;
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isDirty = tab.isDirty;
     const isRenaming = tab.id === renamingTabId;

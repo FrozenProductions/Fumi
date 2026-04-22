@@ -22,33 +22,17 @@ export type AppCodeCompletionProps = {
     onSelectItem: (index: number) => void;
 };
 
-export type WorkspaceEditorProps = {
+export type WorkspaceEditorPaneProps = {
     activeTabId: string;
     appTheme: AppTheme;
     editorFontSize: number;
     isWordWrapEnabled: boolean;
     tabs: WorkspaceTab[];
-    splitView: WorkspaceSplitView | null;
     searchPanel: WorkspaceEditorSearchController;
-    isOutlinePanelVisible: boolean;
-    sidebarPosition: AppSidebarPosition;
     workspaceActionsButton: WorkspaceActionsButtonProps;
-    luauSymbols: LuauFileSymbol[];
-    outlinePanelWidth: number;
-    outlineExpandedGroups: Record<string, boolean>;
-    outlineSearchQuery: string;
-    onToggleExpandedGroup: (title: string) => void;
-    onExpandAllGroups: (titles: string[]) => void;
-    onCollapseAllGroups: (titles: string[]) => void;
-    onOutlineSearchQueryChange: (query: string) => void;
-    onActiveTabLuauChange: (change: WorkspaceOutlineChange | null) => void;
-    onFocusPane: (pane: WorkspacePaneId) => void;
-    onSetOutlinePanelWidth: (width: number) => void;
-    onResizeSplitPreview: (splitRatio: number) => void;
-    onResizeSplitCommit: (splitRatio: number) => void;
-    onResizeSplitCancel: () => void;
-    goToLine: (lineNumber: number) => boolean;
-} & Pick<
+};
+
+export type WorkspaceEditorCompletionProps = Pick<
     UseWorkspaceCodeCompletionResult,
     | "acceptCompletion"
     | "completionPopup"
@@ -59,6 +43,37 @@ export type WorkspaceEditorProps = {
     | "createHandleScroll"
     | "handleCompletionHover"
 >;
+
+export type WorkspaceEditorOutlineProps = {
+    isOutlinePanelVisible: boolean;
+    sidebarPosition: AppSidebarPosition;
+    luauSymbols: LuauFileSymbol[];
+    outlinePanelWidth: number;
+    outlineExpandedGroups: Record<string, boolean>;
+    outlineSearchQuery: string;
+    onToggleExpandedGroup: (title: string) => void;
+    onExpandAllGroups: (titles: string[]) => void;
+    onCollapseAllGroups: (titles: string[]) => void;
+    onOutlineSearchQueryChange: (query: string) => void;
+    onActiveTabLuauChange: (change: WorkspaceOutlineChange | null) => void;
+    onSetOutlinePanelWidth: (width: number) => void;
+    goToLine: (lineNumber: number) => boolean;
+};
+
+export type WorkspaceEditorSplitViewProps = {
+    splitView: WorkspaceSplitView | null;
+    onFocusPane: (pane: WorkspacePaneId) => void;
+    onResizeSplitPreview: (splitRatio: number) => void;
+    onResizeSplitCommit: (splitRatio: number) => void;
+    onResizeSplitCancel: () => void;
+};
+
+export type WorkspaceEditorProps = {
+    pane: WorkspaceEditorPaneProps;
+    completion: WorkspaceEditorCompletionProps;
+    outline: WorkspaceEditorOutlineProps;
+    splitViewState: WorkspaceEditorSplitViewProps;
+};
 
 export type WorkspaceEditorSearchPanelProps = {
     searchPanel: WorkspaceEditorSearchController;

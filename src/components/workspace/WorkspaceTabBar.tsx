@@ -276,13 +276,16 @@ export function WorkspaceTabBar({
         onOpenTabInPane(contextMenuState.tabId, "secondary");
     };
 
-    const sharedTabItemProps = {
+    const sharedTabItemState = {
         isTabDragActive,
-        middleClickTabAction,
+    } as const;
+    const sharedTabItemActions = {
         onOpenContextMenu: handleOpenContextMenu,
+        middleClickTabAction,
         onArchiveTab,
         onDeleteTab,
-        onSelectTab,
+    } as const;
+    const sharedTabItemRename = {
         handleRenameInputBlur,
         handleRenameInputChange,
         handleRenameInputKeyDown,
@@ -316,21 +319,30 @@ export function WorkspaceTabBar({
                                     const isPrimary =
                                         splitView.primaryTabId === tab.id;
                                     const isVisibleInSplit = isPrimary;
+                                    const item = {
+                                        index,
+                                        sortableGroup: TAB_BAR_SORTABLE_GROUP,
+                                        tab,
+                                    } as const;
+                                    const state = {
+                                        ...sharedTabItemState,
+                                        isActive: tab.id === activeTabId,
+                                        isVisibleInSplit,
+                                    } as const;
+                                    const actions = {
+                                        ...sharedTabItemActions,
+                                        onSelectTab: (id: string): void => {
+                                            onOpenTabInPane(id, "primary");
+                                        },
+                                    } as const;
 
                                     return (
                                         <WorkspaceTabItem
                                             key={tab.id}
-                                            index={index}
-                                            sortableGroup={
-                                                TAB_BAR_SORTABLE_GROUP
-                                            }
-                                            tab={tab}
-                                            isActive={tab.id === activeTabId}
-                                            isVisibleInSplit={isVisibleInSplit}
-                                            {...sharedTabItemProps}
-                                            onSelectTab={(id) =>
-                                                onOpenTabInPane(id, "primary")
-                                            }
+                                            item={item}
+                                            state={state}
+                                            actions={actions}
+                                            rename={sharedTabItemRename}
                                         />
                                     );
                                 })}
@@ -356,22 +368,35 @@ export function WorkspaceTabBar({
                                         : "",
                                 ].join(" ")}
                             >
-                                {secondaryTabs.map((tab, secIndex) => (
-                                    <WorkspaceTabItem
-                                        key={tab.id}
-                                        index={primaryTabs.length + secIndex}
-                                        sortableGroup={TAB_BAR_SORTABLE_GROUP}
-                                        tab={tab}
-                                        isActive={tab.id === activeTabId}
-                                        isVisibleInSplit={
-                                            tab.id === secondaryTabId
-                                        }
-                                        {...sharedTabItemProps}
-                                        onSelectTab={(id) =>
-                                            onOpenTabInPane(id, "secondary")
-                                        }
-                                    />
-                                ))}
+                                {secondaryTabs.map((tab, secIndex) => {
+                                    const item = {
+                                        index: primaryTabs.length + secIndex,
+                                        sortableGroup: TAB_BAR_SORTABLE_GROUP,
+                                        tab,
+                                    } as const;
+                                    const state = {
+                                        ...sharedTabItemState,
+                                        isActive: tab.id === activeTabId,
+                                        isVisibleInSplit:
+                                            tab.id === secondaryTabId,
+                                    } as const;
+                                    const actions = {
+                                        ...sharedTabItemActions,
+                                        onSelectTab: (id: string): void => {
+                                            onOpenTabInPane(id, "secondary");
+                                        },
+                                    } as const;
+
+                                    return (
+                                        <WorkspaceTabItem
+                                            key={tab.id}
+                                            item={item}
+                                            state={state}
+                                            actions={actions}
+                                            rename={sharedTabItemRename}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     ) : (
@@ -381,18 +406,32 @@ export function WorkspaceTabBar({
                                 controlsClearanceClass,
                             ].join(" ")}
                         >
-                            {primaryTabs.map((tab, index) => (
-                                <WorkspaceTabItem
-                                    key={tab.id}
-                                    index={index}
-                                    sortableGroup={TAB_BAR_SORTABLE_GROUP}
-                                    tab={tab}
-                                    isActive={tab.id === activeTabId}
-                                    isVisibleInSplit={false}
-                                    {...sharedTabItemProps}
-                                    onSelectTab={onSelectTab}
-                                />
-                            ))}
+                            {primaryTabs.map((tab, index) => {
+                                const item = {
+                                    index,
+                                    sortableGroup: TAB_BAR_SORTABLE_GROUP,
+                                    tab,
+                                } as const;
+                                const state = {
+                                    ...sharedTabItemState,
+                                    isActive: tab.id === activeTabId,
+                                    isVisibleInSplit: false,
+                                } as const;
+                                const actions = {
+                                    ...sharedTabItemActions,
+                                    onSelectTab,
+                                } as const;
+
+                                return (
+                                    <WorkspaceTabItem
+                                        key={tab.id}
+                                        item={item}
+                                        state={state}
+                                        actions={actions}
+                                        rename={sharedTabItemRename}
+                                    />
+                                );
+                            })}
                         </div>
                     )}
                 </div>

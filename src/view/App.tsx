@@ -133,6 +133,37 @@ export function App(): ReactElement {
         },
     );
     const shouldShowWorkspaceContext = showsWorkspaceContext(activeSidebarItem);
+    const commandPaletteRequest = {
+        isOpen: isCommandPaletteOpen,
+        requestedScope: commandPaletteScope,
+        requestedMode: commandPaletteMode,
+    } as const;
+    const commandPaletteContext = {
+        workspaceExecutor,
+        isSidebarOpen,
+        activeSidebarItem,
+        theme,
+        sidebarPosition,
+        isOutlinePanelVisible,
+    } as const;
+    const commandPaletteActions = {
+        onClose: closeCommandPalette,
+        onGoToLine: requestGoToLine,
+        onOpenWorkspaceScreen: handleOpenWorkspaceScreen,
+        onOpenAutomaticExecution: handleOpenAutomaticExecution,
+        onOpenScriptLibrary: handleOpenScriptLibrary,
+        onOpenAccounts: handleOpenAccounts,
+        onOpenExecutionHistory: handleOpenExecutionHistory,
+        onToggleSidebar: toggleSidebar,
+        onToggleOutlinePanel: toggleOutlinePanel,
+        onOpenSettings: handleOpenSettings,
+        onSetTheme: setTheme,
+        onSetSidebarPosition: setSidebarPosition,
+        onZoomIn: handleZoomIn,
+        onZoomOut: handleZoomOut,
+        onZoomReset: handleZoomReset,
+        onRequestRenameCurrentTab: requestRenameCurrentTab,
+    } as const;
 
     useEffect(() => {
         if (activeSidebarItem === "workspace" && hasWorkspace) {
@@ -216,31 +247,9 @@ export function App(): ReactElement {
                     ) : null}
                 </div>
                 <AppCommandPalette
-                    isOpen={isCommandPaletteOpen}
-                    requestedScope={commandPaletteScope}
-                    requestedMode={commandPaletteMode}
-                    workspaceExecutor={workspaceExecutor}
-                    isSidebarOpen={isSidebarOpen}
-                    activeSidebarItem={activeSidebarItem}
-                    theme={theme}
-                    sidebarPosition={sidebarPosition}
-                    onClose={closeCommandPalette}
-                    onGoToLine={requestGoToLine}
-                    onOpenWorkspaceScreen={handleOpenWorkspaceScreen}
-                    onOpenAutomaticExecution={handleOpenAutomaticExecution}
-                    onOpenScriptLibrary={handleOpenScriptLibrary}
-                    onOpenAccounts={handleOpenAccounts}
-                    onOpenExecutionHistory={handleOpenExecutionHistory}
-                    onToggleSidebar={toggleSidebar}
-                    onToggleOutlinePanel={toggleOutlinePanel}
-                    onOpenSettings={handleOpenSettings}
-                    isOutlinePanelVisible={isOutlinePanelVisible}
-                    onSetTheme={setTheme}
-                    onSetSidebarPosition={setSidebarPosition}
-                    onZoomIn={handleZoomIn}
-                    onZoomOut={handleZoomOut}
-                    onZoomReset={handleZoomReset}
-                    onRequestRenameCurrentTab={requestRenameCurrentTab}
+                    request={commandPaletteRequest}
+                    context={commandPaletteContext}
+                    actions={commandPaletteActions}
                 />
             </div>
         </AppHotkeysProvider>

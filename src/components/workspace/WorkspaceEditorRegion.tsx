@@ -148,41 +148,54 @@ export function WorkspaceEditorRegion({
         return null;
     }
 
+    const pane = {
+        activeTabId,
+        appTheme,
+        editorFontSize: editorSettings.fontSize,
+        isWordWrapEnabled: editorSettings.isWordWrapEnabled,
+        tabs: resolvedTabs,
+        searchPanel,
+        workspaceActionsButton,
+    } as const;
+    const completion = {
+        acceptCompletion,
+        completionPopup,
+        createHandleCursorChange,
+        createHandleEditorChange,
+        createHandleEditorLoad,
+        createHandleEditorUnmount,
+        createHandleScroll,
+        handleCompletionHover,
+    } as const;
+    const outline = {
+        isOutlinePanelVisible: editorSettings.isOutlinePanelVisible,
+        sidebarPosition,
+        luauSymbols,
+        outlinePanelWidth: editorSettings.outlinePanelWidth,
+        outlineExpandedGroups: editorSettings.outlineExpandedGroups,
+        outlineSearchQuery: editorSettings.outlineSearchQuery,
+        onToggleExpandedGroup: handleToggleOutlineExpandedGroup,
+        onExpandAllGroups: handleExpandAllOutlineGroups,
+        onCollapseAllGroups: handleCollapseAllOutlineGroups,
+        onOutlineSearchQueryChange: setOutlineSearchQuery,
+        onActiveTabLuauChange: handleActiveTabLuauChange,
+        onSetOutlinePanelWidth: setOutlinePanelWidth,
+        goToLine,
+    } as const;
+    const splitViewState = {
+        splitView,
+        onFocusPane: focusWorkspacePane,
+        onResizeSplitPreview,
+        onResizeSplitCommit,
+        onResizeSplitCancel,
+    } as const;
+
     return (
         <WorkspaceEditor
-            activeTabId={activeTabId}
-            appTheme={appTheme}
-            editorFontSize={editorSettings.fontSize}
-            isWordWrapEnabled={editorSettings.isWordWrapEnabled}
-            tabs={resolvedTabs}
-            splitView={splitView}
-            searchPanel={searchPanel}
-            acceptCompletion={acceptCompletion}
-            completionPopup={completionPopup}
-            createHandleCursorChange={createHandleCursorChange}
-            createHandleEditorChange={createHandleEditorChange}
-            createHandleEditorLoad={createHandleEditorLoad}
-            createHandleEditorUnmount={createHandleEditorUnmount}
-            createHandleScroll={createHandleScroll}
-            handleCompletionHover={handleCompletionHover}
-            isOutlinePanelVisible={editorSettings.isOutlinePanelVisible}
-            sidebarPosition={sidebarPosition}
-            luauSymbols={luauSymbols}
-            outlinePanelWidth={editorSettings.outlinePanelWidth}
-            outlineExpandedGroups={editorSettings.outlineExpandedGroups}
-            onToggleExpandedGroup={handleToggleOutlineExpandedGroup}
-            onExpandAllGroups={handleExpandAllOutlineGroups}
-            onCollapseAllGroups={handleCollapseAllOutlineGroups}
-            outlineSearchQuery={editorSettings.outlineSearchQuery}
-            onOutlineSearchQueryChange={setOutlineSearchQuery}
-            onActiveTabLuauChange={handleActiveTabLuauChange}
-            onFocusPane={focusWorkspacePane}
-            onSetOutlinePanelWidth={setOutlinePanelWidth}
-            onResizeSplitPreview={onResizeSplitPreview}
-            onResizeSplitCommit={onResizeSplitCommit}
-            onResizeSplitCancel={onResizeSplitCancel}
-            goToLine={goToLine}
-            workspaceActionsButton={workspaceActionsButton}
+            pane={pane}
+            completion={completion}
+            outline={outline}
+            splitViewState={splitViewState}
         />
     );
 }

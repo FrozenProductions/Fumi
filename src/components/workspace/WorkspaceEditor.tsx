@@ -33,6 +33,9 @@ import { WorkspaceActionsButton } from "./WorkspaceActionsButton";
 import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
 import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
 import type {
+    WorkspaceEditorCompletionProps,
+    WorkspaceEditorOutlineProps,
+    WorkspaceEditorPaneProps,
     WorkspaceEditorProps,
     WorkspaceSplitDropZoneProps,
 } from "./workspaceEditor.type";
@@ -40,18 +43,18 @@ import type {
 type WorkspaceAcePaneProps = {
     AceEditorComponent: AceEditorComponent;
     aceRuntime: LoadedAceRuntime;
-    appTheme: WorkspaceEditorProps["appTheme"];
-    createHandleCursorChange: WorkspaceEditorProps["createHandleCursorChange"];
-    createHandleEditorChange: WorkspaceEditorProps["createHandleEditorChange"];
-    createHandleEditorLoad: WorkspaceEditorProps["createHandleEditorLoad"];
-    createHandleEditorUnmount: WorkspaceEditorProps["createHandleEditorUnmount"];
-    createHandleScroll: WorkspaceEditorProps["createHandleScroll"];
+    appTheme: WorkspaceEditorPaneProps["appTheme"];
+    createHandleCursorChange: WorkspaceEditorCompletionProps["createHandleCursorChange"];
+    createHandleEditorChange: WorkspaceEditorCompletionProps["createHandleEditorChange"];
+    createHandleEditorLoad: WorkspaceEditorCompletionProps["createHandleEditorLoad"];
+    createHandleEditorUnmount: WorkspaceEditorCompletionProps["createHandleEditorUnmount"];
+    createHandleScroll: WorkspaceEditorCompletionProps["createHandleScroll"];
     editorFontSize: number;
     isWordWrapEnabled: boolean;
     isActiveTab: boolean;
     isVisible: boolean;
-    onActiveTabLuauChange: WorkspaceEditorProps["onActiveTabLuauChange"];
-    tab: WorkspaceEditorProps["tabs"][number];
+    onActiveTabLuauChange: WorkspaceEditorOutlineProps["onActiveTabLuauChange"];
+    tab: WorkspaceEditorPaneProps["tabs"][number];
 };
 
 function WorkspaceAcePane({
@@ -153,40 +156,52 @@ function WorkspaceSplitDropZone({
  * @returns A React component
  */
 export function WorkspaceEditor({
-    activeTabId,
-    appTheme,
-    editorFontSize,
-    isWordWrapEnabled,
-    tabs,
-    splitView,
-    searchPanel,
-    acceptCompletion,
-    completionPopup,
-    createHandleCursorChange,
-    createHandleEditorChange,
-    createHandleEditorLoad,
-    createHandleEditorUnmount,
-    createHandleScroll,
-    handleCompletionHover,
-    isOutlinePanelVisible,
-    sidebarPosition,
-    luauSymbols,
-    outlinePanelWidth,
-    outlineExpandedGroups,
-    outlineSearchQuery,
-    onToggleExpandedGroup,
-    onExpandAllGroups,
-    onCollapseAllGroups,
-    onOutlineSearchQueryChange,
-    onActiveTabLuauChange,
-    onFocusPane,
-    onSetOutlinePanelWidth,
-    onResizeSplitPreview,
-    onResizeSplitCommit,
-    onResizeSplitCancel,
-    goToLine,
-    workspaceActionsButton,
+    pane,
+    completion,
+    outline,
+    splitViewState,
 }: WorkspaceEditorProps): ReactElement {
+    const {
+        activeTabId,
+        appTheme,
+        editorFontSize,
+        isWordWrapEnabled,
+        tabs,
+        searchPanel,
+        workspaceActionsButton,
+    } = pane;
+    const {
+        acceptCompletion,
+        completionPopup,
+        createHandleCursorChange,
+        createHandleEditorChange,
+        createHandleEditorLoad,
+        createHandleEditorUnmount,
+        createHandleScroll,
+        handleCompletionHover,
+    } = completion;
+    const {
+        isOutlinePanelVisible,
+        sidebarPosition,
+        luauSymbols,
+        outlinePanelWidth,
+        outlineExpandedGroups,
+        outlineSearchQuery,
+        onToggleExpandedGroup,
+        onExpandAllGroups,
+        onCollapseAllGroups,
+        onOutlineSearchQueryChange,
+        onActiveTabLuauChange,
+        onSetOutlinePanelWidth,
+        goToLine,
+    } = outline;
+    const {
+        splitView,
+        onFocusPane,
+        onResizeSplitPreview,
+        onResizeSplitCommit,
+        onResizeSplitCancel,
+    } = splitViewState;
     const [isAceReady, setIsAceReady] = useState(false);
     const [AceEditorComponent, setAceEditorComponent] =
         useState<AceEditorComponent | null>(null);
