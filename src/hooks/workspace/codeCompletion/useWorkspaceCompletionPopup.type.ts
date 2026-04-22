@@ -21,6 +21,7 @@ export type UseWorkspaceCompletionPopupOptions = {
 export type UseWorkspaceCompletionPopupResult = {
     completionPopup: LuauCompletionPopupState | null;
     closeCompletionPopup: () => void;
+    repositionCompletionPopup: () => void;
     updateCompletionPopup: (
         options?: UpdateWorkspaceCompletionPopupOptions,
     ) => void;

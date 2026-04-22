@@ -2,8 +2,8 @@ import { describe, expect, it } from "vite-plus/test";
 import { EMPTY_LUAU_FILE_ANALYSIS } from "../../constants/luau/luau";
 import {
     getLuauCompletionQuery,
-    isPositionInLuauString,
     shouldOpenLuauCompletion,
+    shouldSuppressLuauCompletionForTokenType,
 } from "./completion";
 import type { LuauCompletionQuery } from "./completion.type";
 
@@ -13,10 +13,9 @@ function getCompletionQuery(
 ): LuauCompletionQuery {
     return getLuauCompletionQuery({
         analysis,
-        column: content.length,
-        content,
+        beforeCursor: content,
+        cursorIndex: content.length,
         priority: "balanced",
-        row: 0,
     });
 }
 
@@ -153,44 +152,24 @@ describe("shouldOpenLuauCompletion", () => {
     });
 });
 
-describe("isPositionInLuauString", () => {
-    it("returns true while the cursor is inside a quoted string", () => {
+describe("shouldSuppressLuauCompletionForTokenType", () => {
+    it("suppresses completion inside string tokens", () => {
         expect(
-            isPositionInLuauString({
-                content: 'print("hel")',
-                row: 0,
-                column: 10,
-            }),
+            shouldSuppressLuauCompletionForTokenType("string.quoted.double"),
         ).toBe(true);
     });
 
-    it("returns false once the cursor moves past a closed quoted string", () => {
+    it("suppresses completion inside comment tokens", () => {
         expect(
-            isPositionInLuauString({
-                content: 'print("hi")',
-                row: 0,
-                column: 11,
-            }),
-        ).toBe(false);
-    });
-
-    it("returns true while the cursor is inside a long string", () => {
-        expect(
-            isPositionInLuauString({
-                content: "local value = [[hello]]",
-                row: 0,
-                column: 18,
-            }),
+            shouldSuppressLuauCompletionForTokenType(
+                "comment.line.double-dash",
+            ),
         ).toBe(true);
     });
 
-    it("ignores quotes that appear inside comments", () => {
-        expect(
-            isPositionInLuauString({
-                content: '-- "string"\nprint(foo)',
-                row: 1,
-                column: 8,
-            }),
-        ).toBe(false);
+    it("keeps completion enabled for non-string, non-comment tokens", () => {
+        expect(shouldSuppressLuauCompletionForTokenType("identifier")).toBe(
+            false,
+        );
     });
 });

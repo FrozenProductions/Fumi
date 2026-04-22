@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
     getLuauCompletionQuery,
-    isPositionInLuauString,
     shouldOpenLuauCompletion,
+    shouldSuppressLuauCompletionForTokenType,
 } from "../../../lib/luau/completion";
 import { getLuauCompletionPopupPosition } from "../../../lib/luau/completionPopup";
 import type {
@@ -10,7 +10,7 @@ import type {
     LuauCompletionPopupState,
 } from "../../../lib/luau/luau.type";
 import { isLuauEditorSession } from "./ace";
-import type { AceRendererInstance } from "./ace.type";
+import type { AceEditorInstance, AceRendererInstance } from "./ace.type";
 import {
     isDeletionKey,
     isManualCompletionShortcut,
@@ -68,6 +68,43 @@ function shiftCompletionSelection(
     };
 }
 
+function getCompletionPopupPositionState(options: {
+    cursor: {
+        column: number;
+        row: number;
+    };
+    editor: AceEditorInstance;
+    items: LuauCompletionItem[];
+    intellisenseWidth: UseWorkspaceCompletionPopupOptions["intellisenseWidth"];
+    previousPlacement?: LuauCompletionPopupState["position"]["verticalPlacement"];
+}) {
+    const { cursor, editor, items, intellisenseWidth, previousPlacement } =
+        options;
+    const renderer = editor.renderer as AceRendererInstance;
+    const caret = renderer.$cursorLayer.getPixelPosition(cursor, true);
+    const editorBounds = editor.container.getBoundingClientRect();
+    const caretHeight = Math.max(
+        renderer.layerConfig?.lineHeight ?? renderer.lineHeight ?? 0,
+        16,
+    );
+    const caretLeft =
+        editorBounds.left +
+        caret.left -
+        (renderer.scrollLeft ?? 0) +
+        (renderer.gutterWidth ?? 0);
+    const caretTop =
+        editorBounds.top + caret.top - (renderer.layerConfig?.offset ?? 0);
+
+    return getLuauCompletionPopupPosition(
+        caretLeft,
+        caretTop,
+        caretHeight,
+        items,
+        intellisenseWidth,
+        previousPlacement,
+    );
+}
+
 /**
  * Manages Luau code completion popup lifecycle, positioning, and keyboard interaction.
  *
@@ -93,6 +130,44 @@ export function useWorkspaceCompletionPopup({
         setCompletionPopup(null);
     }, []);
 
+    const repositionCompletionPopup = useCallback((): void => {
+        const editor = getActiveEditor();
+
+        if (
+            !editor ||
+            !isIntellisenseEnabled ||
+            !isLuauEditorSession(editor, activeEditorMode)
+        ) {
+            setCompletionPopup(null);
+            return;
+        }
+
+        setCompletionPopup((currentPopup) => {
+            if (!currentPopup) {
+                return currentPopup;
+            }
+
+            const cursor = editor.getCursorPosition();
+
+            return {
+                ...currentPopup,
+                position: getCompletionPopupPositionState({
+                    cursor,
+                    editor,
+                    items: currentPopup.items,
+                    intellisenseWidth,
+                    previousPlacement: currentPopup.position.verticalPlacement,
+                }),
+                row: cursor.row,
+            };
+        });
+    }, [
+        activeEditorMode,
+        getActiveEditor,
+        intellisenseWidth,
+        isIntellisenseEnabled,
+    ]);
+
     const updateCompletionPopup = useCallback(
         (options?: UpdateWorkspaceCompletionPopupOptions): void => {
             const editor = getActiveEditor();
@@ -107,24 +182,25 @@ export function useWorkspaceCompletionPopup({
             }
 
             const cursor = editor.getCursorPosition();
-            const content = editor.getValue();
+            const tokenType = editor.session.getTokenAt(
+                cursor.row,
+                Math.max(cursor.column - 1, 0),
+            )?.type;
 
-            if (
-                isPositionInLuauString({
-                    content,
-                    row: cursor.row,
-                    column: cursor.column,
-                })
-            ) {
+            if (shouldSuppressLuauCompletionForTokenType(tokenType)) {
                 setCompletionPopup(null);
                 return;
             }
 
+            const beforeCursor = editor.session
+                .getLine(cursor.row)
+                .slice(0, cursor.column);
+            const cursorIndex = editor.session.doc.positionToIndex(cursor);
+
             const query = getLuauCompletionQuery({
                 analysis: getActiveLuauAnalysis(),
-                content,
-                row: cursor.row,
-                column: cursor.column,
+                beforeCursor,
+                cursorIndex,
                 priority: intellisensePriority,
             });
             const forceOpen = options?.forceOpen ?? isCompletionExplicit;
@@ -134,31 +210,14 @@ export function useWorkspaceCompletionPopup({
                 return;
             }
 
-            const renderer = editor.renderer as AceRendererInstance;
-            const caret = renderer.$cursorLayer.getPixelPosition(cursor, true);
-            const editorBounds = editor.container.getBoundingClientRect();
-            const caretHeight = Math.max(
-                renderer.layerConfig?.lineHeight ?? renderer.lineHeight ?? 0,
-                16,
-            );
-            const caretLeft =
-                editorBounds.left +
-                caret.left -
-                (renderer.scrollLeft ?? 0) +
-                (renderer.gutterWidth ?? 0);
-            const caretTop =
-                editorBounds.top +
-                caret.top -
-                (renderer.layerConfig?.offset ?? 0);
             setCompletionPopup((currentPopup) => ({
-                position: getLuauCompletionPopupPosition(
-                    caretLeft,
-                    caretTop,
-                    caretHeight,
-                    query.items,
+                position: getCompletionPopupPositionState({
+                    cursor,
+                    editor,
+                    items: query.items,
                     intellisenseWidth,
-                    currentPopup?.position.verticalPlacement,
-                ),
+                    previousPlacement: currentPopup?.position.verticalPlacement,
+                }),
                 explicit: forceOpen,
                 items: query.items,
                 replaceStartColumn: query.replaceStartColumn,
@@ -343,6 +402,7 @@ export function useWorkspaceCompletionPopup({
     return {
         completionPopup,
         closeCompletionPopup,
+        repositionCompletionPopup,
         updateCompletionPopup,
         acceptCompletion,
         handleCompletionHover,

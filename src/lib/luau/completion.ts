@@ -37,144 +37,15 @@ import type {
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
 import type { LuauCompletionQuery } from "./completion.type";
 
-function getLineAtRow(content: string, row: number): string {
-    let currentRow = 0;
-    let lineStart = 0;
+export function shouldSuppressLuauCompletionForTokenType(
+    tokenType: string | undefined,
+): boolean {
+    const normalizedTokenType = tokenType?.toLowerCase() ?? "";
 
-    for (let index = 0; index < content.length; index += 1) {
-        if (currentRow === row && content[index] === "\n") {
-            return content.slice(lineStart, index);
-        }
-
-        if (content[index] === "\n") {
-            currentRow += 1;
-            lineStart = index + 1;
-        }
-    }
-
-    return currentRow === row ? content.slice(lineStart) : "";
-}
-
-function getAbsoluteIndexForPosition(
-    content: string,
-    row: number,
-    column: number,
-): number {
-    let currentRow = 0;
-    let index = 0;
-
-    while (index < content.length && currentRow < row) {
-        if (content[index] === "\n") {
-            currentRow += 1;
-        }
-
-        index += 1;
-    }
-
-    return Math.min(index + column, content.length);
-}
-
-export function isPositionInLuauString(options: {
-    content: string;
-    row: number;
-    column: number;
-}): boolean {
-    const { content, row, column } = options;
-    const cursorIndex = getAbsoluteIndexForPosition(content, row, column);
-    let index = 0;
-    let stringQuote: "'" | '"' | "`" | null = null;
-    let longStringCloseDelimiter: string | null = null;
-    let longCommentCloseDelimiter: string | null = null;
-    let isInLineComment = false;
-
-    while (index < cursorIndex) {
-        const character = content[index];
-        const nextCharacter = content[index + 1] ?? "";
-
-        if (isInLineComment) {
-            if (character === "\n") {
-                isInLineComment = false;
-            }
-
-            index += 1;
-            continue;
-        }
-
-        if (longCommentCloseDelimiter) {
-            if (content.startsWith(longCommentCloseDelimiter, index)) {
-                index += longCommentCloseDelimiter.length;
-                longCommentCloseDelimiter = null;
-                continue;
-            }
-
-            index += 1;
-            continue;
-        }
-
-        if (stringQuote) {
-            if (character === "\\") {
-                index += Math.min(2, cursorIndex - index);
-                continue;
-            }
-
-            index += 1;
-
-            if (character === stringQuote) {
-                stringQuote = null;
-            }
-
-            continue;
-        }
-
-        if (longStringCloseDelimiter) {
-            if (content.startsWith(longStringCloseDelimiter, index)) {
-                index += longStringCloseDelimiter.length;
-                longStringCloseDelimiter = null;
-                continue;
-            }
-
-            index += 1;
-            continue;
-        }
-
-        if (character === "-" && nextCharacter === "-") {
-            const longCommentMatch = content
-                .slice(index + 2)
-                .match(/^\[(=*)\[/u);
-
-            if (longCommentMatch) {
-                const equals = longCommentMatch[1] ?? "";
-                longCommentCloseDelimiter = `]${equals}]`;
-                index += 2 + longCommentMatch[0].length;
-                continue;
-            }
-
-            isInLineComment = true;
-            index += 2;
-            continue;
-        }
-
-        if (character === "'" || character === '"' || character === "`") {
-            stringQuote = character;
-            index += 1;
-            continue;
-        }
-
-        if (character === "[") {
-            const longStringMatch = content.slice(index).match(/^\[(=*)\[/u);
-
-            if (longStringMatch) {
-                const equals = longStringMatch[1] ?? "";
-                longStringCloseDelimiter = `]${equals}]`;
-                index += longStringMatch[0].length;
-                continue;
-            }
-        }
-
-        index += 1;
-    }
-
-    return stringQuote !== null || longStringCloseDelimiter !== null;
+    return (
+        normalizedTokenType.includes("comment") ||
+        normalizedTokenType.includes("string")
+    );
 }
 
 function createCompletionItemFromFileSymbol(
@@ -413,14 +284,11 @@ function getVisibleFileCompletionItems(
 
 export function getLuauCompletionQuery(options: {
     analysis: LuauFileAnalysis | null;
-    column: number;
-    content: string;
+    beforeCursor: string;
+    cursorIndex: number;
     priority: AppIntellisensePriority;
-    row: number;
 }): LuauCompletionQuery {
-    const { analysis, column, content, priority, row } = options;
-    const line = getLineAtRow(content, row);
-    const beforeCursor = line.slice(0, column);
+    const { analysis, beforeCursor, cursorIndex, priority } = options;
     const namespacedMatch = beforeCursor.match(
         /([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\.([A-Za-z0-9_]*)$/,
     );
@@ -436,14 +304,13 @@ export function getLuauCompletionQuery(options: {
             ).slice(0, MAX_LUAU_COMPLETION_ITEMS),
             namespacePath,
             prefix,
-            replaceStartColumn: column - prefix.length,
-            replaceEndColumn: column,
+            replaceStartColumn: beforeCursor.length - prefix.length,
+            replaceEndColumn: beforeCursor.length,
         };
     }
 
     const rootPrefixMatch = beforeCursor.match(/([A-Za-z_][A-Za-z0-9_]*)$/);
     const prefix = rootPrefixMatch?.[1] ?? "";
-    const cursorIndex = getAbsoluteIndexForPosition(content, row, column);
     const visibleFileItems = getVisibleFileCompletionItems(
         analysis,
         cursorIndex,
@@ -460,8 +327,8 @@ export function getLuauCompletionQuery(options: {
         ),
         namespacePath: null,
         prefix,
-        replaceStartColumn: column - prefix.length,
-        replaceEndColumn: column,
+        replaceStartColumn: beforeCursor.length - prefix.length,
+        replaceEndColumn: beforeCursor.length,
     };
 }
 

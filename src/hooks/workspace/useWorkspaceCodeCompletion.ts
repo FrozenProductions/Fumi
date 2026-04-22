@@ -83,6 +83,7 @@ export function useWorkspaceCodeCompletion({
         closeCompletionPopup,
         completionPopup,
         handleCompletionHover,
+        repositionCompletionPopup,
         updateCompletionPopup,
     } = useWorkspaceCompletionPopup({
         activeEditorMode,
@@ -363,12 +364,9 @@ export function useWorkspaceCodeCompletion({
                     return;
                 }
 
-                updateCompletionPopup({
-                    forceOpen: completionPopup.explicit,
-                    preserveSelection: true,
-                });
+                repositionCompletionPopup();
             },
-        [completionPopup, updateActiveTabScrollTop, updateCompletionPopup],
+        [completionPopup, repositionCompletionPopup, updateActiveTabScrollTop],
     );
 
     return {
