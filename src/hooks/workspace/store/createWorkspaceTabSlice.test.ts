@@ -63,7 +63,11 @@ async function createTabStore(initialWorkspace: WorkspaceSession) {
 
     let state = {
         workspace: initialWorkspace,
+        dirtyTabCount: 0,
+        transientTabCursorsById: {},
         recentWorkspacePaths: [],
+        persistRevision: 0,
+        lastPersistedRevision: 0,
         isBootstrapping: false,
         isHydrated: true,
         errorMessage: null,
