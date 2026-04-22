@@ -72,6 +72,7 @@ export function WorkspaceActionsButton({
     const isDark = theme === "dark";
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isLaunchModifierActive, setIsLaunchModifierActive] = useState(false);
     const [revealedProcessPid, setRevealedProcessPid] = useState<number | null>(
         null,
     );
@@ -133,6 +134,31 @@ export function WorkspaceActionsButton({
     }, []);
 
     useEffect(() => {
+        if (!isDropdownOpen) {
+            setIsLaunchModifierActive(false);
+            return;
+        }
+
+        function syncLaunchModifierState(event: KeyboardEvent): void {
+            setIsLaunchModifierActive(event.shiftKey);
+        }
+
+        function resetLaunchModifierState(): void {
+            setIsLaunchModifierActive(false);
+        }
+
+        window.addEventListener("keydown", syncLaunchModifierState);
+        window.addEventListener("keyup", syncLaunchModifierState);
+        window.addEventListener("blur", resetLaunchModifierState);
+
+        return () => {
+            window.removeEventListener("keydown", syncLaunchModifierState);
+            window.removeEventListener("keyup", syncLaunchModifierState);
+            window.removeEventListener("blur", resetLaunchModifierState);
+        };
+    }, [isDropdownOpen]);
+
+    useEffect(() => {
         if (!isAnyRobloxKillPending || confirmingAction === null) {
             return;
         }
@@ -170,6 +196,7 @@ export function WorkspaceActionsButton({
         }
         clearPendingConfirm();
         setRevealedProcessPid(null);
+        setIsLaunchModifierActive(event.shiftKey);
         if (!event.shiftKey) {
             setIsDropdownOpen(false);
         }
@@ -292,6 +319,9 @@ export function WorkspaceActionsButton({
         }
         if (isLaunching) {
             return "Launching Roblox…";
+        }
+        if (isLaunchModifierActive) {
+            return "Launch Roblox and keep this menu open";
         }
         const liveRobloxAccountLabel =
             getLiveRobloxAccountTooltipLabel(liveRobloxAccount);
@@ -622,9 +652,13 @@ export function WorkspaceActionsButton({
                                 className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                                     !canLaunch
                                         ? "cursor-not-allowed opacity-60"
-                                        : isDark
-                                          ? "text-fumi-900 hover:bg-fumi-200"
-                                          : "text-fumi-700 hover:bg-fumi-100"
+                                        : isLaunchModifierActive
+                                          ? isDark
+                                              ? "outline outline-1 outline-dashed -outline-offset-1 outline-fumi-400 text-fumi-900 hover:bg-fumi-200"
+                                              : "outline outline-1 outline-dashed -outline-offset-1 outline-fumi-300 text-fumi-700 hover:bg-fumi-100"
+                                          : isDark
+                                            ? "text-fumi-900 hover:bg-fumi-200"
+                                            : "text-fumi-700 hover:bg-fumi-100"
                                 }`}
                             >
                                 <AppIcon
@@ -632,11 +666,13 @@ export function WorkspaceActionsButton({
                                     className="size-3.5 shrink-0 -translate-y-[0.5px]"
                                     strokeWidth={2.5}
                                 />
-                                <span>
-                                    {isLaunching
-                                        ? "Launching…"
-                                        : "Launch Roblox"}
-                                </span>
+                                <div className="flex min-w-0 items-center gap-2">
+                                    <span>
+                                        {isLaunching
+                                            ? "Launching…"
+                                            : "Launch Roblox"}
+                                    </span>
+                                </div>
                             </button>
                         </AppTooltip>
 
