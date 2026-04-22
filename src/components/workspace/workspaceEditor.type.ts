@@ -1,10 +1,10 @@
-import type { UseWorkspaceCodeCompletionResult } from "../../hooks/workspace/codeCompletion/workspaceCodeCompletion.type";
 import type { AppSidebarPosition, AppTheme } from "../../lib/app/app.type";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
     LuauFileSymbol,
 } from "../../lib/luau/luau.type";
+import type { UseWorkspaceCodeCompletionResult } from "../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import type { WorkspaceEditorSearchController } from "../../lib/workspace/editorSearch.type";
 import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
 import type {

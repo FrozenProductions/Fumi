@@ -9,18 +9,21 @@ import type {
     LuauCompletionItem,
     LuauCompletionPopupState,
 } from "../../../lib/luau/luau.type";
-import { isLuauEditorSession } from "./ace";
-import type { AceEditorInstance, AceRendererInstance } from "./ace.type";
+import { isLuauEditorSession } from "../../../lib/workspace/codeCompletion/ace";
+import type {
+    AceEditorInstance,
+    AceRendererInstance,
+} from "../../../lib/workspace/codeCompletion/ace.type";
 import {
     isDeletionKey,
     isManualCompletionShortcut,
     isNavigationKey,
-} from "./keyboard";
+} from "../../../lib/workspace/codeCompletion/keyboard";
+import type { UpdateWorkspaceCompletionPopupOptions } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import type {
     UseWorkspaceCompletionPopupOptions,
     UseWorkspaceCompletionPopupResult,
 } from "./useWorkspaceCompletionPopup.type";
-import type { UpdateWorkspaceCompletionPopupOptions } from "./workspaceCodeCompletion.type";
 
 function isCompletionPopupInteractionTarget(
     target: EventTarget | null,

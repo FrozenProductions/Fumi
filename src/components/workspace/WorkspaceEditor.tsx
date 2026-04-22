@@ -19,11 +19,11 @@ import {
     SPLIT_DROP_LEFT_ID,
     SPLIT_DROP_RIGHT_ID,
 } from "../../constants/workspace/workspace";
-import type { AceChangeDelta } from "../../hooks/workspace/codeCompletion/ace.type";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
 import type { LuauFileSymbol } from "../../lib/luau/luau.type";
+import type { AceChangeDelta } from "../../lib/workspace/codeCompletion/ace.type";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
 import { getWorkspaceLineNumberFromOffset } from "../../lib/workspace/outline";

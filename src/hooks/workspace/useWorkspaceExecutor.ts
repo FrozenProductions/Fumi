@@ -23,12 +23,12 @@ import {
     persistExecutorPort,
     resolvePersistedExecutorPort,
 } from "../../lib/workspace/executorPersistence";
+import { selectWorkspaceActiveTab } from "../../lib/workspace/store/selectors";
 import type {
     ExecutorStatusPayload,
     WorkspaceExecutionHistoryEntry,
 } from "../../lib/workspace/workspace.type";
 import { useWindowResume } from "../shared/useWindowResume";
-import { selectWorkspaceActiveTab } from "./store/selectors";
 import type {
     AsyncUnsubscribe,
     UseWorkspaceExecutorOptions,

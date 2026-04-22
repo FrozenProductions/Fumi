@@ -1,12 +1,12 @@
 import type { ReactElement } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
-import { selectWorkspaceActiveTab } from "../../hooks/workspace/store/selectors";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import type { WorkspaceOutlineChange } from "../../lib/workspace/outline.type";
+import { selectWorkspaceActiveTab } from "../../lib/workspace/store/selectors";
 import type { WorkspaceSplitView } from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import type { WorkspaceActionsButtonProps } from "./workspaceScreen.type";

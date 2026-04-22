@@ -5,8 +5,8 @@ import type {
 } from "../../../lib/app/app.type";
 import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
 import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner.type";
-import type { AceEditorInstance } from "./ace.type";
-import type { UpdateWorkspaceCompletionPopupOptions } from "./workspaceCodeCompletion.type";
+import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
+import type { UpdateWorkspaceCompletionPopupOptions } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 
 export type UseWorkspaceCompletionPopupOptions = {
     activeEditorMode: string;

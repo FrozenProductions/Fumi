@@ -17,12 +17,12 @@ import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
 } from "../hooks/automaticExecution/useAutomaticExecutionStore";
-import { selectWorkspaceHasUnsavedChanges } from "../hooks/workspace/store/selectors";
 import { useWorkspaceDroppedFiles } from "../hooks/workspace/useWorkspaceDroppedFiles";
 import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceStore } from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
 import { showsWorkspaceContext } from "../lib/app/sidebar";
+import { selectWorkspaceHasUnsavedChanges } from "../lib/workspace/store/selectors";
 import { getAppScreen } from "./appScreens";
 
 export function App(): ReactElement {

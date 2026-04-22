@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { WORKSPACE_PERSIST_DELAY_MS } from "../../constants/workspace/workspace";
-import { useWindowResume } from "../shared/useWindowResume";
 import {
     selectWorkspacePath,
     selectWorkspacePersistRevision,
-} from "./store/selectors";
+} from "../../lib/workspace/store/selectors";
+import { useWindowResume } from "../shared/useWindowResume";
 import { useWorkspaceStore } from "./useWorkspaceStore";
 
 export function useWorkspaceStoreLifecycle(): void {

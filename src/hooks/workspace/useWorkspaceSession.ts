@@ -2,7 +2,7 @@ import {
     selectWorkspaceActiveTab,
     selectWorkspaceActiveTabIndex,
     selectWorkspaceHasUnsavedChanges,
-} from "./store/selectors";
+} from "../../lib/workspace/store/selectors";
 import type { UseWorkspaceSessionResult } from "./useWorkspaceSession.type";
 import { useWorkspaceStore } from "./useWorkspaceStore";
 

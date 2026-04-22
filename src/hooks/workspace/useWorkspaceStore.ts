@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { readRecentWorkspacePaths } from "../../lib/workspace/persistence";
-import { createWorkspaceEditorSlice } from "./store/createWorkspaceEditorSlice";
-import { createWorkspaceLifecycleSlice } from "./store/createWorkspaceLifecycleSlice";
-import { createWorkspaceTabSlice } from "./store/createWorkspaceTabSlice";
-import type { WorkspaceStore } from "./store/workspaceStore.type";
+import { createWorkspaceEditorSlice } from "../../lib/workspace/store/createWorkspaceEditorSlice";
+import { createWorkspaceLifecycleSlice } from "../../lib/workspace/store/createWorkspaceLifecycleSlice";
+import { createWorkspaceTabSlice } from "../../lib/workspace/store/createWorkspaceTabSlice";
+import type { WorkspaceStore } from "../../lib/workspace/store/workspaceStore.type";
 
 /**
  * Workspace state store combining lifecycle, tab, and editor slices.

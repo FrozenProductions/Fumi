@@ -7,11 +7,11 @@ import {
     subscribeToPrepareForExit,
 } from "../../lib/platform/window";
 import { setWorkspaceUnsavedChanges } from "../../lib/platform/workspace";
+import { selectWorkspaceHasUnsavedChanges } from "../../lib/workspace/store/selectors";
 import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
 } from "../automaticExecution/useAutomaticExecutionStore";
-import { selectWorkspaceHasUnsavedChanges } from "../workspace/store/selectors";
 import { useWorkspaceStore } from "../workspace/useWorkspaceStore";
 
 /**

@@ -1,6 +1,7 @@
 import type { Ace } from "ace-builds";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EMPTY_WORKSPACE_EDITOR_SEARCH_MATCH_STATE } from "../../constants/workspace/editorSearch";
+import type { AceEditorInstance } from "../../lib/workspace/codeCompletion/ace.type";
 import {
     buildWorkspaceEditorSearchOptions,
     canRunWorkspaceEditorSearch,
@@ -12,7 +13,6 @@ import type {
     WorkspaceEditorSearchMatchState,
     WorkspaceEditorSearchState,
 } from "../../lib/workspace/editorSearch.type";
-import type { AceEditorInstance } from "./codeCompletion/ace.type";
 import type {
     SearchStateByTabId,
     UseWorkspaceEditorSearchOptions,

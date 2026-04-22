@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
-import { useAppStore } from "../app/useAppStore";
 import {
     bindWorkspaceEditorShortcuts,
     isPassiveCompletionTrigger,
-} from "./codeCompletion/ace";
+} from "../../lib/workspace/codeCompletion/ace";
 import type {
     AceChangeDelta,
     AceEditorInstance,
-} from "./codeCompletion/ace.type";
-import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
+} from "../../lib/workspace/codeCompletion/ace.type";
 import type {
     UseWorkspaceCodeCompletionOptions,
     UseWorkspaceCodeCompletionResult,
-} from "./codeCompletion/workspaceCodeCompletion.type";
+} from "../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
+import { useAppStore } from "../app/useAppStore";
+import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
 import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
 
 type StoredAceSessionState = {

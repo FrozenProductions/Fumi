@@ -1,9 +1,9 @@
+import type { AceEditorInstance } from "../../lib/workspace/codeCompletion/ace.type";
 import type {
     WorkspaceEditorSearchController,
     WorkspaceEditorSearchState,
 } from "../../lib/workspace/editorSearch.type";
 import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
-import type { AceEditorInstance } from "./codeCompletion/ace.type";
 
 export type UseWorkspaceEditorSearchOptions = {
     activeTabId: string | null;
