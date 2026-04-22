@@ -4,7 +4,8 @@ import {
     PlayIcon,
     UserCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { type FocusEvent, type ReactElement, useState } from "react";
+import type { FocusEvent, ReactElement } from "react";
+import { useState } from "react";
 import emptyAddIcon from "../../assets/icons/empty_add.svg";
 import { useAccounts } from "../../hooks/accounts/useAccounts";
 import { useAppStore } from "../../hooks/app/useAppStore";

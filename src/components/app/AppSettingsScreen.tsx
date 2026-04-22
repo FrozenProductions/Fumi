@@ -1,4 +1,5 @@
-import { type ReactElement, useState } from "react";
+import type { ReactElement } from "react";
+import { useState } from "react";
 import {
     APP_SETTINGS_SECTIONS,
     DEFAULT_APP_SETTINGS_SECTION,

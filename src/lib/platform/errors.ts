@@ -1,7 +1,5 @@
-import {
-    OperationError,
-    type OperationErrorOptions,
-} from "../shared/operationError";
+import type { OperationErrorOptions } from "../shared/operationError";
+import { OperationError } from "../shared/operationError";
 
 export class PlatformOperationError extends OperationError {
     constructor(options: OperationErrorOptions) {

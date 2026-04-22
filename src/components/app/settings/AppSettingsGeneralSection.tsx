@@ -1,5 +1,6 @@
 import { Add01Icon, MinusSignIcon } from "@hugeicons/core-free-icons";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useRef, useState } from "react";
 import fumiIcon from "../../../assets/fumi.png";
 import {
     APP_AUTHOR_NAME,

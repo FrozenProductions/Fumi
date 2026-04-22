@@ -1,13 +1,5 @@
-import {
-    cloneElement,
-    type FocusEvent,
-    type PointerEvent,
-    type ReactElement,
-    useEffect,
-    useId,
-    useRef,
-    useState,
-} from "react";
+import type { FocusEvent, PointerEvent, ReactElement } from "react";
+import { cloneElement, useEffect, useId, useRef, useState } from "react";
 import {
     DEFAULT_TOOLTIP_DELAY_MS,
     DEFAULT_TOOLTIP_OFFSET,

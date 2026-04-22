@@ -1,6 +1,5 @@
+import type { KeyboardEvent, MouseEvent } from "react";
 import {
-    type KeyboardEvent,
-    type MouseEvent,
     startTransition,
     useCallback,
     useDeferredValue,

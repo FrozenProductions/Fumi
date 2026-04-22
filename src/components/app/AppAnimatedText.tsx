@@ -1,4 +1,5 @@
-import { type ReactElement, useEffect, useState } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
 import { CHARACTER_STAGGER_DELAY_MS } from "../../constants/app/app";
 import type { AnimatedCharacter, AppAnimatedTextProps } from "./appVisual.type";
 

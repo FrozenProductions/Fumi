@@ -1,4 +1,5 @@
-import { type ReactElement, useEffect, useLayoutEffect, useRef } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AppTooltipLayer } from "../../components/app/AppTooltipLayer";
 import { TOOLTIP_VIEWPORT_MARGIN } from "../../constants/tooltip/tooltip";

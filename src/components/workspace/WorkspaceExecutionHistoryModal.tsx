@@ -6,7 +6,8 @@ import {
     Tick01Icon,
 } from "@hugeicons/core-free-icons";
 import type { Ace } from "ace-builds";
-import { type ReactElement, useEffect, useState } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
 import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,

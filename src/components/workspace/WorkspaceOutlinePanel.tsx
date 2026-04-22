@@ -4,13 +4,8 @@ import {
     ExpandIcon,
 } from "@hugeicons/core-free-icons";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-    type CSSProperties,
-    memo,
-    type ReactElement,
-    useMemo,
-    useRef,
-} from "react";
+import type { CSSProperties, ReactElement } from "react";
+import { memo, useMemo, useRef } from "react";
 import {
     WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT,
     WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT,

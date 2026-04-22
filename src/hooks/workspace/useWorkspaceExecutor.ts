@@ -2,27 +2,29 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
-    getExecutorPorts,
 } from "../../constants/workspace/executor";
 import {
-    attachExecutor,
-    detachExecutor,
-    executeExecutorScript,
     getExecutorStatus,
     subscribeToExecutorStatusChanged,
 } from "../../lib/platform/executor";
-import { appendWorkspaceExecutionHistory } from "../../lib/platform/workspace";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import {
-    getExecutorPortRangeErrorMessage,
     getExecutorPortsFromSummaries,
     normalizeExecutorPort,
     parseExecutorPort,
 } from "../../lib/workspace/executor";
 import {
+    executeWorkspaceScript,
+    toggleExecutorConnection,
+} from "../../lib/workspace/executorActions";
+import {
     persistExecutorPort,
     resolvePersistedExecutorPort,
 } from "../../lib/workspace/executorPersistence";
+import {
+    createDefaultAvailablePortSummaries,
+    manageAsyncSubscription,
+} from "../../lib/workspace/executorStatus";
 import { selectWorkspaceActiveTab } from "../../lib/workspace/store/selectors";
 import type {
     ExecutorStatusPayload,
@@ -30,92 +32,10 @@ import type {
 } from "../../lib/workspace/workspace.type";
 import { useWindowResume } from "../shared/useWindowResume";
 import type {
-    AsyncUnsubscribe,
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
 } from "./useWorkspaceExecutor.type";
 import { useWorkspaceStore } from "./useWorkspaceStore";
-
-function createDefaultAvailablePortSummaries(): ExecutorStatusPayload["availablePorts"] {
-    return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({
-        port,
-        boundAccountId: null,
-        boundAccountDisplayName: null,
-        isBoundToUnknownAccount: false,
-    }));
-}
-
-function manageAsyncSubscription(
-    start: () => Promise<AsyncUnsubscribe>,
-    onError: (error: unknown) => void,
-): () => void {
-    let isDisposed = false;
-    let unsubscribe: AsyncUnsubscribe | null = null;
-
-    void start()
-        .then((nextUnsubscribe) => {
-            if (isDisposed) {
-                nextUnsubscribe();
-                return;
-            }
-
-            unsubscribe = nextUnsubscribe;
-        })
-        .catch((error: unknown) => {
-            if (!isDisposed) {
-                onError(error);
-            }
-        });
-
-    return () => {
-        isDisposed = true;
-        unsubscribe?.();
-    };
-}
-
-function findSelectedPortSummary(options: {
-    port: string;
-    availablePorts: readonly number[];
-    availablePortSummaries: ExecutorStatusPayload["availablePorts"];
-}): ExecutorStatusPayload["availablePorts"][number] | null {
-    const parsedPort = parseExecutorPort(options.port, options.availablePorts);
-
-    if (parsedPort === null) {
-        return null;
-    }
-
-    return (
-        options.availablePortSummaries.find(
-            (summary) => summary.port === parsedPort,
-        ) ?? null
-    );
-}
-
-function createExecutionHistoryEntry(options: {
-    executorKind: ExecutorStatusPayload["executorKind"];
-    port: number | null;
-    selectedPortSummary: ExecutorStatusPayload["availablePorts"][number] | null;
-    fileName: string;
-    scriptContent: string;
-}): WorkspaceExecutionHistoryEntry | null {
-    if (options.port === null) {
-        return null;
-    }
-
-    return {
-        id: crypto.randomUUID(),
-        executedAt: Date.now(),
-        executorKind: options.executorKind,
-        port: options.port,
-        accountId: options.selectedPortSummary?.boundAccountId ?? null,
-        accountDisplayName:
-            options.selectedPortSummary?.boundAccountDisplayName ?? null,
-        isBoundToUnknownAccount:
-            options.selectedPortSummary?.isBoundToUnknownAccount ?? false,
-        fileName: options.fileName,
-        scriptContent: options.scriptContent,
-    };
-}
 
 /**
  * Manages executor connection lifecycle including attach, detach, and script execution.
@@ -263,60 +183,17 @@ export function useWorkspaceExecutor({
     const hasSupportedExecutor = executorKind !== "unsupported";
 
     const toggleConnection = async (): Promise<void> => {
-        if (isBusy) {
-            return;
-        }
-
-        if (!hasSupportedExecutor) {
-            setErrorMessage("No supported executor detected.");
-            return;
-        }
-
-        if (!isAttached) {
-            const parsedPort = parseExecutorPort(port, availablePorts);
-
-            if (parsedPort === null) {
-                setDidRecentAttachFail(false);
-                setErrorMessage(
-                    getExecutorPortRangeErrorMessage(availablePorts),
-                );
-                return;
-            }
-
-            setIsBusy(true);
-            setDidRecentAttachFail(false);
-            setErrorMessage(null);
-
-            try {
-                const status = await attachExecutor(parsedPort);
-                applyExecutorStatus(status);
-                setErrorMessage(null);
-            } catch (error) {
-                console.error(
-                    getErrorMessage(error, "Could not attach to the executor."),
-                );
-                setDidRecentAttachFail(true);
-                setErrorMessage(null);
-            } finally {
-                setIsBusy(false);
-            }
-
-            return;
-        }
-
-        setIsBusy(true);
-
-        try {
-            const status = await detachExecutor();
-            applyExecutorStatus(status);
-            setErrorMessage(null);
-        } catch (error) {
-            setErrorMessage(
-                getErrorMessage(error, "Could not detach from the executor."),
-            );
-        } finally {
-            setIsBusy(false);
-        }
+        await toggleExecutorConnection({
+            isBusy,
+            hasSupportedExecutor,
+            isAttached,
+            port,
+            availablePorts,
+            applyExecutorStatus,
+            setDidRecentAttachFail,
+            setErrorMessage,
+            setIsBusy,
+        });
     };
 
     const executeScript = async (options: {
@@ -324,76 +201,22 @@ export function useWorkspaceExecutor({
         scriptContent: string;
         executeFailureMessage: string;
     }): Promise<void> => {
-        if (isBusy) {
-            return;
-        }
-
-        if (!hasSupportedExecutor) {
-            setErrorMessage("No supported executor detected.");
-            return;
-        }
-
-        if (!isAttached) {
-            setErrorMessage("Attach to an executor port before executing.");
-            return;
-        }
-
-        const requestedWorkspacePath = workspacePath;
-        const selectedPort = parseExecutorPort(port, availablePorts);
-        const selectedPortSummary = findSelectedPortSummary({
+        await executeWorkspaceScript({
+            isBusy,
+            hasSupportedExecutor,
+            isAttached,
+            workspacePath,
+            executorKind,
             port,
             availablePorts,
             availablePortSummaries,
+            fileName: options.fileName,
+            scriptContent: options.scriptContent,
+            executeFailureMessage: options.executeFailureMessage,
+            setErrorMessage,
+            setIsBusy,
+            syncExecutionHistoryUpdate,
         });
-        const entry =
-            requestedWorkspacePath === null
-                ? null
-                : createExecutionHistoryEntry({
-                      executorKind,
-                      port: selectedPort,
-                      selectedPortSummary,
-                      fileName: options.fileName,
-                      scriptContent: options.scriptContent,
-                  });
-
-        setIsBusy(true);
-
-        try {
-            await executeExecutorScript(options.scriptContent);
-            setErrorMessage(null);
-
-            if (!requestedWorkspacePath || !entry) {
-                return;
-            }
-
-            try {
-                const executionHistory = await appendWorkspaceExecutionHistory({
-                    workspacePath: requestedWorkspacePath,
-                    entry,
-                });
-
-                syncExecutionHistoryUpdate(
-                    requestedWorkspacePath,
-                    executionHistory,
-                );
-            } catch (error) {
-                console.error(
-                    getErrorMessage(
-                        error,
-                        "Could not save the execution history.",
-                    ),
-                );
-                setErrorMessage(
-                    "Executed script, but could not save execution history.",
-                );
-            }
-        } catch (error) {
-            setErrorMessage(
-                getErrorMessage(error, options.executeFailureMessage),
-            );
-        } finally {
-            setIsBusy(false);
-        }
     };
 
     const executeActiveTab = async (): Promise<void> => {

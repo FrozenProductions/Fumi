@@ -1,7 +1,5 @@
-import {
-    HotkeysProvider,
-    type HotkeysProviderOptions,
-} from "@tanstack/react-hotkeys";
+import type { HotkeysProviderOptions } from "@tanstack/react-hotkeys";
+import { HotkeysProvider } from "@tanstack/react-hotkeys";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { AppTooltipHost } from "../components/app/AppTooltipHost";

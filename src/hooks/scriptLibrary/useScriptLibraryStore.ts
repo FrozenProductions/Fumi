@@ -1,4 +1,5 @@
-import { create, type StateCreator } from "zustand";
+import type { StateCreator } from "zustand";
+import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import {
     ACTION_FEEDBACK_DURATION_MS,

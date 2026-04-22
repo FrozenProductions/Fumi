@@ -1,4 +1,5 @@
-import { type ReactElement, useEffect, useState } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
 import { AppCommandPalette } from "../components/app/AppCommandPalette";
 import { AppDragDropOverlay } from "../components/app/AppDragDropOverlay";
 import { AppSidebar } from "../components/app/AppSidebar";

@@ -1,43 +1,12 @@
-import {
-    Add01Icon,
-    Cancel01Icon,
-    Menu02Icon,
-} from "@hugeicons/core-free-icons";
-import {
-    type CSSProperties,
-    type ReactElement,
-    type MouseEvent as ReactMouseEvent,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
-import { TAB_BAR_SORTABLE_GROUP } from "../../constants/workspace/workspace";
+import type { CSSProperties, ReactElement } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
-import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
+import { useWorkspaceTabBarState } from "../../hooks/workspace/useWorkspaceTabBarState";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
 import { joinClassNames } from "../../lib/shared/className";
-import { AppIcon } from "../app/AppIcon";
-import { AppTooltip } from "../app/AppTooltip";
+import { WorkspaceTabBarControls } from "./tabBar/WorkspaceTabBarControls";
+import { WorkspaceTabBarTabs } from "./tabBar/WorkspaceTabBarTabs";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
-import { WorkspaceTabItem } from "./tabBar/WorkspaceTabItem";
-import { WorkspaceTabListDropdown } from "./tabBar/WorkspaceTabListDropdown";
-import type {
-    WorkspaceTabBarInternalProps,
-    WorkspaceTabContextMenuState,
-} from "./workspaceTabBar.type";
-
-function isTabFullyVisible(
-    container: HTMLElement,
-    tabElement: HTMLElement,
-): boolean {
-    const containerRect = container.getBoundingClientRect();
-    const tabRect = tabElement.getBoundingClientRect();
-
-    return (
-        tabRect.left >= containerRect.left &&
-        tabRect.right <= containerRect.right
-    );
-}
+import type { WorkspaceTabBarInternalProps } from "./workspaceTabBar.type";
 
 /**
  * The tab bar for workspace files with drag-and-drop reordering.
@@ -69,15 +38,16 @@ export function WorkspaceTabBar({
     middleClickTabAction,
 }: WorkspaceTabBarInternalProps): ReactElement {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
-    const tabBarRef = useRef<HTMLDivElement | null>(null);
-    const tabListContainerRef = useRef<HTMLDivElement | null>(null);
-    const tabListDropdownRef = useRef<HTMLDivElement | null>(null);
-    const [contextMenuState, setContextMenuState] =
-        useState<WorkspaceTabContextMenuState | null>(null);
-    const isTabListOpen = useWorkspaceUiStore((state) => state.isTabListOpen);
-    const closeTabList = useWorkspaceUiStore((state) => state.closeTabList);
-    const toggleTabList = useWorkspaceUiStore((state) => state.toggleTabList);
     const activeTabId = workspace.activeTabId;
+    const workspaceTabBarState = useWorkspaceTabBarState({
+        activeTabId,
+    });
+    const { tabBarRef, tabListContainerRef, tabListDropdownRef } =
+        workspaceTabBarState.refs;
+    const { contextMenuState, contextMenuPosition, isTabListOpen } =
+        workspaceTabBarState.state;
+    const { closeContextMenu, closeTabList, openContextMenu, toggleTabList } =
+        workspaceTabBarState.actions;
     const {
         hasRenameError,
         isRenameSubmitting,
@@ -139,107 +109,6 @@ export function WorkspaceTabBar({
               )
         : [];
 
-    useEffect(() => {
-        if (!isTabListOpen) {
-            return;
-        }
-
-        const handleClickOutside = (event: MouseEvent): void => {
-            if (
-                tabListDropdownRef.current?.contains(event.target as Node) ??
-                false
-            ) {
-                return;
-            }
-
-            closeTabList();
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [closeTabList, isTabListOpen]);
-
-    useEffect(() => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        const handleWindowBlur = (): void => {
-            setContextMenuState(null);
-        };
-
-        window.addEventListener("blur", handleWindowBlur);
-
-        return () => {
-            window.removeEventListener("blur", handleWindowBlur);
-        };
-    }, [contextMenuState]);
-
-    useEffect(() => {
-        if (!activeTabId) {
-            return;
-        }
-
-        const animationFrameId = window.requestAnimationFrame(() => {
-            const tabListContainer = tabListContainerRef.current;
-
-            if (!tabListContainer) {
-                return;
-            }
-
-            const tabElement = tabListContainer.querySelector<HTMLElement>(
-                `[data-tab-id="${activeTabId}"]`,
-            );
-
-            if (
-                !tabElement ||
-                isTabFullyVisible(tabListContainer, tabElement)
-            ) {
-                return;
-            }
-
-            tabElement.scrollIntoView({
-                behavior: "auto",
-                block: "nearest",
-                inline: "nearest",
-            });
-        });
-
-        return () => {
-            window.cancelAnimationFrame(animationFrameId);
-        };
-    }, [activeTabId]);
-
-    const handleOpenContextMenu = (
-        tabId: string,
-        event: ReactMouseEvent<HTMLDivElement>,
-    ): void => {
-        event.preventDefault();
-        const tabRect = event.currentTarget.getBoundingClientRect();
-        const tabBarRect = tabBarRef.current?.getBoundingClientRect();
-        const offsetLeft = tabBarRect?.left ?? 0;
-        const offsetTop = tabBarRect?.top ?? 0;
-
-        closeTabList();
-        setContextMenuState({
-            tabId,
-            x: tabRect.left - offsetLeft - 2,
-            y: tabRect.bottom - offsetTop + 2,
-        });
-    };
-
-    const closeContextMenu = (): void => {
-        setContextMenuState(null);
-    };
-
-    const contextMenuPosition = {
-        x: contextMenuState?.x ?? 0,
-        y: contextMenuState?.y ?? 0,
-    };
-
     const handleRenameFromContextMenu = (): void => {
         if (!contextMenuState) {
             return;
@@ -295,27 +164,14 @@ export function WorkspaceTabBar({
 
         onOpenTabInPane(contextMenuState.tabId, "secondary");
     };
-
-    const sharedTabItemState = {
-        isTabDragActive,
-    } as const;
-    const sharedTabItemActions = {
-        onOpenContextMenu: handleOpenContextMenu,
-        middleClickTabAction,
-        onArchiveTab,
-        onDeleteTab,
-    } as const;
-    const sharedTabItemRename = {
-        handleRenameInputBlur,
-        handleRenameInputChange,
-        handleRenameInputKeyDown,
-        handleStartRename,
-        hasRenameError,
-        isRenameSubmitting,
-        renameInputRef,
-        renameValue,
-        renamingTabId,
-    } as const;
+    const closeSplitViewShortcutLabel = getAppHotkeyShortcutLabel(
+        "TOGGLE_WORKSPACE_SPLIT_VIEW",
+        hotkeyBindings,
+    );
+    const createFileShortcutLabel = getAppHotkeyShortcutLabel(
+        "CREATE_WORKSPACE_FILE",
+        hotkeyBindings,
+    );
 
     return (
         <div
@@ -329,115 +185,43 @@ export function WorkspaceTabBar({
                     aria-label="Workspace files"
                     className="min-w-0 flex-1 overflow-hidden"
                 >
-                    {isSplit && secondaryTabs.length > 0 ? (
-                        <div className="relative flex items-stretch">
-                            <div
-                                style={primarySectionStyle}
-                                className="min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                            >
-                                {primaryTabs.map((tab, index) => {
-                                    const isPrimary =
-                                        splitView.primaryTabId === tab.id;
-                                    const isVisibleInSplit = isPrimary;
-                                    const item = {
-                                        index,
-                                        sortableGroup: TAB_BAR_SORTABLE_GROUP,
-                                        tab,
-                                    } as const;
-                                    const state = {
-                                        ...sharedTabItemState,
-                                        isActive: tab.id === activeTabId,
-                                        isVisibleInSplit,
-                                    } as const;
-                                    const actions = {
-                                        ...sharedTabItemActions,
-                                        onSelectTab: (id: string): void => {
-                                            onOpenTabInPane(id, "primary");
-                                        },
-                                    } as const;
-
-                                    return (
-                                        <WorkspaceTabItem
-                                            key={tab.id}
-                                            item={item}
-                                            state={state}
-                                            actions={actions}
-                                            rename={sharedTabItemRename}
-                                        />
-                                    );
-                                })}
-                            </div>
-
-                            <div
-                                style={dividerStyle}
-                                className={splitDividerClassName}
-                            />
-
-                            <div
-                                style={secondarySectionStyle}
-                                className={secondaryTabsClassName}
-                            >
-                                {secondaryTabs.map((tab, secIndex) => {
-                                    const item = {
-                                        index: primaryTabs.length + secIndex,
-                                        sortableGroup: TAB_BAR_SORTABLE_GROUP,
-                                        tab,
-                                    } as const;
-                                    const state = {
-                                        ...sharedTabItemState,
-                                        isActive: tab.id === activeTabId,
-                                        isVisibleInSplit:
-                                            tab.id === secondaryTabId,
-                                    } as const;
-                                    const actions = {
-                                        ...sharedTabItemActions,
-                                        onSelectTab: (id: string): void => {
-                                            onOpenTabInPane(id, "secondary");
-                                        },
-                                    } as const;
-
-                                    return (
-                                        <WorkspaceTabItem
-                                            key={tab.id}
-                                            item={item}
-                                            state={state}
-                                            actions={actions}
-                                            rename={sharedTabItemRename}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className={singlePaneTabsClassName}>
-                            {primaryTabs.map((tab, index) => {
-                                const item = {
-                                    index,
-                                    sortableGroup: TAB_BAR_SORTABLE_GROUP,
-                                    tab,
-                                } as const;
-                                const state = {
-                                    ...sharedTabItemState,
-                                    isActive: tab.id === activeTabId,
-                                    isVisibleInSplit: false,
-                                } as const;
-                                const actions = {
-                                    ...sharedTabItemActions,
-                                    onSelectTab,
-                                } as const;
-
-                                return (
-                                    <WorkspaceTabItem
-                                        key={tab.id}
-                                        item={item}
-                                        state={state}
-                                        actions={actions}
-                                        rename={sharedTabItemRename}
-                                    />
-                                );
-                            })}
-                        </div>
-                    )}
+                    <WorkspaceTabBarTabs
+                        layout={{
+                            activeTabId,
+                            dividerStyle,
+                            isSplit,
+                            primarySectionStyle,
+                            primaryTabs,
+                            secondarySectionStyle,
+                            secondaryTabId,
+                            secondaryTabs,
+                            secondaryTabsClassName,
+                            singlePaneTabsClassName,
+                            splitDividerClassName,
+                            splitDropTarget,
+                            splitView,
+                        }}
+                        items={{
+                            isTabDragActive,
+                            middleClickTabAction,
+                            onArchiveTab,
+                            onDeleteTab,
+                            onOpenContextMenu: openContextMenu,
+                            onOpenTabInPane,
+                            onSelectTab,
+                            rename: {
+                                handleRenameInputBlur,
+                                handleRenameInputChange,
+                                handleRenameInputKeyDown,
+                                handleStartRename,
+                                hasRenameError,
+                                isRenameSubmitting,
+                                renameInputRef,
+                                renameValue,
+                                renamingTabId,
+                            },
+                        }}
+                    />
                 </div>
             </div>
 
@@ -455,80 +239,27 @@ export function WorkspaceTabBar({
                 onCloseSplitView={onCloseSplitView}
             />
 
-            <div
-                ref={tabListDropdownRef}
-                className="absolute inset-y-0 right-0 z-20 flex items-center gap-1 bg-fumi-100 px-2 py-1.5"
-            >
-                {isSplit ? (
-                    <AppTooltip
-                        content="Close split view"
-                        side="bottom"
-                        shortcut={getAppHotkeyShortcutLabel(
-                            "TOGGLE_WORKSPACE_SPLIT_VIEW",
-                            hotkeyBindings,
-                        )}
-                    >
-                        <button
-                            type="button"
-                            aria-label="Close split view"
-                            onClick={onCloseSplitView}
-                            className="app-select-none inline-flex size-7 items-center justify-center rounded-md border border-fumi-200 bg-fumi-50 text-fumi-500 transition-colors hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100"
-                        >
-                            <AppIcon
-                                icon={Cancel01Icon}
-                                size={14}
-                                strokeWidth={2.5}
-                            />
-                        </button>
-                    </AppTooltip>
-                ) : null}
-
-                <AppTooltip content="Tab list" side="bottom">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            closeContextMenu();
-                            toggleTabList();
-                        }}
-                        aria-expanded={isTabListOpen}
-                        aria-haspopup="menu"
-                        className={tabListButtonClassName}
-                    >
-                        <AppIcon
-                            icon={Menu02Icon}
-                            size={14}
-                            strokeWidth={2.5}
-                        />
-                    </button>
-                </AppTooltip>
-
-                {isTabListOpen ? (
-                    <WorkspaceTabListDropdown
-                        workspace={workspace}
-                        onClose={closeTabList}
-                        onSelectTab={onSelectTab}
-                    />
-                ) : null}
-
-                <div className="mx-0.5 h-4 w-[1px] bg-fumi-200" />
-
-                <AppTooltip
-                    content="New file"
-                    side="bottom"
-                    shortcut={getAppHotkeyShortcutLabel(
-                        "CREATE_WORKSPACE_FILE",
-                        hotkeyBindings,
-                    )}
-                >
-                    <button
-                        type="button"
-                        onClick={onCreateFile}
-                        className="app-select-none inline-flex size-7 items-center justify-center rounded-md border border-fumi-200 bg-fumi-50 text-fumi-500 transition-colors hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100"
-                    >
-                        <AppIcon icon={Add01Icon} size={14} strokeWidth={2.5} />
-                    </button>
-                </AppTooltip>
-            </div>
+            <WorkspaceTabBarControls
+                refs={{
+                    tabListDropdownRef,
+                }}
+                state={{
+                    closeSplitViewShortcutLabel,
+                    createFileShortcutLabel,
+                    isSplit,
+                    isTabListOpen,
+                    tabListButtonClassName,
+                }}
+                workspace={workspace}
+                actions={{
+                    closeContextMenu,
+                    closeTabList,
+                    onCloseSplitView,
+                    onCreateFile,
+                    onSelectTab,
+                    toggleTabList,
+                }}
+            />
         </div>
     );
 }

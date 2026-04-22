@@ -1,6 +1,7 @@
 import { hasNonModifierKey } from "@tanstack/hotkeys";
 import { useHotkeyRecorder } from "@tanstack/react-hotkeys";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import type { AppHotkeyAction } from "../../../lib/app/app.type";
 import {

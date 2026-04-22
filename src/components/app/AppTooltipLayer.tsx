@@ -1,4 +1,5 @@
-import { type CSSProperties, forwardRef } from "react";
+import type { CSSProperties } from "react";
+import { forwardRef } from "react";
 import { TOOLTIP_HIDDEN_MOTION_CLASS_NAMES } from "../../constants/tooltip/tooltip";
 import type { AppTooltipLayerProps } from "./appTooltip.type";
 

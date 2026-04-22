@@ -3,14 +3,8 @@ import {
     DeletePutBackIcon,
     Search01Icon,
 } from "@hugeicons/core-free-icons";
-import {
-    type ChangeEvent,
-    type ReactElement,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import type { ChangeEvent, ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
     ARCHIVED_TABS_SENTINEL_STYLE,

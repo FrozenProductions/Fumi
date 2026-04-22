@@ -1,12 +1,6 @@
 import { ArrowDown01Icon, ConnectIcon } from "@hugeicons/core-free-icons";
-import {
-    type CSSProperties,
-    type FocusEvent,
-    type ReactElement,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import type { CSSProperties, FocusEvent, ReactElement } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     EXECUTOR_PORT_DROPDOWN_ITEM_GAP_REM,
     EXECUTOR_PORT_DROPDOWN_ITEM_HEIGHT_REM,

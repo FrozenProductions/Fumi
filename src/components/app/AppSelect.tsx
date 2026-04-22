@@ -1,5 +1,6 @@
 import { ArrowDown01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
-import { type ReactElement, useEffect, useRef, useState } from "react";
+import type { ReactElement } from "react";
+import { useEffect, useRef, useState } from "react";
 import { APP_SELECT_DROPDOWN_EXIT_DURATION_MS } from "../../constants/app/input";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
 import { joinClassNames } from "../../lib/shared/className";

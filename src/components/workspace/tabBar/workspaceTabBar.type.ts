@@ -1,7 +1,12 @@
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type {
+    CSSProperties,
+    MouseEvent as ReactMouseEvent,
+    RefObject,
+} from "react";
 import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename.type";
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type {
+    WorkspacePaneId,
     WorkspaceScreenSession,
     WorkspaceScreenTab,
     WorkspaceSplitView,
@@ -71,4 +76,57 @@ export type WorkspaceTabContextMenuProps = {
     onOpenInLeftPane: () => void;
     onOpenInRightPane: () => void;
     onCloseSplitView: () => void;
+};
+
+export type WorkspaceTabBarTabsProps = {
+    layout: {
+        activeTabId: string | null;
+        dividerStyle: CSSProperties;
+        isSplit: boolean;
+        primarySectionStyle: CSSProperties;
+        primaryTabs: readonly WorkspaceScreenTab[];
+        secondarySectionStyle: CSSProperties;
+        secondaryTabId: string | null;
+        secondaryTabs: readonly WorkspaceScreenTab[];
+        secondaryTabsClassName: string;
+        singlePaneTabsClassName: string;
+        splitDividerClassName: string;
+        splitDropTarget: WorkspacePaneId | null;
+        splitView: WorkspaceSplitView | null;
+    };
+    items: {
+        isTabDragActive: boolean;
+        middleClickTabAction: AppMiddleClickTabAction;
+        onArchiveTab: (tabId: string) => void;
+        onDeleteTab: (tabId: string) => void;
+        onOpenContextMenu: (
+            tabId: string,
+            event: ReactMouseEvent<HTMLDivElement>,
+        ) => void;
+        onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
+        onSelectTab: (tabId: string) => void;
+        rename: WorkspaceTabItemRenameProps;
+    };
+};
+
+export type WorkspaceTabBarControlsProps = {
+    refs: {
+        tabListDropdownRef: RefObject<HTMLDivElement | null>;
+    };
+    state: {
+        closeSplitViewShortcutLabel: string | null;
+        createFileShortcutLabel: string | null;
+        isSplit: boolean;
+        isTabListOpen: boolean;
+        tabListButtonClassName: string;
+    };
+    workspace: WorkspaceScreenSession;
+    actions: {
+        closeContextMenu: () => void;
+        closeTabList: () => void;
+        onCloseSplitView: () => void;
+        onCreateFile: () => void;
+        onSelectTab: (tabId: string) => void;
+        toggleTabList: () => void;
+    };
 };
