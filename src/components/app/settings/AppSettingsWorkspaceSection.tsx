@@ -18,6 +18,7 @@ import {
 } from "../../../constants/workspace/archive";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
+import { useWorkspaceSession } from "../../../hooks/workspace/useWorkspaceSession";
 import {
     createArchivedTabsDateFormatter,
     filterAndSortArchivedTabs,
@@ -25,14 +26,12 @@ import {
 import type { ArchivedTabsSortOption } from "../../../lib/workspace/workspace.type";
 import { AppIcon } from "../AppIcon";
 import { AppSelect } from "../AppSelect";
-import type { AppSettingsWorkspaceSectionProps } from "./appSettings.type";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 import type { ArchivedTabActionButtonClassNames } from "./workspace/appSettingsWorkspace.type";
 
-export function AppSettingsWorkspaceSection({
-    workspaceSession,
-}: AppSettingsWorkspaceSectionProps): ReactElement {
+export function AppSettingsWorkspaceSection(): ReactElement {
+    const workspaceSession = useWorkspaceSession();
     const theme = useAppStore((state) => state.theme);
     const workspace = workspaceSession.state.workspace;
     const {

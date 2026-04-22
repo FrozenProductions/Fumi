@@ -4,6 +4,7 @@ import {
     APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
 } from "../../constants/app/commandPalette";
 import { useAppCommandPalette } from "../../hooks/app/useAppCommandPalette";
+import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
 import type { AppCommandPaletteProps } from "./appShell.type";
 import { AppCommandPaletteInputRow } from "./commandPalette/AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./commandPalette/AppCommandPaletteResults";
@@ -18,7 +19,6 @@ export function AppCommandPalette({
     isOpen,
     requestedScope,
     requestedMode,
-    workspaceSession,
     workspaceExecutor,
     isSidebarOpen,
     activeSidebarItem,
@@ -42,6 +42,7 @@ export function AppCommandPalette({
     onZoomReset,
     onRequestRenameCurrentTab,
 }: AppCommandPaletteProps): ReactElement | null {
+    const workspaceSession = useWorkspaceSession();
     const { handlers, input, results, visibility } = useAppCommandPalette({
         isOpen,
         requestedScope,

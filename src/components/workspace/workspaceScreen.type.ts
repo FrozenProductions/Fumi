@@ -1,5 +1,4 @@
 import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
-import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename.type";
 import type {
     RobloxAccountIdentity,
@@ -13,7 +12,6 @@ import type {
 } from "../../lib/workspace/workspace.type";
 
 export type WorkspaceScreenProps = {
-    session: UseWorkspaceSessionResult;
     executor: UseWorkspaceExecutorResult;
     executionHistoryModal: {
         isOpen: boolean;

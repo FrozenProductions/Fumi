@@ -22,7 +22,6 @@ import type { AppSettingsScreenProps } from "./settings/appSettings.type";
  */
 export function AppSettingsScreen({
     updater,
-    workspaceSession,
 }: AppSettingsScreenProps): ReactElement {
     const isDevelopmentRuntime = isDevRuntime();
     const [activeSection, setActiveSection] = useState<AppSettingsSection>(
@@ -38,11 +37,7 @@ export function AppSettingsScreen({
         }
 
         if (activeSection === "workspace") {
-            return (
-                <AppSettingsWorkspaceSection
-                    workspaceSession={workspaceSession}
-                />
-            );
+            return <AppSettingsWorkspaceSection />;
         }
 
         if (activeSection === "editor") {

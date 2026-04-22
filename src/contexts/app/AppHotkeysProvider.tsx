@@ -3,6 +3,7 @@ import { useAppGlobalHotkeyCapture } from "../../hooks/app/useAppGlobalHotkeyCap
 import { useAppScopedHotkeys } from "../../hooks/app/useAppScopedHotkeys";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useResolvedAppHotkeyBindings } from "../../hooks/app/useResolvedAppHotkeyBindings";
+import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
 import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
 
 /**
@@ -15,8 +16,8 @@ import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
  */
 export function AppHotkeysProvider({
     children,
-    workspaceSession,
 }: AppHotkeysProviderProps): ReactElement {
+    const workspaceSession = useWorkspaceSession();
     const { activeTab, workspace } = workspaceSession.state;
     const { createWorkspaceFile, openWorkspaceDirectory } =
         workspaceSession.workspaceActions;

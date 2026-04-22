@@ -18,6 +18,7 @@ import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWindowResume } from "../../hooks/shared/useWindowResume";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
+import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
 import type {
@@ -60,10 +61,10 @@ import type { WorkspaceScreenProps } from "./workspaceScreen.type";
  * @returns A React component
  */
 export function WorkspaceScreen({
-    session,
     executor,
     executionHistoryModal,
 }: WorkspaceScreenProps): ReactElement {
+    const session = useWorkspaceSession();
     const appTheme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isCommandPaletteOpen = useAppStore(

@@ -1,4 +1,3 @@
-import type { UseWorkspaceSessionResult } from "../../hooks/workspace/useWorkspaceSession.type";
 import type {
     ScriptLibraryContentMode,
     ScriptLibraryEntry,
@@ -27,9 +26,7 @@ export type ScriptLibraryCardProps = {
     actions: ScriptLibraryCardActions;
 };
 
-export type ScriptLibraryScreenProps = {
-    workspaceSession: UseWorkspaceSessionResult;
-};
+export type ScriptLibraryScreenProps = Record<string, never>;
 
 export type ScriptLibraryToolbarProps = {
     contentMode: ScriptLibraryContentMode;

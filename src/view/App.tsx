@@ -20,10 +20,10 @@ import {
 import { selectWorkspaceHasUnsavedChanges } from "../hooks/workspace/store/selectors";
 import { useWorkspaceDroppedFiles } from "../hooks/workspace/useWorkspaceDroppedFiles";
 import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
-import { useWorkspaceSession } from "../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStore } from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
-import { getAppScreen, getAppTopbarWorkspaceContext } from "./appScreens";
+import { showsWorkspaceContext } from "../lib/app/sidebar";
+import { getAppScreen } from "./appScreens";
 
 export function App(): ReactElement {
     useWorkspaceStoreLifecycle();
@@ -62,21 +62,23 @@ export function App(): ReactElement {
     const updater = useAppUpdater();
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
-    const workspaceSession = useWorkspaceSession();
     const replaceWorkspaceExecutionHistory = useWorkspaceStore(
         (state) => state.replaceWorkspaceExecutionHistory,
     );
-    const { activeTab, workspace } = workspaceSession.state;
+    const workspacePath = useWorkspaceStore(
+        (state) => state.workspace?.workspacePath ?? null,
+    );
+    const workspaceName = useWorkspaceStore(
+        (state) => state.workspace?.workspaceName ?? null,
+    );
+    const hasWorkspace = useWorkspaceStore((state) => state.workspace !== null);
+    const openWorkspaceDirectory = useWorkspaceStore(
+        (state) => state.openWorkspaceDirectory,
+    );
     const [isExecutionHistoryModalOpen, setIsExecutionHistoryModalOpen] =
         useState(false);
     const workspaceExecutor = useWorkspaceExecutor({
-        workspacePath: workspace?.workspacePath ?? null,
-        activeTab: activeTab
-            ? {
-                  fileName: activeTab.fileName,
-                  content: activeTab.content,
-              }
-            : null,
+        workspacePath,
         onExecutionHistoryUpdated: replaceWorkspaceExecutionHistory,
     });
     const automaticExecutionHasUnsavedChanges = useAutomaticExecutionStore(
@@ -118,13 +120,8 @@ export function App(): ReactElement {
     const handleZoomReset = (): void => {
         setZoomPercent(APP_ZOOM_DEFAULT);
     };
-    const topbarWorkspaceContext = getAppTopbarWorkspaceContext(
-        activeSidebarItem,
-        workspaceSession,
-    );
     const activeScreen = getAppScreen(
         activeSidebarItem,
-        workspaceSession,
         workspaceExecutor,
         updater,
         {
@@ -135,14 +132,15 @@ export function App(): ReactElement {
             },
         },
     );
+    const shouldShowWorkspaceContext = showsWorkspaceContext(activeSidebarItem);
 
     useEffect(() => {
-        if (activeSidebarItem === "workspace" && workspace) {
+        if (activeSidebarItem === "workspace" && hasWorkspace) {
             return;
         }
 
         setIsExecutionHistoryModalOpen(false);
-    }, [activeSidebarItem, workspace]);
+    }, [activeSidebarItem, hasWorkspace]);
 
     useAppShellLifecycle({
         hasUnsavedChanges,
@@ -151,7 +149,7 @@ export function App(): ReactElement {
     useAppExitGuard();
 
     return (
-        <AppHotkeysProvider workspaceSession={workspaceSession}>
+        <AppHotkeysProvider>
             <AppDragDropOverlay isVisible={isDragActive} />
             <div className="relative flex h-screen flex-col overflow-hidden rounded-[0.95rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-shell)]">
                 <AppTopbar
@@ -159,9 +157,21 @@ export function App(): ReactElement {
                     isSidebarOpen={isSidebarOpen}
                     sidebarPosition={sidebarPosition}
                     onToggleSidebar={toggleSidebar}
-                    workspaceName={topbarWorkspaceContext.workspaceName}
-                    workspacePath={topbarWorkspaceContext.workspacePath}
-                    onOpenWorkspace={topbarWorkspaceContext.onOpenWorkspace}
+                    workspaceName={
+                        shouldShowWorkspaceContext
+                            ? (workspaceName ?? "None")
+                            : null
+                    }
+                    workspacePath={
+                        shouldShowWorkspaceContext ? workspacePath : null
+                    }
+                    onOpenWorkspace={
+                        shouldShowWorkspaceContext && workspacePath !== null
+                            ? () => {
+                                  void openWorkspaceDirectory();
+                              }
+                            : undefined
+                    }
                     executorControls={
                         activeSidebarItem === "workspace"
                             ? {
@@ -209,7 +219,6 @@ export function App(): ReactElement {
                     isOpen={isCommandPaletteOpen}
                     requestedScope={commandPaletteScope}
                     requestedMode={commandPaletteMode}
-                    workspaceSession={workspaceSession}
                     workspaceExecutor={workspaceExecutor}
                     isSidebarOpen={isSidebarOpen}
                     activeSidebarItem={activeSidebarItem}

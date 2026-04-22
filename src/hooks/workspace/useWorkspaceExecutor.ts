@@ -28,11 +28,13 @@ import type {
     WorkspaceExecutionHistoryEntry,
 } from "../../lib/workspace/workspace.type";
 import { useWindowResume } from "../shared/useWindowResume";
+import { selectWorkspaceActiveTab } from "./store/selectors";
 import type {
     AsyncUnsubscribe,
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
 } from "./useWorkspaceExecutor.type";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 function createDefaultAvailablePortSummaries(): ExecutorStatusPayload["availablePorts"] {
     return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({
@@ -125,7 +127,6 @@ function createExecutionHistoryEntry(options: {
  */
 export function useWorkspaceExecutor({
     workspacePath,
-    activeTab,
     onExecutionHistoryUpdated,
 }: UseWorkspaceExecutorOptions): UseWorkspaceExecutorResult {
     const [executorKind, setExecutorKind] = useState(DEFAULT_EXECUTOR_KIND);
@@ -396,6 +397,10 @@ export function useWorkspaceExecutor({
     };
 
     const executeActiveTab = async (): Promise<void> => {
+        const activeTab = selectWorkspaceActiveTab(
+            useWorkspaceStore.getState(),
+        );
+
         if (!activeTab) {
             setErrorMessage("Open a workspace tab before executing a script.");
             return;

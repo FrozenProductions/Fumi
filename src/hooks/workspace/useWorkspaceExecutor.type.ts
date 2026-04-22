@@ -8,10 +8,6 @@ export type AsyncUnsubscribe = () => void;
 
 export type UseWorkspaceExecutorOptions = {
     workspacePath: string | null;
-    activeTab: {
-        fileName: string;
-        content: string;
-    } | null;
     onExecutionHistoryUpdated?: (
         workspacePath: string,
         entries: WorkspaceExecutionHistoryEntry[],

@@ -9,7 +9,10 @@ import type {
 } from "../../lib/app/app.type";
 import type { AppCommandPaletteControllerOptions } from "../../lib/app/commandPalette.type";
 
-export type AppCommandPaletteProps = AppCommandPaletteControllerOptions;
+export type AppCommandPaletteProps = Omit<
+    AppCommandPaletteControllerOptions,
+    "workspaceSession"
+>;
 
 export type AppCommandPaletteScopeButtonProps = {
     ariaLabel: string;

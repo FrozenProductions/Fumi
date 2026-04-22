@@ -3,6 +3,7 @@ import nothingFoundIcon from "../../assets/icons/nothing_found.svg";
 import warningIcon from "../../assets/icons/warning.svg";
 import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import { useScriptLibrary } from "../../hooks/scriptLibrary/useScriptLibrary";
+import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
 import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import {
     copyScriptToClipboard,
@@ -21,7 +22,6 @@ import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
 import type {
     ScriptLibraryCardActions,
     ScriptLibraryEmptyState,
-    ScriptLibraryScreenProps,
 } from "./scriptLibrary.type";
 
 function getScriptLibraryEmptyState(options: {
@@ -61,9 +61,8 @@ function getScriptLibraryEmptyState(options: {
  * @param props.workspaceSession - Current workspace session
  * @returns A React component
  */
-export function ScriptLibraryScreen({
-    workspaceSession,
-}: ScriptLibraryScreenProps): ReactElement {
+export function ScriptLibraryScreen(): ReactElement {
+    const workspaceSession = useWorkspaceSession();
     const hasWorkspace = Boolean(workspaceSession.state.workspace);
     const { activity, actions, state } = useScriptLibrary();
     const {

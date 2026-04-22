@@ -14,6 +14,7 @@ import type {
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
 } from "./useWorkspaceExecutor.type";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 const mocks = vi.hoisted(() => ({
     appendWorkspaceExecutionHistory: vi.fn(),
@@ -92,6 +93,37 @@ describe("useWorkspaceExecutor", () => {
         mocks.subscribeToExecutorStatusChanged.mockResolvedValue(
             () => undefined,
         );
+        useWorkspaceStore.setState({
+            workspace: {
+                workspaceName: "Test",
+                workspacePath: "/workspace/current",
+                activeTabId: "tab-1",
+                splitView: null,
+                tabs: [
+                    {
+                        id: "tab-1",
+                        fileName: "alpha.lua",
+                        content: "print('alpha')",
+                        savedContent: "print('alpha')",
+                        cursor: {
+                            line: 0,
+                            column: 0,
+                            scrollTop: 0,
+                        },
+                        isDirty: false,
+                    },
+                ],
+                archivedTabs: [],
+                executionHistory: [],
+            },
+            dirtyTabCount: 0,
+            recentWorkspacePaths: [],
+            persistRevision: 0,
+            lastPersistedRevision: 0,
+            isBootstrapping: false,
+            isHydrated: true,
+            errorMessage: null,
+        });
         vi.spyOn(Date, "now").mockReturnValue(1_234);
         vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue(
             "00000000-0000-4000-8000-000000000000",
@@ -147,10 +179,6 @@ describe("useWorkspaceExecutor", () => {
         );
         const result = await renderHook({
             workspacePath: "/workspace/current",
-            activeTab: {
-                fileName: "alpha.lua",
-                content: "print('alpha')",
-            },
             onExecutionHistoryUpdated,
         });
 
@@ -186,7 +214,6 @@ describe("useWorkspaceExecutor", () => {
         mocks.appendWorkspaceExecutionHistory.mockResolvedValue([]);
         const result = await renderHook({
             workspacePath: "/workspace/current",
-            activeTab: null,
         });
         const entry = {
             id: "old-history",
@@ -226,10 +253,6 @@ describe("useWorkspaceExecutor", () => {
         );
         await renderHook({
             workspacePath: "/workspace/current",
-            activeTab: {
-                fileName: "alpha.lua",
-                content: "print('alpha')",
-            },
         });
 
         await act(async () => {
