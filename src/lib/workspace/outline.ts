@@ -10,15 +10,16 @@ import type {
  * Checks if a cached outline entry matches the given parameters.
  *
  * @remarks
- * Returns null if the entry doesn't exist or has different fileName, contentHash,
- * or contentLength. Used to avoid rescanning unchanged files.
+ * Returns null if the entry doesn't exist or has different fileName, content,
+ * or contentRevision. Used to avoid rescanning unchanged files without hashing
+ * the full buffer on the main thread.
  */
 export function getWorkspaceOutlineCacheHit(
     cache: Map<string, WorkspaceOutlineCacheEntry>,
     tabId: string,
     fileName: string,
-    contentHash: string,
-    contentLength: number,
+    content: string,
+    contentRevision: number,
 ): WorkspaceOutlineCacheEntry | null {
     const entry = cache.get(tabId);
 
@@ -28,8 +29,8 @@ export function getWorkspaceOutlineCacheHit(
 
     if (
         entry.fileName !== fileName ||
-        entry.contentHash !== contentHash ||
-        entry.contentLength !== contentLength
+        entry.contentRevision !== contentRevision ||
+        entry.content !== content
     ) {
         return null;
     }

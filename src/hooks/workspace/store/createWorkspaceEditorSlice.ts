@@ -140,6 +140,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                         (tab) => ({
                             ...tab,
                             content,
+                            contentRevision: (tab.contentRevision ?? 0) + 1,
                         }),
                     ),
                     dirtyTabCount:

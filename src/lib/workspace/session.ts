@@ -75,6 +75,7 @@ function createWorkspaceTab(tab: WorkspaceTabSnapshot): WorkspaceTab {
     return {
         ...tab,
         savedContent: tab.content,
+        contentRevision: 0,
     };
 }
 

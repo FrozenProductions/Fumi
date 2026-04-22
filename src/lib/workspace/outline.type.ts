@@ -2,8 +2,8 @@ import type { LuauFileAnalysis } from "../luau/symbolScanner.type";
 
 export type WorkspaceOutlineCacheEntry = {
     analysis: LuauFileAnalysis;
-    contentHash: string;
-    contentLength: number;
+    content: string;
+    contentRevision: number;
     fileName: string;
 };
 

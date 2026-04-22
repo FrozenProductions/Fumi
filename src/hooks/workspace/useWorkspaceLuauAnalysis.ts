@@ -8,7 +8,6 @@ import {
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
 import { analyzeLuauFileInBackground } from "../../lib/luau/workerAnalysis";
-import { hashString } from "../../lib/shared/hash";
 import {
     getWorkspaceOutlineCacheHit,
     incrementallyUpdateWorkspaceOutline,
@@ -27,8 +26,9 @@ import type { UseWorkspaceLuauAnalysisResult } from "./useWorkspaceLuauAnalysis.
  *
  * @remarks
  * Uses requestIdleCallback for background scanning, caches analysis results
- * by content hash, and performs incremental updates when only content changes
- * occur. Debounces analysis updates through startTransition for smooth UI.
+ * by per-tab content revision, and performs incremental updates when only
+ * content changes occur. Debounces analysis updates through startTransition
+ * for smooth UI.
  */
 export function useWorkspaceLuauAnalysis(
     activeTab: WorkspaceTab | null,
@@ -41,33 +41,46 @@ export function useWorkspaceLuauAnalysis(
     const previousAnalysisRef = useRef<{
         analysis: LuauFileAnalysis;
         content: string;
-        contentHash: string;
+        contentRevision: number;
         tabId: string;
     } | null>(null);
     const requestSequenceRef = useRef(0);
     const latestScanTargetRef = useRef<{
-        contentHash: string;
+        contentRevision: number;
         tabId: string;
     } | null>(null);
     const activeTabId = activeTab?.id ?? null;
     const activeFileName = activeTab?.fileName ?? null;
     const activeContent = activeTab?.content ?? "";
+    const activeContentRevision = activeTab?.contentRevision ?? 0;
     const analysisDebounceMs =
         activeContent.length >= WORKSPACE_OUTLINE_LARGE_FILE_THRESHOLD
             ? WORKSPACE_OUTLINE_SCAN_LARGE_FILE_DEBOUNCE_MS
             : WORKSPACE_OUTLINE_SCAN_STANDARD_DEBOUNCE_MS;
-    const debouncedContent = useDebouncedValue(
-        activeContent,
+    const debouncedOutlineTarget = useDebouncedValue(
+        {
+            content: activeContent,
+            contentRevision: activeContentRevision,
+        },
         analysisDebounceMs,
     );
-    const outlineContent =
-        previousActiveTabIdRef.current === activeTabId
-            ? debouncedContent
-            : activeContent;
-    const outlineContentHash = useMemo(
-        () => hashString(outlineContent),
-        [outlineContent],
+    const outlineTarget = useMemo(
+        () =>
+            previousActiveTabIdRef.current === activeTabId
+                ? debouncedOutlineTarget
+                : {
+                      content: activeContent,
+                      contentRevision: activeContentRevision,
+                  },
+        [
+            activeContent,
+            activeContentRevision,
+            activeTabId,
+            debouncedOutlineTarget,
+        ],
     );
+    const outlineContent = outlineTarget.content;
+    const outlineContentRevision = outlineTarget.contentRevision;
 
     useEffect(() => {
         previousActiveTabIdRef.current = activeTabId;
@@ -94,19 +107,19 @@ export function useWorkspaceLuauAnalysis(
             cacheRef.current,
             activeTabId,
             activeFileName,
-            outlineContentHash,
-            outlineContent.length,
+            outlineContent,
+            outlineContentRevision,
         );
 
         if (cachedEntry) {
             previousAnalysisRef.current = {
                 analysis: cachedEntry.analysis,
                 content: outlineContent,
-                contentHash: outlineContentHash,
+                contentRevision: outlineContentRevision,
                 tabId: activeTabId,
             };
             latestScanTargetRef.current = {
-                contentHash: outlineContentHash,
+                contentRevision: outlineContentRevision,
                 tabId: activeTabId,
             };
             startTransition(() => {
@@ -120,7 +133,7 @@ export function useWorkspaceLuauAnalysis(
         if (
             previousAnalysis &&
             previousAnalysis.tabId === activeTabId &&
-            previousAnalysis.contentHash !== outlineContentHash &&
+            previousAnalysis.contentRevision !== outlineContentRevision &&
             change
         ) {
             const nextAnalysis = incrementallyUpdateWorkspaceOutline({
@@ -133,8 +146,8 @@ export function useWorkspaceLuauAnalysis(
             if (nextAnalysis) {
                 const cacheEntry: WorkspaceOutlineCacheEntry = {
                     analysis: nextAnalysis,
-                    contentHash: outlineContentHash,
-                    contentLength: outlineContent.length,
+                    content: outlineContent,
+                    contentRevision: outlineContentRevision,
                     fileName: activeFileName,
                 };
 
@@ -146,11 +159,11 @@ export function useWorkspaceLuauAnalysis(
                 previousAnalysisRef.current = {
                     analysis: nextAnalysis,
                     content: outlineContent,
-                    contentHash: outlineContentHash,
+                    contentRevision: outlineContentRevision,
                     tabId: activeTabId,
                 };
                 latestScanTargetRef.current = {
-                    contentHash: outlineContentHash,
+                    contentRevision: outlineContentRevision,
                     tabId: activeTabId,
                 };
                 startTransition(() => {
@@ -167,7 +180,7 @@ export function useWorkspaceLuauAnalysis(
 
         requestSequenceRef.current = requestId;
         latestScanTargetRef.current = {
-            contentHash: outlineContentHash,
+            contentRevision: outlineContentRevision,
             tabId: activeTabId,
         };
 
@@ -192,15 +205,16 @@ export function useWorkspaceLuauAnalysis(
                     if (
                         !latestScanTarget ||
                         latestScanTarget.tabId !== activeTabId ||
-                        latestScanTarget.contentHash !== outlineContentHash
+                        latestScanTarget.contentRevision !==
+                            outlineContentRevision
                     ) {
                         return;
                     }
 
                     const cacheEntry: WorkspaceOutlineCacheEntry = {
                         analysis: nextAnalysis,
-                        contentHash: outlineContentHash,
-                        contentLength: outlineContent.length,
+                        content: outlineContent,
+                        contentRevision: outlineContentRevision,
                         fileName: activeFileName,
                     };
 
@@ -212,7 +226,7 @@ export function useWorkspaceLuauAnalysis(
                     previousAnalysisRef.current = {
                         analysis: nextAnalysis,
                         content: outlineContent,
-                        contentHash: outlineContentHash,
+                        contentRevision: outlineContentRevision,
                         tabId: activeTabId,
                     };
 
@@ -264,7 +278,7 @@ export function useWorkspaceLuauAnalysis(
         change,
         isEnabled,
         outlineContent,
-        outlineContentHash,
+        outlineContentRevision,
     ]);
 
     return {

@@ -94,6 +94,7 @@ export type DroppedWorkspaceScriptDraft = {
 
 export type WorkspaceTab = WorkspaceTabSnapshot & {
     savedContent: string;
+    contentRevision?: number;
 };
 
 export type WorkspaceScreenTab = Pick<WorkspaceTabState, "fileName" | "id"> & {

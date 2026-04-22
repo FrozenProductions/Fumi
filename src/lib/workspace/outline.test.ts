@@ -30,15 +30,16 @@ function createSymbol(label: string): LuauFileSymbol {
 }
 
 describe("workspace outline cache", () => {
-    it("returns cached symbols only for an exact tab/file/hash match", () => {
+    it("returns cached symbols only for an exact tab/file/revision match", () => {
         const cache = new Map();
+        const content = "local function main() end";
         const entry = {
             analysis: {
                 functionScopes: [],
                 symbols: [createSymbol("main")],
             },
-            contentHash: "deadbeef",
-            contentLength: "local function main() end".length,
+            content,
+            contentRevision: 4,
             fileName: "main.luau",
         };
 
@@ -49,8 +50,8 @@ describe("workspace outline cache", () => {
                 cache,
                 "tab-1",
                 "main.luau",
-                "deadbeef",
-                "local function main() end".length,
+                content,
+                4,
             ),
         ).toEqual(entry);
         expect(
@@ -58,8 +59,8 @@ describe("workspace outline cache", () => {
                 cache,
                 "tab-1",
                 "other.luau",
-                "deadbeef",
-                "local function main() end".length,
+                content,
+                4,
             ),
         ).toBeNull();
         expect(
@@ -67,8 +68,17 @@ describe("workspace outline cache", () => {
                 cache,
                 "tab-1",
                 "main.luau",
-                "cafebabe",
-                "local function main() end".length,
+                "local function helper() end",
+                4,
+            ),
+        ).toBeNull();
+        expect(
+            getWorkspaceOutlineCacheHit(
+                cache,
+                "tab-1",
+                "main.luau",
+                content,
+                5,
             ),
         ).toBeNull();
     });
@@ -81,8 +91,8 @@ describe("workspace outline cache", () => {
                 functionScopes: [],
                 symbols: [createSymbol("one")],
             },
-            contentHash: "1",
-            contentLength: 3,
+            content: "one",
+            contentRevision: 1,
             fileName: "one.luau",
         });
         storeWorkspaceOutlineCacheEntry(cache, "tab-2", {
@@ -90,8 +100,8 @@ describe("workspace outline cache", () => {
                 functionScopes: [],
                 symbols: [createSymbol("two")],
             },
-            contentHash: "2",
-            contentLength: 3,
+            content: "two",
+            contentRevision: 2,
             fileName: "two.luau",
         });
         storeWorkspaceOutlineCacheEntry(
@@ -102,8 +112,8 @@ describe("workspace outline cache", () => {
                     functionScopes: [],
                     symbols: [createSymbol("three")],
                 },
-                contentHash: "3",
-                contentLength: 5,
+                content: "three",
+                contentRevision: 3,
                 fileName: "three.luau",
             },
             2,

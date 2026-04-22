@@ -24,7 +24,6 @@ type LuauAnalysisWorkerState = {
 
 let nextLuauAnalysisRequestId = 0;
 let luauAnalysisWorkerState: LuauAnalysisWorkerState | null = null;
-let hasWorkerAnalysisFailed = false;
 
 function fallbackToLocalAnalysis(options: {
     content: string;
@@ -71,11 +70,7 @@ function resetWorkerState(): void {
 }
 
 function canUseLuauAnalysisWorker(): boolean {
-    return (
-        !hasWorkerAnalysisFailed &&
-        typeof window !== "undefined" &&
-        typeof Worker !== "undefined"
-    );
+    return typeof window !== "undefined" && typeof Worker !== "undefined";
 }
 
 function dispatchQueuedRequest(): void {
@@ -137,7 +132,6 @@ function getLuauAnalysisWorkerState(): LuauAnalysisWorkerState {
     );
 
     worker.addEventListener("error", (event) => {
-        hasWorkerAnalysisFailed = true;
         rejectPendingRequests(
             event.error ??
                 new Error("Luau analysis worker failed to initialize."),
@@ -209,14 +203,12 @@ export function analyzeLuauFileInBackground(options: {
                 throw error;
             }
 
-            hasWorkerAnalysisFailed = true;
             resetWorkerState();
             return fallbackToLocalAnalysis(options).catch(() => {
                 throw error;
             });
         });
     } catch {
-        hasWorkerAnalysisFailed = true;
         resetWorkerState();
         return fallbackToLocalAnalysis(options);
     }
