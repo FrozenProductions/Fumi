@@ -2,15 +2,15 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename.type";
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type {
-    WorkspaceSession,
+    WorkspaceScreenSession,
+    WorkspaceScreenTab,
     WorkspaceSplitView,
-    WorkspaceTab,
 } from "../../../lib/workspace/workspace.type";
 
 export type WorkspaceTabItemProps = {
     index: number;
     sortableGroup: string;
-    tab: WorkspaceTab;
+    tab: WorkspaceScreenTab;
     isActive: boolean;
     isVisibleInSplit: boolean;
     isTabDragActive: boolean;
@@ -36,7 +36,7 @@ export type WorkspaceTabItemProps = {
 >;
 
 export type WorkspaceTabListDropdownProps = {
-    workspace: WorkspaceSession;
+    workspace: WorkspaceScreenSession;
     onClose: () => void;
     onSelectTab: (tabId: string) => void;
 };

@@ -1,6 +1,9 @@
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
 import { getWorkspaceDirtyTabCount } from "../../../lib/workspace/session";
-import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
+import type {
+    WorkspaceCursorState,
+    WorkspaceSession,
+} from "../../../lib/workspace/workspace.type";
 import { isMatchingWorkspacePath } from "./helpers";
 import type {
     WorkspaceStoreGet,
@@ -14,6 +17,31 @@ export function createWorkspaceStoreSupport(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,
 ): WorkspaceStoreSupport {
+    const pruneTransientTabCursors = (
+        transientTabCursorsById: Record<string, WorkspaceCursorState>,
+        nextWorkspace: WorkspaceSession,
+    ): Record<string, WorkspaceCursorState> => {
+        const openTabIds = new Set(nextWorkspace.tabs.map((tab) => tab.id));
+        let hasPrunedEntry = false;
+        const nextTransientTabCursorsById: Record<
+            string,
+            WorkspaceCursorState
+        > = {};
+
+        for (const [tabId, cursor] of Object.entries(transientTabCursorsById)) {
+            if (!openTabIds.has(tabId)) {
+                hasPrunedEntry = true;
+                continue;
+            }
+
+            nextTransientTabCursorsById[tabId] = cursor;
+        }
+
+        return hasPrunedEntry
+            ? nextTransientTabCursorsById
+            : transientTabCursorsById;
+    };
+
     const updateWorkspaceForPathWithPersistence = (
         workspacePath: string,
         updater: WorkspaceStoreUpdater,
@@ -44,6 +72,10 @@ export function createWorkspaceStoreSupport(
                 dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
                 errorMessage: null,
                 persistRevision: nextPersistRevision,
+                transientTabCursorsById: pruneTransientTabCursors(
+                    state.transientTabCursorsById,
+                    nextWorkspace,
+                ),
                 lastPersistedRevision: shouldMarkPersisted
                     ? nextPersistRevision
                     : state.lastPersistedRevision,

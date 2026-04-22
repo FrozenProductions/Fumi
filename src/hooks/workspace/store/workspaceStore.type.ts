@@ -9,6 +9,7 @@ import type {
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;
     dirtyTabCount: number;
+    transientTabCursorsById: Record<string, WorkspaceCursorState>;
     recentWorkspacePaths: string[];
     persistRevision: number;
     lastPersistedRevision: number;

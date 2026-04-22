@@ -32,7 +32,7 @@ export function WorkspaceTabListDropdown({
                 {workspace.tabs.map((tab) => {
                     const { baseName } = splitWorkspaceFileName(tab.fileName);
                     const isActive = tab.id === workspace.activeTabId;
-                    const isDirty = tab.content !== tab.savedContent;
+                    const isDirty = tab.isDirty;
 
                     return (
                         <button

@@ -96,6 +96,10 @@ export type WorkspaceTab = WorkspaceTabSnapshot & {
     savedContent: string;
 };
 
+export type WorkspaceScreenTab = Pick<WorkspaceTabState, "fileName" | "id"> & {
+    isDirty: boolean;
+};
+
 export type WorkspaceSession = {
     workspacePath: string;
     workspaceName: string;
@@ -104,4 +108,8 @@ export type WorkspaceSession = {
     tabs: WorkspaceTab[];
     archivedTabs: WorkspaceTabState[];
     executionHistory: WorkspaceExecutionHistoryEntry[];
+};
+
+export type WorkspaceScreenSession = Omit<WorkspaceSession, "tabs"> & {
+    tabs: WorkspaceScreenTab[];
 };

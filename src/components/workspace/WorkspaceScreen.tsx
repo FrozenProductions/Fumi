@@ -16,15 +16,24 @@ import {
 } from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWindowResume } from "../../hooks/shared/useWindowResume";
+import {
+    selectWorkspaceActiveTab,
+    selectWorkspaceScreenSession,
+} from "../../hooks/workspace/store/selectors";
 import { useWorkspaceCodeCompletion } from "../../hooks/workspace/useWorkspaceCodeCompletion";
 import { useWorkspaceLuauAnalysis } from "../../hooks/workspace/useWorkspaceLuauAnalysis";
-import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
 import type {
     RobloxAccountIdentity,
     RobloxProcessInfo,
 } from "../../lib/accounts/accounts.type";
+import type {
+    AppIntellisensePriority,
+    AppIntellisenseWidth,
+    AppSidebarPosition,
+    AppTheme,
+} from "../../lib/app/app.type";
 import {
     getAppHotkeyBinding,
     getAppHotkeyShortcutLabel,
@@ -44,13 +53,22 @@ import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
 } from "../../lib/workspace/splitView";
-import type { WorkspacePaneId } from "../../lib/workspace/workspace.type";
+import type {
+    WorkspacePaneId,
+    WorkspaceSplitView,
+    WorkspaceTab,
+} from "../../lib/workspace/workspace.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceExecutionHistoryModal } from "./WorkspaceExecutionHistoryModal";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
-import type { WorkspaceScreenProps } from "./workspaceScreen.type";
+import type {
+    WorkspaceActionsButtonProps,
+    WorkspaceScreenProps,
+} from "./workspaceScreen.type";
+
+const EMPTY_WORKSPACE_TABS: WorkspaceTab[] = [];
 
 /**
  * The main workspace screen containing tabs, editor, and split view.
@@ -64,7 +82,6 @@ export function WorkspaceScreen({
     executor,
     executionHistoryModal,
 }: WorkspaceScreenProps): ReactElement {
-    const session = useWorkspaceSession();
     const appTheme = useAppStore((state) => state.theme);
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isCommandPaletteOpen = useAppStore(
@@ -91,37 +108,63 @@ export function WorkspaceScreen({
         (state) => state.setOutlineSearchQuery,
     );
     const sidebarPosition = useAppStore((state) => state.sidebarPosition);
+    const workspace = useWorkspaceStore(selectWorkspaceScreenSession);
+    const isBootstrapping = useWorkspaceStore((state) => state.isBootstrapping);
+    const errorMessage = useWorkspaceStore((state) => state.errorMessage);
     const persistWorkspaceState = useWorkspaceStore(
         (state) => state.persistWorkspaceState,
     );
-    const {
-        activeTab,
-        activeTabIndex,
-        errorMessage,
-        isBootstrapping,
-        workspace,
-    } = session.state;
-    const { createWorkspaceFile, openWorkspaceDirectory } =
-        session.workspaceActions;
-    const {
-        archiveWorkspaceTab,
-        deleteWorkspaceTab,
-        duplicateWorkspaceTab,
-        renameWorkspaceTab,
-        reorderWorkspaceTab,
-        saveActiveWorkspaceTab,
-        selectWorkspaceTab,
-        openWorkspaceTabInPane,
-        setWorkspaceSplitRatio,
-        focusWorkspacePane,
-        closeWorkspaceSplitView,
-    } = session.tabActions;
-    const {
-        updateActiveTabContent,
-        updateActiveTabCursor,
-        updateActiveTabScrollTop,
-        clearErrorMessage,
-    } = session.editorActions;
+    const createWorkspaceFile = useWorkspaceStore(
+        (state) => state.createWorkspaceFile,
+    );
+    const openWorkspaceDirectory = useWorkspaceStore(
+        (state) => state.openWorkspaceDirectory,
+    );
+    const archiveWorkspaceTab = useWorkspaceStore(
+        (state) => state.archiveWorkspaceTab,
+    );
+    const deleteWorkspaceTab = useWorkspaceStore(
+        (state) => state.deleteWorkspaceTab,
+    );
+    const duplicateWorkspaceTab = useWorkspaceStore(
+        (state) => state.duplicateWorkspaceTab,
+    );
+    const renameWorkspaceTab = useWorkspaceStore(
+        (state) => state.renameWorkspaceTab,
+    );
+    const reorderWorkspaceTab = useWorkspaceStore(
+        (state) => state.reorderWorkspaceTab,
+    );
+    const saveActiveWorkspaceTab = useWorkspaceStore(
+        (state) => state.saveActiveWorkspaceTab,
+    );
+    const selectWorkspaceTab = useWorkspaceStore(
+        (state) => state.selectWorkspaceTab,
+    );
+    const openWorkspaceTabInPane = useWorkspaceStore(
+        (state) => state.openWorkspaceTabInPane,
+    );
+    const setWorkspaceSplitRatio = useWorkspaceStore(
+        (state) => state.setWorkspaceSplitRatio,
+    );
+    const focusWorkspacePane = useWorkspaceStore(
+        (state) => state.focusWorkspacePane,
+    );
+    const closeWorkspaceSplitView = useWorkspaceStore(
+        (state) => state.closeWorkspaceSplitView,
+    );
+    const updateActiveTabContent = useWorkspaceStore(
+        (state) => state.updateActiveTabContent,
+    );
+    const updateActiveTabCursor = useWorkspaceStore(
+        (state) => state.updateActiveTabCursor,
+    );
+    const updateActiveTabScrollTop = useWorkspaceStore(
+        (state) => state.updateActiveTabScrollTop,
+    );
+    const clearErrorMessage = useWorkspaceStore(
+        (state) => state.clearErrorMessage,
+    );
     const executorState = executor.state;
     const {
         clearErrorMessage: clearExecutorErrorMessage,
@@ -150,6 +193,12 @@ export function WorkspaceScreen({
         "TOGGLE_OUTLINE_PANEL",
         hotkeyBindings,
     );
+    const activeTab =
+        workspace?.tabs.find((tab) => tab.id === workspace.activeTabId) ?? null;
+    const activeTabIndex =
+        activeTab && workspace
+            ? workspace.tabs.findIndex((tab) => tab.id === activeTab.id)
+            : -1;
 
     const refreshRobloxProcesses = useCallback(async (): Promise<void> => {
         const requestId = robloxProcessesRequestIdRef.current + 1;
@@ -298,68 +347,12 @@ export function WorkspaceScreen({
         },
     );
 
-    const activeEditorMode = activeTab
-        ? getEditorModeForFileName(activeTab.fileName)
-        : "text";
-    const activeTabId = activeTab?.id ?? null;
-    const [latestLuauChangeState, setLatestLuauChangeState] = useState<{
-        change: WorkspaceOutlineChange | null;
-        tabId: string;
-    } | null>(null);
-    const latestLuauChange =
-        activeTabId && latestLuauChangeState?.tabId === activeTabId
-            ? latestLuauChangeState.change
-            : null;
-    const { analysis: activeLuauAnalysis, symbols: luauSymbols } =
-        useWorkspaceLuauAnalysis(
-            activeTab,
-            editorSettings.isIntellisenseEnabled ||
-                editorSettings.isOutlinePanelVisible,
-            latestLuauChange,
-        );
     const renameState = useWorkspaceTabRename({
         workspace,
         renameWorkspaceTab,
         selectWorkspaceTab,
     });
     const { handleStartRename } = renameState;
-    const {
-        acceptCompletion,
-        completionPopup,
-        createHandleCursorChange,
-        createHandleEditorChange,
-        createHandleEditorLoad,
-        createHandleEditorUnmount,
-        createHandleScroll,
-        handleCompletionHover,
-        searchPanel,
-        goToLine,
-    } = useWorkspaceCodeCompletion({
-        activeEditorMode,
-        activeLuauAnalysis,
-        activeTabId,
-        tabs: workspace?.tabs ?? [],
-        isIntellisenseEnabled: editorSettings.isIntellisenseEnabled,
-        intellisensePriority: editorSettings.intellisensePriority,
-        intellisenseWidth: editorSettings.intellisenseWidth,
-        saveActiveWorkspaceTab,
-        updateActiveTabContent,
-        updateActiveTabCursor,
-        updateActiveTabScrollTop,
-    });
-    const handleActiveTabLuauChange = useCallback(
-        (change: WorkspaceOutlineChange | null): void => {
-            if (!activeTabId) {
-                return;
-            }
-
-            setLatestLuauChangeState({
-                change,
-                tabId: activeTabId,
-            });
-        },
-        [activeTabId],
-    );
 
     const splitView = workspace?.splitView ?? null;
     const [isTabDragActive, setIsTabDragActive] = useState(false);
@@ -677,39 +670,38 @@ export function WorkspaceScreen({
                     ) : activeTab ? (
                         <div className="flex min-h-0 flex-1 flex-col">
                             <div className="relative flex min-h-0 flex-1">
-                                <WorkspaceEditor
-                                    activeTabId={activeTab.id}
+                                <WorkspaceEditorRegion
                                     appTheme={appTheme}
                                     editorFontSize={editorSettings.fontSize}
                                     isWordWrapEnabled={
                                         editorSettings.isWordWrapEnabled
                                     }
-                                    tabs={workspace.tabs}
                                     splitView={resolvedSplitView}
-                                    searchPanel={searchPanel}
-                                    acceptCompletion={acceptCompletion}
-                                    completionPopup={completionPopup}
-                                    createHandleCursorChange={
-                                        createHandleCursorChange
+                                    saveActiveWorkspaceTab={
+                                        saveActiveWorkspaceTab
                                     }
-                                    createHandleEditorChange={
-                                        createHandleEditorChange
+                                    updateActiveTabContent={
+                                        updateActiveTabContent
                                     }
-                                    createHandleEditorLoad={
-                                        createHandleEditorLoad
+                                    updateActiveTabCursor={
+                                        updateActiveTabCursor
                                     }
-                                    createHandleEditorUnmount={
-                                        createHandleEditorUnmount
+                                    updateActiveTabScrollTop={
+                                        updateActiveTabScrollTop
                                     }
-                                    createHandleScroll={createHandleScroll}
-                                    handleCompletionHover={
-                                        handleCompletionHover
+                                    isIntellisenseEnabled={
+                                        editorSettings.isIntellisenseEnabled
+                                    }
+                                    intellisensePriority={
+                                        editorSettings.intellisensePriority
+                                    }
+                                    intellisenseWidth={
+                                        editorSettings.intellisenseWidth
                                     }
                                     isOutlinePanelVisible={
                                         editorSettings.isOutlinePanelVisible
                                     }
                                     sidebarPosition={sidebarPosition}
-                                    luauSymbols={luauSymbols}
                                     outlinePanelWidth={
                                         editorSettings.outlinePanelWidth
                                     }
@@ -745,9 +737,6 @@ export function WorkspaceScreen({
                                     onOutlineSearchQueryChange={
                                         setOutlineSearchQuery
                                     }
-                                    onActiveTabLuauChange={
-                                        handleActiveTabLuauChange
-                                    }
                                     onFocusPane={focusWorkspacePane}
                                     onSetOutlinePanelWidth={
                                         setOutlinePanelWidth
@@ -761,7 +750,6 @@ export function WorkspaceScreen({
                                     onResizeSplitCancel={
                                         handleResizeSplitCancel
                                     }
-                                    goToLine={goToLine}
                                     workspaceActionsButton={{
                                         executor,
                                         isLaunching,
@@ -810,5 +798,166 @@ export function WorkspaceScreen({
                 onReRun={executeHistoryEntry}
             />
         </section>
+    );
+}
+
+type WorkspaceEditorRegionProps = {
+    appTheme: AppTheme;
+    editorFontSize: number;
+    isWordWrapEnabled: boolean;
+    splitView: WorkspaceSplitView | null;
+    saveActiveWorkspaceTab: () => Promise<void>;
+    updateActiveTabContent: (content: string) => void;
+    updateActiveTabCursor: (cursor: WorkspaceTab["cursor"]) => void;
+    updateActiveTabScrollTop: (scrollTop: number) => void;
+    isIntellisenseEnabled: boolean;
+    intellisensePriority: AppIntellisensePriority;
+    intellisenseWidth: AppIntellisenseWidth;
+    isOutlinePanelVisible: boolean;
+    sidebarPosition: AppSidebarPosition;
+    outlinePanelWidth: number;
+    outlineExpandedGroups: Record<string, boolean>;
+    outlineSearchQuery: string;
+    onToggleExpandedGroup: (title: string) => void;
+    onExpandAllGroups: (titles: string[]) => void;
+    onCollapseAllGroups: (titles: string[]) => void;
+    onOutlineSearchQueryChange: (query: string) => void;
+    onFocusPane: (pane: WorkspacePaneId) => void;
+    onSetOutlinePanelWidth: (width: number) => void;
+    onResizeSplitPreview: (splitRatio: number) => void;
+    onResizeSplitCommit: (splitRatio: number) => void;
+    onResizeSplitCancel: () => void;
+    workspaceActionsButton: WorkspaceActionsButtonProps;
+};
+
+function WorkspaceEditorRegion({
+    appTheme,
+    editorFontSize,
+    isWordWrapEnabled,
+    splitView,
+    saveActiveWorkspaceTab,
+    updateActiveTabContent,
+    updateActiveTabCursor,
+    updateActiveTabScrollTop,
+    isIntellisenseEnabled,
+    intellisensePriority,
+    intellisenseWidth,
+    isOutlinePanelVisible,
+    sidebarPosition,
+    outlinePanelWidth,
+    outlineExpandedGroups,
+    outlineSearchQuery,
+    onToggleExpandedGroup,
+    onExpandAllGroups,
+    onCollapseAllGroups,
+    onOutlineSearchQueryChange,
+    onFocusPane,
+    onSetOutlinePanelWidth,
+    onResizeSplitPreview,
+    onResizeSplitCommit,
+    onResizeSplitCancel,
+    workspaceActionsButton,
+}: WorkspaceEditorRegionProps): ReactElement | null {
+    const activeTab = useWorkspaceStore(selectWorkspaceActiveTab);
+    const tabs = useWorkspaceStore(
+        (state) => state.workspace?.tabs ?? EMPTY_WORKSPACE_TABS,
+    );
+    const activeTabId = activeTab?.id ?? null;
+    const activeEditorMode = activeTab
+        ? getEditorModeForFileName(activeTab.fileName)
+        : "text";
+    const [latestLuauChangeState, setLatestLuauChangeState] = useState<{
+        change: WorkspaceOutlineChange | null;
+        tabId: string;
+    } | null>(null);
+    const latestLuauChange =
+        activeTabId && latestLuauChangeState?.tabId === activeTabId
+            ? latestLuauChangeState.change
+            : null;
+    const { analysis: activeLuauAnalysis, symbols: luauSymbols } =
+        useWorkspaceLuauAnalysis(
+            activeTab,
+            isIntellisenseEnabled || isOutlinePanelVisible,
+            latestLuauChange,
+        );
+    const {
+        acceptCompletion,
+        completionPopup,
+        createHandleCursorChange,
+        createHandleEditorChange,
+        createHandleEditorLoad,
+        createHandleEditorUnmount,
+        createHandleScroll,
+        handleCompletionHover,
+        searchPanel,
+        goToLine,
+    } = useWorkspaceCodeCompletion({
+        activeEditorMode,
+        activeLuauAnalysis,
+        activeTabId,
+        tabs,
+        isIntellisenseEnabled,
+        intellisensePriority,
+        intellisenseWidth,
+        saveActiveWorkspaceTab,
+        updateActiveTabContent,
+        updateActiveTabCursor,
+        updateActiveTabScrollTop,
+    });
+
+    const handleActiveTabLuauChange = useCallback(
+        (change: WorkspaceOutlineChange | null): void => {
+            if (!activeTabId) {
+                return;
+            }
+
+            setLatestLuauChangeState({
+                change,
+                tabId: activeTabId,
+            });
+        },
+        [activeTabId],
+    );
+
+    if (!activeTabId) {
+        return null;
+    }
+
+    return (
+        <WorkspaceEditor
+            activeTabId={activeTabId}
+            appTheme={appTheme}
+            editorFontSize={editorFontSize}
+            isWordWrapEnabled={isWordWrapEnabled}
+            tabs={tabs}
+            splitView={splitView}
+            searchPanel={searchPanel}
+            acceptCompletion={acceptCompletion}
+            completionPopup={completionPopup}
+            createHandleCursorChange={createHandleCursorChange}
+            createHandleEditorChange={createHandleEditorChange}
+            createHandleEditorLoad={createHandleEditorLoad}
+            createHandleEditorUnmount={createHandleEditorUnmount}
+            createHandleScroll={createHandleScroll}
+            handleCompletionHover={handleCompletionHover}
+            isOutlinePanelVisible={isOutlinePanelVisible}
+            sidebarPosition={sidebarPosition}
+            luauSymbols={luauSymbols}
+            outlinePanelWidth={outlinePanelWidth}
+            outlineExpandedGroups={outlineExpandedGroups}
+            onToggleExpandedGroup={onToggleExpandedGroup}
+            onExpandAllGroups={onExpandAllGroups}
+            onCollapseAllGroups={onCollapseAllGroups}
+            outlineSearchQuery={outlineSearchQuery}
+            onOutlineSearchQueryChange={onOutlineSearchQueryChange}
+            onActiveTabLuauChange={handleActiveTabLuauChange}
+            onFocusPane={onFocusPane}
+            onSetOutlinePanelWidth={onSetOutlinePanelWidth}
+            onResizeSplitPreview={onResizeSplitPreview}
+            onResizeSplitCommit={onResizeSplitCommit}
+            onResizeSplitCancel={onResizeSplitCancel}
+            goToLine={goToLine}
+            workspaceActionsButton={workspaceActionsButton}
+        />
     );
 }

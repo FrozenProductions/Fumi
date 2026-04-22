@@ -46,7 +46,7 @@ export function WorkspaceTabItem({
     renamingTabId,
 }: WorkspaceTabItemProps): ReactElement {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
-    const isDirty = tab.content !== tab.savedContent;
+    const isDirty = tab.isDirty;
     const isRenaming = tab.id === renamingTabId;
     const { baseName } = splitWorkspaceFileName(tab.fileName);
     const { handleRef, isDragging, isDropTarget, ref } = useSortable({

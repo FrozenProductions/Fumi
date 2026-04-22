@@ -7,7 +7,7 @@ import type {
 import type { AppMiddleClickTabAction } from "../../lib/app/app.type";
 import type {
     WorkspacePaneId,
-    WorkspaceSession,
+    WorkspaceScreenSession,
     WorkspaceSplitView,
 } from "../../lib/workspace/workspace.type";
 
@@ -36,7 +36,7 @@ export type WorkspaceActionsButtonProps = {
 };
 
 export type WorkspaceTabBarProps = {
-    workspace: WorkspaceSession;
+    workspace: WorkspaceScreenSession;
     splitView: WorkspaceSplitView | null;
     renameState: UseWorkspaceTabRenameResult;
     onCreateFile: () => void;

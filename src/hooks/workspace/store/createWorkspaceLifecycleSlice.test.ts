@@ -119,6 +119,11 @@ async function createLifecycleStore(initialWorkspace?: WorkspaceSession) {
 
     let state = {
         workspace: initialWorkspace ?? null,
+        dirtyTabCount:
+            initialWorkspace?.tabs.filter(
+                (tab) => tab.content !== tab.savedContent,
+            ).length ?? 0,
+        transientTabCursorsById: {},
         recentWorkspacePaths: ["/workspace/recent"],
         persistRevision: 0,
         lastPersistedRevision: 0,

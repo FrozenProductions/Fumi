@@ -14,6 +14,7 @@ import {
 } from "../../../lib/workspace/persistence";
 import {
     buildWorkspaceSession,
+    clampCursorToContent,
     getWorkspaceDirtyTabCount,
     hasWorkspaceDraftChanges,
     mergeWorkspaceSession,
@@ -36,6 +37,22 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
         bootstrapWorkspacePromise: null as Promise<void> | null,
         hasBootstrappedWorkspaceSession: false,
         latestWorkspaceRefreshRequestId: 0,
+    };
+    const getPersistedWorkspaceTabs = (workspace: WorkspaceSession) => {
+        const { transientTabCursorsById } = get();
+
+        return workspace.tabs.map((tab) => {
+            const transientCursor = transientTabCursorsById[tab.id];
+
+            if (!transientCursor) {
+                return serializeTabState(tab);
+            }
+
+            return serializeTabState({
+                ...tab,
+                cursor: clampCursorToContent(tab.content, transientCursor),
+            });
+        });
     };
     const persistCurrentWorkspaceBeforeSwitch = async (): Promise<boolean> => {
         const { workspace, persistWorkspaceState } = get();
@@ -62,6 +79,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
         set({
             workspace: nextWorkspace,
             dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
+            transientTabCursorsById: {},
             recentWorkspacePaths: nextRecentWorkspacePaths,
             persistRevision: 0,
             lastPersistedRevision: 0,
@@ -85,6 +103,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                 set({
                     workspace: null,
                     dirtyTabCount: 0,
+                    transientTabCursorsById: {},
                     persistRevision: 0,
                     lastPersistedRevision: 0,
                     errorMessage: null,
@@ -113,6 +132,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     set({
                         workspace: nextWorkspace,
                         dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
+                        transientTabCursorsById: {},
                         recentWorkspacePaths: nextRecentWorkspacePaths,
                         persistRevision: 0,
                         lastPersistedRevision: 0,
@@ -123,6 +143,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     set({
                         workspace: null,
                         dirtyTabCount: 0,
+                        transientTabCursorsById: {},
                         persistRevision: 0,
                         lastPersistedRevision: 0,
                         errorMessage: getErrorMessage(
@@ -152,7 +173,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     workspacePath: workspace.workspacePath,
                     activeTabId: workspace.activeTabId,
                     splitView: workspace.splitView,
-                    tabs: workspace.tabs.map(serializeTabState),
+                    tabs: getPersistedWorkspaceTabs(workspace),
                     archivedTabs: workspace.archivedTabs,
                     executionHistory: workspace.executionHistory,
                 });
@@ -248,6 +269,7 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     set({
                         workspace: null,
                         dirtyTabCount: 0,
+                        transientTabCursorsById: {},
                         persistRevision: 0,
                         lastPersistedRevision: 0,
                         errorMessage: null,
@@ -281,6 +303,16 @@ export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
                     return {
                         workspace: nextWorkspace,
                         dirtyTabCount: getWorkspaceDirtyTabCount(nextWorkspace),
+                        transientTabCursorsById: Object.fromEntries(
+                            Object.entries(
+                                state.transientTabCursorsById,
+                            ).filter(
+                                ([tabId]) =>
+                                    nextWorkspace?.tabs.some(
+                                        (tab) => tab.id === tabId,
+                                    ) ?? false,
+                            ),
+                        ),
                         persistRevision: state.persistRevision + 1,
                         lastPersistedRevision: state.persistRevision + 1,
                         errorMessage: null,

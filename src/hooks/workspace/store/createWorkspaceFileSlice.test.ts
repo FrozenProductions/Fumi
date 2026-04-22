@@ -26,6 +26,7 @@ function createWorkspaceStoreState(
     const {
         persistRevision = 0,
         lastPersistedRevision = 0,
+        transientTabCursorsById = {},
         ...restOverrides
     } = overrides;
 
@@ -53,6 +54,7 @@ function createWorkspaceStoreState(
             ],
         },
         dirtyTabCount: 0,
+        transientTabCursorsById,
         recentWorkspacePaths: [],
         persistRevision,
         lastPersistedRevision,

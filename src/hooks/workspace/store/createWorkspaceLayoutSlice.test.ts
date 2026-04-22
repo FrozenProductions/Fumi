@@ -39,6 +39,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
             ],
         },
         dirtyTabCount: 0,
+        transientTabCursorsById: {},
         recentWorkspacePaths: [],
         persistRevision: 0,
         lastPersistedRevision: 0,

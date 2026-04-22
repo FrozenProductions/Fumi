@@ -3,10 +3,10 @@ import type {
     KeyboardEvent as ReactKeyboardEvent,
     RefObject,
 } from "react";
-import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
+import type { WorkspaceScreenSession } from "../../lib/workspace/workspace.type";
 
 export type UseWorkspaceTabRenameOptions = {
-    workspace: WorkspaceSession | null;
+    workspace: WorkspaceScreenSession | null;
     renameWorkspaceTab: (
         tabId: string,
         nextBaseName: string,
