@@ -1,4 +1,4 @@
-import type { LuauCompletionItem } from "../../lib/luau/luau.type";
+import type { LuauCompletionItem } from "./luau.type";
 
 export type LuauCompletionQuery = {
     items: LuauCompletionItem[];

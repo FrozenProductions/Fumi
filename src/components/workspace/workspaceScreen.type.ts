@@ -1,5 +1,5 @@
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/useWorkspaceExecutor.type";
-import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/useWorkspaceTabRename.type";
+import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/executor/useWorkspaceExecutor.type";
+import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/tabBar/useWorkspaceTabRename.type";
 import type {
     RobloxAccountIdentity,
     RobloxProcessInfo,

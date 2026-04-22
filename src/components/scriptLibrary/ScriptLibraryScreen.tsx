@@ -3,7 +3,7 @@ import nothingFoundIcon from "../../assets/icons/nothing_found.svg";
 import warningIcon from "../../assets/icons/warning.svg";
 import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import { useScriptLibrary } from "../../hooks/scriptLibrary/useScriptLibrary";
-import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
+import { useWorkspaceSession } from "../../hooks/workspace/session/useWorkspaceSession";
 import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import {
     copyScriptToClipboard,

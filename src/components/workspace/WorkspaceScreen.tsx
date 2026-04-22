@@ -4,9 +4,9 @@ import { useCallback } from "react";
 import workspaceIcon from "../../assets/icons/workspace.svg";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { createMaskStyle } from "../../lib/shared/mask";
-import { AppIcon } from "../app/AppIcon";
-import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
-import { WorkspaceMessageState } from "./WorkspaceMessageState";
+import { AppIcon } from "../app/common/AppIcon";
+import { WorkspaceErrorBanner } from "./feedback/WorkspaceErrorBanner";
+import { WorkspaceMessageState } from "./feedback/WorkspaceMessageState";
 import { WorkspaceReadyScreen } from "./WorkspaceReadyScreen";
 import type { WorkspaceScreenProps } from "./workspaceScreen.type";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { EMPTY_LUAU_FILE_ANALYSIS } from "../../constants/luau/luau";
+import { EMPTY_LUAU_FILE_ANALYSIS } from "../../constants/luau/core/luau";
 import {
     getLuauCompletionQuery,
     shouldOpenLuauCompletion,

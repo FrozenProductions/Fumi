@@ -1,15 +1,15 @@
-import { confirmAction } from "../../../lib/platform/dialog";
+import { confirmAction } from "../../platform/dialog";
 import {
     deleteAllArchivedWorkspaceTabs as deleteAllArchivedWorkspaceTabsCommand,
     deleteArchivedWorkspaceTab as deleteArchivedWorkspaceTabCommand,
     restoreAllArchivedWorkspaceTabs as restoreAllArchivedWorkspaceTabsCommand,
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
-} from "../../../lib/platform/workspace";
+} from "../../platform/workspace";
 import {
     getNextActiveTabId,
     removedTabFromSplitView,
     serializeTabState,
-} from "../../../lib/workspace/session";
+} from "../session/session";
 import { createWorkspaceStoreSupport } from "./createWorkspaceStoreSupport";
 import type {
     WorkspaceArchiveSlice,

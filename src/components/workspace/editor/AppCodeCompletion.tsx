@@ -1,0 +1,91 @@
+import type { CSSProperties, ReactElement } from "react";
+import { getCompactLuauCompletionDetailLabel } from "../../../lib/luau/completionPopup";
+import type { AppCodeCompletionProps } from "./workspaceEditor.type";
+
+/**
+ * Code completion popup displayed in the editor.
+ *
+ * @param props - Component props
+ * @param props.items - Completion items to display
+ * @param props.selectedIndex - Currently selected item index
+ * @param props.position - Popup position and size
+ * @param props.onHoverItem - Called when hovering an item
+ * @param props.onSelectItem - Called when selecting an item
+ * @returns A React component or null
+ */
+export function AppCodeCompletion({
+    items,
+    selectedIndex,
+    position,
+    onHoverItem,
+    onSelectItem,
+}: AppCodeCompletionProps): ReactElement | null {
+    const selectedItem = items[selectedIndex] ?? items[0];
+
+    if (!selectedItem) {
+        return null;
+    }
+
+    const popupStyle = {
+        left: position.left,
+        top: position.top,
+        width: position.width,
+    } satisfies CSSProperties;
+    const listStyle = {
+        height: position.maxHeight,
+    } satisfies CSSProperties;
+
+    return (
+        <div
+            data-code-completion-popup="true"
+            className="fixed z-[90] overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-floating)]"
+            style={popupStyle}
+        >
+            <div
+                className="flex flex-col gap-1 overflow-hidden p-1.5"
+                style={listStyle}
+                role="listbox"
+                aria-label="Code completions"
+            >
+                {items.map((item, index) => {
+                    const isSelected = index === selectedIndex;
+                    const compactDetail = getCompactLuauCompletionDetailLabel(
+                        item.detail,
+                    );
+
+                    return (
+                        <button
+                            key={`${item.label}:${item.detail}:${item.namespace ?? "root"}:${item.doc.source}`}
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            onMouseEnter={() => onHoverItem(index)}
+                            onMouseDown={(event) => {
+                                event.preventDefault();
+                                onSelectItem(index);
+                            }}
+                            className={`app-select-none flex h-7 w-full items-center gap-2 rounded-[0.65rem] px-2 text-left ${
+                                isSelected
+                                    ? "bg-fumi-100 text-fumi-900"
+                                    : "text-fumi-600 hover:bg-fumi-50 hover:text-fumi-900"
+                            }`}
+                        >
+                            <span className="min-w-0 flex-1 truncate text-[10px] font-semibold leading-[1.15] tracking-[0.01em]">
+                                {item.label}
+                            </span>
+                            <span
+                                className={`inline-flex h-4 shrink-0 items-center justify-center rounded-full border px-1.5 text-[7.5px] font-semibold uppercase leading-none tracking-[0.1em] ${
+                                    isSelected
+                                        ? "border-fumi-300 bg-fumi-100 text-fumi-900"
+                                        : "border-fumi-200 bg-fumi-50 text-fumi-500"
+                                }`}
+                            >
+                                {compactDetail}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}

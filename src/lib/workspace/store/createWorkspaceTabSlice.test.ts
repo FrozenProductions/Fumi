@@ -1,16 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../constants/workspace/workspace";
-import type {
-    WorkspaceSession,
-    WorkspaceTab,
-} from "../../../lib/workspace/workspace.type";
+import type { WorkspaceSession, WorkspaceTab } from "../workspace.type";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
-vi.mock("../../../lib/platform/dialog", () => ({
+vi.mock("../../platform/dialog", () => ({
     confirmAction: vi.fn(),
 }));
 
-vi.mock("../../../lib/platform/workspace", () => ({
+vi.mock("../../platform/workspace", () => ({
     createWorkspaceFile: vi.fn(),
     deleteAllArchivedWorkspaceTabs: vi.fn(),
     deleteArchivedWorkspaceTab: vi.fn(),

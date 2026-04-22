@@ -13,8 +13,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { formatScriptLibraryDate } from "../../lib/scriptLibrary/scriptLibrary";
-import { AppIcon } from "../app/AppIcon";
-import { AppTooltip } from "../app/AppTooltip";
+import { AppIcon } from "../app/common/AppIcon";
+import { AppTooltip } from "../app/tooltip/AppTooltip";
 import type { ScriptLibraryCardProps } from "./scriptLibrary.type";
 
 /**

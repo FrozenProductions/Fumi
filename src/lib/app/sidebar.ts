@@ -1,4 +1,4 @@
-import type { AppSidebarItem } from "../../lib/app/app.type";
+import type { AppSidebarItem } from "./app.type";
 
 export function showsWorkspaceContext(item: AppSidebarItem): boolean {
     return item === "workspace";

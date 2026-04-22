@@ -4,8 +4,8 @@ import {
     Menu02Icon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import { AppIcon } from "../../app/AppIcon";
-import { AppTooltip } from "../../app/AppTooltip";
+import { AppIcon } from "../../app/common/AppIcon";
+import { AppTooltip } from "../../app/tooltip/AppTooltip";
 import { WorkspaceTabListDropdown } from "./WorkspaceTabListDropdown";
 import type { WorkspaceTabBarControlsProps } from "./workspaceTabBar.type";
 

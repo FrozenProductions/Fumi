@@ -1,6 +1,6 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import type { AppHotkeyBindings } from "../../lib/app/app.type";
-import { getAppHotkeyBinding } from "../../lib/app/hotkeys";
+import { getAppHotkeyBinding } from "../../lib/app/hotkeys/hotkeys";
 
 type UseWorkspaceScreenHotkeysOptions = {
     hotkeyBindings: AppHotkeyBindings;

@@ -19,9 +19,9 @@ import {
     buildWorkspaceFileName,
     splitWorkspaceFileName,
 } from "../../lib/workspace/fileName";
-import { AppIcon } from "../app/AppIcon";
-import { AppIconButton } from "../app/AppIconButton";
-import { AppTooltip } from "../app/AppTooltip";
+import { AppIcon } from "../app/common/AppIcon";
+import { AppIconButton } from "../app/common/AppIconButton";
+import { AppTooltip } from "../app/tooltip/AppTooltip";
 
 import type { AutomaticExecutionSidebarProps } from "./automaticExecution.type";
 

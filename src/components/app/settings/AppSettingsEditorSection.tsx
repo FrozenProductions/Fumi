@@ -8,9 +8,9 @@ import {
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
-import { AppInput } from "../AppInput";
-import { AppSelect } from "../AppSelect";
-import { AppSettingsToggle } from "../AppSettingsToggle";
+import { AppInput } from "../form/AppInput";
+import { AppSelect } from "../form/AppSelect";
+import { AppSettingsToggle } from "../form/AppSettingsToggle";
 
 /**
  * The editor settings section with font size, IntelliSense, and tab actions.

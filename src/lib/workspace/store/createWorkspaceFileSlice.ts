@@ -1,25 +1,25 @@
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
-import { isLuauFileName } from "../../../lib/luau/fileType";
-import { confirmAction } from "../../../lib/platform/dialog";
+import { isLuauFileName } from "../../luau/fileType";
+import { confirmAction } from "../../platform/dialog";
 import {
     createWorkspaceFile as createWorkspaceFileCommand,
     deleteWorkspaceFile as deleteWorkspaceFileCommand,
     importWorkspaceFile as importWorkspaceFileCommand,
     renameWorkspaceFile as renameWorkspaceFileCommand,
-} from "../../../lib/platform/workspace";
-import { buildDuplicateWorkspaceTabDraft } from "../../../lib/workspace/duplicate";
+} from "../../platform/workspace";
+import { buildDuplicateWorkspaceTabDraft } from "../duplicate";
 import {
     buildWorkspaceFileName,
     clampWorkspaceTabBaseName,
     isWorkspaceTabBaseNameTooLong,
     splitWorkspaceFileName,
-} from "../../../lib/workspace/fileName";
+} from "../fileName";
 import {
     getNextActiveTabId,
     removedTabFromSplitView,
     updateWorkspaceTab,
     upsertWorkspaceTab,
-} from "../../../lib/workspace/session";
+} from "../session/session";
 import { createWorkspaceStoreSupport } from "./createWorkspaceStoreSupport";
 import type {
     WorkspaceFileSlice,

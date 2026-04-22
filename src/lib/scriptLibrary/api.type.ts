@@ -1,4 +1,4 @@
-import type { ScriptLibraryEntry } from "../../lib/scriptLibrary/scriptLibrary.type";
+import type { ScriptLibraryEntry } from "./scriptLibrary.type";
 
 export type ScriptLibraryPage = {
     scripts: ScriptLibraryEntry[];

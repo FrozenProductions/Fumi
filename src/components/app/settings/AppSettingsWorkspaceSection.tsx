@@ -12,14 +12,14 @@ import {
 } from "../../../constants/workspace/archive";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
-import { useWorkspaceSession } from "../../../hooks/workspace/useWorkspaceSession";
+import { useWorkspaceSession } from "../../../hooks/workspace/session/useWorkspaceSession";
 import {
     createArchivedTabsDateFormatter,
     filterAndSortArchivedTabs,
 } from "../../../lib/workspace/archive";
 import type { ArchivedTabsSortOption } from "../../../lib/workspace/workspace.type";
-import { AppIcon } from "../AppIcon";
-import { AppSelect } from "../AppSelect";
+import { AppIcon } from "../common/AppIcon";
+import { AppSelect } from "../form/AppSelect";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 import type { ArchivedTabActionButtonClassNames } from "./workspace/appSettingsWorkspace.type";

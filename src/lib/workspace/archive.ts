@@ -1,7 +1,7 @@
 import type {
     ArchivedTabsSortOption,
     WorkspaceTabState,
-} from "../../lib/workspace/workspace.type";
+} from "./workspace.type";
 
 export function filterAndSortArchivedTabs(
     archivedTabs: readonly WorkspaceTabState[],

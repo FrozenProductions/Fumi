@@ -14,7 +14,7 @@ import type {
 } from "../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import { useAppStore } from "../app/useAppStore";
 import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
-import { useWorkspaceEditorSearch } from "./useWorkspaceEditorSearch";
+import { useWorkspaceEditorSearch } from "./editorSearch/useWorkspaceEditorSearch";
 
 type StoredAceSessionState = {
     content: string;

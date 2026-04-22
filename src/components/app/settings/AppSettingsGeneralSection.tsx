@@ -17,19 +17,19 @@ import {
     APP_ZOOM_STEP,
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import { useAppZoom } from "../../../hooks/app/useAppZoom";
+import { useAppZoom } from "../../../hooks/app/zoom/useAppZoom";
 import type { AppUpdaterStatus } from "../../../lib/app/app.type";
 import {
     getAppUpdaterPhrase,
     shouldRefreshAppUpdaterPhrase,
-} from "../../../lib/app/updatePhrases";
-import { getAppUpdateProgressSummary } from "../../../lib/app/updaterPresentation";
+} from "../../../lib/app/updater/updatePhrases";
+import { getAppUpdateProgressSummary } from "../../../lib/app/updater/updaterPresentation";
 import { openExternalUrl } from "../../../lib/platform/opener";
-import { AppAnimatedText } from "../AppAnimatedText";
-import { AppIcon } from "../AppIcon";
-import { AppInput } from "../AppInput";
-import { AppSelect } from "../AppSelect";
-import { AppSettingsToggle } from "../AppSettingsToggle";
+import { AppAnimatedText } from "../common/AppAnimatedText";
+import { AppIcon } from "../common/AppIcon";
+import { AppInput } from "../form/AppInput";
+import { AppSelect } from "../form/AppSelect";
+import { AppSettingsToggle } from "../form/AppSettingsToggle";
 import type { AppSettingsGeneralSectionProps } from "./appSettings.type";
 
 /**

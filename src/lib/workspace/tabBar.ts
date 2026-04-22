@@ -1,4 +1,4 @@
-import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
+import type { WorkspaceSession } from "./workspace.type";
 
 export function reorderTabPreview(
     tabs: WorkspaceSession["tabs"],

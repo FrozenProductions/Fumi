@@ -3,7 +3,7 @@ import type {
     MouseEvent as ReactMouseEvent,
     RefObject,
 } from "react";
-import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/useWorkspaceTabRename.type";
+import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/tabBar/useWorkspaceTabRename.type";
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type {
     WorkspacePaneId,

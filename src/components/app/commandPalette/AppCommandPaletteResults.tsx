@@ -9,7 +9,7 @@ import {
     WORKSPACE_MENU_RADIUS_REM,
 } from "../../../constants/workspace/workspace";
 import { joinClassNames } from "../../../lib/shared/className";
-import { AppIcon } from "../AppIcon";
+import { AppIcon } from "../common/AppIcon";
 import type { AppCommandPaletteResultsProps } from "./appCommandPalette.type";
 
 /**

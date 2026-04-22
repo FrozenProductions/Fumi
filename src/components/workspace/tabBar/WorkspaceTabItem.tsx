@@ -4,11 +4,11 @@ import type { ReactElement, MouseEvent as ReactMouseEvent } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys";
+import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
 import { joinClassNames } from "../../../lib/shared/className";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
-import { AppIcon } from "../../app/AppIcon";
-import { AppTooltip } from "../../app/AppTooltip";
+import { AppIcon } from "../../app/common/AppIcon";
+import { AppTooltip } from "../../app/tooltip/AppTooltip";
 import type { WorkspaceTabItemProps } from "./workspaceTabBar.type";
 
 /**

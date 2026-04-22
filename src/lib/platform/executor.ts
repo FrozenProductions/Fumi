@@ -6,12 +6,12 @@ import {
     DEFAULT_EXECUTOR_PORT,
     getExecutorPorts,
 } from "../../constants/workspace/executor";
+import { getUnknownCauseMessage } from "../shared/errorMessage";
+import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
 import type {
     ExecutorPortSummary,
     ExecutorStatusPayload,
-} from "../../lib/workspace/workspace.type";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
+} from "../workspace/workspace.type";
 import { ExecutorCommandError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 

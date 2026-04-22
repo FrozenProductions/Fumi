@@ -1,15 +1,15 @@
-import { openWorkspace as openWorkspaceCommand } from "../../../lib/platform/workspace";
+import { openWorkspace as openWorkspaceCommand } from "../../platform/workspace";
 import {
     persistRecentWorkspacePaths,
     updateRecentWorkspacePaths,
-} from "../../../lib/workspace/persistence";
+} from "../persistence";
 import {
     buildWorkspaceSession,
     clampCursorToContent,
     getWorkspaceDirtyTabCount,
     serializeTabState,
-} from "../../../lib/workspace/session";
-import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
+} from "../session/session";
+import type { WorkspaceSession } from "../workspace.type";
 import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,

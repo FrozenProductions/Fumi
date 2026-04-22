@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
-import { useAppGlobalHotkeyCapture } from "../../hooks/app/useAppGlobalHotkeyCapture";
-import { useAppScopedHotkeys } from "../../hooks/app/useAppScopedHotkeys";
+import { useAppGlobalHotkeyCapture } from "../../hooks/app/hotkeys/useAppGlobalHotkeyCapture";
+import { useAppScopedHotkeys } from "../../hooks/app/hotkeys/useAppScopedHotkeys";
+import { useResolvedAppHotkeyBindings } from "../../hooks/app/hotkeys/useResolvedAppHotkeyBindings";
 import { useAppStore } from "../../hooks/app/useAppStore";
-import { useResolvedAppHotkeyBindings } from "../../hooks/app/useResolvedAppHotkeyBindings";
-import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
+import { useWorkspaceSession } from "../../hooks/workspace/session/useWorkspaceSession";
 import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
 
 /**

@@ -1,5 +1,5 @@
-import { pickDirectory } from "../../../lib/platform/dialog";
-import { getErrorMessage } from "../../../lib/shared/errorMessage";
+import { pickDirectory } from "../../platform/dialog";
+import { getErrorMessage } from "../../shared/errorMessage";
 import { shouldProceedWithWorkspaceSwitch } from "./helpers";
 import {
     openResolvedWorkspacePath,

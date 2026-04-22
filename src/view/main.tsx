@@ -2,7 +2,7 @@ import type { HotkeysProviderOptions } from "@tanstack/react-hotkeys";
 import { HotkeysProvider } from "@tanstack/react-hotkeys";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { AppTooltipHost } from "../components/app/AppTooltipHost";
+import { AppTooltipHost } from "../components/app/tooltip/AppTooltipHost";
 import { normalizeStartupError, renderStartupError } from "../lib/app/startup";
 import { isTauriEnvironment } from "../lib/platform/runtime";
 import { initializeWindowShell } from "../lib/platform/window";

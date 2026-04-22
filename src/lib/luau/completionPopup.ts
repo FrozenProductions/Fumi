@@ -6,12 +6,12 @@ import {
     COMPLETION_POPUP_NORMAL_WIDTH,
     COMPLETION_POPUP_SMALL_WIDTH,
     COMPLETION_POPUP_VIEWPORT_PADDING,
-} from "../../constants/luau/luau";
+} from "../../constants/luau/core/luau";
+import type { AppIntellisenseWidth } from "../app/app.type";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,
-} from "../../lib/luau/luau.type";
-import type { AppIntellisenseWidth } from "../app/app.type";
+} from "./luau.type";
 
 let completionMeasurementContext: CanvasRenderingContext2D | null = null;
 

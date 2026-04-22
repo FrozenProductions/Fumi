@@ -1,4 +1,4 @@
-import { setWorkspaceUnsavedChanges } from "../../../lib/platform/workspace";
+import { setWorkspaceUnsavedChanges } from "../../platform/workspace";
 import { selectWorkspaceShouldGuardExit } from "./selectors";
 import type { WorkspaceStore } from "./workspaceStore.type";
 

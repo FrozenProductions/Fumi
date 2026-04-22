@@ -3,9 +3,9 @@ import {
     openWorkspaceTabInPaneState,
     reorderWorkspaceTabs,
     selectWorkspaceTabState,
-} from "../../../lib/workspace/session";
-import { normalizeWorkspaceSplitRatio } from "../../../lib/workspace/splitView";
-import type { WorkspacePaneId } from "../../../lib/workspace/workspace.type";
+} from "../session/session";
+import { normalizeWorkspaceSplitRatio } from "../splitView";
+import type { WorkspacePaneId } from "../workspace.type";
 import { createWorkspaceStoreSupport } from "./createWorkspaceStoreSupport";
 import type {
     WorkspaceLayoutSlice,

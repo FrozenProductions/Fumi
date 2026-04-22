@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { AppAnimatedText } from "../../AppAnimatedText";
+import { AppAnimatedText } from "../../common/AppAnimatedText";
 import type { AppSettingsHotkeyFieldProps } from "./appSettingsHotkeys.type";
 
 export function AppSettingsHotkeyField({

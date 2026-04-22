@@ -1,14 +1,5 @@
-import { ACTORS_GLOBAL_FUNCTION_NAMES } from "../../constants/luau/actorsCompletions";
-import { LUAU_MODE_IDENTIFIER } from "../../constants/luau/luau";
-import {
-    RAKNET_NAMESPACE_FUNCTION_NAMES,
-    RAKNET_NAMESPACE_NAMES,
-} from "../../constants/luau/raknetCompletions";
-import {
-    SUNC_GLOBAL_FUNCTION_NAMES,
-    SUNC_NAMESPACE_FUNCTION_NAMES,
-    SUNC_NAMESPACE_NAMES,
-} from "../../constants/luau/suncCompletions";
+import { ACTORS_GLOBAL_FUNCTION_NAMES } from "../../constants/luau/actors/actorsCompletions";
+import { LUAU_MODE_IDENTIFIER } from "../../constants/luau/core/luau";
 import {
     LUAU_BUILTIN_CONSTANTS,
     LUAU_BUILTIN_TYPES,
@@ -17,11 +8,20 @@ import {
     LUAU_GLOBAL_FUNCTION_NAMES,
     LUAU_LIBRARY_NAMES,
     LUAU_ROBLOX_NAMESPACE_NAMES,
-} from "../../constants/luau/syntax";
+} from "../../constants/luau/core/syntax";
+import {
+    RAKNET_NAMESPACE_FUNCTION_NAMES,
+    RAKNET_NAMESPACE_NAMES,
+} from "../../constants/luau/raknet/raknetCompletions";
+import {
+    SUNC_GLOBAL_FUNCTION_NAMES,
+    SUNC_NAMESPACE_FUNCTION_NAMES,
+    SUNC_NAMESPACE_NAMES,
+} from "../../constants/luau/sunc/suncCompletions";
 import {
     UNC_GLOBAL_FUNCTION_NAMES,
     UNC_NAMESPACE_NAMES,
-} from "../../constants/luau/uncCompletions";
+} from "../../constants/luau/unc/uncCompletions";
 import type {
     AceEditorRuntime,
     LuauModePrototype,

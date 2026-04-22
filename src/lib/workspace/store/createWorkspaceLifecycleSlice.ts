@@ -1,6 +1,6 @@
-import { persistWorkspaceState as persistWorkspaceStateCommand } from "../../../lib/platform/workspace";
-import { getErrorMessage } from "../../../lib/shared/errorMessage";
-import type { WorkspaceSession } from "../../../lib/workspace/workspace.type";
+import { persistWorkspaceState as persistWorkspaceStateCommand } from "../../platform/workspace";
+import { getErrorMessage } from "../../shared/errorMessage";
+import type { WorkspaceSession } from "../workspace.type";
 import { isMatchingWorkspacePath } from "./helpers";
 import { createBootstrapWorkspaceSessionAction } from "./workspaceLifecycleBootstrap";
 import {

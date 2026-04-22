@@ -3,8 +3,8 @@ import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
 import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
-import { getReactAceComponent } from "../../lib/workspace/editor";
-import type { AceEditorComponent } from "../../lib/workspace/editor.type";
+import { getReactAceComponent } from "../../lib/workspace/editor/editor";
+import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
 import type { WorkspaceExecutionHistoryEntry } from "../../lib/workspace/workspace.type";
 
 type UseWorkspaceExecutionHistoryPreviewOptions = {

@@ -1,7 +1,7 @@
 import type {
     WorkspaceEditorSearchMatchState,
     WorkspaceEditorSearchState,
-} from "../../lib/workspace/editorSearch.type";
+} from "../../lib/workspace/editor/editorSearch.type";
 
 export const DEFAULT_WORKSPACE_EDITOR_SEARCH_STATE: WorkspaceEditorSearchState =
     {

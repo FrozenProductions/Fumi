@@ -8,15 +8,15 @@ import {
     TAB_BAR_SENSORS,
 } from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
+import { useWorkspaceTabDragDrop } from "../../hooks/workspace/tabBar/useWorkspaceTabDragDrop";
+import { useWorkspaceTabRename } from "../../hooks/workspace/tabBar/useWorkspaceTabRename";
 import { useWorkspaceRobloxControls } from "../../hooks/workspace/useWorkspaceRobloxControls";
 import { useWorkspaceScreenHotkeys } from "../../hooks/workspace/useWorkspaceScreenHotkeys";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
-import { useWorkspaceTabDragDrop } from "../../hooks/workspace/useWorkspaceTabDragDrop";
-import { useWorkspaceTabRename } from "../../hooks/workspace/useWorkspaceTabRename";
-import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
-import { WorkspaceEditorRegion } from "./WorkspaceEditorRegion";
-import { WorkspaceExecutionHistoryModal } from "./WorkspaceExecutionHistoryModal";
-import { WorkspaceMessageState } from "./WorkspaceMessageState";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys/hotkeys";
+import { WorkspaceEditorRegion } from "./editor/WorkspaceEditorRegion";
+import { WorkspaceExecutionHistoryModal } from "./executionHistory/WorkspaceExecutionHistoryModal";
+import { WorkspaceMessageState } from "./feedback/WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
 import type {
     WorkspaceActionsButtonProps,

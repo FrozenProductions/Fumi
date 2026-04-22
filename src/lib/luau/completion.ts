@@ -1,41 +1,38 @@
-import { ACTORS_TOP_LEVEL_COMPLETIONS } from "../../constants/luau/actorsCompletions";
+import { ACTORS_TOP_LEVEL_COMPLETIONS } from "../../constants/luau/actors/actorsCompletions";
 import {
     LUAU_KEYWORD_DOCS,
     LUAU_TYPE_DOCS,
     MAX_LUAU_COMPLETION_ITEMS,
-} from "../../constants/luau/luau";
+} from "../../constants/luau/core/luau";
 import {
     LUAU_NAMESPACE_COMPLETIONS,
     LUAU_TOP_LEVEL_COMPLETIONS,
-} from "../../constants/luau/luauCompletions";
-import {
-    RAKNET_NAMESPACE_COMPLETIONS,
-    RAKNET_TOP_LEVEL_COMPLETIONS,
-} from "../../constants/luau/raknetCompletions";
-import {
-    ROBLOX_NAMESPACE_COMPLETIONS,
-    ROBLOX_TOP_LEVEL_COMPLETIONS,
-} from "../../constants/luau/robloxCompletions";
-import {
-    SUNC_NAMESPACE_COMPLETIONS,
-    SUNC_TOP_LEVEL_COMPLETIONS,
-} from "../../constants/luau/suncCompletions";
+} from "../../constants/luau/core/luauCompletions";
 import {
     LUAU_BUILTIN_CONSTANTS,
     LUAU_BUILTIN_TYPES,
     LUAU_COMPLETION_KEYWORDS,
-} from "../../constants/luau/syntax";
+} from "../../constants/luau/core/syntax";
+import {
+    RAKNET_NAMESPACE_COMPLETIONS,
+    RAKNET_TOP_LEVEL_COMPLETIONS,
+} from "../../constants/luau/raknet/raknetCompletions";
+import {
+    ROBLOX_NAMESPACE_COMPLETIONS,
+    ROBLOX_TOP_LEVEL_COMPLETIONS,
+} from "../../constants/luau/roblox/robloxCompletions";
+import {
+    SUNC_NAMESPACE_COMPLETIONS,
+    SUNC_TOP_LEVEL_COMPLETIONS,
+} from "../../constants/luau/sunc/suncCompletions";
 import {
     UNC_NAMESPACE_COMPLETIONS,
     UNC_TOP_LEVEL_COMPLETIONS,
-} from "../../constants/luau/uncCompletions";
-import type { AppIntellisensePriority } from "../../lib/app/app.type";
-import type {
-    LuauCompletionItem,
-    LuauFileSymbol,
-} from "../../lib/luau/luau.type";
-import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
+} from "../../constants/luau/unc/uncCompletions";
+import type { AppIntellisensePriority } from "../app/app.type";
 import type { LuauCompletionQuery } from "./completion.type";
+import type { LuauCompletionItem, LuauFileSymbol } from "./luau.type";
+import type { LuauFileAnalysis } from "./symbolScanner.type";
 
 export function shouldSuppressLuauCompletionForTokenType(
     tokenType: string | undefined,

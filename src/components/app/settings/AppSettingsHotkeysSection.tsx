@@ -8,7 +8,7 @@ import {
     findAppHotkeyConflict,
     getAppHotkeyDefinition,
     getAppHotkeyGroups,
-} from "../../../lib/app/hotkeys";
+} from "../../../lib/app/hotkeys/hotkeys";
 import { AppSettingsHotkeyField } from "./hotkeys/AppSettingsHotkeyField";
 
 /**

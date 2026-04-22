@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { WORKSPACE_UNAVAILABLE_ERROR_MESSAGE } from "../../../constants/workspace/workspace";
-import type {
-    WorkspaceSession,
-    WorkspaceSnapshot,
-} from "../../../lib/workspace/workspace.type";
+import type { WorkspaceSession, WorkspaceSnapshot } from "../workspace.type";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
 const mocks = vi.hoisted(() => ({
@@ -14,17 +11,17 @@ const mocks = vi.hoisted(() => ({
     shouldProceedWithWorkspaceSwitch: vi.fn(),
 }));
 
-vi.mock("../../../lib/platform/workspace", () => ({
+vi.mock("../../platform/workspace", () => ({
     bootstrapWorkspace: vi.fn(),
     openWorkspace: mocks.openWorkspace,
     persistWorkspaceState: mocks.persistWorkspaceState,
     refreshWorkspace: mocks.refreshWorkspace,
 }));
 
-vi.mock("../../../lib/workspace/persistence", async () => {
-    const actual = await vi.importActual<
-        typeof import("../../../lib/workspace/persistence")
-    >("../../../lib/workspace/persistence");
+vi.mock("../persistence", async () => {
+    const actual = await vi.importActual<typeof import("../persistence")>(
+        "../../../lib/workspace/persistence",
+    );
 
     return {
         ...actual,

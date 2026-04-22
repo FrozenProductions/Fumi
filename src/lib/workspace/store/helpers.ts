@@ -1,9 +1,6 @@
-import { confirmAction } from "../../../lib/platform/dialog";
-import { hasWorkspaceDraftChanges } from "../../../lib/workspace/session";
-import type {
-    WorkspaceSession,
-    WorkspaceTab,
-} from "../../../lib/workspace/workspace.type";
+import { confirmAction } from "../../platform/dialog";
+import { hasWorkspaceDraftChanges } from "../session/session";
+import type { WorkspaceSession, WorkspaceTab } from "../workspace.type";
 
 export function isMatchingWorkspacePath(
     workspace: WorkspaceSession | null,

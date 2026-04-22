@@ -1,9 +1,9 @@
 import { CommandIcon, FolderOpenIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys";
-import { AppCommandPaletteScopeButton } from "../AppCommandPaletteScopeButton";
-import { AppSearchField } from "../AppSearchField";
+import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
+import { AppSearchField } from "../form/AppSearchField";
+import { AppCommandPaletteScopeButton } from "./AppCommandPaletteScopeButton";
 import type { AppCommandPaletteInputRowProps } from "./appCommandPalette.type";
 
 /**

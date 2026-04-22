@@ -1,0 +1,100 @@
+import type { ReactElement } from "react";
+import {
+    APP_COMMAND_PALETTE_SCOPE_LABELS,
+    APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
+} from "../../../constants/app/commandPalette";
+import { useAppCommandPalette } from "../../../hooks/app/commandPalette/useAppCommandPalette";
+import { useWorkspaceSession } from "../../../hooks/workspace/session/useWorkspaceSession";
+import { joinClassNames } from "../../../lib/shared/className";
+import type { AppCommandPaletteProps } from "../shell/appShell.type";
+import { AppCommandPaletteInputRow } from "./AppCommandPaletteInputRow";
+import { AppCommandPaletteResults } from "./AppCommandPaletteResults";
+
+/**
+ * The command palette overlay for quick actions and navigation.
+ *
+ * @param props - Component props
+ * @returns A React component or null when not visible
+ */
+export function AppCommandPalette({
+    request,
+    context,
+    actions,
+}: AppCommandPaletteProps): ReactElement | null {
+    const workspaceSession = useWorkspaceSession();
+    const { handlers, input, results, visibility } = useAppCommandPalette({
+        workspaceSession,
+        ...request,
+        ...context,
+        ...actions,
+    });
+    const { isClosing, isPresent } = visibility;
+    const { inputRef, mode, panelRef, query, scope } = input;
+    const { activeResultIndex, results: resultItems } = results;
+    const {
+        commitSelection,
+        handleBackdropMouseDown,
+        handleHoverItem,
+        handleInputChange,
+        handleInputKeyDown,
+        handleScopeSelect,
+    } = handlers;
+
+    if (!isPresent) {
+        return null;
+    }
+
+    const backdropMotionClassName = isClosing
+        ? "motion-safe:motion-opacity-out-0 motion-safe:motion-duration-140 motion-safe:motion-ease-out-cubic"
+        : "motion-safe:motion-opacity-in-0 motion-safe:motion-duration-100 motion-safe:motion-ease-out-cubic";
+    const shellMotionClassName = isClosing
+        ? "motion-safe:motion-opacity-out-0 motion-safe:-motion-translate-y-out-[12%] motion-safe:motion-scale-out-[94%] motion-safe:motion-duration-200 motion-safe:motion-ease-in-quart"
+        : "motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[12%] motion-safe:motion-scale-in-[97%] motion-safe:motion-duration-170 motion-safe:motion-ease-spring-smooth";
+    const backdropClassName = joinClassNames(
+        "absolute inset-0 z-[60] flex items-start justify-center px-4 pb-6 pt-24",
+        isClosing && "pointer-events-none",
+        backdropMotionClassName,
+    );
+    const shellClassName = joinClassNames(
+        "w-full max-w-[28rem] origin-top motion-reduce:animate-none motion-reduce:transform-none",
+        shellMotionClassName,
+    );
+
+    return (
+        <div
+            className={backdropClassName}
+            onMouseDown={handleBackdropMouseDown}
+        >
+            <div
+                ref={panelRef}
+                className={shellClassName}
+                onMouseDown={(event) => {
+                    event.stopPropagation();
+                }}
+            >
+                <div className="flex flex-col items-stretch gap-2">
+                    <AppCommandPaletteInputRow
+                        inputRef={inputRef}
+                        mode={mode}
+                        query={query}
+                        scope={scope}
+                        scopeLabels={APP_COMMAND_PALETTE_SCOPE_LABELS}
+                        scopePlaceholders={
+                            APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS
+                        }
+                        onInputChange={handleInputChange}
+                        onInputKeyDown={handleInputKeyDown}
+                        onScopeSelect={handleScopeSelect}
+                    />
+                    <AppCommandPaletteResults
+                        activeResultIndex={activeResultIndex}
+                        isClosing={isClosing}
+                        results={resultItems}
+                        onCommitSelection={commitSelection}
+                        onHoverItem={handleHoverItem}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}

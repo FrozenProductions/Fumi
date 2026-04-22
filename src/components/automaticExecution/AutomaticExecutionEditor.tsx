@@ -11,9 +11,9 @@ import {
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
 import { createMaskStyle } from "../../lib/shared/mask";
-import { getReactAceComponent } from "../../lib/workspace/editor";
-import type { AceEditorComponent } from "../../lib/workspace/editor.type";
-import { AppIcon } from "../app/AppIcon";
+import { getReactAceComponent } from "../../lib/workspace/editor/editor";
+import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
+import { AppIcon } from "../app/common/AppIcon";
 import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.type";
 
 const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);

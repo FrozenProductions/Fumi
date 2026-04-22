@@ -1,4 +1,4 @@
-import { CURRENT_FILE_DOC_SOURCE } from "../../constants/luau/luau";
+import { CURRENT_FILE_DOC_SOURCE } from "../../constants/luau/core/luau";
 import type { LuauSymbolKind } from "./luau.type";
 import type {
     LuauFileAnalysis,

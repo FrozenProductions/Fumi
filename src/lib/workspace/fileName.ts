@@ -1,5 +1,5 @@
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../constants/workspace/workspace";
-import type { WorkspaceFileNameParts } from "../../lib/workspace/workspace.type";
+import type { WorkspaceFileNameParts } from "./workspace.type";
 
 /**
  * Splits a workspace file name into base name and extension.

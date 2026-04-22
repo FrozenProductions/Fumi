@@ -2,7 +2,7 @@ import type { AppHotkeyAction } from "../../lib/app/app.type";
 import type {
     AppHotkeyDefinition,
     AppReservedHotkey,
-} from "../../lib/app/hotkeys.type";
+} from "../../lib/app/hotkeys/hotkeys.type";
 
 export const HOTKEY_KEY_CODE_MAP = {
     "`": "Backquote",

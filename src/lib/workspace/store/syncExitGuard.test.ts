@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
     setWorkspaceUnsavedChanges: vi.fn(),
 }));
 
-vi.mock("../../../lib/platform/workspace", () => ({
+vi.mock("../../platform/workspace", () => ({
     setWorkspaceUnsavedChanges: mocks.setWorkspaceUnsavedChanges,
 }));
 

@@ -2,9 +2,9 @@ import {
     WORKSPACE_TAB_DUPLICATE_PATTERN,
     WORKSPACE_TAB_DUPLICATE_SUFFIX,
 } from "../../constants/workspace/workspace";
-import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
 import type { DuplicateWorkspaceTabDraft } from "./duplicate.type";
 import { buildWorkspaceFileName, splitWorkspaceFileName } from "./fileName";
+import type { WorkspaceTab } from "./workspace.type";
 
 export function buildDuplicateWorkspaceTabDraft(
     tab: WorkspaceTab,

@@ -4,7 +4,7 @@ import type {
     WorkspaceExecutionHistoryEntry,
     WorkspacePaneId,
     WorkspaceSession,
-} from "../../../lib/workspace/workspace.type";
+} from "../workspace.type";
 
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;

@@ -1,6 +1,6 @@
 import type { HotkeysProviderOptions } from "@tanstack/react-hotkeys";
 import type { CSSProperties } from "react";
-import type { TrafficLightTone } from "../../components/app/appVisual.type";
+import type { TrafficLightTone } from "../../components/app/common/appVisual.type";
 
 export const APP_TITLE = "Fumi";
 export const APP_VERSION = __APP_VERSION__;

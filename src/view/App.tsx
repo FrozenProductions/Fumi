@@ -1,25 +1,25 @@
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { AppCommandPalette } from "../components/app/AppCommandPalette";
-import { AppDragDropOverlay } from "../components/app/AppDragDropOverlay";
-import { AppSidebar } from "../components/app/AppSidebar";
-import { AppTopbar } from "../components/app/AppTopbar";
+import { AppCommandPalette } from "../components/app/commandPalette/AppCommandPalette";
+import { AppDragDropOverlay } from "../components/app/dragDrop/AppDragDropOverlay";
+import { AppSidebar } from "../components/app/shell/AppSidebar";
+import { AppTopbar } from "../components/app/topbar/AppTopbar";
 import { APP_TITLE } from "../constants/app/app";
 import { APP_ZOOM_DEFAULT, APP_ZOOM_STEP } from "../constants/app/settings";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
-import { useAppDragDrop } from "../hooks/app/useAppDragDrop";
-import { useAppExitGuard } from "../hooks/app/useAppExitGuard";
-import { useAppShellLifecycle } from "../hooks/app/useAppShellLifecycle";
+import { useAppDragDrop } from "../hooks/app/dragDrop/useAppDragDrop";
+import { useAppExitGuard } from "../hooks/app/shell/useAppExitGuard";
+import { useAppShellLifecycle } from "../hooks/app/shell/useAppShellLifecycle";
+import { useAppUpdater } from "../hooks/app/updater/useAppUpdater";
 import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
-import { useAppUpdater } from "../hooks/app/useAppUpdater";
-import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
+import { useAppZoomSync } from "../hooks/app/zoom/useAppZoomSync";
 import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
 } from "../hooks/automaticExecution/useAutomaticExecutionStore";
+import { useWorkspaceExecutor } from "../hooks/workspace/executor/useWorkspaceExecutor";
 import { useWorkspaceDroppedFiles } from "../hooks/workspace/useWorkspaceDroppedFiles";
-import { useWorkspaceExecutor } from "../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceStore } from "../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../hooks/workspace/useWorkspaceStoreLifecycle";
 import { showsWorkspaceContext } from "../lib/app/sidebar";

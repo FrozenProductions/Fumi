@@ -2,7 +2,7 @@ import { Add01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import emptyAddIcon from "../../assets/icons/empty_add.svg";
 import { createMaskStyle } from "../../lib/shared/mask";
-import { AppIcon } from "../app/AppIcon";
+import { AppIcon } from "../app/common/AppIcon";
 import type { AccountsEmptyStateProps } from "./accountsScreen.type";
 
 const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);

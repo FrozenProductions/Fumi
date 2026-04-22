@@ -1,11 +1,11 @@
 import { SCRIPT_LIBRARY_DATE_FORMATTER } from "../../constants/scriptLibrary/scriptLibrary";
+import { clampWorkspaceTabBaseName } from "../workspace/fileName";
 import type {
     ScriptLibraryEntry,
     ScriptLibraryFavoriteEntry,
     ScriptLibraryFilters,
     ScriptLibrarySort,
-} from "../../lib/scriptLibrary/scriptLibrary.type";
-import { clampWorkspaceTabBaseName } from "../workspace/fileName";
+} from "./scriptLibrary.type";
 
 /**
  * Formats an ISO date string into a human-readable short date (e.g., "Apr 18, 2026").

@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactElement } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
-import { useWorkspaceTabBarState } from "../../hooks/workspace/useWorkspaceTabBarState";
-import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
+import { useWorkspaceTabBarState } from "../../hooks/workspace/tabBar/useWorkspaceTabBarState";
+import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys/hotkeys";
 import { joinClassNames } from "../../lib/shared/className";
 import { WorkspaceTabBarControls } from "./tabBar/WorkspaceTabBarControls";
 import { WorkspaceTabBarTabs } from "./tabBar/WorkspaceTabBarTabs";

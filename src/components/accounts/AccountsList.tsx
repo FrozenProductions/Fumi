@@ -9,7 +9,7 @@ import {
     getAccountRowDisplayName,
     getAccountRowIdentityLabel,
 } from "../../lib/accounts/accountPrivacy";
-import { AppIcon } from "../app/AppIcon";
+import { AppIcon } from "../app/common/AppIcon";
 import type { AccountsListProps } from "./accountsScreen.type";
 
 function getAccountStatusTone(

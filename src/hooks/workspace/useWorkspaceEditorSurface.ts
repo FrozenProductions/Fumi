@@ -9,7 +9,7 @@ import type {
     WorkspaceEditorOutlineProps,
     WorkspaceEditorPaneProps,
     WorkspaceEditorSplitViewProps,
-} from "../../components/workspace/workspaceEditor.type";
+} from "../../components/workspace/editor/workspaceEditor.type";
 import {
     WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
     WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
@@ -22,8 +22,8 @@ import {
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
-import { getReactAceComponent } from "../../lib/workspace/editor";
-import type { AceEditorComponent } from "../../lib/workspace/editor.type";
+import { getReactAceComponent } from "../../lib/workspace/editor/editor";
+import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
 
 type UseWorkspaceEditorSurfaceResult = {
     refs: {

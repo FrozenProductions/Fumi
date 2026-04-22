@@ -12,7 +12,7 @@ import {
 import {
     isAppHotkeyOverride,
     normalizeAppHotkeyBindings,
-} from "../../lib/app/hotkeys";
+} from "../../lib/app/hotkeys/hotkeys";
 import {
     clampAppZoomPercent,
     isAppSidebarItem,

@@ -3,7 +3,7 @@ import type {
     WorkspaceCursorState,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../../lib/workspace/workspace.type";
+} from "../workspace/workspace.type";
 import { isTauriEnvironment } from "./runtime";
 import {
     createDesktopShellRequiredError,

@@ -1,11 +1,11 @@
-import { saveWorkspaceFile as saveWorkspaceFileCommand } from "../../../lib/platform/workspace";
-import { getErrorMessage } from "../../../lib/shared/errorMessage";
+import { saveWorkspaceFile as saveWorkspaceFileCommand } from "../../platform/workspace";
+import { getErrorMessage } from "../../shared/errorMessage";
 import {
     clampCursorToContent,
     updateActiveWorkspaceTab,
     updateWorkspaceTab,
-} from "../../../lib/workspace/session";
-import type { WorkspaceCursorState } from "../../../lib/workspace/workspace.type";
+} from "../session/session";
+import type { WorkspaceCursorState } from "../workspace.type";
 import { getActiveTabFromWorkspace, isMatchingWorkspacePath } from "./helpers";
 import type {
     WorkspaceEditorSlice,

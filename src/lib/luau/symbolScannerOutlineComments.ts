@@ -1,4 +1,4 @@
-import { CURRENT_FILE_DOC_SOURCE } from "../../constants/luau/luau";
+import { CURRENT_FILE_DOC_SOURCE } from "../../constants/luau/core/luau";
 import type { PendingLuauFileSymbol, ScopeFrame } from "./symbolScanner.type";
 
 function isStandaloneComment(content: string, commentStart: number): boolean {

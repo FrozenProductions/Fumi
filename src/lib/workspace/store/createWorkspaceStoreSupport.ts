@@ -1,9 +1,6 @@
-import { getErrorMessage } from "../../../lib/shared/errorMessage";
-import { getWorkspaceDirtyTabCount } from "../../../lib/workspace/session";
-import type {
-    WorkspaceCursorState,
-    WorkspaceSession,
-} from "../../../lib/workspace/workspace.type";
+import { getErrorMessage } from "../../shared/errorMessage";
+import { getWorkspaceDirtyTabCount } from "../session/session";
+import type { WorkspaceCursorState, WorkspaceSession } from "../workspace.type";
 import { isMatchingWorkspacePath } from "./helpers";
 import type {
     WorkspaceStoreGet,

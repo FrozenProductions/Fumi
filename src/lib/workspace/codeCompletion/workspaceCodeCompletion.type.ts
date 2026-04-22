@@ -1,14 +1,11 @@
 import type {
     AppIntellisensePriority,
     AppIntellisenseWidth,
-} from "../../../lib/app/app.type";
-import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
-import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner.type";
-import type { WorkspaceEditorSearchController } from "../../../lib/workspace/editorSearch.type";
-import type {
-    WorkspaceCursorState,
-    WorkspaceTab,
-} from "../../../lib/workspace/workspace.type";
+} from "../../app/app.type";
+import type { LuauCompletionPopupState } from "../../luau/luau.type";
+import type { LuauFileAnalysis } from "../../luau/symbolScanner.type";
+import type { WorkspaceEditorSearchController } from "../editor/editorSearch.type";
+import type { WorkspaceCursorState, WorkspaceTab } from "../workspace.type";
 import type { AceChangeDelta } from "./ace.type";
 
 export type UseWorkspaceCodeCompletionOptions = {

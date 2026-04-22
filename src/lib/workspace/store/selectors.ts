@@ -1,4 +1,4 @@
-import { getActiveTabIndex } from "../../../lib/workspace/session";
+import { getActiveTabIndex } from "../session/session";
 import type {
     WorkspaceExecutionHistoryEntry,
     WorkspacePaneId,
@@ -7,7 +7,7 @@ import type {
     WorkspaceSplitView,
     WorkspaceTab,
     WorkspaceTabState,
-} from "../../../lib/workspace/workspace.type";
+} from "../workspace.type";
 import { getActiveTabFromWorkspace } from "./helpers";
 import type { WorkspaceStore } from "./workspaceStore.type";
 

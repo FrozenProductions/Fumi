@@ -1,12 +1,12 @@
 import type { ReactElement } from "react";
 import { AccountsScreen } from "../components/accounts/AccountsScreen";
-import { AppSettingsScreen } from "../components/app/AppSettingsScreen";
+import { AppSettingsScreen } from "../components/app/settings/AppSettingsScreen";
 import { AutomaticExecutionScreen } from "../components/automaticExecution/AutomaticExecutionScreen";
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
 import type { WorkspaceScreenProps } from "../components/workspace/workspaceScreen.type";
-import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater.type";
-import type { UseWorkspaceExecutorResult } from "../hooks/workspace/useWorkspaceExecutor.type";
+import type { UseAppUpdaterResult } from "../hooks/app/updater/useAppUpdater.type";
+import type { UseWorkspaceExecutorResult } from "../hooks/workspace/executor/useWorkspaceExecutor.type";
 import type { AppSidebarItem } from "../lib/app/app.type";
 
 export function getAppScreen(

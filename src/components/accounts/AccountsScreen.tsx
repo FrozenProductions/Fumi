@@ -1,15 +1,15 @@
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import { AccountsAddModal } from "../../components/accounts/AccountsAddModal";
-import { AccountsEmptyState } from "../../components/accounts/AccountsEmptyState";
-import { AccountsErrorBanner } from "../../components/accounts/AccountsErrorBanner";
-import { AccountsList } from "../../components/accounts/AccountsList";
 import { useAccountReveal } from "../../hooks/accounts/useAccountReveal";
 import { useAccounts } from "../../hooks/accounts/useAccounts";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import type { AccountSummary } from "../../lib/accounts/accounts.type";
 import { confirmAction } from "../../lib/platform/dialog";
-import { AppIcon } from "../app/AppIcon";
+import { AppIcon } from "../app/common/AppIcon";
+import { AccountsAddModal } from "./AccountsAddModal";
+import { AccountsEmptyState } from "./AccountsEmptyState";
+import { AccountsErrorBanner } from "./AccountsErrorBanner";
+import { AccountsList } from "./AccountsList";
 
 /**
  * The accounts screen for managing saved Roblox accounts.

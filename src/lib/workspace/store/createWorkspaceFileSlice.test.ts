@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
     renameWorkspaceFile: vi.fn(),
 }));
 
-vi.mock("../../../lib/platform/dialog", () => ({
+vi.mock("../../platform/dialog", () => ({
     confirmAction: mocks.confirmAction,
 }));
 
-vi.mock("../../../lib/platform/workspace", () => ({
+vi.mock("../../platform/workspace", () => ({
     createWorkspaceFile: mocks.createWorkspaceFile,
     deleteWorkspaceFile: mocks.deleteWorkspaceFile,
     importWorkspaceFile: mocks.importWorkspaceFile,

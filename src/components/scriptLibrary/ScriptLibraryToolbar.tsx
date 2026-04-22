@@ -11,9 +11,9 @@ import {
     SCRIPT_LIBRARY_FILTER_BUTTONS,
     SCRIPT_LIBRARY_SORT_OPTIONS,
 } from "../../constants/scriptLibrary/scriptLibrary";
-import { AppIcon } from "../app/AppIcon";
-import { AppSelect } from "../app/AppSelect";
-import { AppTooltip } from "../app/AppTooltip";
+import { AppIcon } from "../app/common/AppIcon";
+import { AppSelect } from "../app/form/AppSelect";
+import { AppTooltip } from "../app/tooltip/AppTooltip";
 import type { ScriptLibraryToolbarProps } from "./scriptLibrary.type";
 
 /**

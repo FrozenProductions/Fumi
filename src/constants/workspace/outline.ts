@@ -1,4 +1,4 @@
-import type { WorkspaceOutlineSearchFieldName } from "../../lib/workspace/outlineSearch.type";
+import type { WorkspaceOutlineSearchFieldName } from "../../lib/workspace/outline/outlineSearch.type";
 
 export const WORKSPACE_OUTLINE_CACHE_MAX_ENTRIES = 6;
 export const WORKSPACE_OUTLINE_SCAN_IDLE_TIMEOUT_MS = 200;

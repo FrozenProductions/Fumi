@@ -1,4 +1,4 @@
-import type { AppTheme } from "../../lib/app/app.type";
+import type { AppTheme } from "../app/app.type";
 
 export type AceModeInstance = {
     $id?: string;

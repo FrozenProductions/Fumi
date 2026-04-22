@@ -6,13 +6,13 @@ import {
     it,
     vi,
 } from "vite-plus/test";
-import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import {
     getWorkspacePersistSignature,
     persistRecentWorkspacePaths,
     readRecentWorkspacePaths,
     updateRecentWorkspacePaths,
 } from "./persistence";
+import type { WorkspaceSession } from "./workspace.type";
 
 const RECENT_WORKSPACE_STORAGE_KEY = "fumi-recent-workspaces";
 

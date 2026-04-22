@@ -2,10 +2,10 @@ import {
     MAX_RECENT_WORKSPACES,
     RECENT_WORKSPACE_STORAGE_KEY,
 } from "../../constants/workspace/workspace";
-import type { WorkspaceSession } from "../../lib/workspace/workspace.type";
 import { isString } from "../shared/validation";
 import { PersistenceError } from "./errors";
-import { serializeTabState } from "./session";
+import { serializeTabState } from "./session/session";
+import type { WorkspaceSession } from "./workspace.type";
 
 let lastPersistedWorkspaceSignature: string | null = null;
 

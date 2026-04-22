@@ -1,14 +1,14 @@
-import { isTauriEnvironment } from "../../../lib/platform/runtime";
-import { bootstrapWorkspace } from "../../../lib/platform/workspace";
-import { getErrorMessage } from "../../../lib/shared/errorMessage";
+import { isTauriEnvironment } from "../../platform/runtime";
+import { bootstrapWorkspace } from "../../platform/workspace";
+import { getErrorMessage } from "../../shared/errorMessage";
 import {
     persistRecentWorkspacePaths,
     updateRecentWorkspacePaths,
-} from "../../../lib/workspace/persistence";
+} from "../persistence";
 import {
     buildWorkspaceSession,
     getWorkspaceDirtyTabCount,
-} from "../../../lib/workspace/session";
+} from "../session/session";
 import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport";
 import type {
     WorkspaceStoreGet,
