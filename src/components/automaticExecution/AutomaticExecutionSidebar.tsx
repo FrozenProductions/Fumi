@@ -14,6 +14,7 @@ import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import { MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH } from "../../constants/automaticExecution/automaticExecution";
 import { clampAutomaticExecutionText } from "../../lib/automaticExecution/automaticExecution";
 import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
+import { joinClassNames } from "../../lib/shared/className";
 import {
     buildWorkspaceFileName,
     splitWorkspaceFileName,
@@ -347,12 +348,12 @@ export function AutomaticExecutionSidebar({
                                             </div>
                                             <span
                                                 aria-hidden="true"
-                                                className={[
+                                                className={joinClassNames(
                                                     "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
                                                     isDirty
                                                         ? "ml-1 max-w-2 translate-y-0 opacity-100"
                                                         : "ml-0 max-w-0 translate-y-1 opacity-0",
-                                                ].join(" ")}
+                                                )}
                                             >
                                                 <span className="size-2 rounded-full bg-amber-500" />
                                             </span>
@@ -378,12 +379,12 @@ export function AutomaticExecutionSidebar({
                                             </p>
                                             <span
                                                 aria-hidden="true"
-                                                className={[
+                                                className={joinClassNames(
                                                     "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
                                                     isDirty
                                                         ? "ml-1 max-w-2 translate-y-0 opacity-100"
                                                         : "ml-0 max-w-0 translate-y-1 opacity-0",
-                                                ].join(" ")}
+                                                )}
                                             >
                                                 <span className="size-2 rounded-full bg-amber-500" />
                                             </span>

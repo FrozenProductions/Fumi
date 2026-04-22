@@ -104,6 +104,9 @@ export function AppSettingsGeneralSection({
               ? `${updaterButtonBaseClassName} border border-fumi-300 bg-fumi-100 text-fumi-800 shadow-[0_1px_2px_rgb(0_0_0_/_0.18)] hover:border-fumi-400 hover:bg-fumi-200 hover:text-fumi-900`
               : `${updaterButtonBaseClassName} border border-fumi-200 bg-fumi-100 text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900`;
     const restartButtonClassName = `${updaterButtonBaseClassName} border border-fumi-700 bg-fumi-900 text-fumi-50 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08),0_1px_2px_rgb(15_23_42_/_0.12)] hover:border-fumi-800 hover:bg-fumi-800`;
+    const downloadProgressBarStyle = {
+        width: `${displayedDownloadProgress?.progressPercent ?? 10}%`,
+    };
 
     const handleZoomPercentChange = (value: string): void => {
         void setZoomPercent(Number(value));
@@ -245,9 +248,7 @@ export function AppSettingsGeneralSection({
                                         <div className="h-1.5 overflow-hidden rounded-full bg-fumi-200">
                                             <div
                                                 className="h-full rounded-full bg-fumi-700 transition-[width] duration-200 ease-out"
-                                                style={{
-                                                    width: `${displayedDownloadProgress?.progressPercent ?? 10}%`,
-                                                }}
+                                                style={downloadProgressBarStyle}
                                             />
                                         </div>
                                     </div>

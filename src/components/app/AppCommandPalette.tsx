@@ -5,6 +5,7 @@ import {
 } from "../../constants/app/commandPalette";
 import { useAppCommandPalette } from "../../hooks/app/useAppCommandPalette";
 import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
+import { joinClassNames } from "../../lib/shared/className";
 import type { AppCommandPaletteProps } from "./appShell.type";
 import { AppCommandPaletteInputRow } from "./commandPalette/AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./commandPalette/AppCommandPaletteResults";
@@ -49,22 +50,24 @@ export function AppCommandPalette({
     const shellMotionClassName = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:-motion-translate-y-out-[12%] motion-safe:motion-scale-out-[94%] motion-safe:motion-duration-200 motion-safe:motion-ease-in-quart"
         : "motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[12%] motion-safe:motion-scale-in-[97%] motion-safe:motion-duration-170 motion-safe:motion-ease-spring-smooth";
+    const backdropClassName = joinClassNames(
+        "absolute inset-0 z-[60] flex items-start justify-center px-4 pb-6 pt-24",
+        isClosing && "pointer-events-none",
+        backdropMotionClassName,
+    );
+    const shellClassName = joinClassNames(
+        "w-full max-w-[28rem] origin-top motion-reduce:animate-none motion-reduce:transform-none",
+        shellMotionClassName,
+    );
 
     return (
         <div
-            className={[
-                "absolute inset-0 z-[60] flex items-start justify-center px-4 pb-6 pt-24",
-                isClosing ? "pointer-events-none" : "",
-                backdropMotionClassName,
-            ].join(" ")}
+            className={backdropClassName}
             onMouseDown={handleBackdropMouseDown}
         >
             <div
                 ref={panelRef}
-                className={[
-                    "w-full max-w-[28rem] origin-top motion-reduce:animate-none motion-reduce:transform-none",
-                    shellMotionClassName,
-                ].join(" ")}
+                className={shellClassName}
                 onMouseDown={(event) => {
                     event.stopPropagation();
                 }}

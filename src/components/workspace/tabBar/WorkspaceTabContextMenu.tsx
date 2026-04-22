@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
+import { joinClassNames } from "../../../lib/shared/className";
 import type { WorkspaceTabContextMenuProps } from "./workspaceTabBar.type";
 
 /**
@@ -93,16 +94,17 @@ export function WorkspaceTabContextMenu({
         theme === "dark"
             ? "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-200 transition-colors hover:bg-rose-950/70 hover:text-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
             : "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
+    const menuClassName = joinClassNames(
+        "absolute z-50 min-w-[132px] origin-top-left overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
+        isClosing && "pointer-events-none",
+        dropdownMotionClassName,
+    );
 
     return (
         <div
             ref={menuRef}
             style={style}
-            className={[
-                "absolute z-50 min-w-[132px] origin-top-left overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
-                isClosing ? "pointer-events-none" : "",
-                dropdownMotionClassName,
-            ].join(" ")}
+            className={menuClassName}
             data-tab-context-menu
             role="menu"
             aria-label="Tab actions"

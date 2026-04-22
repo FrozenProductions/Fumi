@@ -15,6 +15,7 @@ import { TAB_BAR_SORTABLE_GROUP } from "../../constants/workspace/workspace";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceUiStore } from "../../hooks/workspace/useWorkspaceUiStore";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys";
+import { joinClassNames } from "../../lib/shared/className";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
@@ -103,6 +104,25 @@ export function WorkspaceTabBar({
         left: `${splitRatio * 100}%`,
     } satisfies CSSProperties;
     const controlsClearanceClass = isSplit ? "pr-32" : "pr-24";
+    const splitDividerClassName = joinClassNames(
+        "pointer-events-none absolute bottom-0 top-0 z-10 w-px -translate-x-1/2 transition-colors duration-150",
+        splitDropTarget === "secondary" ? "bg-fumi-400/60" : "bg-fumi-200",
+    );
+    const secondaryTabsClassName = joinClassNames(
+        "min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        controlsClearanceClass,
+        splitDropTarget === "secondary" && "bg-fumi-200/40",
+    );
+    const singlePaneTabsClassName = joinClassNames(
+        "min-w-0 flex items-center gap-2 px-2 py-1.5 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        controlsClearanceClass,
+    );
+    const tabListButtonClassName = joinClassNames(
+        "app-select-none inline-flex size-7 items-center justify-center rounded-md border text-fumi-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+        isTabListOpen
+            ? "border-fumi-300 bg-fumi-50 text-fumi-600"
+            : "border-fumi-200 bg-fumi-50 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600",
+    );
     const previewTabsById = new Map(
         previewTabs.map((tab) => [tab.id, tab] as const),
     );
@@ -350,23 +370,12 @@ export function WorkspaceTabBar({
 
                             <div
                                 style={dividerStyle}
-                                className={[
-                                    "pointer-events-none absolute bottom-0 top-0 z-10 w-px -translate-x-1/2 transition-colors duration-150",
-                                    splitDropTarget === "secondary"
-                                        ? "bg-fumi-400/60"
-                                        : "bg-fumi-200",
-                                ].join(" ")}
+                                className={splitDividerClassName}
                             />
 
                             <div
                                 style={secondarySectionStyle}
-                                className={[
-                                    "min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-                                    controlsClearanceClass,
-                                    splitDropTarget === "secondary"
-                                        ? "bg-fumi-200/40"
-                                        : "",
-                                ].join(" ")}
+                                className={secondaryTabsClassName}
                             >
                                 {secondaryTabs.map((tab, secIndex) => {
                                     const item = {
@@ -400,12 +409,7 @@ export function WorkspaceTabBar({
                             </div>
                         </div>
                     ) : (
-                        <div
-                            className={[
-                                "min-w-0 flex items-center gap-2 px-2 py-1.5 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-                                controlsClearanceClass,
-                            ].join(" ")}
-                        >
+                        <div className={singlePaneTabsClassName}>
                             {primaryTabs.map((tab, index) => {
                                 const item = {
                                     index,
@@ -488,12 +492,7 @@ export function WorkspaceTabBar({
                         }}
                         aria-expanded={isTabListOpen}
                         aria-haspopup="menu"
-                        className={[
-                            "app-select-none inline-flex size-7 items-center justify-center rounded-md border text-fumi-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
-                            isTabListOpen
-                                ? "border-fumi-300 bg-fumi-50 text-fumi-600"
-                                : "border-fumi-200 bg-fumi-50 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600",
-                        ].join(" ")}
+                        className={tabListButtonClassName}
                     >
                         <AppIcon
                             icon={Menu02Icon}

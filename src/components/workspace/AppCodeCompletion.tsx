@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import { getCompactLuauCompletionDetailLabel } from "../../lib/luau/completionPopup";
 import type { AppCodeCompletionProps } from "./workspaceEditor.type";
 
@@ -26,19 +26,24 @@ export function AppCodeCompletion({
         return null;
     }
 
+    const popupStyle = {
+        left: position.left,
+        top: position.top,
+        width: position.width,
+    } satisfies CSSProperties;
+    const listStyle = {
+        height: position.maxHeight,
+    } satisfies CSSProperties;
+
     return (
         <div
             data-code-completion-popup="true"
             className="fixed z-[90] overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-floating)]"
-            style={{
-                left: position.left,
-                top: position.top,
-                width: position.width,
-            }}
+            style={popupStyle}
         >
             <div
                 className="flex flex-col gap-1 overflow-hidden p-1.5"
-                style={{ height: position.maxHeight }}
+                style={listStyle}
                 role="listbox"
                 aria-label="Code completions"
             >

@@ -6,6 +6,7 @@ import { useAutomaticExecution } from "../../hooks/automaticExecution/useAutomat
 import { useAutomaticExecutionLifecycle } from "../../hooks/automaticExecution/useAutomaticExecutionLifecycle";
 import { confirmAction } from "../../lib/platform/dialog";
 import { openDirectoryPath } from "../../lib/platform/opener";
+import { joinClassNames } from "../../lib/shared/className";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
@@ -55,6 +56,12 @@ export function AutomaticExecutionScreen({
     const hasUnsavedChanges =
         activeScript?.content !== activeScript?.savedContent;
     const isSaveDisabled = !activeScript || !hasUnsavedChanges || isSaving;
+    const unsavedIndicatorClassName = joinClassNames(
+        "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
+        hasUnsavedChanges
+            ? "ml-1 max-w-2 translate-y-0 opacity-100"
+            : "ml-0 max-w-0 translate-y-1 opacity-0",
+    );
     const saveButtonClassName = isSaving
         ? "app-select-none inline-flex h-8 items-center gap-1.5 rounded-[0.65rem] border border-fumi-300 bg-fumi-100 px-3 text-xs font-semibold text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] transition-[background-color,border-color,transform,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:cursor-progress"
         : hasUnsavedChanges
@@ -158,13 +165,7 @@ export function AutomaticExecutionScreen({
                             </h1>
                             <span
                                 aria-hidden="true"
-                                className={[
-                                    "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
-                                    activeScript.content !==
-                                    activeScript.savedContent
-                                        ? "ml-1 max-w-2 translate-y-0 opacity-100"
-                                        : "ml-0 max-w-0 translate-y-1 opacity-0",
-                                ].join(" ")}
+                                className={unsavedIndicatorClassName}
                             >
                                 <span className="size-2 rounded-full bg-amber-500" />
                             </span>

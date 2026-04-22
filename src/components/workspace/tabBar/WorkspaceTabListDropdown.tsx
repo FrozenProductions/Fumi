@@ -3,6 +3,7 @@ import {
     WORKSPACE_TAB_LIST_DROPDOWN_STYLE,
     WORKSPACE_TAB_LIST_DROPDOWN_VIEWPORT_STYLE,
 } from "../../../constants/workspace/workspace";
+import { joinClassNames } from "../../../lib/shared/className";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
 import type { WorkspaceTabListDropdownProps } from "./workspaceTabBar.type";
 
@@ -33,6 +34,12 @@ export function WorkspaceTabListDropdown({
                     const { baseName } = splitWorkspaceFileName(tab.fileName);
                     const isActive = tab.id === workspace.activeTabId;
                     const isDirty = tab.isDirty;
+                    const tabClassName = joinClassNames(
+                        "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[var(--workspace-menu-item-radius)] px-2.5 text-left text-[11px] font-semibold tracking-wide transition-colors",
+                        isActive
+                            ? "bg-fumi-100 text-fumi-800"
+                            : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800",
+                    );
 
                     return (
                         <button
@@ -42,12 +49,7 @@ export function WorkspaceTabListDropdown({
                                 onSelectTab(tab.id);
                                 onClose();
                             }}
-                            className={[
-                                "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[var(--workspace-menu-item-radius)] px-2.5 text-left text-[11px] font-semibold tracking-wide transition-colors",
-                                isActive
-                                    ? "bg-fumi-100 text-fumi-800"
-                                    : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800",
-                            ].join(" ")}
+                            className={tabClassName}
                         >
                             <span className="min-w-0 flex-1 truncate text-left">
                                 {baseName}

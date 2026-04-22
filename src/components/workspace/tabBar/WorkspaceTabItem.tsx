@@ -5,6 +5,7 @@ import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys";
+import { joinClassNames } from "../../../lib/shared/className";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
 import { AppIcon } from "../../app/AppIcon";
 import { AppTooltip } from "../../app/AppTooltip";
@@ -60,6 +61,43 @@ export function WorkspaceTabItem({
         disabled: isRenaming,
     });
     const shouldShowDropTarget = isDropTarget && !isTabDragActive;
+    const tabClassName = joinClassNames(
+        "group relative flex shrink-0 items-center overflow-hidden rounded-[0.75rem] border transition-[background-color,border-color,box-shadow,transform] duration-150",
+        isDragging
+            ? "z-10 border-fumi-300 bg-fumi-50/95 shadow-lg"
+            : isActive
+              ? isRenaming && hasRenameError
+                  ? "border-rose-400 bg-rose-50 ring-2 ring-rose-200/50 shadow-sm"
+                  : "border-fumi-200 bg-fumi-50 shadow-sm"
+              : isVisibleInSplit
+                ? "border-fumi-200/70 bg-fumi-50/60"
+                : shouldShowDropTarget
+                  ? "border-fumi-300 bg-fumi-50"
+                  : isTabDragActive
+                    ? "border-transparent bg-transparent"
+                    : "border-transparent bg-transparent hover:border-fumi-200 hover:bg-fumi-50",
+    );
+    const dirtyIndicatorClassName = joinClassNames(
+        "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
+        isDirty
+            ? "ml-2 max-w-2 translate-y-0 opacity-100"
+            : "ml-0 max-w-0 translate-y-1 opacity-0",
+    );
+    const tabButtonClassName = joinClassNames(
+        "app-select-none flex max-w-[15rem] cursor-grab items-center py-1.5 pl-3 pr-3 text-left text-[0.8125rem] font-semibold tracking-[0.01em] transition-[color,padding] duration-150 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100",
+        !isTabDragActive && "group-hover:pr-7 group-focus-within:pr-7",
+        isActive
+            ? "text-fumi-600"
+            : isTabDragActive
+              ? "text-fumi-500"
+              : "text-fumi-500 hover:text-fumi-600",
+    );
+    const archiveButtonClassName = joinClassNames(
+        "app-select-none pointer-events-none absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[0.35rem] text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+        !isTabDragActive && "hover:bg-fumi-200 hover:text-fumi-600",
+        !isTabDragActive &&
+            "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
+    );
 
     const handleMiddleClick = (
         event: ReactMouseEvent<HTMLDivElement>,
@@ -95,22 +133,7 @@ export function WorkspaceTabItem({
                 onOpenContextMenu(tab.id, event);
             }}
             onDoubleClick={() => handleStartRename(tab.id, tab.fileName)}
-            className={[
-                "group relative flex shrink-0 items-center overflow-hidden rounded-[0.75rem] border transition-[background-color,border-color,box-shadow,transform] duration-150",
-                isDragging
-                    ? "z-10 border-fumi-300 bg-fumi-50/95 shadow-lg"
-                    : isActive
-                      ? isRenaming && hasRenameError
-                          ? "border-rose-400 bg-rose-50 ring-2 ring-rose-200/50 shadow-sm"
-                          : "border-fumi-200 bg-fumi-50 shadow-sm"
-                      : isVisibleInSplit
-                        ? "border-fumi-200/70 bg-fumi-50/60"
-                        : shouldShowDropTarget
-                          ? "border-fumi-300 bg-fumi-50"
-                          : isTabDragActive
-                            ? "border-transparent bg-transparent"
-                            : "border-transparent bg-transparent hover:border-fumi-200 hover:bg-fumi-50",
-            ].join(" ")}
+            className={tabClassName}
         >
             {isRenaming ? (
                 <div className="flex max-w-[15rem] items-center py-1.5 pl-3 pr-3 text-[0.8125rem] font-semibold tracking-[0.01em] text-fumi-600">
@@ -134,12 +157,7 @@ export function WorkspaceTabItem({
                     </div>
                     <span
                         aria-hidden="true"
-                        className={[
-                            "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
-                            isDirty
-                                ? "ml-2 max-w-2 translate-y-0 opacity-100"
-                                : "ml-0 max-w-0 translate-y-1 opacity-0",
-                        ].join(" ")}
+                        className={dirtyIndicatorClassName}
                     >
                         <span className="size-2 rounded-full bg-amber-500" />
                     </span>
@@ -152,27 +170,12 @@ export function WorkspaceTabItem({
                         onClick={() => onSelectTab(tab.id)}
                         role="tab"
                         aria-selected={isActive}
-                        className={[
-                            "app-select-none flex max-w-[15rem] cursor-grab items-center py-1.5 pl-3 pr-3 text-left text-[0.8125rem] font-semibold tracking-[0.01em] transition-[color,padding] duration-150 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100",
-                            isTabDragActive
-                                ? ""
-                                : "group-hover:pr-7 group-focus-within:pr-7",
-                            isActive
-                                ? "text-fumi-600"
-                                : isTabDragActive
-                                  ? "text-fumi-500"
-                                  : "text-fumi-500 hover:text-fumi-600",
-                        ].join(" ")}
+                        className={tabButtonClassName}
                     >
                         <span className="min-w-0 truncate">{baseName}</span>
                         <span
                             aria-hidden="true"
-                            className={[
-                                "inline-flex shrink-0 items-center justify-center overflow-hidden transition-[margin,max-width,opacity,transform] duration-200 ease-out",
-                                isDirty
-                                    ? "ml-2 max-w-2 translate-y-0 opacity-100"
-                                    : "ml-0 max-w-0 translate-y-1 opacity-0",
-                            ].join(" ")}
+                            className={dirtyIndicatorClassName}
                         >
                             <span className="size-2 rounded-full bg-amber-500" />
                         </span>
@@ -195,15 +198,7 @@ export function WorkspaceTabItem({
                             onDoubleClick={(event) => {
                                 event.stopPropagation();
                             }}
-                            className={[
-                                "app-select-none pointer-events-none absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[0.35rem] text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
-                                isTabDragActive
-                                    ? ""
-                                    : "hover:bg-fumi-200 hover:text-fumi-600",
-                                isTabDragActive
-                                    ? ""
-                                    : "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
-                            ].join(" ")}
+                            className={archiveButtonClassName}
                         >
                             <AppIcon
                                 icon={Cancel01Icon}

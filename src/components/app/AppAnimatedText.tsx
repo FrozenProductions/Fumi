@@ -59,18 +59,22 @@ export function AppAnimatedText({
                 className="inline-block whitespace-pre-wrap"
             >
                 <span className="sr-only">{displayedText}</span>
-                {characters.map(({ character, delayMs, key }) => (
-                    <span
-                        key={`${animationKey}-${key}`}
-                        aria-hidden="true"
-                        className={characterClassName}
-                        style={{
-                            animationDelay: `${delayMs}ms`,
-                        }}
-                    >
-                        {character}
-                    </span>
-                ))}
+                {characters.map(({ character, delayMs, key }) => {
+                    const characterStyle = {
+                        animationDelay: `${delayMs}ms`,
+                    };
+
+                    return (
+                        <span
+                            key={`${animationKey}-${key}`}
+                            aria-hidden="true"
+                            className={characterClassName}
+                            style={characterStyle}
+                        >
+                            {character}
+                        </span>
+                    );
+                })}
             </span>
         </span>
     );

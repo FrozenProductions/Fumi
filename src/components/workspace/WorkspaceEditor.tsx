@@ -23,6 +23,7 @@ import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
 import type { LuauFileSymbol } from "../../lib/luau/luau.type";
+import { joinClassNames } from "../../lib/shared/className";
 import type { AceChangeDelta } from "../../lib/workspace/codeCompletion/ace.type";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
@@ -122,14 +123,13 @@ function WorkspaceSplitDropZone({
     dropRef,
     isDropTarget,
 }: WorkspaceSplitDropZoneProps): ReactElement {
+    const className = joinClassNames(
+        "pointer-events-none absolute inset-y-0 z-30 w-1/2",
+        alignment === "left" ? "left-0" : "right-0",
+    );
+
     return (
-        <div
-            ref={dropRef}
-            className={[
-                "pointer-events-none absolute inset-y-0 z-30 w-1/2",
-                alignment === "left" ? "left-0" : "right-0",
-            ].join(" ")}
-        >
+        <div ref={dropRef} className={className}>
             {isDropTarget ? (
                 <>
                     <div className="absolute inset-0 bg-fumi-400/10" />
@@ -221,6 +221,39 @@ export function WorkspaceEditor({
     const resolvedOutlinePanelWidth =
         outlinePanelPreviewWidth ?? outlinePanelWidth;
     const isOutlineResizeActive = outlinePanelPreviewWidth !== null;
+    const workspaceActionsClassName = `pointer-events-none absolute bottom-5 z-40 ${
+        sidebarPosition === "right"
+            ? isOutlineResizeActive
+                ? "left-5 transition-none"
+                : "left-5 transition-[left] duration-200"
+            : isOutlineResizeActive
+              ? "right-5 transition-none"
+              : "right-5 transition-[right] duration-200"
+    }`;
+    const workspaceActionsStyle =
+        sidebarPosition === "right"
+            ? {
+                  left: isOutlinePanelVisible
+                      ? `${resolvedOutlinePanelWidth + 20}px`
+                      : "20px",
+              }
+            : {
+                  right: isOutlinePanelVisible
+                      ? `${resolvedOutlinePanelWidth + 20}px`
+                      : "20px",
+              };
+    const outlinePanelClassName = `absolute top-0 bottom-0 z-30 flex min-w-0 overflow-hidden border-fumi-200 bg-fumi-50 transition-[opacity,transform] duration-300 ease-in-out ${
+        sidebarPosition === "right" ? "left-0 border-r" : "right-0 border-l"
+    } ${
+        isOutlinePanelVisible
+            ? "pointer-events-auto translate-x-0 opacity-100"
+            : sidebarPosition === "right"
+              ? "pointer-events-none -translate-x-full opacity-0"
+              : "pointer-events-none translate-x-full opacity-0"
+    }`;
+    const outlinePanelStyle = {
+        width: `${resolvedOutlinePanelWidth}px`,
+    } satisfies CSSProperties;
 
     const handleSelectSymbol = useCallback(
         (symbol: LuauFileSymbol): void => {
@@ -269,6 +302,7 @@ export function WorkspaceEditor({
     const primaryWidth = `${splitRatio * 100}%`;
     const secondaryWidth = `${(1 - splitRatio) * 100}%`;
     const dividerLeft = `${splitRatio * 100}%`;
+    const splitDividerStyle = { left: dividerLeft } satisfies CSSProperties;
     const visibleTabIds = useMemo(() => {
         if (!isSplit) {
             return new Set([activeTabId]);
@@ -479,13 +513,13 @@ export function WorkspaceEditor({
                 {isSplit ? (
                     <>
                         <div
-                            style={{ left: dividerLeft }}
+                            style={splitDividerStyle}
                             className="pointer-events-none absolute bottom-0 top-0 z-20 w-[1px] -translate-x-1/2 bg-fumi-200"
                         />
                         <button
                             type="button"
                             aria-label="Resize split view"
-                            style={{ left: dividerLeft }}
+                            style={splitDividerStyle}
                             className="absolute bottom-0 top-0 z-40 w-3 -translate-x-1/2 cursor-col-resize touch-none bg-transparent focus-visible:outline-none"
                             onPointerDown={handleSplitResizePointerDown}
                         >
@@ -587,28 +621,8 @@ export function WorkspaceEditor({
                 </div>
 
                 <div
-                    className={`pointer-events-none absolute bottom-5 z-40 ${
-                        sidebarPosition === "right"
-                            ? isOutlineResizeActive
-                                ? "left-5 transition-none"
-                                : "left-5 transition-[left] duration-200"
-                            : isOutlineResizeActive
-                              ? "right-5 transition-none"
-                              : "right-5 transition-[right] duration-200"
-                    }`}
-                    style={
-                        sidebarPosition === "right"
-                            ? {
-                                  left: isOutlinePanelVisible
-                                      ? `${resolvedOutlinePanelWidth + 20}px`
-                                      : "20px",
-                              }
-                            : {
-                                  right: isOutlinePanelVisible
-                                      ? `${resolvedOutlinePanelWidth + 20}px`
-                                      : "20px",
-                              }
-                    }
+                    className={workspaceActionsClassName}
+                    style={workspaceActionsStyle}
                 >
                     <WorkspaceActionsButton {...workspaceActionsButton} />
                 </div>
@@ -616,18 +630,8 @@ export function WorkspaceEditor({
 
             {isOutlinePanelSupported ? (
                 <div
-                    className={`absolute top-0 bottom-0 z-30 flex min-w-0 overflow-hidden border-fumi-200 bg-fumi-50 transition-[opacity,transform] duration-300 ease-in-out ${
-                        sidebarPosition === "right"
-                            ? "left-0 border-r"
-                            : "right-0 border-l"
-                    } ${
-                        isOutlinePanelVisible
-                            ? "pointer-events-auto translate-x-0 opacity-100"
-                            : sidebarPosition === "right"
-                              ? "pointer-events-none -translate-x-full opacity-0"
-                              : "pointer-events-none translate-x-full opacity-0"
-                    }`}
-                    style={{ width: `${resolvedOutlinePanelWidth}px` }}
+                    className={outlinePanelClassName}
+                    style={outlinePanelStyle}
                 >
                     <button
                         type="button"

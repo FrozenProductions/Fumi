@@ -8,6 +8,7 @@ import {
     WORKSPACE_MENU_INSET_REM,
     WORKSPACE_MENU_RADIUS_REM,
 } from "../../../constants/workspace/workspace";
+import { joinClassNames } from "../../../lib/shared/className";
 import { AppIcon } from "../AppIcon";
 import type { AppCommandPaletteResultsProps } from "./appCommandPalette.type";
 
@@ -43,17 +44,18 @@ export function AppCommandPaletteResults({
     const resultsViewportStyle = {
         maxHeight: `calc(${APP_COMMAND_PALETTE_MAX_RESULTS} * ${APP_COMMAND_PALETTE_RESULT_ROW_HEIGHT_REM}rem + (${APP_COMMAND_PALETTE_MAX_RESULTS} - 1) * ${APP_COMMAND_PALETTE_RESULT_ROW_GAP_REM}rem)`,
     } satisfies CSSProperties;
+    const containerClassName = joinClassNames(
+        "origin-top border bg-fumi-50 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
+        resultsMotionClassName,
+        results.length > 0
+            ? "overflow-hidden rounded-[var(--command-results-menu-radius)] border-fumi-200 p-1.5"
+            : "rounded-[0.9rem] border-dashed border-fumi-200 px-3 py-5 text-center",
+    );
 
     return (
         <div
             style={results.length > 0 ? resultsStyle : undefined}
-            className={[
-                "origin-top border bg-fumi-50 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
-                resultsMotionClassName,
-                results.length > 0
-                    ? "overflow-hidden rounded-[var(--command-results-menu-radius)] border-fumi-200 p-1.5"
-                    : "rounded-[0.9rem] border-dashed border-fumi-200 px-3 py-5 text-center",
-            ].join(" ")}
+            className={containerClassName}
         >
             {results.length > 0 ? (
                 <div
@@ -63,6 +65,19 @@ export function AppCommandPaletteResults({
                     <div className="flex flex-col gap-0.5">
                         {results.map((item, index) => {
                             const isActive = index === activeResultIndex;
+                            const itemClassName = joinClassNames(
+                                "app-select-none flex h-12 w-full items-center gap-2 rounded-[var(--command-results-item-radius)] border px-2 text-left transition-[background-color,border-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50",
+                                item.isDisabled && "cursor-default opacity-60",
+                                isActive
+                                    ? "scale-[1.01] border-transparent bg-fumi-100/70"
+                                    : "border-transparent bg-transparent hover:bg-fumi-100/50",
+                            );
+                            const iconClassName = joinClassNames(
+                                "inline-flex size-7 shrink-0 items-center justify-center rounded-[var(--command-results-element-radius)] border",
+                                isActive
+                                    ? "border-fumi-200 bg-fumi-50 text-fumi-700"
+                                    : "border-fumi-200 bg-fumi-50 text-fumi-500",
+                            );
 
                             return (
                                 <button
@@ -71,24 +86,9 @@ export function AppCommandPaletteResults({
                                     disabled={item.isDisabled}
                                     onClick={() => onCommitSelection(item)}
                                     onMouseEnter={() => onHoverItem(index)}
-                                    className={[
-                                        "app-select-none flex h-12 w-full items-center gap-2 rounded-[var(--command-results-item-radius)] border px-2 text-left transition-[background-color,border-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50",
-                                        item.isDisabled
-                                            ? "cursor-default opacity-60"
-                                            : "",
-                                        isActive
-                                            ? "scale-[1.01] border-transparent bg-fumi-100/70"
-                                            : "border-transparent bg-transparent hover:bg-fumi-100/50",
-                                    ].join(" ")}
+                                    className={itemClassName}
                                 >
-                                    <span
-                                        className={[
-                                            "inline-flex size-7 shrink-0 items-center justify-center rounded-[var(--command-results-element-radius)] border",
-                                            isActive
-                                                ? "border-fumi-200 bg-fumi-50 text-fumi-700"
-                                                : "border-fumi-200 bg-fumi-50 text-fumi-500",
-                                        ].join(" ")}
-                                    >
+                                    <span className={iconClassName}>
                                         <AppIcon
                                             icon={item.icon}
                                             size={13}

@@ -3,11 +3,14 @@ import type { ReactElement } from "react";
 import { useCallback } from "react";
 import workspaceIcon from "../../assets/icons/workspace.svg";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
+import { createMaskStyle } from "../../lib/shared/mask";
 import { AppIcon } from "../app/AppIcon";
 import { WorkspaceErrorBanner } from "./WorkspaceErrorBanner";
 import { WorkspaceMessageState } from "./WorkspaceMessageState";
 import { WorkspaceReadyScreen } from "./WorkspaceReadyScreen";
 import type { WorkspaceScreenProps } from "./workspaceScreen.type";
+
+const WORKSPACE_ICON_STYLE = createMaskStyle(workspaceIcon);
 
 /**
  * The main workspace screen containing tabs, editor, and split view.
@@ -76,10 +79,7 @@ export function WorkspaceScreen({
                             <div
                                 aria-hidden="true"
                                 className="mx-auto h-24 w-24 bg-fumi-600"
-                                style={{
-                                    mask: `url("${workspaceIcon}") center / contain no-repeat`,
-                                    WebkitMask: `url("${workspaceIcon}") center / contain no-repeat`,
-                                }}
+                                style={WORKSPACE_ICON_STYLE}
                             />
                             <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                 Workspace

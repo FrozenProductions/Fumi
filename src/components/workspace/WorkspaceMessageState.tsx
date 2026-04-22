@@ -1,4 +1,6 @@
 import type { ReactElement } from "react";
+import { useMemo } from "react";
+import { createMaskStyle } from "../../lib/shared/mask";
 import { AppIcon } from "../app/AppIcon";
 import { AppTooltip } from "../app/AppTooltip";
 import type { WorkspaceMessageStateProps } from "./workspaceFeedback.type";
@@ -20,6 +22,11 @@ export function WorkspaceMessageState({
     illustrationUrl,
     action,
 }: WorkspaceMessageStateProps): ReactElement {
+    const illustrationStyle = useMemo(
+        () => (illustrationUrl ? createMaskStyle(illustrationUrl) : null),
+        [illustrationUrl],
+    );
+
     if (illustrationUrl) {
         return (
             <div className="flex flex-1 items-center justify-center bg-fumi-50/80 p-8">
@@ -27,10 +34,7 @@ export function WorkspaceMessageState({
                     <div
                         aria-hidden="true"
                         className="mx-auto h-24 w-24 bg-fumi-600"
-                        style={{
-                            mask: `url("${illustrationUrl}") center / contain no-repeat`,
-                            WebkitMask: `url("${illustrationUrl}") center / contain no-repeat`,
-                        }}
+                        style={illustrationStyle ?? undefined}
                     />
                     <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                         {eyebrow}

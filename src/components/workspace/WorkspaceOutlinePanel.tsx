@@ -4,7 +4,13 @@ import {
     ExpandIcon,
 } from "@hugeicons/core-free-icons";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { memo, type ReactElement, useMemo, useRef } from "react";
+import {
+    type CSSProperties,
+    memo,
+    type ReactElement,
+    useMemo,
+    useRef,
+} from "react";
 import {
     WORKSPACE_OUTLINE_VIRTUAL_GROUP_HEIGHT,
     WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT,
@@ -208,6 +214,9 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
     );
     const rowVirtualizer = useVirtualizer(virtualizerOptions);
     const virtualItems = rowVirtualizer.getVirtualItems();
+    const viewportStyle = {
+        height: `${rowVirtualizer.getTotalSize()}px`,
+    } satisfies CSSProperties;
 
     const isQueryActive = outlineSearchQuery.trim().length > 0;
 
@@ -265,12 +274,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                 className="flex-1 overflow-y-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
                 {entries.length > 0 ? (
-                    <div
-                        className="relative w-full"
-                        style={{
-                            height: `${rowVirtualizer.getTotalSize()}px`,
-                        }}
-                    >
+                    <div className="relative w-full" style={viewportStyle}>
                         {virtualItems.map((virtualItem) => {
                             const entry = entries[virtualItem.index];
 
@@ -278,15 +282,17 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                                 return null;
                             }
 
+                            const itemStyle = {
+                                height: `${virtualItem.size}px`,
+                                transform: `translateY(${virtualItem.start}px)`,
+                            } satisfies CSSProperties;
+
                             return (
                                 <div
                                     key={virtualItem.key}
                                     data-index={virtualItem.index}
                                     className="absolute left-0 top-0 w-full px-2"
-                                    style={{
-                                        height: `${virtualItem.size}px`,
-                                        transform: `translateY(${virtualItem.start}px)`,
-                                    }}
+                                    style={itemStyle}
                                 >
                                     {entry.type === "group" ? (
                                         <OutlineGroupRow

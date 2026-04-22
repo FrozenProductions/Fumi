@@ -15,6 +15,7 @@ import {
 } from "../../lib/accounts/accountPrivacy";
 import type { AccountSummary } from "../../lib/accounts/accounts.type";
 import { confirmAction } from "../../lib/platform/dialog";
+import { createMaskStyle } from "../../lib/shared/mask";
 import { AppIcon } from "../app/AppIcon";
 
 function getAccountStatusTone(account: AccountSummary): string {
@@ -26,6 +27,8 @@ function getAccountStatusTone(account: AccountSummary): string {
 function getAccountStatusLabel(account: AccountSummary): string {
     return account.boundPort !== null ? "Active" : "Offline";
 }
+
+const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);
 
 /**
  * The accounts screen for managing saved Roblox accounts.
@@ -140,10 +143,7 @@ export function AccountsScreen(): ReactElement {
                                 <div
                                     aria-hidden="true"
                                     className="mx-auto h-24 w-24 bg-fumi-600"
-                                    style={{
-                                        mask: `url("${emptyAddIcon}") center / contain no-repeat`,
-                                        WebkitMask: `url("${emptyAddIcon}") center / contain no-repeat`,
-                                    }}
+                                    style={EMPTY_ADD_ICON_STYLE}
                                 />
                                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                     No Accounts

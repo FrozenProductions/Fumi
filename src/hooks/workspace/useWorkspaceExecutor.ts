@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
@@ -133,14 +133,15 @@ export function useWorkspaceExecutor({
     const [availablePortSummaries, setAvailablePortSummaries] = useState<
         ExecutorStatusPayload["availablePorts"]
     >(createDefaultAvailablePortSummaries);
-    const [availablePorts, setAvailablePorts] = useState<readonly number[]>([
-        ...getExecutorPorts(DEFAULT_EXECUTOR_KIND),
-    ]);
     const [port, setPort] = useState(String(DEFAULT_EXECUTOR_PORT));
     const [isAttached, setIsAttached] = useState(false);
     const [didRecentAttachFail, setDidRecentAttachFail] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const availablePorts = useMemo(
+        () => getExecutorPortsFromSummaries(availablePortSummaries),
+        [availablePortSummaries],
+    );
     const wasAttachedRef = useRef(false);
     const syncExecutionHistoryUpdate = useEffectEvent(
         (
@@ -170,7 +171,6 @@ export function useWorkspaceExecutor({
             });
             setExecutorKind(status.executorKind);
             setAvailablePortSummaries(status.availablePorts);
-            setAvailablePorts(nextAvailablePorts);
             setPort(
                 normalizeExecutorPort(String(nextPort), nextAvailablePorts),
             );

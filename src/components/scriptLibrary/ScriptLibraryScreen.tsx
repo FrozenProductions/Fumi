@@ -17,6 +17,7 @@ import type {
     ScriptLibraryContentMode,
     ScriptLibraryEntry,
 } from "../../lib/scriptLibrary/scriptLibrary.type";
+import { createMaskStyle } from "../../lib/shared/mask";
 import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
 import type {
@@ -53,6 +54,9 @@ function getScriptLibraryEmptyState(options: {
             "Try adjusting your search or filters to find what you are looking for.",
     };
 }
+
+const WARNING_ICON_STYLE = createMaskStyle(warningIcon);
+const NOTHING_FOUND_ICON_STYLE = createMaskStyle(nothingFoundIcon);
 
 /**
  * The main script library screen for browsing and managing scripts.
@@ -222,10 +226,7 @@ export function ScriptLibraryScreen(): ReactElement {
                             <div
                                 aria-hidden="true"
                                 className="mx-auto h-24 w-24 bg-fumi-600"
-                                style={{
-                                    mask: `url("${warningIcon}") center / contain no-repeat`,
-                                    WebkitMask: `url("${warningIcon}") center / contain no-repeat`,
-                                }}
+                                style={WARNING_ICON_STYLE}
                             />
                             <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                 Fetch Error
@@ -243,10 +244,7 @@ export function ScriptLibraryScreen(): ReactElement {
                             <div
                                 aria-hidden="true"
                                 className="mx-auto h-24 w-24 bg-fumi-600"
-                                style={{
-                                    mask: `url("${nothingFoundIcon}") center / contain no-repeat`,
-                                    WebkitMask: `url("${nothingFoundIcon}") center / contain no-repeat`,
-                                }}
+                                style={NOTHING_FOUND_ICON_STYLE}
                             />
                             <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                                 {emptyState.eyebrow}

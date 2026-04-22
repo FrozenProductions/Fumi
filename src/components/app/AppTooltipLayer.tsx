@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { type CSSProperties, forwardRef } from "react";
 import { TOOLTIP_HIDDEN_MOTION_CLASS_NAMES } from "../../constants/tooltip/tooltip";
 import type { AppTooltipLayerProps } from "./appTooltip.type";
 
@@ -30,6 +30,10 @@ export const AppTooltipLayer = forwardRef<HTMLDivElement, AppTooltipLayerProps>(
         const motionClassName = isVisible
             ? "translate-x-0 translate-y-0 opacity-100 scale-100"
             : `${TOOLTIP_HIDDEN_MOTION_CLASS_NAMES[side]} opacity-0 scale-95`;
+        const tooltipStyle = {
+            top,
+            left,
+        } satisfies CSSProperties;
 
         return (
             <div
@@ -38,10 +42,7 @@ export const AppTooltipLayer = forwardRef<HTMLDivElement, AppTooltipLayerProps>(
                 role="tooltip"
                 aria-hidden={!isVisible}
                 className={`pointer-events-none fixed z-[80] flex select-none items-center gap-1.5 whitespace-nowrap rounded-[0.65rem] bg-fumi-50 px-2.5 py-1.5 text-[11px] font-semibold tracking-[0.02em] text-fumi-900 ring-1 ring-fumi-200 shadow-[var(--shadow-app-floating)] transition-[opacity,transform] duration-100 ease-out will-change-[transform,opacity] ${motionClassName}`}
-                style={{
-                    top,
-                    left,
-                }}
+                style={tooltipStyle}
             >
                 <span>{content}</span>
                 {shortcut && (

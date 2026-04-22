@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import {
     APP_SETTINGS_SIDEBAR_ITEM,
     APP_SIDEBAR_ITEMS,
@@ -56,6 +56,14 @@ export function AppSidebar({
             ? "border-r border-fumi-200"
             : "border-l border-fumi-200";
     const tooltipSide = position === "left" ? "right" : "left";
+    const activeIndicatorStyle = {
+        transform: `translateY(${activeIndicatorOffset}px) scale(${
+            isNavigationItemActive ? 1 : 0.95
+        })`,
+    } satisfies CSSProperties;
+    const activeRailStyle = {
+        transform: `translateY(${activeIndicatorOffset + 10}px)`,
+    } satisfies CSSProperties;
     const getTooltipLabel = (
         id: (typeof APP_SIDEBAR_ITEMS)[number]["id"],
         label: string,
@@ -81,11 +89,7 @@ export function AppSidebar({
                         className={`absolute left-0 top-0 h-10 w-10 rounded-[0.65rem] bg-fumi-50 shadow-sm ring-1 ring-fumi-200 transition-[transform,opacity] duration-300 ease-in-out ${
                             isNavigationItemActive ? "opacity-100" : "opacity-0"
                         }`}
-                        style={{
-                            transform: `translateY(${activeIndicatorOffset}px) scale(${
-                                isNavigationItemActive ? 1 : 0.95
-                            })`,
-                        }}
+                        style={activeIndicatorStyle}
                     />
                     <div
                         className={`absolute top-0 h-5 w-1 bg-fumi-600 transition-[transform,opacity] duration-300 ease-in-out ${
@@ -93,9 +97,7 @@ export function AppSidebar({
                                 ? "left-0 rounded-r-full"
                                 : "right-0 rounded-l-full"
                         } ${isNavigationItemActive ? "opacity-100" : "opacity-0"}`}
-                        style={{
-                            transform: `translateY(${activeIndicatorOffset + 10}px)`,
-                        }}
+                        style={activeRailStyle}
                     />
 
                     {APP_SIDEBAR_ITEMS.map(({ id, label, icon }) => {

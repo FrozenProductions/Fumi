@@ -2,6 +2,7 @@ import { ArrowDown01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { type ReactElement, useEffect, useRef, useState } from "react";
 import { APP_SELECT_DROPDOWN_EXIT_DURATION_MS } from "../../constants/app/input";
 import { usePresenceTransition } from "../../hooks/shared/usePresenceTransition";
+import { joinClassNames } from "../../lib/shared/className";
 import { AppIcon } from "./AppIcon";
 import type { AppSelectProps } from "./appForm.type";
 
@@ -50,6 +51,11 @@ export function AppSelect<TValue extends string>({
     const dropdownMotionClassName = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[96%] motion-safe:-motion-translate-y-out-[4%] motion-safe:motion-duration-120 motion-safe:motion-ease-in-quad"
         : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:-motion-translate-y-in-[6%] motion-safe:motion-duration-150 motion-safe:motion-ease-spring-snappy";
+    const dropdownClassName = joinClassNames(
+        "absolute right-0 top-[calc(100%+0.25rem)] z-50 min-w-[140px] origin-top-right overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
+        isClosing && "pointer-events-none",
+        dropdownMotionClassName,
+    );
 
     return (
         <div
@@ -79,14 +85,7 @@ export function AppSelect<TValue extends string>({
             </button>
 
             {isPresent ? (
-                <div
-                    className={[
-                        "absolute right-0 top-[calc(100%+0.25rem)] z-50 min-w-[140px] origin-top-right overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
-                        isClosing ? "pointer-events-none" : "",
-                        dropdownMotionClassName,
-                    ].join(" ")}
-                    role="listbox"
-                >
+                <div className={dropdownClassName} role="listbox">
                     {options.map((option) => (
                         <button
                             key={option.value}

@@ -10,10 +10,13 @@ import {
 } from "../../constants/workspace/editor";
 import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
+import { createMaskStyle } from "../../lib/shared/mask";
 import { getReactAceComponent } from "../../lib/workspace/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor.type";
 import { AppIcon } from "../app/AppIcon";
 import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.type";
+
+const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);
 
 /**
  * The Ace editor for automatic execution scripts.
@@ -87,10 +90,7 @@ export function AutomaticExecutionEditor({
                     <div
                         aria-hidden="true"
                         className="mx-auto h-24 w-24 bg-fumi-600"
-                        style={{
-                            mask: `url("${emptyAddIcon}") center / contain no-repeat`,
-                            WebkitMask: `url("${emptyAddIcon}") center / contain no-repeat`,
-                        }}
+                        style={EMPTY_ADD_ICON_STYLE}
                     />
                     <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                         No Script Selected

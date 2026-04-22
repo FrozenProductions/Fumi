@@ -1,6 +1,9 @@
 import type { ReactElement } from "react";
 import archiveIcon from "../../../../assets/icons/archive.svg";
+import { createMaskStyle } from "../../../../lib/shared/mask";
 import type { AppSettingsWorkspaceEmptyStateProps } from "./appSettingsWorkspace.type";
+
+const ARCHIVE_ICON_STYLE = createMaskStyle(archiveIcon);
 
 export function AppSettingsWorkspaceEmptyState({
     title,
@@ -12,10 +15,7 @@ export function AppSettingsWorkspaceEmptyState({
                 <div
                     aria-hidden="true"
                     className="mx-auto h-24 w-24 bg-fumi-600"
-                    style={{
-                        mask: `url("${archiveIcon}") center / contain no-repeat`,
-                        WebkitMask: `url("${archiveIcon}") center / contain no-repeat`,
-                    }}
+                    style={ARCHIVE_ICON_STYLE}
                 />
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
                     {title}
