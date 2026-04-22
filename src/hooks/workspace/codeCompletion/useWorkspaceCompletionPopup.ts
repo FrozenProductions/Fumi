@@ -4,109 +4,19 @@ import {
     shouldOpenLuauCompletion,
     shouldSuppressLuauCompletionForTokenType,
 } from "../../../lib/luau/completion";
-import { getLuauCompletionPopupPosition } from "../../../lib/luau/completionPopup";
-import type {
-    LuauCompletionItem,
-    LuauCompletionPopupState,
-} from "../../../lib/luau/luau.type";
+import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
 import { isLuauEditorSession } from "../../../lib/workspace/codeCompletion/ace";
-import type {
-    AceEditorInstance,
-    AceRendererInstance,
-} from "../../../lib/workspace/codeCompletion/ace.type";
-import {
-    isDeletionKey,
-    isManualCompletionShortcut,
-    isNavigationKey,
-} from "../../../lib/workspace/codeCompletion/keyboard";
 import type { UpdateWorkspaceCompletionPopupOptions } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import type {
     UseWorkspaceCompletionPopupOptions,
     UseWorkspaceCompletionPopupResult,
 } from "./useWorkspaceCompletionPopup.type";
-
-function isCompletionPopupInteractionTarget(
-    target: EventTarget | null,
-): boolean {
-    return (
-        target instanceof Element &&
-        target.closest("[data-code-completion-popup='true']") !== null
-    );
-}
-
-function getSelectedCompletionIndex(options: {
-    currentPopup: LuauCompletionPopupState | null;
-    items: LuauCompletionItem[];
-    preserveSelection?: boolean;
-}): number {
-    const { currentPopup, items, preserveSelection } = options;
-    const selectedLabel =
-        preserveSelection && currentPopup
-            ? currentPopup.items[currentPopup.selectedIndex]?.label
-            : null;
-
-    if (selectedLabel === null) {
-        return 0;
-    }
-
-    return Math.max(
-        0,
-        items.findIndex((item) => item.label === selectedLabel),
-    );
-}
-
-function shiftCompletionSelection(
-    currentPopup: LuauCompletionPopupState | null,
-    offset: number,
-): LuauCompletionPopupState | null {
-    if (!currentPopup) {
-        return currentPopup;
-    }
-
-    return {
-        ...currentPopup,
-        selectedIndex:
-            (currentPopup.selectedIndex + offset + currentPopup.items.length) %
-            currentPopup.items.length,
-    };
-}
-
-function getCompletionPopupPositionState(options: {
-    cursor: {
-        column: number;
-        row: number;
-    };
-    editor: AceEditorInstance;
-    items: LuauCompletionItem[];
-    intellisenseWidth: UseWorkspaceCompletionPopupOptions["intellisenseWidth"];
-    previousPlacement?: LuauCompletionPopupState["position"]["verticalPlacement"];
-}) {
-    const { cursor, editor, items, intellisenseWidth, previousPlacement } =
-        options;
-    const renderer = editor.renderer as AceRendererInstance;
-    const caret = renderer.$cursorLayer.getPixelPosition(cursor, true);
-    const editorBounds = editor.container.getBoundingClientRect();
-    const caretHeight = Math.max(
-        renderer.layerConfig?.lineHeight ?? renderer.lineHeight ?? 0,
-        16,
-    );
-    const caretLeft =
-        editorBounds.left +
-        caret.left -
-        (renderer.scrollLeft ?? 0) +
-        (renderer.gutterWidth ?? 0);
-    const caretTop =
-        editorBounds.top + caret.top - (renderer.layerConfig?.offset ?? 0);
-
-    return getLuauCompletionPopupPosition(
-        caretLeft,
-        caretTop,
-        caretHeight,
-        items,
-        intellisenseWidth,
-        previousPlacement,
-    );
-}
+import {
+    getCompletionPopupPositionState,
+    getSelectedCompletionIndex,
+    isCompletionPopupInteractionTarget,
+} from "./useWorkspaceCompletionPopupHelpers";
+import { useWorkspaceCompletionPopupKeyboard } from "./useWorkspaceCompletionPopupKeyboard";
 
 /**
  * Manages Luau code completion popup lifecycle, positioning, and keyboard interaction.
@@ -293,97 +203,16 @@ export function useWorkspaceCompletionPopup({
         };
     }, [completionPopup, getActiveEditor]);
 
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent): void => {
-            const editor = getActiveEditor();
-
-            if (!editor?.isFocused()) {
-                return;
-            }
-
-            if (isDeletionKey(event.key) || isNavigationKey(event.key)) {
-                suppressNextPassiveCompletionRef.current = true;
-
-                if (
-                    isDeletionKey(event.key) ||
-                    event.key === "ArrowLeft" ||
-                    event.key === "ArrowRight" ||
-                    event.key === "Home" ||
-                    event.key === "End" ||
-                    event.key === "PageUp" ||
-                    event.key === "PageDown" ||
-                    !completionPopup
-                ) {
-                    setCompletionPopup(null);
-                }
-            }
-
-            if (
-                isManualCompletionShortcut(event) &&
-                isIntellisenseEnabled &&
-                activeEditorMode === "luau"
-            ) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                updateCompletionPopup({ forceOpen: true });
-                return;
-            }
-
-            if (!completionPopup) {
-                return;
-            }
-
-            if (event.key === "ArrowDown") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                setCompletionPopup((currentPopup) =>
-                    shiftCompletionSelection(currentPopup, 1),
-                );
-                return;
-            }
-
-            if (event.key === "ArrowUp") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                setCompletionPopup((currentPopup) =>
-                    shiftCompletionSelection(currentPopup, -1),
-                );
-                return;
-            }
-
-            if (event.key === "Enter" || event.key === "Tab") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                acceptCompletion(completionPopup.selectedIndex);
-                return;
-            }
-
-            if (event.key === "Escape") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                setCompletionPopup(null);
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown, true);
-
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown, true);
-        };
-    }, [
+    useWorkspaceCompletionPopupKeyboard({
         acceptCompletion,
         activeEditorMode,
         completionPopup,
         getActiveEditor,
         isIntellisenseEnabled,
+        setCompletionPopup,
         suppressNextPassiveCompletionRef,
         updateCompletionPopup,
-    ]);
+    });
 
     useEffect(() => {
         if (activeEditorMode !== "luau" || !isIntellisenseEnabled) {

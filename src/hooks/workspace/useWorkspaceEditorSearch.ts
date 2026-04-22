@@ -1,4 +1,3 @@
-import type { Ace } from "ace-builds";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EMPTY_WORKSPACE_EDITOR_SEARCH_MATCH_STATE } from "../../constants/workspace/editorSearch";
 import type { AceEditorInstance } from "../../lib/workspace/codeCompletion/ace.type";
@@ -8,109 +7,18 @@ import {
     createWorkspaceEditorSearchState,
     getWorkspaceEditorSearchValidationError,
 } from "../../lib/workspace/editorSearch";
+import type { WorkspaceEditorSearchState } from "../../lib/workspace/editorSearch.type";
 import type {
-    AceEditorWithSearch,
-    WorkspaceEditorSearchMatchState,
-    WorkspaceEditorSearchState,
-} from "../../lib/workspace/editorSearch.type";
-import type {
-    SearchStateByTabId,
     UseWorkspaceEditorSearchOptions,
     UseWorkspaceEditorSearchResult,
 } from "./useWorkspaceEditorSearch.type";
+import {
+    getSearchSeed,
+    getWorkspaceEditorSearchMatchState,
+    pruneSearchStateByOpenTabs,
+} from "./useWorkspaceEditorSearchHelpers";
+import { useWorkspaceEditorSearchNavigation } from "./useWorkspaceEditorSearchNavigation";
 
-function areAcePointsEqual(left: Ace.Point, right: Ace.Point): boolean {
-    return left.row === right.row && left.column === right.column;
-}
-
-function areAceRangesEqual(left: Ace.Range, right: Ace.Range): boolean {
-    return (
-        areAcePointsEqual(left.start, right.start) &&
-        areAcePointsEqual(left.end, right.end)
-    );
-}
-
-function getWorkspaceEditorSearchMatchState(
-    editor: AceEditorInstance,
-    searchState: WorkspaceEditorSearchState,
-): WorkspaceEditorSearchMatchState {
-    if (!canRunWorkspaceEditorSearch(searchState)) {
-        return EMPTY_WORKSPACE_EDITOR_SEARCH_MATCH_STATE;
-    }
-
-    const search = (editor as AceEditorWithSearch).$search;
-
-    if (!search) {
-        return EMPTY_WORKSPACE_EDITOR_SEARCH_MATCH_STATE;
-    }
-
-    search.set(buildWorkspaceEditorSearchOptions(searchState));
-
-    const matchRanges = search.findAll(editor.session);
-
-    if (matchRanges.length === 0) {
-        return EMPTY_WORKSPACE_EDITOR_SEARCH_MATCH_STATE;
-    }
-
-    const activeMatchOrdinal =
-        matchRanges.findIndex((range) =>
-            areAceRangesEqual(range, editor.selection.getRange()),
-        ) + 1;
-
-    return {
-        activeMatchOrdinal: activeMatchOrdinal > 0 ? activeMatchOrdinal : 0,
-        matchCount: matchRanges.length,
-    };
-}
-
-function getSearchSeed(editor: AceEditorInstance | null): string {
-    if (!editor) {
-        return "";
-    }
-
-    const selectedText = editor.getSelectedText();
-
-    if (selectedText.trim().length > 0) {
-        return selectedText;
-    }
-
-    const cursor = editor.getCursorPosition();
-    const wordRange = editor.session.getWordRange(cursor.row, cursor.column);
-    const word = editor.session.getTextRange(wordRange);
-
-    return word.trim().length > 0 ? word : "";
-}
-
-function pruneSearchStateByOpenTabs(
-    searchStateByTabId: SearchStateByTabId,
-    openTabIds: Set<string>,
-): SearchStateByTabId {
-    let hasRemovedClosedTab = false;
-    const nextSearchStateByTabId = new Map<
-        string,
-        WorkspaceEditorSearchState
-    >();
-
-    for (const [tabId, searchState] of searchStateByTabId) {
-        if (!openTabIds.has(tabId)) {
-            hasRemovedClosedTab = true;
-            continue;
-        }
-
-        nextSearchStateByTabId.set(tabId, searchState);
-    }
-
-    return hasRemovedClosedTab ? nextSearchStateByTabId : searchStateByTabId;
-}
-
-/**
- * Manages Ace editor search state per workspace tab with toggle, query, and replace.
- *
- * @remarks
- * Maintains search state by tab ID, syncs match state with the active editor,
- * handles search toggle (seeding from selection or word), and provides
- * find/replace operations with keyboard shortcut integration.
- */
 export function useWorkspaceEditorSearch({
     activeTabId,
     tabs,
@@ -334,62 +242,17 @@ export function useWorkspaceEditorSearch({
         [activeSearchState, runSearch, updateActiveSearchState],
     );
 
-    const buildSearchOptions =
-        useCallback((): Partial<Ace.SearchOptions> | null => {
-            if (!canSearch) {
-                return null;
-            }
-
-            return buildWorkspaceEditorSearchOptions(activeSearchState);
-        }, [activeSearchState, canSearch]);
-
-    const handleFindNext = useCallback((): void => {
-        const editor = getActiveEditorRef.current();
-        const searchOptions = buildSearchOptions();
-
-        if (!editor || !searchOptions) {
-            return;
-        }
-
-        editor.findNext(searchOptions);
-        syncActiveSearchMatchState(activeSearchState, editor);
-    }, [activeSearchState, buildSearchOptions, syncActiveSearchMatchState]);
-
-    const handleFindPrevious = useCallback((): void => {
-        const editor = getActiveEditorRef.current();
-        const searchOptions = buildSearchOptions();
-
-        if (!editor || !searchOptions) {
-            return;
-        }
-
-        editor.findPrevious(searchOptions);
-        syncActiveSearchMatchState(activeSearchState, editor);
-    }, [activeSearchState, buildSearchOptions, syncActiveSearchMatchState]);
-
-    const handleReplaceNext = useCallback((): void => {
-        const editor = getActiveEditorRef.current();
-        const searchOptions = buildSearchOptions();
-
-        if (!editor || !searchOptions) {
-            return;
-        }
-
-        editor.replace(activeSearchState.replaceValue, searchOptions);
-        syncActiveSearchMatchState(activeSearchState, editor);
-    }, [activeSearchState, buildSearchOptions, syncActiveSearchMatchState]);
-
-    const handleReplaceAll = useCallback((): void => {
-        const editor = getActiveEditorRef.current();
-        const searchOptions = buildSearchOptions();
-
-        if (!editor || !searchOptions) {
-            return;
-        }
-
-        editor.replaceAll(activeSearchState.replaceValue, searchOptions);
-        syncActiveSearchMatchState(activeSearchState, editor);
-    }, [activeSearchState, buildSearchOptions, syncActiveSearchMatchState]);
+    const {
+        handleFindNext,
+        handleFindPrevious,
+        handleReplaceAll,
+        handleReplaceNext,
+    } = useWorkspaceEditorSearchNavigation({
+        activeSearchState,
+        canSearch,
+        getActiveEditorRef,
+        syncActiveSearchMatchState,
+    });
 
     return {
         toggleSearch,
