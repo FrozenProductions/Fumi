@@ -1,0 +1,88 @@
+import type { TopLevelDataEntry } from "./uncCompletions.type";
+
+export const UNC_TOP_LEVEL_DATA_PART_3 = [
+    [
+        "getgc",
+        "scripts",
+        "Returns a list of objects in the Luau garbage collector.",
+        "function getgc(includeTables: boolean?): {function | userdata | table}",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getgenv",
+        "scripts",
+        "Returns the custom global environment of the executor. It can be used to add global functions or share variables between scripts.",
+        "function getgenv(): { [string]: any }",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getloadedmodules",
+        "scripts",
+        "Returns a list of ModuleScripts that have been loaded. If excludeCore is true, CoreScript-related modules will not be included in the list.",
+        "function getloadedmodules(excludeCore: boolean?): {ModuleScript}",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getrenv",
+        "scripts",
+        "Returns the global environment of the game client. It can be used to access the global functions that LocalScripts and ModuleScripts use.",
+        "function getrenv(): { [string]: any }",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getrunningscripts",
+        "scripts",
+        "Returns a list of scripts that are currently running.",
+        "function getrunningscripts(): {LocalScript | ModuleScript}",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getscriptbytecode",
+        "scripts",
+        "Returns the raw Luau bytecode of the given script.",
+        "function getscriptbytecode(script: LocalScript | ModuleScript): string",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getscriptclosure",
+        "scripts",
+        "Generates a new closure using the bytecode of script.",
+        "function getscriptclosure(script: LocalScript | ModuleScript): function",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getscripthash",
+        "scripts",
+        "Returns a SHA384 hash of the script's bytecode. This is useful for detecting changes to a script's source code.",
+        "function getscripthash(script: LocalScript | ModuleScript): string",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getscripts",
+        "scripts",
+        "Returns a list of every script in the game.",
+        "function getscripts(): {LocalScript | ModuleScript}",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getsenv",
+        "scripts",
+        "Returns the global environment of the given script. It can be used to access variables and functions that are not defined as local.",
+        "function getsenv(script: LocalScript | ModuleScript): { [string]: any }",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "getthreadidentity",
+        "scripts",
+        "Returns the identity of the current thread.",
+        "function getthreadidentity(): number",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+    [
+        "setthreadidentity",
+        "scripts",
+        "Sets the current thread identity.",
+        "function setthreadidentity(identity: number): ()",
+        "https://github.com/unified-naming-convention/NamingStandard/blob/main/api/scripts.md",
+    ],
+] as const satisfies readonly TopLevelDataEntry[];
