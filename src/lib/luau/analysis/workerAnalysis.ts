@@ -1,4 +1,4 @@
-import { scanLuauFileAnalysis } from "../symbolScanner/symbolScanner";
+import { scanLuauFileAnalysis } from "../../platform/luau";
 import type {
     LuauFileAnalysis,
     LuauScanMode,
@@ -28,15 +28,11 @@ type LuauAnalysisWorkerState = {
 let nextLuauAnalysisRequestId = 0;
 let luauAnalysisWorkerState: LuauAnalysisWorkerState | null = null;
 
-function fallbackToLocalAnalysis(options: {
+function fallbackToPlatformAnalysis(options: {
     content: string;
     mode?: LuauScanMode;
 }): Promise<LuauFileAnalysis> {
-    return Promise.resolve(
-        scanLuauFileAnalysis(options.content, {
-            mode: options.mode,
-        }),
-    );
+    return scanLuauFileAnalysis(options);
 }
 
 function rejectPendingRequests(reason: unknown): void {
@@ -153,14 +149,14 @@ function getLuauAnalysisWorkerState(): LuauAnalysisWorkerState {
 }
 
 /**
- * Analyzes Luau file content in a background worker, falling back to synchronous analysis on failure.
+ * Analyzes Luau file content in a background worker, falling back to platform analysis on failure.
  */
 export function analyzeLuauFileInBackground(options: {
     content: string;
     mode?: LuauScanMode;
 }): Promise<LuauFileAnalysis> {
     if (!canUseLuauAnalysisWorker()) {
-        return fallbackToLocalAnalysis(options);
+        return fallbackToPlatformAnalysis(options);
     }
 
     try {
@@ -210,12 +206,12 @@ export function analyzeLuauFileInBackground(options: {
             }
 
             resetWorkerState();
-            return fallbackToLocalAnalysis(options).catch(() => {
+            return fallbackToPlatformAnalysis(options).catch(() => {
                 throw error;
             });
         });
     } catch {
         resetWorkerState();
-        return fallbackToLocalAnalysis(options);
+        return fallbackToPlatformAnalysis(options);
     }
 }

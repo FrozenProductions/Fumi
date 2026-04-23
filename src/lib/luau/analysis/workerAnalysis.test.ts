@@ -7,6 +7,15 @@ import {
     vi,
 } from "vite-plus/test";
 import { scanLuauFileAnalysis } from "../symbolScanner/symbolScanner";
+import type { LuauScanMode } from "../symbolScanner/symbolScanner.type";
+
+const mocks = vi.hoisted(() => ({
+    scanPlatformLuauFileAnalysis: vi.fn(),
+}));
+
+vi.mock("../../platform/luau", () => ({
+    scanLuauFileAnalysis: mocks.scanPlatformLuauFileAnalysis,
+}));
 
 type MockWorkerListener = (event: { data?: unknown; error?: unknown }) => void;
 
@@ -85,6 +94,13 @@ const originalWindow = globalThis.window;
 
 beforeEach(() => {
     vi.resetModules();
+    mocks.scanPlatformLuauFileAnalysis.mockReset();
+    mocks.scanPlatformLuauFileAnalysis.mockImplementation(
+        async (options: { content: string; mode?: LuauScanMode }) =>
+            scanLuauFileAnalysis(options.content, {
+                mode: options.mode,
+            }),
+    );
     MockAnalysisWorker.behaviors = [];
     MockAnalysisWorker.instances = [];
     Object.defineProperty(globalThis, "window", {
@@ -116,7 +132,7 @@ afterEach(() => {
 });
 
 describe("analyzeLuauFileInBackground", () => {
-    it("falls back to local analysis when workers are unavailable", async () => {
+    it("uses platform analysis when workers are unavailable", async () => {
         Reflect.deleteProperty(globalThis, "Worker");
 
         const { analyzeLuauFileInBackground } = await import(
@@ -137,6 +153,14 @@ describe("analyzeLuauFileInBackground", () => {
                     symbol.kind === "function" && symbol.label === "greet",
             ),
         ).toBe(true);
+        expect(mocks.scanPlatformLuauFileAnalysis).toHaveBeenCalledWith({
+            content: [
+                "-- Utilities",
+                "local function greet()",
+                "    print('hi')",
+                "end",
+            ].join("\n"),
+        });
     });
 
     it("recreates the worker after a failure instead of disabling it for the session", async () => {
@@ -177,5 +201,6 @@ describe("analyzeLuauFileInBackground", () => {
         expect(
             MockAnalysisWorker.instances[1]?.postMessage,
         ).toHaveBeenCalledOnce();
+        expect(mocks.scanPlatformLuauFileAnalysis).toHaveBeenCalledOnce();
     });
 });
