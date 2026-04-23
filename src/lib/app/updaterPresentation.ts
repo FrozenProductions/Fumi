@@ -21,6 +21,7 @@ function formatAppUpdateByteCount(value: number | null): string | null {
     return `${currentValue.toFixed(currentValue >= 10 ? 0 : 1)} ${units[unitIndex]}`;
 }
 
+/** Formats an app update download progress summary into a human-readable string. */
 export function getAppUpdateProgressSummary(
     progress: AppUpdateDownloadProgress | null,
 ): string | null {

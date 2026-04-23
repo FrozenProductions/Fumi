@@ -25,6 +25,18 @@ type WorkspaceCompletionPopupKeyboardOptions = {
     ) => void;
 };
 
+/**
+ * Handles keyboard interactions with the Luau completion popup.
+ *
+ * @remarks
+ * Registers a capture-phase `keydown` listener. Arrow keys navigate the popup,
+ * Enter/Tab accept, Escape dismisses. Deletion and navigation keys close the
+ * popup and suppress the next passive completion trigger. Manual completion
+ * shortcut (`Ctrl+Space`) forces a fresh completion request.
+ *
+ * @param options - Completion popup state, editor accessor, and action callbacks
+ * @returns void (side-effect only)
+ */
 export function useWorkspaceCompletionPopupKeyboard({
     acceptCompletion,
     activeEditorMode,

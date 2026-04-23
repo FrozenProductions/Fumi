@@ -15,6 +15,9 @@ import type {
 
 let completionMeasurementContext: CanvasRenderingContext2D | null = null;
 
+/**
+ * Compacts a completion detail label by shortening known namespace prefixes.
+ */
 export function getCompactLuauCompletionDetailLabel(detail: string): string {
     if (detail.startsWith("sunc")) {
         return "sunc";

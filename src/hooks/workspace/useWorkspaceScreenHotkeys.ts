@@ -14,6 +14,17 @@ type UseWorkspaceScreenHotkeysOptions = {
     onToggleOutlinePanel: () => void;
 };
 
+/**
+ * Registers workspace-screen-level hotkeys for Roblox controls and the outline panel.
+ *
+ * @remarks
+ * Disables all hotkeys while the command palette is open. Desktop-only hotkeys
+ * (launch and kill Roblox) are further gated by `isDesktopShell` and their
+ * respective operation-in-progress flags.
+ *
+ * @param options - Hotkey configuration and action callbacks
+ * @returns void (side-effect only)
+ */
 export function useWorkspaceScreenHotkeys({
     hotkeyBindings,
     isCommandPaletteOpen,

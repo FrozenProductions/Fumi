@@ -17,6 +17,8 @@ import type { AutomaticExecutionScreenProps } from "./automaticExecution.type";
 /**
  * The main automatic execution screen with script editor and sidebar.
  *
+ * @param props - Component props
+ * @param props.executorKind - The kind of executor powering automatic execution
  * @returns A React component
  */
 export function AutomaticExecutionScreen({

@@ -1,3 +1,5 @@
+//! Workspace Tauri commands: session lifecycle, file operations, and archive management.
+
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
@@ -186,6 +188,7 @@ pub(super) fn delete_workspace_tab_by_id(
     persist_workspace_metadata(app, workspace_path, &normalized_metadata)
 }
 
+/// Updates the unsaved-changes flag for the current workspace.
 #[command]
 pub fn set_workspace_unsaved_changes(state: State<AppRuntimeState>, has_unsaved_changes: bool) {
     state.set_workspace_unsaved_changes(has_unsaved_changes);

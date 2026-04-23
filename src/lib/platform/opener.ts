@@ -11,6 +11,7 @@ import { isTauriEnvironment } from "./runtime";
  * Opens a URL in the default external browser.
  *
  * @param url - The URL to open
+ * @throws {PlatformOperationError} If the platform operation fails
  */
 export async function openExternalUrl(url: string): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -32,6 +33,7 @@ export async function openExternalUrl(url: string): Promise<void> {
  * Opens a local directory path in the file explorer.
  *
  * @param path - The directory path to open
+ * @throws {PlatformOperationError} If the platform operation fails or the desktop shell is unavailable
  */
 export async function openDirectoryPath(path: string): Promise<void> {
     if (!isTauriEnvironment()) {

@@ -6,6 +6,17 @@ import {
     invokeWorkspaceVoidCommand,
 } from "./workspaceCommandShared";
 
+/**
+ * Restores an archived workspace tab back to active tabs.
+ *
+ * Invokes the `restore_archived_workspace_tab` Tauri command.
+ *
+ * @param options - Restore options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @param options.tabId - ID of the archived tab to restore
+ * @returns The restored tab snapshot
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function restoreArchivedWorkspaceTab(options: {
     workspacePath: string;
     tabId: string;
@@ -23,6 +34,15 @@ export function restoreArchivedWorkspaceTab(options: {
     );
 }
 
+/**
+ * Restores all archived workspace tabs back to active tabs.
+ *
+ * Invokes the `restore_all_archived_workspace_tabs` Tauri command.
+ *
+ * @param options - Restore options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function restoreAllArchivedWorkspaceTabs(options: {
     workspacePath: string;
 }): Promise<void> {
@@ -39,6 +59,17 @@ export function restoreAllArchivedWorkspaceTabs(options: {
     );
 }
 
+/**
+ * Deletes an archived workspace tab without restoring it.
+ *
+ * Invokes the `delete_archived_workspace_tab` Tauri command.
+ *
+ * @param options - Delete options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @param options.tabId - ID of the archived tab to delete
+ * @param options.fileName - File name of the archived tab
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function deleteArchivedWorkspaceTab(options: {
     workspacePath: string;
     tabId: string;
@@ -57,6 +88,15 @@ export function deleteArchivedWorkspaceTab(options: {
     );
 }
 
+/**
+ * Deletes all archived workspace tabs from disk and metadata.
+ *
+ * Invokes the `delete_all_archived_workspace_tabs` Tauri command.
+ *
+ * @param options - Delete options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function deleteAllArchivedWorkspaceTabs(options: {
     workspacePath: string;
 }): Promise<void> {

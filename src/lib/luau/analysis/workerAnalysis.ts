@@ -152,6 +152,9 @@ function getLuauAnalysisWorkerState(): LuauAnalysisWorkerState {
     return luauAnalysisWorkerState;
 }
 
+/**
+ * Analyzes Luau file content in a background worker, falling back to synchronous analysis on failure.
+ */
 export function analyzeLuauFileInBackground(options: {
     content: string;
     mode?: LuauScanMode;

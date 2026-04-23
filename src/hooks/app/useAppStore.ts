@@ -24,6 +24,14 @@ import {
     normalizeAppOutlinePanelWidth,
 } from "../../lib/app/store";
 
+/**
+ * Merges persisted app store state into the current store, validating and
+ * normalizing values that may be outdated or invalid after an app update.
+ *
+ * @param persistedState - The raw persisted state from localStorage
+ * @param currentState - The current Zustand store state with defaults
+ * @returns The merged store state with validated values
+ */
 export function mergeAppStoreState(
     persistedState: unknown,
     currentState: AppStore,
@@ -96,6 +104,12 @@ export function mergeAppStoreState(
     };
 }
 
+/**
+ * Extracts the subset of app store state that should be persisted to localStorage.
+ *
+ * @param state - The full app store state
+ * @returns A partial state object containing only the persistable fields
+ */
 export function getPersistedAppStoreState(
     state: AppStore,
 ): Partial<AppStoreState> {

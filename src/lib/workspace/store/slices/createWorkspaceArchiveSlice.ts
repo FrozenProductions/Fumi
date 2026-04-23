@@ -16,6 +16,7 @@ import type {
     WorkspaceStoreSliceCreator,
 } from "../workspaceStore.type";
 
+/** Creates the workspace store slice responsible for archiving, restoring, and deleting archived workspace tabs. */
 export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
     WorkspaceArchiveSlice
 > = (set, get) => {

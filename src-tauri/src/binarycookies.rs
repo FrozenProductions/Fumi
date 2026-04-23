@@ -1,3 +1,5 @@
+//! Safari binarycookies format parser for Roblox authentication cookies.
+
 use std::{
     fs,
     io::ErrorKind,

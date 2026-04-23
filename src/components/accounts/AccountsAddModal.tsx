@@ -1,6 +1,11 @@
 import type { ReactElement } from "react";
 import type { AccountsAddModalProps } from "./accountsScreen.type";
 
+/**
+ * Modal form for adding a new Roblox account via cookie input.
+ *
+ * @param props - Component props
+ */
 export function AccountsAddModal({
     closeAddModal,
     draftCookie,

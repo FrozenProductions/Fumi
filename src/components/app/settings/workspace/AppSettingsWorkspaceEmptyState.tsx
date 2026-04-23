@@ -5,6 +5,11 @@ import type { AppSettingsWorkspaceEmptyStateProps } from "./appSettingsWorkspace
 
 const ARCHIVE_ICON_STYLE = createMaskStyle(archiveIcon);
 
+/**
+ * Displays the empty state for the workspace settings section.
+ *
+ * @param props - Component props
+ */
 export function AppSettingsWorkspaceEmptyState({
     title,
     description,

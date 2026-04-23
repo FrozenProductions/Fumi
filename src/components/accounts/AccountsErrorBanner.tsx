@@ -1,6 +1,11 @@
 import type { ReactElement } from "react";
 import type { AccountsErrorBannerProps } from "./accountsScreen.type";
 
+/**
+ * Displays a dismissible error banner for accounts-related failures.
+ *
+ * @param props - Component props
+ */
 export function AccountsErrorBanner({
     errorMessage,
     onDismiss,

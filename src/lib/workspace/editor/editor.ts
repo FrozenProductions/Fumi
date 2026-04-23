@@ -1,5 +1,10 @@
 import type { AceEditorComponent } from "./editor.type";
 
+/**
+ * Resolves the React Ace editor component from a dynamic import, handling nested default exports.
+ *
+ * @throws {Error} If the editor component export is unavailable.
+ */
 export function getReactAceComponent(
     reactAceModule: typeof import("react-ace"),
 ): AceEditorComponent {

@@ -66,6 +66,12 @@ type UseWorkspaceEditorSurfaceResult = {
 
 /**
  * Loads editor runtime and owns split/outline resize interactions for the workspace editor.
+ *
+ * @param options - Hook options
+ * @param options.outline - Outline panel props including visibility, width, and resize handler
+ * @param options.pane - Editor pane props including active tab ID and tab list
+ * @param options.splitViewState - Split view state including the current split and resize callbacks
+ * @returns Editor surface refs, derived state, and interaction actions
  */
 export function useWorkspaceEditorSurface(options: {
     outline: WorkspaceEditorOutlineProps;

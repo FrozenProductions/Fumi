@@ -20,13 +20,30 @@ import type {
     ScriptLibraryStoreState,
 } from "./useScriptLibraryStore.type";
 
+/**
+ * Checks whether any script library filter is currently active.
+ *
+ * @param state - The script library store state
+ * @returns True if at least one filter toggle is enabled
+ */
 export const selectHasActiveScriptLibraryFilters = (
     state: ScriptLibraryStore,
 ): boolean => hasActiveScriptLibraryFilters(state.filters);
 
+/**
+ * Counts the number of favorited scripts in the script library.
+ *
+ * @param state - The script library store state
+ * @returns The number of favorite scripts
+ */
 export const selectFavoriteCount = (state: ScriptLibraryStore): number =>
     state.favoriteScripts.length;
 
+/**
+ * Returns the default initial state for the script library store.
+ *
+ * @returns A fresh store state with browse mode, empty scripts, and default filters
+ */
 export function getDefaultScriptLibraryStoreState(): ScriptLibraryStoreState {
     return {
         contentMode: "browse",
@@ -49,6 +66,12 @@ export function getDefaultScriptLibraryStoreState(): ScriptLibraryStoreState {
     };
 }
 
+/**
+ * Extracts the subset of script library state that should be persisted to localStorage.
+ *
+ * @param state - The full script library store state
+ * @returns An object containing filters, favorites, order, and view format
+ */
 export function getPersistedScriptLibraryStoreState(
     state: ScriptLibraryStore,
 ): Pick<
@@ -63,6 +86,13 @@ export function getPersistedScriptLibraryStoreState(
     };
 }
 
+/**
+ * Zustand state creator for the script library store, including session caching
+ * and action feedback timers for copy/add operations.
+ *
+ * @param set - Zustand state setter
+ * @returns The full store state with actions
+ */
 export const createScriptLibraryStoreStateCreator: StateCreator<
     ScriptLibraryStore
 > = (set) => {

@@ -15,6 +15,7 @@ pub(crate) struct ConfirmDialogOptions<'a> {
     pub(crate) cancel_label: &'a str,
 }
 
+/// Shows a native confirmation dialog and returns whether the user confirmed.
 #[tauri::command]
 pub fn show_confirmation_dialog(app: tauri::AppHandle, message: String) -> Result<bool, String> {
     show_warning_confirmation_dialog(

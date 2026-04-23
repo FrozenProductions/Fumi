@@ -16,6 +16,9 @@ function logWorkspacePersistenceFailure(
     console.warn(`Failed to ${action} recent workspace paths.`, error);
 }
 
+/**
+ * Produces a serializable signature of the workspace state for change detection.
+ */
 export function getWorkspacePersistSignature(
     workspace: WorkspaceSession | null,
 ): string | null {
@@ -33,16 +36,25 @@ export function getWorkspacePersistSignature(
     });
 }
 
+/**
+ * Returns the last workspace signature that was successfully persisted.
+ */
 export function getLastPersistedWorkspaceSignature(): string | null {
     return lastPersistedWorkspaceSignature;
 }
 
+/**
+ * Records that the workspace with the given signature was persisted.
+ */
 export function markWorkspacePersistedSignature(
     signature: string | null,
 ): void {
     lastPersistedWorkspaceSignature = signature;
 }
 
+/**
+ * Reads the recent workspace paths from localStorage, returning an empty array on failure.
+ */
 export function readRecentWorkspacePaths(): string[] {
     try {
         const storedValue =
@@ -72,6 +84,9 @@ export function readRecentWorkspacePaths(): string[] {
     }
 }
 
+/**
+ * Persists the given workspace paths to localStorage.
+ */
 export function persistRecentWorkspacePaths(paths: string[]): void {
     try {
         globalThis.localStorage?.setItem(
@@ -83,6 +98,9 @@ export function persistRecentWorkspacePaths(paths: string[]): void {
     }
 }
 
+/**
+ * Prepends a workspace path and deduplicates, keeping within the max limit.
+ */
 export function updateRecentWorkspacePaths(
     currentPaths: string[],
     workspacePath: string,

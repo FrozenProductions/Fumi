@@ -45,6 +45,9 @@ export function clampAppZoomPercent(zoomPercent: number): number {
     return Math.min(APP_ZOOM_MAX, Math.max(APP_ZOOM_MIN, zoomPercent));
 }
 
+/**
+ * Returns whether the value is a valid sidebar item identifier.
+ */
 export function isAppSidebarItem(value: unknown): value is AppSidebarItem {
     return (
         typeof value === "string" &&
@@ -52,10 +55,16 @@ export function isAppSidebarItem(value: unknown): value is AppSidebarItem {
     );
 }
 
+/**
+ * Returns whether the value is a valid app theme.
+ */
 export function isAppTheme(value: unknown): value is AppTheme {
     return typeof value === "string" && APP_THEMES.includes(value as AppTheme);
 }
 
+/**
+ * Returns whether the value is a valid sidebar position.
+ */
 export function isAppSidebarPosition(
     value: unknown,
 ): value is AppSidebarPosition {
@@ -65,12 +74,18 @@ export function isAppSidebarPosition(
     );
 }
 
+/**
+ * Normalizes a sidebar position value, falling back to the default if invalid.
+ */
 export function normalizeAppSidebarPosition(
     value: unknown,
 ): AppSidebarPosition {
     return isAppSidebarPosition(value) ? value : DEFAULT_APP_SIDEBAR_POSITION;
 }
 
+/**
+ * Normalizes an intellisense width value, migrating legacy width names to current ones.
+ */
 export function normalizeAppIntellisenseWidth(
     value: unknown,
 ): AppIntellisenseWidth {
@@ -96,6 +111,9 @@ export function normalizeAppIntellisenseWidth(
         : DEFAULT_APP_EDITOR_SETTINGS.intellisenseWidth;
 }
 
+/**
+ * Normalizes a middle-click tab action value, falling back to the default if invalid.
+ */
 export function normalizeAppMiddleClickTabAction(
     value: unknown,
 ): AppMiddleClickTabAction {
@@ -105,6 +123,9 @@ export function normalizeAppMiddleClickTabAction(
         : DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION;
 }
 
+/**
+ * Normalizes an outline panel width, clamping to the valid range.
+ */
 export function normalizeAppOutlinePanelWidth(value: unknown): number {
     if (!Number.isFinite(value)) {
         return DEFAULT_APP_EDITOR_SETTINGS.outlinePanelWidth;

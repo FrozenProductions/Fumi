@@ -38,6 +38,10 @@ type UseWorkspaceActionsMenuResult = {
 
 /**
  * Manages menu-local state for workspace actions including confirm timers and hover reveals.
+ *
+ * @param options - Hook options
+ * @param options.isAnyRobloxKillPending - Whether any Roblox kill operation is in progress
+ * @returns Menu refs, state, and action functions
  */
 export function useWorkspaceActionsMenu({
     isAnyRobloxKillPending,

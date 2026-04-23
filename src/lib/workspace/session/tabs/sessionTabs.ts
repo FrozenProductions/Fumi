@@ -117,6 +117,9 @@ export function hasWorkspaceDraftChanges(workspace: WorkspaceSession): boolean {
     return workspace.tabs.some((tab) => tab.content !== tab.savedContent);
 }
 
+/**
+ * Returns the number of tabs with unsaved content changes in the workspace.
+ */
 export function getWorkspaceDirtyTabCount(
     workspace: WorkspaceSession | null,
 ): number {

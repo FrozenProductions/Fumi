@@ -15,6 +15,12 @@ import type {
 } from "../workspaceStore.type";
 import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport";
 
+/**
+ * Creates the action that bootstraps the workspace session on app startup.
+ *
+ * @remarks
+ * Prevents double-bootstrapping and falls back to a null workspace outside Tauri.
+ */
 export function createBootstrapWorkspaceSessionAction(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,

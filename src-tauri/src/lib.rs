@@ -1,3 +1,5 @@
+//! Core application setup and Tauri command registration.
+
 mod accounts;
 mod automatic_execution;
 pub(crate) mod binarycookies;

@@ -19,6 +19,18 @@ import {
 } from "./useWorkspaceEditorSearchHelpers";
 import { useWorkspaceEditorSearchNavigation } from "./useWorkspaceEditorSearchNavigation";
 
+/**
+ * Manages per-tab editor find-and-replace state, including query, match counts, and search toggles.
+ *
+ * @remarks
+ * Maintains search state per tab ID so switching tabs preserves each tab's
+ * search session. Prunes search state for closed tabs on every tab-list change.
+ * Closes the completion popup when search opens and seeds the query from the
+ * editor's current selection.
+ *
+ * @param options - Active tab info, editor accessor, and completion popup callback
+ * @returns Search state, toggle actions, and panel configuration
+ */
 export function useWorkspaceEditorSearch({
     activeTabId,
     tabs,

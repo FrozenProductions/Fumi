@@ -53,6 +53,8 @@ function getKillTooltip(options: WorkspaceActionsDropdownProps): string {
 
 /**
  * Dropdown content for Roblox and workspace actions.
+ *
+ * @param options - Component props grouped into menu, roblox, confirm, and actions
  */
 export function WorkspaceActionsDropdown(
     options: WorkspaceActionsDropdownProps,

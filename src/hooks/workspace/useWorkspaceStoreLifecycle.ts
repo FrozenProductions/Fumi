@@ -7,6 +7,16 @@ import {
 import { useWindowResume } from "../shared/useWindowResume";
 import { useWorkspaceStore } from "./useWorkspaceStore";
 
+/**
+ * Manages the workspace store lifecycle: bootstrap, debounced persistence, and filesystem refresh.
+ *
+ * @remarks
+ * Bootstraps the workspace session on mount, persists state changes after a
+ * configurable delay, and refreshes from the filesystem when the window resumes
+ * from suspension.
+ *
+ * @returns void (side-effect only)
+ */
 export function useWorkspaceStoreLifecycle(): void {
     const bootstrapWorkspaceSession = useWorkspaceStore(
         (state) => state.bootstrapWorkspaceSession,

@@ -1,3 +1,5 @@
+//! Roblox account management: listing, launching, and process tracking.
+
 pub(crate) mod commands;
 pub(crate) mod models;
 

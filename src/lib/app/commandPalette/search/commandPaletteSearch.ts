@@ -8,10 +8,16 @@ import type { SearchField } from "../../../shared/search.type";
 import type { AppCommandPaletteSearchFieldName } from "../commandPalette.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 
+/**
+ * Normalizes a command palette search value for matching.
+ */
 export function normalizeAppCommandPaletteSearchValue(value: string): string {
     return normalizeSearchValue(value);
 }
 
+/**
+ * Scores a command palette item against the search value, returning null for no match.
+ */
 export function scoreAppCommandPaletteItem(
     item: AppCommandPaletteItem,
     searchValue: string,
@@ -23,6 +29,9 @@ export function scoreAppCommandPaletteItem(
     );
 }
 
+/**
+ * Searches command palette items by relevance and returns up to `limit` results.
+ */
 export function searchAppCommandPaletteItems(
     items: AppCommandPaletteItem[],
     searchValue: string,

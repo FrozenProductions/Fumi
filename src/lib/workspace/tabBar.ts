@@ -1,5 +1,8 @@
 import type { WorkspaceSession } from "./workspace.type";
 
+/**
+ * Reorders tabs by moving the dragged tab to the target position, returning a new array.
+ */
 export function reorderTabPreview(
     tabs: WorkspaceSession["tabs"],
     draggedTabId: string,

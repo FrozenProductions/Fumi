@@ -26,6 +26,11 @@ function getAccountStatusLabel(
     return account.boundPort !== null ? "Active" : "Offline";
 }
 
+/**
+ * Renders the list of Roblox accounts with status badges, launch, and delete controls.
+ *
+ * @param props - Component props
+ */
 export function AccountsList({
     accounts,
     deletingAccountId,

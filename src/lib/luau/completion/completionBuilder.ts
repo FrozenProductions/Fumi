@@ -7,6 +7,9 @@ import type {
     LuauCompletionOptions,
 } from "./completionBuilder.type";
 
+/**
+ * Strips Markdown links, bold, and code backticks from a Luau doc summary.
+ */
 export function normalizeLuauMarkdownSummary(summary: string): string {
     return summary
         .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -16,10 +19,16 @@ export function normalizeLuauMarkdownSummary(summary: string): string {
         .trim();
 }
 
+/**
+ * Collapses consecutive whitespace in a Luau doc summary into single spaces.
+ */
 export function normalizeLuauWhitespaceSummary(summary: string): string {
     return summary.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Creates a single Luau completion item with label, doc, and insertion metadata.
+ */
 export function createLuauCompletionItem(
     label: string,
     summary: string,
@@ -62,6 +71,9 @@ export function createLuauCompletionItem(
     };
 }
 
+/**
+ * Creates a completion item for a Luau alias, noting the canonical name in the summary.
+ */
 export function createLuauCompletionAliasItem(
     alias: string,
     canonicalName: string,
@@ -75,6 +87,9 @@ export function createLuauCompletionAliasItem(
     );
 }
 
+/**
+ * Creates a language-scope completion item (keywords, types, constants) with source group "language".
+ */
 export function createLuauLanguageCompletionItem(
     label: string,
     kind: LuauCompletionItem["kind"],
@@ -98,6 +113,9 @@ export function createLuauLanguageCompletionItem(
     });
 }
 
+/**
+ * Groups namespace completion items under a shared namespace path.
+ */
 export function createLuauNamespaceCompletionGroup(
     namespace: string,
     items: LuauCompletionItem[],

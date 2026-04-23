@@ -5,6 +5,10 @@ import type { WorkspaceTabBarTabsProps } from "./workspaceTabBar.type";
 
 /**
  * Renders the single-pane and split-pane tab strip layouts.
+ *
+ * @param props - Component props
+ * @param props.layout - Layout configuration for tabs, split view, and styling
+ * @param props.items - Shared tab item state and action callbacks
  */
 export function WorkspaceTabBarTabs({
     layout,

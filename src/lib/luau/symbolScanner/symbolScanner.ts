@@ -8,6 +8,12 @@ let lastScannedAnalysis: LuauFileAnalysis = {
     symbols: [],
 };
 
+/**
+ * Scans Luau source content and returns file analysis with symbols and function scopes.
+ *
+ * @remarks
+ * Caches the last result and returns it when called with identical content and mode.
+ */
 export function scanLuauFileAnalysis(
     content: string,
     options?: {

@@ -18,7 +18,14 @@ import { AppTooltip } from "../../app/tooltip/AppTooltip";
 import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
 import { WorkspaceActionsDropdown } from "./WorkspaceActionsDropdown";
 
-/** Floating action button for execute, Roblox controls, and workspace actions. */
+/**
+ * Floating action button for execute, Roblox controls, and workspace actions.
+ *
+ * @param props - Component props
+ * @param props.executor - Workspace executor state and actions
+ * @param props.robloxProcesses - Running Roblox process details
+ * @param props.onLaunchRoblox - Callback to launch a Roblox instance
+ */
 export function WorkspaceActionsButton({
     executor,
     isLaunching,

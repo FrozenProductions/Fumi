@@ -12,6 +12,11 @@ function formatExecutionTimestamp(executedAt: number): string {
     }).format(new Date(executedAt));
 }
 
+/**
+ * Renders the selectable list of execution history entries in the modal sidebar.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceExecutionHistorySidebar({
     entries,
     selectedEntry,

@@ -1,3 +1,5 @@
+//! Data models for workspace tabs, split views, snapshots, and metadata.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -19,6 +21,7 @@ pub(super) const MAX_WORKSPACE_SPLIT_RATIO: f64 = 0.88;
 pub(super) const WORKSPACE_METADATA_VERSION: u8 = CURRENT_WORKSPACE_METADATA_VERSION;
 pub(super) const MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES: usize = 100;
 
+/// Cursor position and scroll state for a workspace editor tab.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceCursorState {
@@ -27,6 +30,7 @@ pub struct WorkspaceCursorState {
     pub scroll_top: f64,
 }
 
+/// Persistent state for a workspace tab, including its cursor position and archive status.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceTabState {
@@ -37,6 +41,7 @@ pub struct WorkspaceTabState {
     pub archived_at: Option<i64>,
 }
 
+/// A workspace tab snapshot including its file content and dirty state.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceTabSnapshot {
@@ -47,6 +52,7 @@ pub struct WorkspaceTabSnapshot {
     pub is_dirty: bool,
 }
 
+/// Identifies which pane (primary or secondary) is focused in a split view.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum WorkspacePaneId {
@@ -54,6 +60,7 @@ pub enum WorkspacePaneId {
     Secondary,
 }
 
+/// Configuration for a split editor view with primary and secondary panes.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceSplitView {
@@ -71,6 +78,7 @@ fn default_workspace_split_ratio() -> f64 {
     DEFAULT_WORKSPACE_SPLIT_RATIO
 }
 
+/// Full workspace metadata including tabs, archived tabs, and execution history.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceMetadata {
@@ -84,6 +92,7 @@ pub struct WorkspaceMetadata {
     pub execution_history: Vec<WorkspaceExecutionHistoryEntry>,
 }
 
+/// Complete workspace snapshot sent to the frontend on bootstrap, open, and refresh.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceSnapshot {
@@ -93,6 +102,7 @@ pub struct WorkspaceSnapshot {
     pub tabs: Vec<WorkspaceTabSnapshot>,
 }
 
+/// Response returned when bootstrapping the workspace, containing the last session if available.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceBootstrapResponse {
@@ -100,6 +110,7 @@ pub struct WorkspaceBootstrapResponse {
     pub workspace: Option<WorkspaceSnapshot>,
 }
 
+/// A file name and content pair for a script dropped into the workspace from outside the app.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct DroppedWorkspaceScriptDraft {
@@ -107,6 +118,7 @@ pub struct DroppedWorkspaceScriptDraft {
     pub content: String,
 }
 
+/// A single execution history entry recording when and where a script was executed.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkspaceExecutionHistoryEntry {

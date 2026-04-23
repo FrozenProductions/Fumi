@@ -34,6 +34,9 @@ function getOutlineCommentMetadata(commentBody: string): {
     };
 }
 
+/**
+ * Extracts standalone Luau comments as outline symbols for the file's symbol list.
+ */
 export function extractLuauOutlineComments(
     content: string,
     rootScope: ScopeFrame,

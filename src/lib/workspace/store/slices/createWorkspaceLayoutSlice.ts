@@ -12,6 +12,7 @@ import type {
     WorkspaceStoreSliceCreator,
 } from "../workspaceStore.type";
 
+/** Creates the workspace store slice responsible for tab selection, reordering, split view, and pane focus. */
 export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
     WorkspaceLayoutSlice
 > = (set, get) => {

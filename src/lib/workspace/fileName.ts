@@ -26,6 +26,9 @@ export function splitWorkspaceFileName(
     };
 }
 
+/**
+ * Combines a base name and extension into a full workspace file name.
+ */
 export function buildWorkspaceFileName(
     baseName: string,
     extension: string,
@@ -33,10 +36,16 @@ export function buildWorkspaceFileName(
     return `${baseName}${extension}`;
 }
 
+/**
+ * Truncates a tab base name to the maximum allowed length.
+ */
 export function clampWorkspaceTabBaseName(baseName: string): string {
     return baseName.slice(0, MAX_WORKSPACE_TAB_NAME_LENGTH);
 }
 
+/**
+ * Returns whether the tab base name exceeds the maximum allowed length.
+ */
 export function isWorkspaceTabBaseNameTooLong(baseName: string): boolean {
     return baseName.length > MAX_WORKSPACE_TAB_NAME_LENGTH;
 }

@@ -31,6 +31,18 @@ type UseWorkspaceTabDragDropResult = {
     handleResizeSplitCommit: (splitRatio: number) => void;
 };
 
+/**
+ * Manages tab drag-and-drop interactions including reordering, split-view drops, and split resize.
+ *
+ * @remarks
+ * Tracks a `lastDropTargetTabIdRef` during drag-over because `@dnd-kit` may not
+ * provide `operation.target.id` on drag-end. Cleans up all transient drag state
+ * when a drag completes or is cancelled. Split resize uses a preview-then-commit
+ * pattern to avoid flickering during drag.
+ *
+ * @param options - Split view state and workspace action callbacks
+ * @returns Drag/drop event handlers and derived split-view state
+ */
 export function useWorkspaceTabDragDrop({
     splitView,
     openWorkspaceTabInPane,

@@ -34,6 +34,12 @@ import type { LuauCompletionItem, LuauFileSymbol } from "../luau.type";
 import type { LuauFileAnalysis } from "../symbolScanner/symbolScanner.type";
 import type { LuauCompletionQuery } from "./completion.type";
 
+/**
+ * Returns whether auto-completion should be suppressed for the given Ace token type.
+ *
+ * @remarks
+ * Suppresses in comments and strings.
+ */
 export function shouldSuppressLuauCompletionForTokenType(
     tokenType: string | undefined,
 ): boolean {
@@ -279,6 +285,9 @@ function getVisibleFileCompletionItems(
         .map(createCompletionItemFromFileSymbol);
 }
 
+/**
+ * Builds a Luau completion query with matching items and replacement range from the cursor context.
+ */
 export function getLuauCompletionQuery(options: {
     analysis: LuauFileAnalysis | null;
     beforeCursor: string;
@@ -329,6 +338,9 @@ export function getLuauCompletionQuery(options: {
     };
 }
 
+/**
+ * Returns whether the completion popup should open, hiding exact-only matches.
+ */
 export function shouldOpenLuauCompletion(
     query: LuauCompletionQuery,
     forceOpen = false,

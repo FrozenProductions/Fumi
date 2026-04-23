@@ -119,7 +119,10 @@ async function invokeExecutorCommand<T>(
 /**
  * Gets the current executor status including available ports and attachment state.
  *
+ * Invokes the `get_executor_status` Tauri command.
+ *
  * @returns The current executor status payload
+ * @throws {ExecutorCommandError} If the command fails
  */
 export function getExecutorStatus(): Promise<ExecutorStatusPayload> {
     if (!isTauriEnvironment()) {
@@ -136,8 +139,11 @@ export function getExecutorStatus(): Promise<ExecutorStatusPayload> {
 /**
  * Attaches the executor to a specific port for script execution.
  *
+ * Invokes the `attach_executor` Tauri command.
+ *
  * @param port - The port number to attach to
  * @returns Updated executor status with port binding info
+ * @throws {ExecutorCommandError} If the command fails or the desktop shell is unavailable
  */
 export function attachExecutor(port: number): Promise<ExecutorStatusPayload> {
     if (!isTauriEnvironment()) {
@@ -162,7 +168,10 @@ export function attachExecutor(port: number): Promise<ExecutorStatusPayload> {
 /**
  * Detaches the executor from the current port.
  *
+ * Invokes the `detach_executor` Tauri command.
+ *
  * @returns Updated executor status showing detached state
+ * @throws {ExecutorCommandError} If the command fails or the desktop shell is unavailable
  */
 export function detachExecutor(): Promise<ExecutorStatusPayload> {
     if (!isTauriEnvironment()) {
@@ -184,7 +193,10 @@ export function detachExecutor(): Promise<ExecutorStatusPayload> {
 /**
  * Executes a Luau script string via the attached executor.
  *
+ * Invokes the `execute_executor_script` Tauri command.
+ *
  * @param script - The Luau script source to execute
+ * @throws {ExecutorCommandError} If the command fails or the desktop shell is unavailable
  */
 export function executeExecutorScript(script: string): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -212,6 +224,7 @@ export function executeExecutorScript(script: string): Promise<void> {
  *
  * @param listener - Callback invoked with updated executor status
  * @returns Unsubscribe function
+ * @throws {ExecutorCommandError} If the subscription fails or the desktop shell is unavailable
  */
 export function subscribeToExecutorStatusChanged(
     listener: (payload: ExecutorStatusPayload) => void,

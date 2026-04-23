@@ -5,6 +5,8 @@ import { createWindowShellError } from "./windowShared";
 
 /**
  * Starts window dragging operation (e.g., for custom title bar drag).
+ *
+ * @throws {WindowShellError} If the window operation fails
  */
 export async function startCurrentWindowDragging(): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -26,6 +28,7 @@ export async function startCurrentWindowDragging(): Promise<void> {
  * Toggles the maximized state of the current window.
  *
  * @returns True if the window is now maximized
+ * @throws {WindowShellError} If the window operation fails
  */
 export async function toggleCurrentWindowMaximize(): Promise<boolean> {
     if (!isTauriEnvironment()) {
@@ -49,6 +52,8 @@ export async function toggleCurrentWindowMaximize(): Promise<boolean> {
 
 /**
  * Minimizes the current window to the dock/taskbar.
+ *
+ * @throws {WindowShellError} If the window operation fails
  */
 export async function minimizeCurrentWindow(): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -68,6 +73,8 @@ export async function minimizeCurrentWindow(): Promise<void> {
 
 /**
  * Closes the current window, triggering app quit if it's the last window.
+ *
+ * @throws {WindowShellError} If the window operation fails
  */
 export async function closeCurrentWindow(): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -89,6 +96,7 @@ export async function closeCurrentWindow(): Promise<void> {
  * Reads the current maximized state of the window.
  *
  * @returns True if the window is currently maximized
+ * @throws {WindowShellError} If the window operation fails
  */
 export async function readCurrentWindowMaximizedState(): Promise<boolean> {
     if (!isTauriEnvironment()) {
@@ -111,6 +119,7 @@ export async function readCurrentWindowMaximizedState(): Promise<boolean> {
  *
  * @param listener - Callback invoked when the window is resized
  * @returns Unsubscribe function
+ * @throws {WindowShellError} If the subscription fails
  */
 export async function subscribeToCurrentWindowResize(
     listener: () => void,
@@ -134,6 +143,10 @@ export async function subscribeToCurrentWindowResize(
 
 /**
  * Completes the exit preparation phase, allowing the app to quit.
+ *
+ * Invokes the `complete_exit_preparation` Tauri command.
+ *
+ * @throws {WindowShellError} If the command fails
  */
 export async function completeExitPreparation(): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -154,8 +167,11 @@ export async function completeExitPreparation(): Promise<void> {
 /**
  * Resolves an exit guard sync request with the guard decision.
  *
+ * Invokes the `resolve_exit_guard_sync` Tauri command.
+ *
  * @param syncId - The sync ID from the exit guard event
  * @param shouldGuardExit - Whether to prevent or allow exit
+ * @throws {WindowShellError} If the command fails
  */
 export async function resolveExitGuardSync(
     syncId: number,

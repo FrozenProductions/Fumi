@@ -11,6 +11,8 @@ import type { WorkspaceTabBarControlsProps } from "./workspaceTabBar.type";
 
 /**
  * Renders the trailing tab bar controls for split, list, and create actions.
+ *
+ * @param props - Component props
  */
 export function WorkspaceTabBarControls({
     refs,

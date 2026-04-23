@@ -210,7 +210,10 @@ async function invokeAccountsVoidCommand(
 /**
  * Lists all saved accounts and whether Roblox is currently running.
  *
+ * Invokes the `list_accounts` Tauri command.
+ *
  * @returns Account list with running status
+ * @throws {AccountsCommandError} If the command fails
  */
 export function listAccounts(): Promise<AccountListResponse> {
     if (!isTauriEnvironment()) {
@@ -227,8 +230,11 @@ export function listAccounts(): Promise<AccountListResponse> {
 /**
  * Adds a new account with the provided Roblox cookie.
  *
+ * Invokes the `add_account` Tauri command.
+ *
  * @param cookie - Roblox authentication cookie
  * @returns The newly created account summary
+ * @throws {AccountsCommandError} If the command fails or the desktop shell is unavailable
  */
 export function addAccount(cookie: string): Promise<AccountSummary> {
     if (!isTauriEnvironment()) {
@@ -251,8 +257,11 @@ export function addAccount(cookie: string): Promise<AccountSummary> {
 /**
  * Launches the Roblox client for the specified account.
  *
+ * Invokes the `launch_account` Tauri command.
+ *
  * @param accountId - ID of the account to launch
  * @returns The updated account summary with bound port info
+ * @throws {AccountsCommandError} If the command fails or the desktop shell is unavailable
  */
 export function launchAccount(accountId: string): Promise<AccountSummary> {
     if (!isTauriEnvironment()) {
@@ -275,7 +284,10 @@ export function launchAccount(accountId: string): Promise<AccountSummary> {
 /**
  * Deletes the specified account from storage.
  *
+ * Invokes the `delete_account` Tauri command.
+ *
  * @param accountId - ID of the account to delete
+ * @throws {AccountsCommandError} If the command fails or the desktop shell is unavailable
  */
 export function deleteAccount(accountId: string): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -294,6 +306,10 @@ export function deleteAccount(accountId: string): Promise<void> {
 
 /**
  * Kills all currently running Roblox processes.
+ *
+ * Invokes the `kill_roblox_processes` Tauri command.
+ *
+ * @throws {AccountsCommandError} If the command fails or the desktop shell is unavailable
  */
 export function killRobloxProcesses(): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -313,6 +329,10 @@ export function killRobloxProcesses(): Promise<void> {
 
 /**
  * Launches the Roblox client without a bound account.
+ *
+ * Invokes the `launch_roblox` Tauri command.
+ *
+ * @throws {AccountsCommandError} If the command fails or the desktop shell is unavailable
  */
 export function launchRoblox(): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -330,7 +350,10 @@ export function launchRoblox(): Promise<void> {
 /**
  * Lists all currently running Roblox processes.
  *
+ * Invokes the `list_roblox_processes` Tauri command.
+ *
  * @returns Array of Roblox process information
+ * @throws {AccountsCommandError} If the command fails
  */
 export function listRobloxProcesses(): Promise<readonly RobloxProcessInfo[]> {
     if (!isTauriEnvironment()) {
@@ -347,7 +370,10 @@ export function listRobloxProcesses(): Promise<readonly RobloxProcessInfo[]> {
 /**
  * Kills a specific Roblox process by PID.
  *
+ * Invokes the `kill_roblox_process` Tauri command.
+ *
  * @param pid - Process ID to terminate
+ * @throws {AccountsCommandError} If the command fails or the desktop shell is unavailable
  */
 export function killRobloxProcess(pid: number): Promise<void> {
     if (!isTauriEnvironment()) {
@@ -369,7 +395,10 @@ export function killRobloxProcess(pid: number): Promise<void> {
 /**
  * Gets the currently active Roblox account from the running client.
  *
+ * Invokes the `get_live_roblox_account` Tauri command.
+ *
  * @returns The active account identity, or null if no account is bound
+ * @throws {AccountsCommandError} If the command fails
  */
 export function getLiveRobloxAccount(): Promise<RobloxAccountIdentity | null> {
     if (!isTauriEnvironment()) {

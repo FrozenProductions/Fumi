@@ -26,6 +26,7 @@ import type {
     WorkspaceStoreSliceCreator,
 } from "../workspaceStore.type";
 
+/** Creates the workspace store slice responsible for creating, importing, duplicating, deleting, and renaming workspace files. */
 export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
     WorkspaceFileSlice
 > = (set, get) => {

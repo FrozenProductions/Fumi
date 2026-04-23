@@ -24,6 +24,9 @@ import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabs
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 import type { ArchivedTabActionButtonClassNames } from "./workspace/appSettingsWorkspace.type";
 
+/**
+ * Manages the workspace settings section with archived tab search, sort, and bulk actions.
+ */
 export function AppSettingsWorkspaceSection(): ReactElement {
     const workspaceSession = useWorkspaceSession();
     const theme = useAppStore((state) => state.theme);

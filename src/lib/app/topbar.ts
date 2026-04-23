@@ -1,6 +1,9 @@
 import { TOPBAR_INTERACTIVE_SELECTOR } from "../../constants/app/topbar";
 import type { AnimatedTitleCharacter } from "./topbar.type";
 
+/**
+ * Formats a workspace path for display, collapsing home directories to ~.
+ */
 export function formatWorkspaceTooltipPath(
     workspacePath: string | null | undefined,
 ): string {
@@ -13,6 +16,9 @@ export function formatWorkspaceTooltipPath(
         .replace(/^\/home\/[^/]+/, "~");
 }
 
+/**
+ * Builds an array of animated title characters with computed horizontal offsets and deduplicated keys.
+ */
 export function getAnimatedTitleCharacters(
     title: string,
 ): AnimatedTitleCharacter[] {
@@ -30,6 +36,9 @@ export function getAnimatedTitleCharacters(
     });
 }
 
+/**
+ * Returns whether the event target is an interactive element within the topbar.
+ */
 export function isTopbarInteractiveTarget(target: EventTarget | null): boolean {
     if (!(target instanceof HTMLElement)) {
         return false;

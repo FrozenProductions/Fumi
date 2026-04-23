@@ -28,6 +28,7 @@ export function parseGoToLineQuery(value: string): number | null {
     return Number.isInteger(lineNumber) && lineNumber > 0 ? lineNumber : null;
 }
 
+/** Prompts the user to confirm and then kills running Roblox processes. */
 export async function confirmKillRobloxProcesses(): Promise<void> {
     const shouldKillRoblox = await confirmAction("Attempt to close Roblox?");
 
@@ -38,6 +39,7 @@ export async function confirmKillRobloxProcesses(): Promise<void> {
     await killRobloxProcesses();
 }
 
+/** Abbreviates home directory prefixes in a workspace path for display. */
 export function formatWorkspacePath(
     value: string | null | undefined,
 ): string | undefined {
@@ -48,12 +50,14 @@ export function formatWorkspacePath(
     return value.replace(/^\/Users\/[^/]+/, "~").replace(/^\/home\/[^/]+/, "~");
 }
 
+/** Extracts the last path segment from a workspace path for use as a display label. */
 export function getWorkspacePathLabel(workspacePath: string): string {
     const pathSegments = workspacePath.split(/[/\\]/).filter(Boolean);
 
     return pathSegments[pathSegments.length - 1] ?? workspacePath;
 }
 
+/** Formats a human-readable label showing the count of open and archived tabs. */
 export function createWorkspaceCountLabel(
     tabCount: number,
     archivedTabCount: number,
@@ -61,6 +65,7 @@ export function createWorkspaceCountLabel(
     return `${tabCount} tab${tabCount === 1 ? "" : "s"} • ${archivedTabCount} archived`;
 }
 
+/** Returns "Current" when the item is active, otherwise falls back to an optional hotkey label. */
 export function getCurrentStateMeta(
     isCurrent: boolean,
     fallbackMeta?: string,

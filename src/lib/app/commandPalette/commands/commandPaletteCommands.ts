@@ -4,6 +4,7 @@ import { getBaseCommandPaletteItems } from "./commandPaletteBaseCommands";
 import { getActiveTabCommandItems } from "./commandPaletteTabCommands";
 import { getWorkspaceCommandItems } from "./commandPaletteWorkspaceCommands";
 
+/** Aggregates base, workspace, and active tab command palette items into a single list. */
 export function getCommandCommandPaletteItems(
     options: GetCommandPaletteCommandItemsOptions,
 ): AppCommandPaletteItem[] {

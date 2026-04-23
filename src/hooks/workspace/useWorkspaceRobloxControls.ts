@@ -27,6 +27,16 @@ type UseWorkspaceRobloxControlsResult = {
     killRobloxProcess: (pid: number) => Promise<void>;
 };
 
+/**
+ * Manages Roblox process lifecycle controls including launch, kill, and live account tracking.
+ *
+ * @remarks
+ * Uses request-ID counters to discard stale async results from `listRobloxProcesses`
+ * and `getLiveRobloxAccount`. Refreshes process and account data on window resume.
+ * The `confirmAndKillRoblox` action shows a native confirmation dialog before killing.
+ *
+ * @returns Roblox process state and control actions
+ */
 export function useWorkspaceRobloxControls(): UseWorkspaceRobloxControlsResult {
     const [robloxProcesses, setRobloxProcesses] = useState<
         readonly RobloxProcessInfo[]

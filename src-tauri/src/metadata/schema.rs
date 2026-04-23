@@ -1,3 +1,5 @@
+//! JSON schema validation for metadata documents.
+
 use std::sync::OnceLock;
 
 use anyhow::{anyhow, Result};

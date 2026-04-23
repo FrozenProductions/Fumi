@@ -14,6 +14,9 @@ import type {
 } from "./commandPalette.type";
 import { searchAppCommandPaletteItems } from "./search/commandPaletteSearch";
 
+/**
+ * Builds shortcut labels for all command palette hotkey actions.
+ */
 export function getAppCommandPaletteHotkeyLabels(
     hotkeyBindings: AppHotkeyBindings,
 ): AppCommandPaletteHotkeyLabels {
@@ -95,6 +98,9 @@ export function getAppCommandPaletteHotkeyLabels(
     };
 }
 
+/**
+ * Computes command palette results based on the current mode, scope, and search query.
+ */
 export function getAppCommandPaletteResults({
     workspaceSession,
     workspaceExecutor,

@@ -4,6 +4,15 @@ import { createWindowShellError } from "./windowShared";
 const droppedFilesHoverListeners = new Set<(isHovering: boolean) => void>();
 const droppedFilesListeners = new Set<(filePaths: readonly string[]) => void>();
 
+/**
+ * Registers the native drag-drop event listener on the current window.
+ *
+ * Routes `enter`/`over` and `leave` events to hover listeners, and `drop`
+ * events to file listeners. Empty paths are filtered out before dispatching.
+ *
+ * @returns Unsubscribe function for the native event listener
+ * @throws {WindowShellError} If the Tauri window API fails to subscribe
+ */
 export async function listenDroppedFilesEvent(): Promise<() => void> {
     try {
         return await getCurrentWindow().onDragDropEvent((event) => {

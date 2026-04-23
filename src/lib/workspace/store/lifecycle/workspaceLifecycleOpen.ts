@@ -10,6 +10,9 @@ import {
     persistCurrentWorkspaceBeforeSwitch,
 } from "./workspaceLifecycleSupport";
 
+/**
+ * Creates the action that opens a directory picker and switches to the selected workspace.
+ */
 export function createOpenWorkspaceDirectoryAction(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,
@@ -58,6 +61,9 @@ export function createOpenWorkspaceDirectoryAction(
     };
 }
 
+/**
+ * Creates the action that opens a workspace at the given path.
+ */
 export function createOpenWorkspacePathAction(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,

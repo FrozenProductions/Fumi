@@ -50,6 +50,7 @@ async function listenWindowEvent(
  * Idempotent - subsequent calls return the same initialization promise.
  *
  * @returns A promise that resolves when initialization completes
+ * @throws {WindowShellError} If the window shell fails to initialize
  */
 export function initializeWindowShell(): Promise<void> {
     if (!isTauriEnvironment()) {

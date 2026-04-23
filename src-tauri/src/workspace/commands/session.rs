@@ -1,3 +1,5 @@
+//! Workspace session commands: bootstrap, open, refresh, and persist.
+
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
@@ -106,6 +108,7 @@ pub async fn persist_workspace_state(
     .await
 }
 
+/// Appends an execution history entry to the workspace and returns the updated list.
 #[command]
 pub async fn append_workspace_execution_history(
     workspace_path: String,

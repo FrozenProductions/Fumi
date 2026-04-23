@@ -295,6 +295,12 @@ function defineLuauMode(ace: AceEditorRuntime): void {
 
 let didConfigureLuauAce = false;
 
+/**
+ * Registers the custom Luau mode and highlight rules with the Ace editor runtime.
+ *
+ * @remarks
+ * Runs only once; subsequent calls are no-ops.
+ */
 export function configureLuauAce(rawAce: unknown): void {
     if (didConfigureLuauAce) {
         return;

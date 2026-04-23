@@ -1,3 +1,5 @@
+//! Tauri event names and emit helpers for frontend-backend communication.
+
 use tauri::{AppHandle, Emitter, Runtime};
 
 use crate::executor::ExecutorStatusPayload;

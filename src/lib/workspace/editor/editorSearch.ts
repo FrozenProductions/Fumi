@@ -56,6 +56,9 @@ export function getWorkspaceEditorSearchValidationError(
     }
 }
 
+/**
+ * Returns whether the editor search can run with the current query and regex mode.
+ */
 export function canRunWorkspaceEditorSearch(
     state: Pick<WorkspaceEditorSearchState, "query" | "isRegex">,
 ): boolean {

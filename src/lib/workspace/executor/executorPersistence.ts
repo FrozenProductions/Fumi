@@ -68,6 +68,9 @@ function readPersistedExecutorPorts(): PersistedExecutorPorts {
     return createDefaultPersistedExecutorPorts();
 }
 
+/**
+ * Persists the selected port for an executor kind to localStorage.
+ */
 export function persistExecutorPort(
     executorKind: ExecutorKind,
     port: number,
@@ -91,6 +94,9 @@ export function persistExecutorPort(
     }
 }
 
+/**
+ * Resolves the persisted executor port, falling back to the provided or first available port.
+ */
 export function resolvePersistedExecutorPort(options: {
     executorKind: ExecutorKind;
     availablePorts: readonly ExecutorPortSummary[];

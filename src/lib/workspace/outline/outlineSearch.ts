@@ -7,6 +7,9 @@ import type {
     WorkspaceOutlineSearchFieldName,
 } from "./outlineSearch.type";
 
+/**
+ * Groups file symbols into outline categories (functions, comments, locals, globals).
+ */
 export function getWorkspaceOutlineGroups(
     symbols: LuauFileSymbol[],
 ): WorkspaceOutlineGroup[] {
@@ -55,6 +58,9 @@ export function getWorkspaceOutlineGroups(
     return groups;
 }
 
+/**
+ * Filters and searches outline groups, returning only groups with matching symbols.
+ */
 export function searchWorkspaceOutlineGroups(
     symbols: LuauFileSymbol[],
     searchValue: string,

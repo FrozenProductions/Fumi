@@ -3,6 +3,9 @@ import type {
     WorkspaceTabState,
 } from "./workspace.type";
 
+/**
+ * Filters archived tabs by search query and sorts by name or date.
+ */
 export function filterAndSortArchivedTabs(
     archivedTabs: readonly WorkspaceTabState[],
     searchQuery: string,
@@ -34,6 +37,9 @@ export function filterAndSortArchivedTabs(
     });
 }
 
+/**
+ * Creates a date formatter for archived tab timestamps.
+ */
 export function createArchivedTabsDateFormatter(): Intl.DateTimeFormat {
     return new Intl.DateTimeFormat(undefined, {
         dateStyle: "medium",

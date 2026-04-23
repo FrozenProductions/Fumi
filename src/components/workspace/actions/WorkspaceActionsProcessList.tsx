@@ -12,6 +12,9 @@ type WorkspaceActionsProcessListProps = {
 
 /**
  * Renders per-instance Roblox actions inside the workspace actions dropdown.
+ *
+ * @param props - Component props
+ * @param props.options - The shared dropdown props containing menu, roblox, confirm, and actions state
  */
 export function WorkspaceActionsProcessList({
     options,

@@ -48,6 +48,9 @@ export function sortAccounts(
     });
 }
 
+/**
+ * Inserts or replaces an account summary in the sorted list, preserving sort order.
+ */
 export function upsertAccountSummary(
     accounts: readonly AccountSummary[],
     nextAccount: AccountSummary,
@@ -66,6 +69,9 @@ export function upsertAccountSummary(
     return sortAccounts(nextAccounts);
 }
 
+/**
+ * Removes an account summary by ID and returns the re-sorted list.
+ */
 export function removeAccountSummary(
     accounts: readonly AccountSummary[],
     accountId: string,

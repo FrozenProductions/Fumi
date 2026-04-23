@@ -23,6 +23,11 @@ import type {
     WorkspaceScreenProps,
 } from "./workspaceScreen.type";
 
+/**
+ * Composes the main workspace view with tab bar, editor region, and execution history modal.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceReadyScreen({
     executor,
     executionHistoryModal,

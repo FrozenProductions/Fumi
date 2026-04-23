@@ -27,6 +27,9 @@ function getMaskableAccountLabel(
     return options?.isMasked ? MASKED_ACCOUNT_LABEL : displayName;
 }
 
+/**
+ * Returns a display label for an executor-bound account, masking the name when requested.
+ */
 export function getExecutorBoundAccountLabel(
     summary: BoundAccountLabelSource,
     options?: AccountPrivacyOptions,
@@ -47,6 +50,9 @@ export function getExecutorBoundAccountLabel(
     return "Available";
 }
 
+/**
+ * Returns a display label for a Roblox process-bound account, masking the name when requested.
+ */
 export function getRobloxProcessBoundAccountLabel(
     process: Pick<
         RobloxProcessInfo,
@@ -70,6 +76,9 @@ export function getRobloxProcessBoundAccountLabel(
     return "Unknown account";
 }
 
+/**
+ * Returns the account display name, or a masked placeholder when privacy mode is enabled.
+ */
 export function getAccountRowDisplayName(
     account: AccountIdentitySource,
     options?: AccountPrivacyOptions,
@@ -77,6 +86,9 @@ export function getAccountRowDisplayName(
     return options?.isMasked ? MASKED_ACCOUNT_LABEL : account.displayName;
 }
 
+/**
+ * Returns the account identity label (e.g. @username), or a masked placeholder when privacy mode is enabled.
+ */
 export function getAccountRowIdentityLabel(
     account: AccountIdentitySource,
     options?: AccountPrivacyOptions,
@@ -86,6 +98,9 @@ export function getAccountRowIdentityLabel(
         : `@${account.username}`;
 }
 
+/**
+ * Returns alt text for an account avatar image, masking when privacy mode is enabled.
+ */
 export function getAccountAvatarAltText(
     account: Pick<AccountSummary, "displayName">,
     options?: AccountPrivacyOptions,

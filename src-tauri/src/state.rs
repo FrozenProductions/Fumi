@@ -1,3 +1,5 @@
+//! Shared application runtime state for exit guards and unsaved-change tracking.
+
 use std::sync::{Mutex, MutexGuard};
 
 use tauri::{command, State};
@@ -15,6 +17,7 @@ struct ShellState {
     allow_next_exit_request: bool,
 }
 
+/// Shared mutex-guarded state for coordinating exit guards and unsaved-change tracking across the app.
 #[derive(Debug, Default)]
 pub struct AppRuntimeState {
     inner: Mutex<ShellState>,
@@ -25,6 +28,7 @@ impl AppRuntimeState {
         self.inner.lock().unwrap_or_else(|error| error.into_inner())
     }
 
+    /// Updates whether the workspace has unsaved changes.
     pub fn set_workspace_unsaved_changes(&self, has_unsaved_changes: bool) {
         let mut state = self.lock();
         state.has_workspace_unsaved_changes = has_unsaved_changes;
@@ -32,6 +36,7 @@ impl AppRuntimeState {
             state.has_workspace_unsaved_changes || state.has_automatic_execution_unsaved_changes;
     }
 
+    /// Updates whether automatic execution has unsaved changes.
     pub fn set_automatic_execution_unsaved_changes(&self, has_unsaved_changes: bool) {
         let mut state = self.lock();
         state.has_automatic_execution_unsaved_changes = has_unsaved_changes;
@@ -45,6 +50,7 @@ impl AppRuntimeState {
         state.next_exit_guard_sync_request_id
     }
 
+    /// Resolves a pending exit-guard sync request with the frontend's decision.
     pub fn resolve_exit_guard_sync(&self, sync_id: u64, should_guard_exit: bool) {
         let mut state = self.lock();
         state.has_synced_unsaved_changes = should_guard_exit;
@@ -109,11 +115,13 @@ impl AppRuntimeState {
     }
 }
 
+/// Marks the frontend as ready for exit after completing cleanup.
 #[command]
 pub fn complete_exit_preparation(state: State<AppRuntimeState>) {
     state.mark_frontend_ready_for_exit();
 }
 
+/// Updates the unsaved-changes flag for automatic execution scripts.
 #[command]
 pub fn set_automatic_execution_unsaved_changes(
     state: State<AppRuntimeState>,
@@ -122,6 +130,7 @@ pub fn set_automatic_execution_unsaved_changes(
     state.set_automatic_execution_unsaved_changes(has_unsaved_changes);
 }
 
+/// Resolves a pending exit-guard sync request from the frontend.
 #[command]
 pub fn resolve_exit_guard_sync(
     state: State<AppRuntimeState>,

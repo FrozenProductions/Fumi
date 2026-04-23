@@ -17,6 +17,8 @@ type UseAccountRevealResult = {
 
 /**
  * Tracks which streamer-masked account row is temporarily revealed.
+ *
+ * @returns Object containing the revealed account ID, reveal/hide actions, and blur handler
  */
 export function useAccountReveal(): UseAccountRevealResult {
     const [revealedAccountId, setRevealedAccountId] = useState<string | null>(

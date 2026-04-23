@@ -6,6 +6,7 @@ import { PlatformOperationError } from "./errors";
  * Copies text content to the system clipboard.
  *
  * @param text - The text to copy
+ * @throws {PlatformOperationError} If the clipboard operation fails
  */
 export async function copyTextToClipboard(text: string): Promise<void> {
     try {

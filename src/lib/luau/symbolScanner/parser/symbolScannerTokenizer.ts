@@ -12,6 +12,9 @@ function isDigit(character: string): boolean {
     return /[0-9]/.test(character);
 }
 
+/**
+ * Tokenizes Luau source code into identifiers, numbers, symbols, and newlines, skipping comments and strings.
+ */
 export function tokenizeLuau(content: string): LuauToken[] {
     const tokens: LuauToken[] = [];
     let index = 0;

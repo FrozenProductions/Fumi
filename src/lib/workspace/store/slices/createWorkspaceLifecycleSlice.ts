@@ -17,6 +17,7 @@ import type {
     WorkspaceStoreSliceCreator,
 } from "../workspaceStore.type";
 
+/** Creates the workspace store slice responsible for bootstrapping, persisting, and refreshing workspace sessions. */
 export const createWorkspaceLifecycleSlice: WorkspaceStoreSliceCreator<
     WorkspaceLifecycleSlice
 > = (set, get) => {

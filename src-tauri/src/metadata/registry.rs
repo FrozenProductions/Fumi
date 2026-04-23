@@ -1,3 +1,5 @@
+//! Schema registry and version constants for metadata documents.
+
 use anyhow::{Context, Result};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

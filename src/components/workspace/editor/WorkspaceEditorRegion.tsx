@@ -21,6 +21,11 @@ type WorkspaceEditorRegionProps = {
     workspaceActionsButton: WorkspaceActionsButtonProps;
 };
 
+/**
+ * Wires editor, completion, outline, and split-view state into the shared WorkspaceEditor.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceEditorRegion({
     splitView,
     onResizeSplitPreview,

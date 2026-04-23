@@ -48,6 +48,11 @@ function formatAccountLabel(
     return "No account bound";
 }
 
+/**
+ * Displays a read-only editor preview of a selected execution history entry.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceExecutionHistoryPreview({
     aceRuntime,
     AceEditorComp,

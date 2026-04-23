@@ -3,6 +3,11 @@ import type { ReactElement } from "react";
 import { AppIcon } from "../../common/AppIcon";
 import type { AppSettingsArchivedTabsListProps } from "./appSettingsWorkspace.type";
 
+/**
+ * Renders the list of archived workspace tabs with restore and delete actions.
+ *
+ * @param props - Component props
+ */
 export function AppSettingsArchivedTabsList({
     archivedTabs,
     actionButtonClassNames,

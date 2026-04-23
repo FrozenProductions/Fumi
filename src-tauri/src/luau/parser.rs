@@ -1,3 +1,5 @@
+//! Luau static analysis parser: symbol scanning, scope tracking, and outline extraction.
+
 use std::{cell::RefCell, collections::HashSet, rc::Rc};
 
 use super::models::{

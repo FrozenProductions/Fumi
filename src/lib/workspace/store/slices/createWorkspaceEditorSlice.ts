@@ -30,6 +30,7 @@ function removeTransientTabCursor(
     );
 }
 
+/** Creates the workspace store slice responsible for saving, editing, and cursor state of the active tab. */
 export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
     WorkspaceEditorSlice
 > = (set, get) => {

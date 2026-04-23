@@ -7,6 +7,9 @@ import {
 const buttonClassName =
     "app-select-none inline-flex h-8 items-center justify-center rounded-[0.65rem] border px-3 text-xs font-semibold tracking-[0.01em] transition-[background-color,border-color,color,box-shadow] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50";
 
+/**
+ * Provides developer tools for reloading the app and simulating runtime errors.
+ */
 export function AppSettingsDevSection(): ReactElement {
     const handleReloadApp = (): void => {
         window.location.reload();

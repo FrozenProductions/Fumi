@@ -14,6 +14,9 @@ import type {
 } from "../workspaceStore.type";
 import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport";
 
+/**
+ * Creates the action that refreshes workspace state from the filesystem, merging with local drafts.
+ */
 export function createRefreshWorkspaceFromFilesystemAction(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,

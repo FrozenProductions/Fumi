@@ -122,6 +122,7 @@ function mapDownloadProgress(
  * Checks for app updates without downloading.
  *
  * @returns Update metadata if an update is available, or null
+ * @throws {UpdaterError} If the update check fails
  */
 export async function checkForAppUpdate(): Promise<AppUpdateMetadata | null> {
     if (!isTauriEnvironment()) {
@@ -157,6 +158,7 @@ export async function checkForAppUpdate(): Promise<AppUpdateMetadata | null> {
  *
  * @param updateMetadata - The update metadata from checkForAppUpdate
  * @param onProgress - Optional callback for download progress
+ * @throws {UpdaterError} If the download or installation fails
  */
 export async function downloadAndInstallAppUpdate(
     updateMetadata: AppUpdateMetadata,
@@ -201,6 +203,8 @@ export async function downloadAndInstallAppUpdate(
 
 /**
  * Relaunches the app after an update has been installed.
+ *
+ * @throws {UpdaterError} If the relaunch fails
  */
 export async function relaunchApp(): Promise<void> {
     if (!isTauriEnvironment()) {

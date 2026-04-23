@@ -10,6 +10,9 @@ import type {
 
 import type { WorkspaceStoreSupport } from "./workspaceStoreSupport.type";
 
+/**
+ * Creates shared helper methods for the workspace store including update, persist, and error handling.
+ */
 export function createWorkspaceStoreSupport(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,

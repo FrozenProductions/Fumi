@@ -5,6 +5,7 @@ import type {
 } from "./commandPalette.type";
 import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
 
+/** Builds a command palette item that navigates to a specific line in the active tab. */
 export function getGoToLineCommandPaletteItems({
     activeTab,
     goToLineNumber,
@@ -39,6 +40,7 @@ export function getGoToLineCommandPaletteItems({
     ];
 }
 
+/** Builds command palette items for switching between light, dark, and system themes. */
 export function getThemeCommandPaletteItems({
     currentTheme,
     onSetTheme,

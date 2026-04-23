@@ -27,6 +27,9 @@ export function getErrorMessage(
     return fallbackMessage;
 }
 
+/**
+ * Returns the cause message from an unknown error, preferring a string value over Error.message.
+ */
 export function getUnknownCauseMessage(
     error: unknown,
     fallbackMessage: string,

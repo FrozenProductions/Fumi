@@ -13,6 +13,11 @@ type WorkspaceExecutionHistoryModalProps = {
     onReRun: (entry: WorkspaceExecutionHistoryEntry) => Promise<void>;
 };
 
+/**
+ * Full-screen modal for browsing, inspecting, and re-running execution history entries.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceExecutionHistoryModal({
     isOpen,
     entries,

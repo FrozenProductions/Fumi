@@ -1,3 +1,5 @@
+//! Metadata versioning, validation, and migration for workspace and account data.
+
 pub(crate) mod backup;
 pub(crate) mod error;
 pub(crate) mod io;

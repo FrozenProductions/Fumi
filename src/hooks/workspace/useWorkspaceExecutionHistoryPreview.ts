@@ -34,6 +34,12 @@ type UseWorkspaceExecutionHistoryPreviewResult = {
 
 /**
  * Loads the read-only Ace preview and owns per-entry execution history actions.
+ *
+ * @param options - Hook options
+ * @param options.entries - The execution history entries to display
+ * @param options.isOpen - Whether the history panel is currently open
+ * @param options.onReRun - Callback to re-run a selected history entry
+ * @returns Preview state including Ace component, selected entry, and action functions
  */
 export function useWorkspaceExecutionHistoryPreview({
     entries,

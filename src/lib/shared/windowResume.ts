@@ -77,6 +77,11 @@ function cleanupWindowResumeSubscription(): void {
     resumeCleanup?.();
 }
 
+/**
+ * Subscribes a listener to window resume events (focus and visibility change), debounced with cooldown.
+ *
+ * @returns Unsubscribe function.
+ */
 export function subscribeToWindowResume(listener: () => void): () => void {
     resumeListeners.add(listener);
     ensureWindowResumeSubscription();

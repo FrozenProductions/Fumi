@@ -1,3 +1,5 @@
+//! Data models for accounts, Roblox process info, and API responses.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -9,6 +11,7 @@ pub(super) const ACCOUNTS_MANIFEST_FILE_NAME: &str = "accounts.json";
 pub(super) const ACCOUNTS_COOKIES_DIR_NAME: &str = "cookies";
 pub(super) const ACCOUNTS_MANIFEST_VERSION: u8 = ACCOUNTS_METADATA_VERSION;
 
+/// Whether an account is currently active (bound to a running process) or offline.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum AccountStatus {
@@ -16,6 +19,7 @@ pub enum AccountStatus {
     Offline,
 }
 
+/// Summary of a Roblox account including its current active status and bound executor port.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountSummary {
@@ -29,6 +33,7 @@ pub struct AccountSummary {
     pub last_launched_at: Option<i64>,
 }
 
+/// Response containing the list of accounts and whether Roblox is running.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountListResponse {
@@ -36,6 +41,7 @@ pub struct AccountListResponse {
     pub is_roblox_running: bool,
 }
 
+/// Information about a running Roblox process, including its bound account.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RobloxProcessInfo {
@@ -46,6 +52,7 @@ pub struct RobloxProcessInfo {
     pub is_bound_to_unknown_account: bool,
 }
 
+/// Identity details for a Roblox account resolved from an authentication cookie.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RobloxAccountIdentity {

@@ -13,6 +13,17 @@ import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreLifecycle";
 import { runRefreshAfterFlush } from "./automaticExecutionStoreLifecycle";
 
+/**
+ * Creates the script-related action slice for the automatic execution store.
+ *
+ * Includes create, select, save, flush, rename, delete, update content/cursor,
+ * and error message actions.
+ *
+ * @param set - Zustand state setter
+ * @param get - Zustand state getter
+ * @param runtime - Shared runtime tracking request IDs and flush flags
+ * @returns An object containing script action implementations
+ */
 export function createAutomaticExecutionScriptActions(
     set: AutomaticExecutionStoreSet,
     get: AutomaticExecutionStoreGet,

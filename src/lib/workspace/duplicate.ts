@@ -6,6 +6,9 @@ import type { DuplicateWorkspaceTabDraft } from "./duplicate.type";
 import { buildWorkspaceFileName, splitWorkspaceFileName } from "./fileName";
 import type { WorkspaceTab } from "./workspace.type";
 
+/**
+ * Builds a draft for duplicating a tab, incrementing the copy number in the file name.
+ */
 export function buildDuplicateWorkspaceTabDraft(
     tab: WorkspaceTab,
 ): DuplicateWorkspaceTabDraft {

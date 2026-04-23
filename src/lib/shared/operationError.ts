@@ -3,6 +3,9 @@ export type OperationErrorOptions = {
     message: string;
 };
 
+/**
+ * Error class for failed workspace operations, carrying the operation name and message.
+ */
 export class OperationError extends Error {
     readonly operation: string;
 

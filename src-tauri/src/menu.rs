@@ -1,3 +1,5 @@
+//! Native application menu construction and event handling.
+
 use tauri::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItemBuilder, PredefinedMenuItem, Submenu},
     AppHandle, Manager, Runtime,

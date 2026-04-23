@@ -5,6 +5,9 @@ import {
     STARTUP_ERROR_TEXT,
 } from "../../constants/app/startup";
 
+/**
+ * Renders a fatal startup error screen into the root element with a reload button.
+ */
 export function renderStartupError(_message: string): void {
     const root = document.getElementById("root");
 
@@ -41,6 +44,9 @@ export function renderStartupError(_message: string): void {
     }
 }
 
+/**
+ * Extracts a human-readable message from an unknown startup error value.
+ */
 export function normalizeStartupError(error: unknown): string {
     if (error instanceof Error && error.message) {
         return error.message;

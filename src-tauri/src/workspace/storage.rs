@@ -1,3 +1,5 @@
+//! Workspace file I/O: read/write snapshots, metadata, and execution history.
+
 use std::{
     collections::{HashMap, HashSet},
     fs,

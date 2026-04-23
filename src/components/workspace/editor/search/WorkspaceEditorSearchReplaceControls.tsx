@@ -5,6 +5,11 @@ import { AppIcon } from "../../../app/common/AppIcon";
 import { AppTooltip } from "../../../app/tooltip/AppTooltip";
 import type { WorkspaceEditorSearchReplaceControlsProps } from "./workspaceEditorSearchPanel.type";
 
+/**
+ * Renders the replace input and replace/replace-all action buttons for editor search.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceEditorSearchReplaceControls({
     isReplaceDropdownOpen,
     replaceDropdownRef,

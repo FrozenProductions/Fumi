@@ -162,6 +162,11 @@ function WorkspaceSplitDropZone({
     );
 }
 
+/**
+ * Lays out Ace editor panes, split-view controls, completion popup, and search panel.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceEditorSurface({
     completion,
     outline,

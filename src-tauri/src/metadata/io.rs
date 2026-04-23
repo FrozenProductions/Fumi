@@ -1,3 +1,5 @@
+//! Atomic file I/O for JSON and binary metadata persistence.
+
 use std::{
     fs::{self, File, OpenOptions},
     io::{ErrorKind, Write},

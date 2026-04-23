@@ -1,3 +1,5 @@
+//! Workspace archive commands: restore and delete archived tabs.
+
 use std::{fs, path::PathBuf};
 
 use anyhow::{anyhow, Context};

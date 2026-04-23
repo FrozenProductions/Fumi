@@ -1,3 +1,5 @@
+//! Metadata migration: upgrading persisted documents between schema versions.
+
 use super::registry::MetadataKind;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

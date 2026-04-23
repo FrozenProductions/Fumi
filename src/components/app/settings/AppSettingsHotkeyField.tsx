@@ -2,6 +2,11 @@ import type { ReactElement } from "react";
 import { AppAnimatedText } from "../common/AppAnimatedText";
 import type { AppSettingsHotkeyFieldProps } from "./appSettingsHotkeys.type";
 
+/**
+ * Renders a single hotkey binding row with recording and reset controls.
+ *
+ * @param props - Component props
+ */
 export function AppSettingsHotkeyField({
     action,
     label,

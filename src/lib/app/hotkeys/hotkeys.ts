@@ -34,6 +34,9 @@ export function isAppHotkeyBinding(value: unknown): value is AppHotkeyBinding {
     return typeof value === "string" && hasNonModifierKey(value);
 }
 
+/**
+ * Filters and normalizes persisted hotkey bindings, keeping only editable overrides.
+ */
 export function normalizeAppHotkeyBindings(value: unknown): AppHotkeyBindings {
     if (!value || typeof value !== "object") {
         return {};
@@ -69,6 +72,9 @@ export function getAppHotkeyBinding(
     return hotkeyBindings[action] ?? definition.defaultBinding;
 }
 
+/**
+ * Returns the display label for a hotkey action's current key binding.
+ */
 export function getAppHotkeyShortcutLabel(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
@@ -96,6 +102,9 @@ export function isAppHotkeyCustomized(
     return isAppHotkeyOverride(action, binding);
 }
 
+/**
+ * Resolves a hotkey action into its full definition including label, binding, and customization state.
+ */
 export function getResolvedAppHotkey(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
@@ -142,6 +151,9 @@ export function getAppHotkeyGroups(hotkeyBindings: AppHotkeyBindings): Array<{
     }));
 }
 
+/**
+ * Finds a conflicting hotkey binding for the given action and binding, or null if none.
+ */
 export function findAppHotkeyConflict(
     action: AppHotkeyAction,
     binding: AppHotkeyBinding,
@@ -203,6 +215,9 @@ export function isAppHotkeyOverride(
     );
 }
 
+/**
+ * Returns whether a keyboard event matches a hotkey binding via code fallback when key matching fails.
+ */
 export function shouldTriggerAppHotkeyCodeFallback(
     event: KeyboardEvent,
     binding: AppHotkeyBinding,
@@ -224,6 +239,9 @@ export function shouldTriggerAppHotkeyCodeFallback(
     );
 }
 
+/**
+ * Returns whether a keyboard event should trigger hotkey capture, including code-based fallback.
+ */
 export function shouldTriggerAppHotkeyCapture(
     event: KeyboardEvent,
     binding: AppHotkeyBinding,

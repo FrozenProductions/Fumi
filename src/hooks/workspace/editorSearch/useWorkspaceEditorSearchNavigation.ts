@@ -16,6 +16,17 @@ type WorkspaceEditorSearchNavigationOptions = {
     ) => void;
 };
 
+/**
+ * Provides find-next, find-previous, replace-next, and replace-all actions for the active editor search.
+ *
+ * @remarks
+ * Reads the current search state to build Ace editor search options, then syncs
+ * match metadata back after each operation. Returns early if the search query
+ * is invalid or no editor is focused.
+ *
+ * @param options - Active search state, editor accessor, and match-state sync callback
+ * @returns Navigation and replacement action handlers
+ */
 export function useWorkspaceEditorSearchNavigation({
     activeSearchState,
     canSearch,

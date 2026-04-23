@@ -6,6 +6,9 @@ import {
 } from "../../constants/shared/search";
 import type { SearchField, SearchResult } from "./search.type";
 
+/**
+ * Normalizes a search value by trimming, lowercasing, and collapsing whitespace.
+ */
 export function normalizeSearchValue(value: string): string {
     return value
         .trim()
@@ -14,6 +17,9 @@ export function normalizeSearchValue(value: string): string {
         .replace(SEARCH_WHITESPACE_PATTERN, " ");
 }
 
+/**
+ * Returns whether any field matches the search value.
+ */
 export function matchesSearchFields<TFieldName extends string>(
     fields: SearchField<TFieldName>[],
     searchValue: string,
@@ -22,6 +28,11 @@ export function matchesSearchFields<TFieldName extends string>(
     return scoreSearchFields(fields, searchValue, fieldWeights) !== null;
 }
 
+/**
+ * Scores how well the given fields match the search value, returning null for no match.
+ *
+ * @param fieldWeights - Bonus score added per field name to boost important fields.
+ */
 export function scoreSearchFields<TFieldName extends string>(
     fields: SearchField<TFieldName>[],
     searchValue: string,
@@ -52,6 +63,9 @@ export function scoreSearchFields<TFieldName extends string>(
     return bestScore;
 }
 
+/**
+ * Filters and ranks items by search score, returning up to `limit` results sorted by relevance.
+ */
 export function searchItems<TItem, TFieldName extends string>(
     items: TItem[],
     searchValue: string,

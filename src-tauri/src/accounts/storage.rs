@@ -1,3 +1,5 @@
+//! Account persistence: file-based storage and Roblox application discovery.
+
 use std::{
     collections::{HashMap, HashSet},
     fs,

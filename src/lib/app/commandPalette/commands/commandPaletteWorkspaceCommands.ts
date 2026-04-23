@@ -10,6 +10,7 @@ type CommandPaletteWorkspaceOptions = Pick<
     | "workspaceSession"
 >;
 
+/** Builds command palette items for workspace-level actions like execution history and file creation. */
 export function getWorkspaceCommandItems({
     hotkeyLabels,
     onOpenExecutionHistory,

@@ -12,6 +12,7 @@ type CommandPaletteTabOptions = Pick<
     | "workspaceSession"
 >;
 
+/** Builds command palette items for actions on the active tab such as execute, save, rename, and split view. */
 export function getActiveTabCommandItems({
     hotkeyLabels,
     onActivateGoToLineMode,

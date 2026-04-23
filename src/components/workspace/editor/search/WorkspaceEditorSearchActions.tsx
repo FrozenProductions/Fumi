@@ -4,6 +4,11 @@ import { AppIcon } from "../../../app/common/AppIcon";
 import { AppTooltip } from "../../../app/tooltip/AppTooltip";
 import type { WorkspaceEditorSearchActionsProps } from "./workspaceEditorSearchPanel.type";
 
+/**
+ * Renders search option toggles and previous/next match navigation buttons.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceEditorSearchActions({
     searchPanel,
 }: WorkspaceEditorSearchActionsProps): ReactElement {

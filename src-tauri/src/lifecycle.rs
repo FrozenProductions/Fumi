@@ -1,3 +1,5 @@
+//! Window lifecycle management: exit preparation, close requests, and graceful shutdown.
+
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 

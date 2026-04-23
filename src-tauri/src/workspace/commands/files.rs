@@ -1,3 +1,5 @@
+//! Workspace file commands: create, import, save, rename, and delete.
+
 use std::{
     fs,
     path::{Path, PathBuf},

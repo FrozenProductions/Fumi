@@ -23,6 +23,13 @@ function areAceRangesEqual(left: Ace.Range, right: Ace.Range): boolean {
     );
 }
 
+/**
+ * Computes the match count and active match ordinal for the current search state.
+ *
+ * @param editor - The Ace editor instance
+ * @param searchState - The current editor search state
+ * @returns The match state with active ordinal and total count, or an empty default
+ */
 export function getWorkspaceEditorSearchMatchState(
     editor: AceEditorInstance,
     searchState: WorkspaceEditorSearchState,
@@ -56,6 +63,13 @@ export function getWorkspaceEditorSearchMatchState(
     };
 }
 
+/**
+ * Extracts a search seed string from the editor — either the selected text or
+ * the word under the cursor.
+ *
+ * @param editor - The Ace editor instance, or null if no editor is available
+ * @returns The selected text, the word at the cursor, or an empty string
+ */
 export function getSearchSeed(editor: AceEditorInstance | null): string {
     if (!editor) {
         return "";
@@ -74,6 +88,13 @@ export function getSearchSeed(editor: AceEditorInstance | null): string {
     return word.trim().length > 0 ? word : "";
 }
 
+/**
+ * Removes search state entries for tabs that are no longer open.
+ *
+ * @param searchStateByTabId - Map of tab IDs to their search state
+ * @param openTabIds - Set of currently open tab IDs
+ * @returns The same map if nothing was removed, or a new map with only open tabs
+ */
 export function pruneSearchStateByOpenTabs(
     searchStateByTabId: SearchStateByTabId,
     openTabIds: Set<string>,

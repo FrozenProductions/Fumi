@@ -7,6 +7,7 @@ import {
     getWorkspacePathLabel,
 } from "../commandPaletteShared";
 
+/** Builds command palette items for the current workspace folder and recent workspace paths. */
 export function getWorkspaceCommandPaletteItems(
     workspaceSession: UseWorkspaceSessionResult,
 ): AppCommandPaletteItem[] {

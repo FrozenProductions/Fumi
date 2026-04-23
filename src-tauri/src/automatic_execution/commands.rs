@@ -1,3 +1,5 @@
+//! Automatic execution Tauri commands: bootstrap, save, rename, and delete scripts.
+
 use std::{collections::HashSet, fs};
 
 use anyhow::{anyhow, Context, Result};

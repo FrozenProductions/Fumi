@@ -21,6 +21,11 @@ type WorkspaceEditorOutlineSidebarProps = {
     };
 };
 
+/**
+ * Renders the outline sidebar panel with a resize handle and symbol tree.
+ *
+ * @param props - Component props
+ */
 export function WorkspaceEditorOutlineSidebar({
     handleOutlineResizePointerDown,
     handleSelectSymbol,

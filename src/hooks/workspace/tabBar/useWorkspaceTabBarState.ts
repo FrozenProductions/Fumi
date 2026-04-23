@@ -47,6 +47,10 @@ function isTabFullyVisible(
 
 /**
  * Owns tab bar UI state such as the tab list dropdown, context menu, and active-tab scrolling.
+ *
+ * @param options - Hook options
+ * @param options.activeTabId - The currently active tab ID, used for scroll-into-view
+ * @returns Tab bar refs, state, and action functions
  */
 export function useWorkspaceTabBarState({
     activeTabId,

@@ -200,6 +200,9 @@ export const selectWorkspaceHasUnsavedChanges = (
     state: WorkspaceStore,
 ): boolean => state.dirtyTabCount > 0;
 
+/**
+ * Returns whether the workspace has unsaved changes and should guard against window close.
+ */
 export const selectWorkspaceShouldGuardExit = (
     state: WorkspaceStore,
 ): boolean => selectWorkspaceHasUnsavedChanges(state);
@@ -207,6 +210,12 @@ export const selectWorkspaceShouldGuardExit = (
 export const selectWorkspacePath = (state: WorkspaceStore): string | null =>
     state.workspace?.workspacePath ?? null;
 
+/**
+ * Returns the current persist revision if there are unpersisted changes, otherwise null.
+ *
+ * @remarks
+ * Used to decide whether to trigger a background persist of workspace state.
+ */
 export const selectWorkspacePersistRevision = (
     state: WorkspaceStore,
 ): number | null =>

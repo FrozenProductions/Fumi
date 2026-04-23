@@ -108,6 +108,12 @@ function getRequiredModeModule(
     return module;
 }
 
+/**
+ * Loads the Ace editor runtime and returns a resolved interface with mode and theme helpers.
+ *
+ * @remarks
+ * Caches the result so repeated calls return the same promise.
+ */
 export function loadAceRuntime(): Promise<LoadedAceRuntime> {
     if (typeof window === "undefined") {
         return Promise.reject(new Error("Ace runtime requires a browser"));

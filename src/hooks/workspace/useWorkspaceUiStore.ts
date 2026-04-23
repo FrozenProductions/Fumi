@@ -5,6 +5,13 @@ import type {
     WorkspaceUiStoreState,
 } from "../../lib/workspace/uiStore.type";
 
+/**
+ * Zustand store for transient workspace UI state such as tab list visibility and tab rename.
+ *
+ * @remarks
+ * Reset when the workspace screen unmounts via `resetWorkspaceUiState`.
+ * Does not persist across sessions.
+ */
 export const useWorkspaceUiStore = create<WorkspaceUiStore>((set) => ({
     ...(INITIAL_WORKSPACE_UI_STATE satisfies WorkspaceUiStoreState),
     openTabList: () => {

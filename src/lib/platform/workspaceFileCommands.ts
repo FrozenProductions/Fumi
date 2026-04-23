@@ -11,6 +11,18 @@ import {
     invokeWorkspaceVoidCommand,
 } from "./workspaceCommandShared";
 
+/**
+ * Creates a new workspace file with optional initial content.
+ *
+ * Invokes the `create_workspace_file` Tauri command.
+ *
+ * @param options - File creation options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @param options.fileName - Optional file name for the new tab
+ * @param options.initialContent - Optional initial content for the file
+ * @returns The created tab snapshot
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function createWorkspaceFile(options: {
     workspacePath: string;
     fileName?: string;
@@ -29,6 +41,16 @@ export function createWorkspaceFile(options: {
     );
 }
 
+/**
+ * Imports a dropped file as a workspace script draft.
+ *
+ * Invokes the `import_workspace_file` Tauri command.
+ *
+ * @param options - Import options
+ * @param options.filePath - Absolute path to the file to import
+ * @returns The imported script draft
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function importWorkspaceFile(options: {
     filePath: string;
 }): Promise<DroppedWorkspaceScriptDraft> {
@@ -45,6 +67,18 @@ export function importWorkspaceFile(options: {
     );
 }
 
+/**
+ * Saves workspace tab content and cursor state to disk.
+ *
+ * Invokes the `save_workspace_file` Tauri command.
+ *
+ * @param options - Save options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @param options.tabId - ID of the tab to save
+ * @param options.content - File content to persist
+ * @param options.cursor - Current cursor state
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function saveWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;
@@ -64,6 +98,18 @@ export function saveWorkspaceFile(options: {
     );
 }
 
+/**
+ * Renames a workspace tab file with case-only rename support on macOS.
+ *
+ * Invokes the `rename_workspace_file` Tauri command.
+ *
+ * @param options - Rename options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @param options.tabId - ID of the tab to rename
+ * @param options.fileName - New file name
+ * @returns The updated tab state
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function renameWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;
@@ -82,6 +128,16 @@ export function renameWorkspaceFile(options: {
     );
 }
 
+/**
+ * Deletes a workspace tab and its file from disk.
+ *
+ * Invokes the `delete_workspace_file` Tauri command.
+ *
+ * @param options - Delete options
+ * @param options.workspacePath - Absolute path to the workspace directory
+ * @param options.tabId - ID of the tab to delete
+ * @throws {WorkspaceCommandError} If the command fails or the desktop shell is unavailable
+ */
 export function deleteWorkspaceFile(options: {
     workspacePath: string;
     tabId: string;

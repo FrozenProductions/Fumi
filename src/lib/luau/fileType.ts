@@ -20,6 +20,9 @@ export function isLuauFileName(fileName: string): boolean {
     return extension === ".lua" || extension === ".luau";
 }
 
+/**
+ * Returns the editor mode ("luau" or "text") for a given file name.
+ */
 export function getEditorModeForFileName(fileName: string): "luau" | "text" {
     return isLuauFileName(fileName) ? "luau" : "text";
 }

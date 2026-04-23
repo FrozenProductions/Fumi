@@ -7,6 +7,11 @@ import type { AccountsEmptyStateProps } from "./accountsScreen.type";
 
 const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);
 
+/**
+ * Displays the empty state prompt when no accounts are configured.
+ *
+ * @param props - Component props
+ */
 export function AccountsEmptyState({
     onOpenAddModal,
 }: AccountsEmptyStateProps): ReactElement {

@@ -185,8 +185,11 @@ async function invokeAutomaticExecutionVoidCommand(
 /**
  * Bootstraps the automatic execution state for the specified executor kind.
  *
+ * Invokes the `bootstrap_automatic_execution` Tauri command.
+ *
  * @param executorKind - The type of executor to bootstrap
  * @returns Complete snapshot including all scripts and metadata
+ * @throws {AutomaticExecutionCommandError} If the command fails or the desktop shell is unavailable
  */
 export function bootstrapAutomaticExecution(
     executorKind: ExecutorKind,
@@ -213,8 +216,11 @@ export function bootstrapAutomaticExecution(
 /**
  * Refreshes the automatic execution state from disk.
  *
+ * Invokes the `refresh_automatic_execution` Tauri command.
+ *
  * @param executorKind - The type of executor to refresh
  * @returns Updated snapshot with current script states
+ * @throws {AutomaticExecutionCommandError} If the command fails or the desktop shell is unavailable
  */
 export function refreshAutomaticExecution(
     executorKind: ExecutorKind,
@@ -241,11 +247,14 @@ export function refreshAutomaticExecution(
 /**
  * Creates a new script in the automatic execution collection.
  *
+ * Invokes the `create_automatic_execution_script` Tauri command.
+ *
  * @param options - Script creation options
  * @param options.executorKind - The executor kind for the script
  * @param options.fileName - Optional initial file name
  * @param options.initialContent - Optional initial content
  * @returns The created script snapshot
+ * @throws {AutomaticExecutionCommandError} If the command fails or the desktop shell is unavailable
  */
 export function createAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
@@ -272,11 +281,14 @@ export function createAutomaticExecutionScript(options: {
 /**
  * Saves the content and cursor state of an automatic execution script.
  *
+ * Invokes the `save_automatic_execution_script` Tauri command.
+ *
  * @param options - Save options
  * @param options.executorKind - The executor kind
  * @param options.scriptId - ID of the script to save
  * @param options.content - The script content to persist
  * @param options.cursor - Current cursor position
+ * @throws {AutomaticExecutionCommandError} If the command fails or the desktop shell is unavailable
  */
 export function saveAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
@@ -303,11 +315,14 @@ export function saveAutomaticExecutionScript(options: {
 /**
  * Renames a script in the automatic execution collection.
  *
+ * Invokes the `rename_automatic_execution_script` Tauri command.
+ *
  * @param options - Rename options
  * @param options.executorKind - The executor kind
  * @param options.scriptId - ID of the script to rename
  * @param options.fileName - New file name
  * @returns The updated script state
+ * @throws {AutomaticExecutionCommandError} If the command fails or the desktop shell is unavailable
  */
 export function renameAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
@@ -334,9 +349,12 @@ export function renameAutomaticExecutionScript(options: {
 /**
  * Deletes a script from the automatic execution collection.
  *
+ * Invokes the `delete_automatic_execution_script` Tauri command.
+ *
  * @param options - Delete options
  * @param options.executorKind - The executor kind
  * @param options.scriptId - ID of the script to delete
+ * @throws {AutomaticExecutionCommandError} If the command fails or the desktop shell is unavailable
  */
 export function deleteAutomaticExecutionScript(options: {
     executorKind: ExecutorKind;
@@ -361,10 +379,13 @@ export function deleteAutomaticExecutionScript(options: {
 /**
  * Persists the automatic execution state including active script and ordering.
  *
+ * Invokes the `persist_automatic_execution_state` Tauri command.
+ *
  * @param options - State to persist
  * @param options.executorKind - The executor kind
  * @param options.activeScriptId - Currently active script ID
  * @param options.scripts - Ordered array of script states
+ * @throws {AutomaticExecutionCommandError} If the command fails
  */
 export function persistAutomaticExecutionState(options: {
     executorKind: ExecutorKind;
@@ -385,7 +406,10 @@ export function persistAutomaticExecutionState(options: {
 /**
  * Notifies the backend of unsaved changes state.
  *
+ * Invokes the `set_automatic_execution_unsaved_changes` Tauri command.
+ *
  * @param hasUnsavedChanges - Whether there are unsaved changes
+ * @throws {AutomaticExecutionCommandError} If the command fails
  */
 export function setAutomaticExecutionUnsavedChanges(
     hasUnsavedChanges: boolean,

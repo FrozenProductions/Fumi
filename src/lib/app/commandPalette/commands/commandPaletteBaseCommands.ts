@@ -30,6 +30,7 @@ type CommandPaletteBaseOptions = Pick<
     | "workspaceSession"
 >;
 
+/** Builds command palette items for global app actions like navigation, zoom, sidebar, and theme. */
 export function getBaseCommandPaletteItems({
     activeSidebarItem,
     hotkeyLabels,

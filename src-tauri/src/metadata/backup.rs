@@ -1,3 +1,5 @@
+//! Backup management for metadata files before migration.
+
 use std::{
     fs,
     io::ErrorKind,

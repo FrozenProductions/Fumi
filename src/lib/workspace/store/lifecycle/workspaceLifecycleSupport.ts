@@ -21,6 +21,9 @@ export type WorkspaceLifecycleRuntime = {
     latestWorkspaceRefreshRequestId: number;
 };
 
+/**
+ * Creates the runtime object that tracks bootstrap and refresh lifecycle state.
+ */
 export function createWorkspaceLifecycleRuntime(): WorkspaceLifecycleRuntime {
     return {
         bootstrapWorkspacePromise: null,
@@ -29,6 +32,9 @@ export function createWorkspaceLifecycleRuntime(): WorkspaceLifecycleRuntime {
     };
 }
 
+/**
+ * Collects workspace tabs for persistence, applying transient cursors where available.
+ */
 export function getPersistedWorkspaceTabs(
     get: WorkspaceStoreGet,
     workspace: WorkspaceSession,
@@ -49,6 +55,9 @@ export function getPersistedWorkspaceTabs(
     });
 }
 
+/**
+ * Persists the current workspace before switching, returning false if persistence failed.
+ */
 export async function persistCurrentWorkspaceBeforeSwitch(
     get: WorkspaceStoreGet,
 ): Promise<boolean> {
@@ -61,6 +70,9 @@ export async function persistCurrentWorkspaceBeforeSwitch(
     return persistWorkspaceState();
 }
 
+/**
+ * Opens a workspace path, updates recent paths, and sets the store state.
+ */
 export async function openResolvedWorkspacePath(
     set: WorkspaceStoreSet,
     get: WorkspaceStoreGet,

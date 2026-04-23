@@ -1,3 +1,5 @@
+//! Data models for automatic execution scripts, metadata, and snapshots.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -11,6 +13,7 @@ pub(super) const DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME: &str = "script";
 pub(super) const DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION: &str = ".lua";
 pub(super) const MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH: usize = 20;
 
+/// Cursor position and scroll state for an automatic execution script editor.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AutomaticExecutionCursorState {
@@ -19,6 +22,7 @@ pub struct AutomaticExecutionCursorState {
     pub scroll_top: f64,
 }
 
+/// Persistent state for an automatic execution script tab.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AutomaticExecutionScriptState {
@@ -27,6 +31,7 @@ pub struct AutomaticExecutionScriptState {
     pub cursor: AutomaticExecutionCursorState,
 }
 
+/// A script snapshot including its file content and dirty state.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AutomaticExecutionScriptSnapshot {
@@ -37,6 +42,7 @@ pub struct AutomaticExecutionScriptSnapshot {
     pub is_dirty: bool,
 }
 
+/// Metadata for the automatic execution system including active script and script list.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AutomaticExecutionMetadata {
@@ -45,6 +51,7 @@ pub struct AutomaticExecutionMetadata {
     pub scripts: Vec<AutomaticExecutionScriptState>,
 }
 
+/// Full automatic execution snapshot sent to the frontend on bootstrap and refresh.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AutomaticExecutionSnapshot {

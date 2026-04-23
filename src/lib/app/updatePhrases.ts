@@ -18,6 +18,9 @@ function pickRandomPhrase(
     return phrasePool[randomIndex] ?? phrasePool[0] ?? "";
 }
 
+/**
+ * Returns a random updater phrase appropriate for the current status, avoiding repetition.
+ */
 export function getAppUpdaterPhrase(
     status: AppUpdaterStatus,
     previousPhrase?: string,
@@ -38,6 +41,9 @@ export function getAppUpdaterPhrase(
     return pickRandomPhrase(UP_TO_DATE_PHRASES, previousPhrase);
 }
 
+/**
+ * Returns whether the updater phrase should be refreshed for the given status transition.
+ */
 export function shouldRefreshAppUpdaterPhrase(
     status: AppUpdaterStatus,
 ): boolean {

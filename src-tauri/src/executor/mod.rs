@@ -1,3 +1,5 @@
+//! Executor runtime: socket-based IPC for script injection and execution.
+
 mod models;
 
 pub(crate) mod commands;

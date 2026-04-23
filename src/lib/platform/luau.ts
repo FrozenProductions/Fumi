@@ -19,10 +19,13 @@ class LuauAnalysisCommandError extends Error {
  *
  * Falls back to local analysis when not in Tauri environment.
  *
+ * Invokes the `scan_luau_file_analysis` Tauri command.
+ *
  * @param options - Analysis options
  * @param options.content - The Luau source content
  * @param options.mode - Optional scan mode
  * @returns The file analysis result with symbols
+ * @throws {LuauAnalysisCommandError} If the Tauri command fails
  */
 export async function scanLuauFileAnalysis(options: {
     content: string;

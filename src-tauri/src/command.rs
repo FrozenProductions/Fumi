@@ -1,3 +1,5 @@
+//! Command execution helpers for Tauri invoke with standardized error handling.
+
 use anyhow::{anyhow, Result};
 use tauri::async_runtime;
 

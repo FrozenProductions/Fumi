@@ -2,6 +2,9 @@ import { LUAU_MODE_IDENTIFIER } from "../../../constants/luau/core/luau";
 import { disableTextInputCorrections } from "../../app/textInput";
 import type { AceEditorInstance, AceSessionWithMode } from "./ace.type";
 
+/**
+ * Returns whether the active editor mode is Luau and the Ace session matches the Luau mode.
+ */
 export function isLuauEditorSession(
     editor: AceEditorInstance,
     activeEditorMode: string,
@@ -13,6 +16,9 @@ export function isLuauEditorSession(
     );
 }
 
+/**
+ * Configures Ace editor keybindings and disables text input corrections for a workspace editor.
+ */
 export function bindWorkspaceEditorShortcuts(
     editor: AceEditorInstance,
     onToggleSearch: () => void,
@@ -39,6 +45,9 @@ export function bindWorkspaceEditorShortcuts(
     disableTextInputCorrections(editor.textInput.getElement());
 }
 
+/**
+ * Returns whether inserted text looks like a passive (typing-triggered) completion character.
+ */
 export function isPassiveCompletionTrigger(insertedText: string): boolean {
     return insertedText.length > 0 && /[A-Za-z0-9_.:]$/.test(insertedText);
 }
