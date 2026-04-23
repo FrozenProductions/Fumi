@@ -124,18 +124,23 @@ export function incrementallyUpdateWorkspaceOutline({
 
     return {
         functionScopes: previousAnalysis.functionScopes.map((scope) => ({
-            start: shiftBoundary(scope.start, startOffset, endOffset, delta),
-            end: shiftBoundary(scope.end, startOffset, endOffset, delta),
+            start: shiftStartBoundary(
+                scope.start,
+                startOffset,
+                endOffset,
+                delta,
+            ),
+            end: shiftEndBoundary(scope.end, startOffset, endOffset, delta),
         })),
         symbols: previousAnalysis.symbols.map((symbol) => ({
             ...symbol,
-            declarationStart: shiftBoundary(
+            declarationStart: shiftStartBoundary(
                 symbol.declarationStart,
                 startOffset,
                 endOffset,
                 delta,
             ),
-            declarationEnd: shiftBoundary(
+            declarationEnd: shiftEndBoundary(
                 symbol.declarationEnd,
                 startOffset,
                 endOffset,
@@ -144,7 +149,7 @@ export function incrementallyUpdateWorkspaceOutline({
             ownerFunctionStart:
                 symbol.ownerFunctionStart === null
                     ? null
-                    : shiftBoundary(
+                    : shiftStartBoundary(
                           symbol.ownerFunctionStart,
                           startOffset,
                           endOffset,
@@ -153,31 +158,31 @@ export function incrementallyUpdateWorkspaceOutline({
             ownerFunctionEnd:
                 symbol.ownerFunctionEnd === null
                     ? null
-                    : shiftBoundary(
+                    : shiftEndBoundary(
                           symbol.ownerFunctionEnd,
                           startOffset,
                           endOffset,
                           delta,
                       ),
-            scopeStart: shiftBoundary(
+            scopeStart: shiftStartBoundary(
                 symbol.scopeStart,
                 startOffset,
                 endOffset,
                 delta,
             ),
-            scopeEnd: shiftBoundary(
+            scopeEnd: shiftEndBoundary(
                 symbol.scopeEnd,
                 startOffset,
                 endOffset,
                 delta,
             ),
-            visibleStart: shiftBoundary(
+            visibleStart: shiftStartBoundary(
                 symbol.visibleStart,
                 startOffset,
                 endOffset,
                 delta,
             ),
-            visibleEnd: shiftBoundary(
+            visibleEnd: shiftEndBoundary(
                 symbol.visibleEnd,
                 startOffset,
                 endOffset,
@@ -247,13 +252,30 @@ function rangesOverlap(
     return startA < endB && startB < endA;
 }
 
-function shiftBoundary(
+function shiftStartBoundary(
     value: number,
     startOffset: number,
     endOffset: number,
     delta: number,
 ): number {
     if (value <= startOffset) {
+        return value;
+    }
+
+    if (value >= endOffset) {
+        return value + delta;
+    }
+
+    return startOffset + delta;
+}
+
+function shiftEndBoundary(
+    value: number,
+    startOffset: number,
+    endOffset: number,
+    delta: number,
+): number {
+    if (value < startOffset) {
         return value;
     }
 

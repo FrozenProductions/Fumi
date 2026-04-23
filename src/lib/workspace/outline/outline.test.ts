@@ -166,6 +166,48 @@ describe("workspace outline incremental updates", () => {
         expect(nextAnalysis?.symbols[0]?.declarationEnd).toBe(21);
     });
 
+    it("extends visible symbol ranges when inserting at scope end", () => {
+        const previousContent = "local EmbeddedModules = {}\nE";
+        const nextContent = "local EmbeddedModules = {}\nEm";
+        const previousAnalysis: LuauFileAnalysis = {
+            functionScopes: [],
+            symbols: [
+                {
+                    ...createSymbol("EmbeddedModules"),
+                    detail: "local variable",
+                    declarationStart: 6,
+                    declarationEnd: 21,
+                    isLexical: true,
+                    scopeStart: 0,
+                    scopeEnd: previousContent.length,
+                    visibleStart: 22,
+                    visibleEnd: previousContent.length,
+                },
+            ],
+        };
+
+        const nextAnalysis = incrementallyUpdateWorkspaceOutline({
+            change: {
+                action: "insert",
+                end: {
+                    row: 1,
+                    column: 1,
+                },
+                lines: ["m"],
+                start: {
+                    row: 1,
+                    column: 1,
+                },
+            },
+            nextContent,
+            previousAnalysis,
+            previousContent,
+        });
+
+        expect(nextAnalysis?.symbols[0]?.scopeEnd).toBe(nextContent.length);
+        expect(nextAnalysis?.symbols[0]?.visibleEnd).toBe(nextContent.length);
+    });
+
     it("falls back when an edit touches structural syntax", () => {
         const previousContent = "local foo = 1\n";
         const nextContent = "local function foo() end\n";
