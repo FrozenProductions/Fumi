@@ -146,13 +146,17 @@ function getInnermostFunctionOwner(
 function shouldIncludeFileSymbol(
     symbol: LuauFileSymbol,
     cursorIndex: number,
+    tokenStartIndex: number,
     currentFunctionOwner: number | null,
 ): boolean {
     if (symbol.kind === "comment") {
         return false;
     }
 
-    if (symbol.visibleStart > cursorIndex || cursorIndex > symbol.visibleEnd) {
+    if (
+        symbol.visibleStart > cursorIndex ||
+        (cursorIndex > symbol.visibleEnd && tokenStartIndex > symbol.visibleEnd)
+    ) {
         return false;
     }
 
@@ -471,6 +475,7 @@ function addVisibleFileCompletionItems(options: {
         seen,
         topItems,
     } = options;
+    const tokenStartIndex = cursorIndex - normalizedPrefix.length;
 
     if (!analysis) {
         return;
@@ -486,6 +491,7 @@ function addVisibleFileCompletionItems(options: {
             !shouldIncludeFileSymbol(
                 item.symbol,
                 cursorIndex,
+                tokenStartIndex,
                 currentFunctionOwner,
             )
         ) {

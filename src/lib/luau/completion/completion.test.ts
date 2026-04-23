@@ -120,6 +120,44 @@ describe("shouldOpenLuauCompletion", () => {
         expect(query.items.map((item) => item.label)).toContain("foo");
     });
 
+    it("keeps file symbols visible while typing past stale analysis bounds", () => {
+        const previousContent = "local EmbeddedModules = {}\n";
+        const query = getLuauCompletionQuery({
+            analysis: {
+                functionScopes: [],
+                symbols: [
+                    {
+                        label: "EmbeddedModules",
+                        kind: "constant",
+                        detail: "local variable",
+                        declarationStart: 6,
+                        declarationEnd: 21,
+                        isLexical: true,
+                        ownerFunctionStart: null,
+                        ownerFunctionEnd: null,
+                        scopeStart: 0,
+                        scopeEnd: previousContent.length,
+                        visibleStart: 22,
+                        visibleEnd: previousContent.length,
+                        doc: {
+                            summary:
+                                "Local variable declared in the current file.",
+                            source: "Current File",
+                        },
+                        score: 2000,
+                    },
+                ],
+            },
+            beforeCursor: "Emb",
+            cursorIndex: previousContent.length + "Emb".length,
+            priority: "balanced",
+        });
+
+        expect(query.items.map((item) => item.label)).toContain(
+            "EmbeddedModules",
+        );
+    });
+
     it("excludes outline comments from file completions", () => {
         const query = getCompletionQuery("Ne", {
             functionScopes: [],
