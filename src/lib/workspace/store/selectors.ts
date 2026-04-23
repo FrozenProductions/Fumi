@@ -8,7 +8,7 @@ import type {
     WorkspaceTab,
     WorkspaceTabState,
 } from "../workspace.type";
-import { getActiveTabFromWorkspace } from "./helpers";
+import { getActiveTabFromWorkspace } from "./workspaceNavigation";
 import type { WorkspaceStore } from "./workspaceStore.type";
 
 let previousWorkspaceScreenSession: WorkspaceScreenSession | null = null;

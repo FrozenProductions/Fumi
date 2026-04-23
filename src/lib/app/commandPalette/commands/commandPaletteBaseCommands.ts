@@ -1,8 +1,8 @@
 import { CommandIcon } from "@hugeicons/core-free-icons";
 import { launchRoblox } from "../../../platform/accounts";
 import { isTauriEnvironment } from "../../../platform/runtime";
-import type { AppCommandPaletteItem } from "../../app.type";
 import type { GetCommandPaletteCommandItemsOptions } from "../commandPalette.type";
+import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 import {
     confirmKillRobloxProcesses,
     getCurrentStateMeta,

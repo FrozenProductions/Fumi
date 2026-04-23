@@ -1,9 +1,9 @@
 import { CommandIcon } from "@hugeicons/core-free-icons";
-import type { AppCommandPaletteItem } from "../app.type";
 import type {
     GetGoToLineCommandPaletteItemsOptions,
     GetThemeCommandPaletteItemsOptions,
 } from "./commandPalette.type";
+import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
 
 export function getGoToLineCommandPaletteItems({
     activeTab,

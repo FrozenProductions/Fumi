@@ -3,12 +3,12 @@ import { useHotkeyRecorder } from "@tanstack/react-hotkeys";
 import type { ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import type { AppHotkeyAction } from "../../../lib/app/app.type";
 import {
     findAppHotkeyConflict,
     getAppHotkeyDefinition,
     getAppHotkeyGroups,
 } from "../../../lib/app/hotkeys/hotkeys";
+import type { AppHotkeyAction } from "../../../lib/app/hotkeys/hotkeys.type";
 import { AppSettingsHotkeyField } from "./AppSettingsHotkeyField";
 
 /**

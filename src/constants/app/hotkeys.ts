@@ -1,5 +1,6 @@
-import type { AppHotkeyAction } from "../../lib/app/app.type";
+import type { HotkeysProviderOptions } from "@tanstack/react-hotkeys";
 import type {
+    AppHotkeyAction,
     AppHotkeyDefinition,
     AppReservedHotkey,
 } from "../../lib/app/hotkeys/hotkeys.type";
@@ -295,3 +296,11 @@ export const APP_RESERVED_APP_HOTKEYS = [
         binding: "Escape",
     },
 ] as const satisfies AppReservedHotkey[];
+
+export const HOTKEY_PROVIDER_DEFAULT_OPTIONS: HotkeysProviderOptions = {
+    hotkey: {
+        preventDefault: true,
+        stopPropagation: true,
+        conflictBehavior: "warn",
+    },
+};

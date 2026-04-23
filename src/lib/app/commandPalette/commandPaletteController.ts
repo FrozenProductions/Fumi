@@ -1,6 +1,6 @@
 import { APP_COMMAND_PALETTE_MAX_RESULTS } from "../../../constants/app/commandPalette";
-import type { AppHotkeyBindings } from "../app.type";
 import { getAppHotkeyShortcutLabel } from "../hotkeys/hotkeys";
+import type { AppHotkeyBindings } from "../hotkeys/hotkeys.type";
 import {
     getCommandCommandPaletteItems,
     getGoToLineCommandPaletteItems,

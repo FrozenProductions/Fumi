@@ -3,6 +3,11 @@ import {
     serializeAutomaticExecutionScriptState,
 } from "../../lib/automaticExecution/automaticExecution";
 import type { AutomaticExecutionSnapshot } from "../../lib/automaticExecution/automaticExecution.type";
+import type {
+    AutomaticExecutionStore,
+    AutomaticExecutionStoreGet,
+    AutomaticExecutionStoreSet,
+} from "../../lib/automaticExecution/automaticExecutionStore.type";
 import {
     bootstrapAutomaticExecution as bootstrapAutomaticExecutionCommand,
     persistAutomaticExecutionState,
@@ -10,11 +15,6 @@ import {
 } from "../../lib/platform/automaticExecution";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { ExecutorKind } from "../../lib/workspace/workspace.type";
-import type {
-    AutomaticExecutionStore,
-    AutomaticExecutionStoreGet,
-    AutomaticExecutionStoreSet,
-} from "./automaticExecutionStore.type";
 
 export type AutomaticExecutionRuntime = {
     latestBootstrapRequestId: number;

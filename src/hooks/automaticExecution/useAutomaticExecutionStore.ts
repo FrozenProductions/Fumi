@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AutomaticExecutionStore } from "./automaticExecutionStore.type";
+import type { AutomaticExecutionStore } from "../../lib/automaticExecution/automaticExecutionStore.type";
 import {
     createAutomaticExecutionLifecycleActions,
     createAutomaticExecutionRuntime,

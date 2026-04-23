@@ -1,3 +1,8 @@
+import type {
+    AutomaticExecutionStore,
+    AutomaticExecutionStoreGet,
+    AutomaticExecutionStoreSet,
+} from "../../lib/automaticExecution/automaticExecutionStore.type";
 import {
     createAutomaticExecutionScript,
     deleteAutomaticExecutionScript,
@@ -5,11 +10,6 @@ import {
     saveAutomaticExecutionScript,
 } from "../../lib/platform/automaticExecution";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
-import type {
-    AutomaticExecutionStore,
-    AutomaticExecutionStoreGet,
-    AutomaticExecutionStoreSet,
-} from "./automaticExecutionStore.type";
 import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreLifecycle";
 import { runRefreshAfterFlush } from "./automaticExecutionStoreLifecycle";
 

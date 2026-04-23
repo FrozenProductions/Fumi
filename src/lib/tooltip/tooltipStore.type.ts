@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
+import type { TooltipSide } from "./tooltip.type";
 
 export type TooltipDefinition = {
     id: string;

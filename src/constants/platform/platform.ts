@@ -10,3 +10,5 @@ export const OPENER_REQUIRED_ERROR =
     "Opening links requires the Tauri desktop shell.";
 export const OPEN_PATH_REQUIRED_ERROR =
     "Opening local folders requires the Tauri desktop shell.";
+export const DESKTOP_SHELL_REQUIRED_ERROR =
+    "Workspace commands require the Tauri desktop shell.";

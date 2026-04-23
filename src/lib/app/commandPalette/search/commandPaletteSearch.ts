@@ -5,8 +5,8 @@ import {
     searchItems,
 } from "../../../shared/search";
 import type { SearchField } from "../../../shared/search.type";
-import type { AppCommandPaletteItem } from "../../app.type";
 import type { AppCommandPaletteSearchFieldName } from "../commandPalette.type";
+import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 
 export function normalizeAppCommandPaletteSearchValue(value: string): string {
     return normalizeSearchValue(value);

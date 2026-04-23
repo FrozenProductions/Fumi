@@ -1,9 +1,9 @@
+import type { UseWorkspaceSessionResult } from "../../lib/workspace/session.type";
 import {
     selectWorkspaceActiveTab,
     selectWorkspaceActiveTabIndex,
     selectWorkspaceHasUnsavedChanges,
 } from "../../lib/workspace/store/selectors";
-import type { UseWorkspaceSessionResult } from "./useWorkspaceSession.type";
 import { useWorkspaceStore } from "./useWorkspaceStore";
 
 /**

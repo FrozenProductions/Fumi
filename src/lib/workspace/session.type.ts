@@ -1,5 +1,5 @@
-import type { WorkspaceStore } from "../../lib/workspace/store/workspaceStore.type";
-import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
+import type { WorkspaceStore } from "./store/workspaceStore.type";
+import type { WorkspaceTab } from "./workspace.type";
 
 type UseWorkspaceSessionStoreFields = Pick<
     WorkspaceStore,

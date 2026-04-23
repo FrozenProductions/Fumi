@@ -6,9 +6,9 @@ import {
 import { useAppCommandPalette } from "../../../hooks/app/useAppCommandPalette";
 import { useWorkspaceSession } from "../../../hooks/workspace/useWorkspaceSession";
 import { joinClassNames } from "../../../lib/shared/className";
-import type { AppCommandPaletteProps } from "../shell/appShell.type";
 import { AppCommandPaletteInputRow } from "./AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./AppCommandPaletteResults";
+import type { AppCommandPaletteProps } from "./appCommandPalette.type";
 
 /**
  * The command palette overlay for quick actions and navigation.

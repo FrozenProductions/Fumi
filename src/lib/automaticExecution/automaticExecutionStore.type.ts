@@ -1,11 +1,11 @@
 import type { StateCreator } from "zustand";
+import type { ExecutorKind } from "../workspace/workspace.type";
 import type {
     AutomaticExecutionCursorState,
     AutomaticExecutionScript,
     AutomaticExecutionScriptState,
     AutomaticExecutionSnapshot,
-} from "../../lib/automaticExecution/automaticExecution.type";
-import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+} from "./automaticExecution.type";
 
 export type AutomaticExecutionStoreState = {
     executorKind: ExecutorKind;

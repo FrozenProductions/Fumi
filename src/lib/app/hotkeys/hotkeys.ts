@@ -7,19 +7,17 @@ import {
     rawHotkeyToParsedHotkey,
 } from "@tanstack/hotkeys";
 import { formatForDisplay } from "@tanstack/react-hotkeys";
-import { HOTKEY_KEY_CODE_MAP } from "../../../constants/app/app";
 import {
     APP_HOTKEY_ACTIONS,
     APP_HOTKEY_DEFINITIONS,
     APP_RESERVED_APP_HOTKEYS,
     APP_RESERVED_NATIVE_MENU_HOTKEYS,
+    HOTKEY_KEY_CODE_MAP,
 } from "../../../constants/app/hotkeys";
 import type {
     AppHotkeyAction,
     AppHotkeyBinding,
     AppHotkeyBindings,
-} from "../app.type";
-import type {
     AppHotkeyConflict,
     AppReservedHotkey,
     ResolvedAppHotkey,

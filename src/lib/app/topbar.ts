@@ -1,4 +1,4 @@
-import { TOPBAR_INTERACTIVE_SELECTOR } from "../../constants/app/app";
+import { TOPBAR_INTERACTIVE_SELECTOR } from "../../constants/app/topbar";
 import type { AnimatedTitleCharacter } from "./topbar.type";
 
 export function formatWorkspaceTooltipPath(

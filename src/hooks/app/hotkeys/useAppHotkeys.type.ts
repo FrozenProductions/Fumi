@@ -1,13 +1,13 @@
 import type {
     AppHotkeyBinding,
     AppHotkeyBindings,
-    AppSidebarItem,
-} from "../../../lib/app/app.type";
+} from "../../../lib/app/hotkeys/hotkeys.type";
+import type { AppSidebarItem } from "../../../lib/app/sidebar.type";
 import type {
     WorkspaceSessionState,
     WorkspaceSessionTabActions,
     WorkspaceSessionWorkspaceActions,
-} from "../../workspace/useWorkspaceSession.type";
+} from "../../../lib/workspace/session.type";
 
 export type ResolvedAppHotkeyBindings = {
     hotkeyBindings: AppHotkeyBindings;

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { INITIAL_TOOLTIP_POSITION } from "../../constants/tooltip/tooltip";
-import type { TooltipStore } from "./useTooltipStore.type";
+import type { TooltipStore } from "../../lib/tooltip/tooltipStore.type";
 
 /**
  * Global tooltip state store managing visibility, positioning, and tooltip content.

@@ -20,10 +20,9 @@ import {
 import type {
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
-    AppSidebarItem,
-    AppSidebarPosition,
     AppTheme,
 } from "./app.type";
+import type { AppSidebarItem, AppSidebarPosition } from "./sidebar.type";
 
 export {
     APP_INTELLISENSE_WIDTHS,

@@ -9,12 +9,12 @@ import {
     it,
     vi,
 } from "vite-plus/test";
-import { useWorkspaceStore } from "../useWorkspaceStore";
-import { useWorkspaceExecutor } from "./useWorkspaceExecutor";
 import type {
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
-} from "./useWorkspaceExecutor.type";
+} from "../../../lib/workspace/executor/executor.type";
+import { useWorkspaceStore } from "../useWorkspaceStore";
+import { useWorkspaceExecutor } from "./useWorkspaceExecutor";
 
 const mocks = vi.hoisted(() => ({
     appendWorkspaceExecutionHistory: vi.fn(),

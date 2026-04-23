@@ -1,4 +1,5 @@
-import type { AppSidebarPosition, AppTheme } from "../../../lib/app/app.type";
+import type { AppTheme } from "../../../lib/app/app.type";
+import type { AppSidebarPosition } from "../../../lib/app/sidebar.type";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupPosition,

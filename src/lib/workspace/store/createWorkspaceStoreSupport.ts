@@ -1,7 +1,7 @@
 import { getErrorMessage } from "../../shared/errorMessage";
 import { getWorkspaceDirtyTabCount } from "../session/session";
 import type { WorkspaceCursorState, WorkspaceSession } from "../workspace.type";
-import { isMatchingWorkspacePath } from "./helpers";
+import { isMatchingWorkspacePath } from "./workspaceNavigation";
 import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,

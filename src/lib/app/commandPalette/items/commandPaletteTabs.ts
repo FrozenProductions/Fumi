@@ -1,7 +1,7 @@
 import { FileCodeIcon, FolderOpenIcon } from "@hugeicons/core-free-icons";
-import type { UseWorkspaceSessionResult } from "../../../../hooks/workspace/useWorkspaceSession.type";
 import { splitWorkspaceFileName } from "../../../workspace/fileName";
-import type { AppCommandPaletteItem } from "../../app.type";
+import type { UseWorkspaceSessionResult } from "../../../workspace/session.type";
+import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 
 export function getTabCommandPaletteItems(
     workspaceSession: UseWorkspaceSessionResult,

@@ -1,6 +1,6 @@
 import { pickDirectory } from "../../../platform/dialog";
 import { getErrorMessage } from "../../../shared/errorMessage";
-import { shouldProceedWithWorkspaceSwitch } from "../helpers";
+import { shouldProceedWithWorkspaceSwitch } from "../workspaceNavigation";
 import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,

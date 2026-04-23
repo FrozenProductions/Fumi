@@ -13,6 +13,10 @@ import {
     normalizeExecutorPort,
     parseExecutorPort,
 } from "../../../lib/workspace/executor/executor";
+import type {
+    UseWorkspaceExecutorOptions,
+    UseWorkspaceExecutorResult,
+} from "../../../lib/workspace/executor/executor.type";
 import {
     executeWorkspaceScript,
     toggleExecutorConnection,
@@ -32,10 +36,6 @@ import type {
 } from "../../../lib/workspace/workspace.type";
 import { useWindowResume } from "../../shared/useWindowResume";
 import { useWorkspaceStore } from "../useWorkspaceStore";
-import type {
-    UseWorkspaceExecutorOptions,
-    UseWorkspaceExecutorResult,
-} from "./useWorkspaceExecutor.type";
 
 /**
  * Manages executor connection lifecycle including attach, detach, and script execution.

@@ -1,17 +1,16 @@
 import type { KeyboardEvent, MouseEvent, RefObject } from "react";
-import type { UseWorkspaceExecutorResult } from "../../../hooks/workspace/executor/useWorkspaceExecutor.type";
-import type { UseWorkspaceSessionResult } from "../../../hooks/workspace/useWorkspaceSession.type";
+import type { UseWorkspaceExecutorResult } from "../../workspace/executor/executor.type";
+import type { UseWorkspaceSessionResult } from "../../workspace/session.type";
 import type { WorkspaceTab } from "../../workspace/workspace.type";
+import type { AppTheme } from "../app.type";
+import type { AppHotkeyBindings } from "../hotkeys/hotkeys.type";
+import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";
 import type {
     AppCommandPaletteItem,
     AppCommandPaletteMode,
     AppCommandPaletteScope,
     AppCommandPaletteViewMode,
-    AppHotkeyBindings,
-    AppSidebarItem,
-    AppSidebarPosition,
-    AppTheme,
-} from "../app.type";
+} from "./commandPaletteDomain.type";
 
 export type GetCommandPaletteCommandItemsOptions = {
     workspaceSession: UseWorkspaceSessionResult;

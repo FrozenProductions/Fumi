@@ -12,8 +12,8 @@ import {
 } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { AppIcon } from "../common/AppIcon";
-import type { AppTopbarExecutorControlsProps } from "../shell/appShell.type";
 import { AppTooltip } from "../tooltip/AppTooltip";
+import type { AppTopbarExecutorControlsProps } from "./appTopbar.type";
 import { getExecutorPortLabel } from "./executorPortLabel";
 
 /**

@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vite-plus/test";
 import {
+    MASKED_ACCOUNT_IDENTITY_LABEL,
+    MASKED_ACCOUNT_LABEL,
+} from "../../constants/accounts/accounts";
+import {
     getAccountAvatarAltText,
     getAccountRowDisplayName,
     getAccountRowIdentityLabel,
     getExecutorBoundAccountLabel,
     getRobloxProcessBoundAccountLabel,
-    MASKED_ACCOUNT_IDENTITY_LABEL,
-    MASKED_ACCOUNT_LABEL,
 } from "./accountPrivacy";
 
 describe("accountPrivacy", () => {

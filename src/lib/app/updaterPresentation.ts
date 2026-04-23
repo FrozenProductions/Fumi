@@ -1,4 +1,4 @@
-import type { AppUpdateDownloadProgress } from "./app.type";
+import type { AppUpdateDownloadProgress } from "./updater.type";
 
 function formatAppUpdateByteCount(value: number | null): string | null {
     if (value === null || value <= 0) {

@@ -2,7 +2,7 @@ import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
     AppUpdaterStatus,
-} from "../../lib/app/app.type";
+} from "../../lib/app/updater.type";
 
 export type UseAppUpdaterResult = {
     status: AppUpdaterStatus;

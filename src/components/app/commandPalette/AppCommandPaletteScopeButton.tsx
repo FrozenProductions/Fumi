@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { joinClassNames } from "../../../lib/shared/className";
 import { AppIcon } from "../common/AppIcon";
-import type { AppCommandPaletteScopeButtonProps } from "../shell/appShell.type";
 import { AppTooltip } from "../tooltip/AppTooltip";
+import type { AppCommandPaletteScopeButtonProps } from "./appCommandPalette.type";
 
 /**
  * A scope selector button for the command palette.

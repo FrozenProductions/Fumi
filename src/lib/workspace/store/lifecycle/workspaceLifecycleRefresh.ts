@@ -7,7 +7,7 @@ import {
     mergeWorkspaceSession,
 } from "../../session/session";
 import type { WorkspaceSession } from "../../workspace.type";
-import { isMatchingWorkspacePath } from "../helpers";
+import { isMatchingWorkspacePath } from "../workspaceNavigation";
 import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,

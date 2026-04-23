@@ -1,7 +1,6 @@
 import { persistWorkspaceState as persistWorkspaceStateCommand } from "../../../platform/workspace";
 import { getErrorMessage } from "../../../shared/errorMessage";
 import type { WorkspaceSession } from "../../workspace.type";
-import { isMatchingWorkspacePath } from "../helpers";
 import { createBootstrapWorkspaceSessionAction } from "../lifecycle/workspaceLifecycleBootstrap";
 import {
     createOpenWorkspaceDirectoryAction,
@@ -12,6 +11,7 @@ import {
     createWorkspaceLifecycleRuntime,
     getPersistedWorkspaceTabs,
 } from "../lifecycle/workspaceLifecycleSupport";
+import { isMatchingWorkspacePath } from "../workspaceNavigation";
 import type {
     WorkspaceLifecycleSlice,
     WorkspaceStoreSliceCreator,

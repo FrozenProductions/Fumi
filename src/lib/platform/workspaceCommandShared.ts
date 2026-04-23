@@ -1,9 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
+import { DESKTOP_SHELL_REQUIRED_ERROR } from "../../constants/platform/platform";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { WorkspaceCommandError } from "./errors";
-
-export const DESKTOP_SHELL_REQUIRED_ERROR =
-    "Workspace commands require the Tauri desktop shell.";
 
 export function createDesktopShellRequiredError(
     operation: string,

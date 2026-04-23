@@ -1,5 +1,5 @@
 import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
-import type { AutomaticExecutionStore } from "./automaticExecutionStore.type";
+import type { AutomaticExecutionStore } from "../../lib/automaticExecution/automaticExecutionStore.type";
 
 type UseAutomaticExecutionStoreFields = Pick<
     AutomaticExecutionStore,

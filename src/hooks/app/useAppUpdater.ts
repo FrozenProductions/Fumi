@@ -4,7 +4,7 @@ import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
     AppUpdaterStatus,
-} from "../../lib/app/app.type";
+} from "../../lib/app/updater.type";
 import { confirmAction } from "../../lib/platform/dialog";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
 import {

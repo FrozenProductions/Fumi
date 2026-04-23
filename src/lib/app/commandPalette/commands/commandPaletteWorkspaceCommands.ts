@@ -1,6 +1,6 @@
 import { CommandIcon } from "@hugeicons/core-free-icons";
-import type { AppCommandPaletteItem } from "../../app.type";
 import type { GetCommandPaletteCommandItemsOptions } from "../commandPalette.type";
+import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 
 type CommandPaletteWorkspaceOptions = Pick<
     GetCommandPaletteCommandItemsOptions,

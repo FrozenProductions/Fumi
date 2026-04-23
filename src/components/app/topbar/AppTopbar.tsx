@@ -16,10 +16,10 @@ import {
 } from "../../../lib/platform/window";
 import { AppIcon } from "../common/AppIcon";
 import { AppIconButton } from "../common/AppIconButton";
-import type { AppTopbarProps } from "../shell/appShell.type";
 import { AppTooltip } from "../tooltip/AppTooltip";
 import { AppTopbarExecutorControls } from "./AppTopbarExecutorControls";
 import { AppTopbarTrafficLights } from "./AppTopbarTrafficLights";
+import type { AppTopbarProps } from "./appTopbar.type";
 
 type AppTopbarTitleLetterStyle = CSSProperties & {
     "--title-letter-x": string;

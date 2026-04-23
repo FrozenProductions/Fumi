@@ -1,21 +1,24 @@
 import type {
     AppAccountPrivacySettings,
-    AppCommandPaletteMode,
-    AppCommandPaletteScope,
     AppEditorSettings,
-    AppGoToLineRequest,
-    AppHotkeyAction,
-    AppHotkeyBindings,
     AppIntellisensePriority,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
-    AppRenameCurrentTabRequest,
-    AppSidebarItem,
-    AppSidebarPosition,
     AppTheme,
     AppUpdaterSettings,
     AppWorkspaceSettings,
-} from "../../lib/app/app.type";
+} from "./app.type";
+import type {
+    AppCommandPaletteMode,
+    AppCommandPaletteScope,
+    AppGoToLineRequest,
+    AppRenameCurrentTabRequest,
+} from "./commandPalette/commandPaletteDomain.type";
+import type {
+    AppHotkeyAction,
+    AppHotkeyBindings,
+} from "./hotkeys/hotkeys.type";
+import type { AppSidebarItem, AppSidebarPosition } from "./sidebar.type";
 
 export type AppStoreState = AppAccountPrivacySettings & {
     isSidebarOpen: boolean;

@@ -1,5 +1,5 @@
-import type { AppCommandPaletteScope } from "../../lib/app/app.type";
 import type { AppCommandPaletteSearchFieldName } from "../../lib/app/commandPalette/commandPalette.type";
+import type { AppCommandPaletteScope } from "../../lib/app/commandPalette/commandPaletteDomain.type";
 
 export const COMMAND_PALETTE_EXIT_DURATION_MS = 220;
 export const COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS = 170;

@@ -9,6 +9,7 @@ import {
     DEFAULT_APP_UPDATER_SETTINGS,
     DEFAULT_APP_WORKSPACE_SETTINGS,
 } from "../../constants/app/settings";
+import type { AppStore, AppStoreState } from "../../lib/app/appStore.type";
 import {
     isAppHotkeyOverride,
     normalizeAppHotkeyBindings,
@@ -22,7 +23,6 @@ import {
     normalizeAppMiddleClickTabAction,
     normalizeAppOutlinePanelWidth,
 } from "../../lib/app/store";
-import type { AppStore, AppStoreState } from "./appStore.type";
 
 export function mergeAppStoreState(
     persistedState: unknown,

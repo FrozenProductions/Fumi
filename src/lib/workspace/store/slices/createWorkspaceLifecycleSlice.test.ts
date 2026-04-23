@@ -30,9 +30,10 @@ vi.mock("../../persistence", async () => {
     };
 });
 
-vi.mock("../helpers", async () => {
-    const actual =
-        await vi.importActual<typeof import("../helpers")>("../helpers");
+vi.mock("../workspaceNavigation", async () => {
+    const actual = await vi.importActual<
+        typeof import("../workspaceNavigation")
+    >("../workspaceNavigation");
 
     return {
         ...actual,

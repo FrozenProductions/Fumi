@@ -2,11 +2,11 @@ import type {
     AppEditorSettings,
     AppMiddleClickTabAction,
     AppSettingsSection,
-    AppSidebarPosition,
     AppTheme,
     AppUpdaterSettings,
     AppWorkspaceSettings,
 } from "../../lib/app/app.type";
+import type { AppSidebarPosition } from "../../lib/app/sidebar.type";
 import {
     DEFAULT_PAGE_ZOOM,
     MAX_PAGE_ZOOM,

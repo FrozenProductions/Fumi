@@ -1,4 +1,4 @@
-import type { AppHotkeyAction } from "../../../lib/app/app.type";
+import type { AppHotkeyAction } from "../../../lib/app/hotkeys/hotkeys.type";
 
 export type AppSettingsHotkeyFieldProps = {
     action: AppHotkeyAction;

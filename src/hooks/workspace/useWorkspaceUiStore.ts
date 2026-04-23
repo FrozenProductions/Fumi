@@ -3,7 +3,7 @@ import { INITIAL_WORKSPACE_UI_STATE } from "../../constants/workspace/workspace"
 import type {
     WorkspaceUiStore,
     WorkspaceUiStoreState,
-} from "./useWorkspaceUiStore.type";
+} from "../../lib/workspace/uiStore.type";
 
 export const useWorkspaceUiStore = create<WorkspaceUiStore>((set) => ({
     ...(INITIAL_WORKSPACE_UI_STATE satisfies WorkspaceUiStoreState),

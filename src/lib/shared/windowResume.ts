@@ -19,7 +19,6 @@ function clearResumeTimeout(): void {
 function notifyResumeListeners(): void {
     const now = Date.now();
 
-    // Focus and visibility events usually arrive together on app resume.
     if (now - lastResumeNotificationAt < WINDOW_RESUME_COOLDOWN_MS) {
         return;
     }

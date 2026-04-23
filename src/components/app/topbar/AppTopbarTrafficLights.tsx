@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { TRAFFIC_LIGHT_STYLE_MAP } from "../../../constants/app/app";
+import { TRAFFIC_LIGHT_STYLE_MAP } from "../../../constants/app/topbar";
 import {
     closeCurrentWindow,
     minimizeCurrentWindow,

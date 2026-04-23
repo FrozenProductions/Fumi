@@ -11,14 +11,14 @@ import {
     COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS,
     COMMAND_PALETTE_EXIT_DURATION_MS,
 } from "../../constants/app/commandPalette";
+import { parseGoToLineQuery } from "../../lib/app/commandPalette/commandPalette";
+import { getAppCommandPaletteResults } from "../../lib/app/commandPalette/commandPaletteController";
 import type {
     AppCommandPaletteItem,
     AppCommandPaletteScope,
     AppCommandPaletteViewMode,
     AppCommandPaletteMode as RequestedAppCommandPaletteMode,
-} from "../../lib/app/app.type";
-import { parseGoToLineQuery } from "../../lib/app/commandPalette/commandPalette";
-import { getAppCommandPaletteResults } from "../../lib/app/commandPalette/commandPaletteController";
+} from "../../lib/app/commandPalette/commandPaletteDomain.type";
 import { normalizeAppCommandPaletteSearchValue } from "../../lib/app/commandPalette/search/commandPaletteSearch";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
 import type {

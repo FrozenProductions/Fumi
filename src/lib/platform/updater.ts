@@ -4,7 +4,7 @@ import { check } from "@tauri-apps/plugin-updater";
 import type {
     AppUpdateDownloadProgress,
     AppUpdateMetadata,
-} from "../app/app.type";
+} from "../app/updater.type";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import { UpdaterError } from "./errors";
 import { isTauriEnvironment } from "./runtime";

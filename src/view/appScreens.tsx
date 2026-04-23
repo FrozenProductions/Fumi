@@ -6,8 +6,8 @@ import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibrarySc
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
 import type { WorkspaceScreenProps } from "../components/workspace/workspaceScreen.type";
 import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater.type";
-import type { UseWorkspaceExecutorResult } from "../hooks/workspace/executor/useWorkspaceExecutor.type";
-import type { AppSidebarItem } from "../lib/app/app.type";
+import type { AppSidebarItem } from "../lib/app/sidebar.type";
+import type { UseWorkspaceExecutorResult } from "../lib/workspace/executor/executor.type";
 
 export function getAppScreen(
     activeSidebarItem: AppSidebarItem,

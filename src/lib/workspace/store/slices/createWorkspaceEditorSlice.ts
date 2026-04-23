@@ -6,7 +6,10 @@ import {
     updateWorkspaceTab,
 } from "../../session/session";
 import type { WorkspaceCursorState } from "../../workspace.type";
-import { getActiveTabFromWorkspace, isMatchingWorkspacePath } from "../helpers";
+import {
+    getActiveTabFromWorkspace,
+    isMatchingWorkspacePath,
+} from "../workspaceNavigation";
 import type {
     WorkspaceEditorSlice,
     WorkspaceStoreSliceCreator,

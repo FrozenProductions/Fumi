@@ -3,7 +3,7 @@ import {
     STARTUP_ERROR_ACCENT,
     STARTUP_ERROR_BACKGROUND,
     STARTUP_ERROR_TEXT,
-} from "../../constants/app/app";
+} from "../../constants/app/startup";
 
 export function renderStartupError(_message: string): void {
     const root = document.getElementById("root");

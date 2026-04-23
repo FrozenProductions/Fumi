@@ -4,7 +4,7 @@ import type {
     UseWorkspaceExecutorResult,
     WorkspaceExecutorActions,
     WorkspaceExecutorState,
-} from "../../../hooks/workspace/executor/useWorkspaceExecutor.type";
+} from "../../workspace/executor/executor.type";
 import type {
     UseWorkspaceSessionResult,
     WorkspaceSessionArchiveActions,
@@ -12,13 +12,10 @@ import type {
     WorkspaceSessionState,
     WorkspaceSessionTabActions,
     WorkspaceSessionWorkspaceActions,
-} from "../../../hooks/workspace/useWorkspaceSession.type";
-import type {
-    AppCommandPaletteItem,
-    AppSidebarItem,
-    AppSidebarPosition,
-} from "../app.type";
+} from "../../workspace/session.type";
+import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";
 import type { getCommandCommandPaletteItems } from "./commandPalette";
+import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
 
 type WorkspaceSessionOverrides = {
     state?: Partial<WorkspaceSessionState>;

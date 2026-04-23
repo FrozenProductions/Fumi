@@ -1,8 +1,9 @@
+import {
+    MASKED_ACCOUNT_AVATAR_ALT,
+    MASKED_ACCOUNT_IDENTITY_LABEL,
+    MASKED_ACCOUNT_LABEL,
+} from "../../constants/accounts/accounts";
 import type { AccountSummary, RobloxProcessInfo } from "./accounts.type";
-
-export const MASKED_ACCOUNT_LABEL = "Hidden account";
-export const MASKED_ACCOUNT_IDENTITY_LABEL = "Hidden identity";
-export const MASKED_ACCOUNT_AVATAR_ALT = "Account avatar";
 
 type AccountPrivacyOptions = {
     isMasked?: boolean;

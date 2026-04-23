@@ -2,8 +2,8 @@ import {
     FAILED_TO_CHECK_PHRASES,
     UP_TO_DATE_PHRASES,
     UPDATE_AVAILABLE_PHRASES,
-} from "../../constants/app/app";
-import type { AppUpdaterStatus } from "./app.type";
+} from "../../constants/app/updater";
+import type { AppUpdaterStatus } from "./updater.type";
 
 function pickRandomPhrase(
     phrases: readonly string[],

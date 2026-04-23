@@ -9,7 +9,7 @@ import type {
     AppSidebarActionItem,
     AppSidebarItem,
     AppSidebarNavigationItem,
-} from "../../lib/app/app.type";
+} from "../../lib/app/sidebar.type";
 
 export const APP_SIDEBAR_ITEM_IDS = [
     "workspace",

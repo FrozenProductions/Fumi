@@ -1,10 +1,10 @@
-import type { UseWorkspaceExecutorResult } from "../../hooks/workspace/executor/useWorkspaceExecutor.type";
 import type { UseWorkspaceTabRenameResult } from "../../hooks/workspace/tabBar/useWorkspaceTabRename.type";
 import type {
     RobloxAccountIdentity,
     RobloxProcessInfo,
 } from "../../lib/accounts/accounts.type";
 import type { AppMiddleClickTabAction } from "../../lib/app/app.type";
+import type { UseWorkspaceExecutorResult } from "../../lib/workspace/executor/executor.type";
 import type {
     WorkspacePaneId,
     WorkspaceScreenSession,

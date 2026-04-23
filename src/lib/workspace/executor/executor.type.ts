@@ -2,7 +2,7 @@ import type {
     ExecutorKind,
     ExecutorPortSummary,
     WorkspaceExecutionHistoryEntry,
-} from "../../../lib/workspace/workspace.type";
+} from "../workspace.type";
 
 export type AsyncUnsubscribe = () => void;
 

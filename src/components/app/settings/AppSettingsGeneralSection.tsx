@@ -18,11 +18,11 @@ import {
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { useAppZoom } from "../../../hooks/app/useAppZoom";
-import type { AppUpdaterStatus } from "../../../lib/app/app.type";
 import {
     getAppUpdaterPhrase,
     shouldRefreshAppUpdaterPhrase,
 } from "../../../lib/app/updatePhrases";
+import type { AppUpdaterStatus } from "../../../lib/app/updater.type";
 import { getAppUpdateProgressSummary } from "../../../lib/app/updaterPresentation";
 import { openExternalUrl } from "../../../lib/platform/opener";
 import { AppAnimatedText } from "../common/AppAnimatedText";

@@ -3,9 +3,9 @@ import type {
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
     AppSettingsSection,
-    AppSidebarPosition,
     AppTheme,
 } from "../../lib/app/app.type";
+import type { AppSidebarPosition } from "../../lib/app/sidebar.type";
 
 export type AppSettingsSectionOption = {
     id: AppSettingsSection;

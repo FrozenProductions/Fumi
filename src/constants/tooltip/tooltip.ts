@@ -1,5 +1,5 @@
-import type { TooltipPosition } from "../../hooks/tooltip/useTooltipStore.type";
 import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
+import type { TooltipPosition } from "../../lib/tooltip/tooltipStore.type";
 
 export const TOOLTIP_VIEWPORT_MARGIN = 8;
 export const DEFAULT_TOOLTIP_DELAY_MS = 1000;
