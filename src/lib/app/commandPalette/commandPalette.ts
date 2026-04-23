@@ -1,4 +1,3 @@
-export { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 export {
     getGoToLineCommandPaletteItems,
     getThemeCommandPaletteItems,
@@ -11,5 +10,6 @@ export {
     getWorkspacePathLabel,
     parseGoToLineQuery,
 } from "./commandPaletteShared";
-export { getTabCommandPaletteItems } from "./commandPaletteTabs";
-export { getWorkspaceCommandPaletteItems } from "./commandPaletteWorkspaces";
+export { getCommandCommandPaletteItems } from "./commands/commandPaletteCommands";
+export { getTabCommandPaletteItems } from "./items/commandPaletteTabs";
+export { getWorkspaceCommandPaletteItems } from "./items/commandPaletteWorkspaces";

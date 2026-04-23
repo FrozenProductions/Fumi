@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { readRecentWorkspacePaths } from "../../lib/workspace/persistence";
-import { createWorkspaceEditorSlice } from "../../lib/workspace/store/createWorkspaceEditorSlice";
-import { createWorkspaceLifecycleSlice } from "../../lib/workspace/store/createWorkspaceLifecycleSlice";
-import { createWorkspaceTabSlice } from "../../lib/workspace/store/createWorkspaceTabSlice";
+import { createWorkspaceEditorSlice } from "../../lib/workspace/store/slices/createWorkspaceEditorSlice";
+import { createWorkspaceLifecycleSlice } from "../../lib/workspace/store/slices/createWorkspaceLifecycleSlice";
+import { createWorkspaceTabSlice } from "../../lib/workspace/store/slices/createWorkspaceTabSlice";
 import type { WorkspaceStore } from "../../lib/workspace/store/workspaceStore.type";
 
 /**

@@ -1,4 +1,4 @@
-import type { LuauFileAnalysis } from "../../luau/symbolScanner.type";
+import type { LuauFileAnalysis } from "../../luau/symbolScanner/symbolScanner.type";
 
 export type WorkspaceOutlineCacheEntry = {
     analysis: LuauFileAnalysis;

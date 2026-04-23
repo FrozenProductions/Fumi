@@ -5,7 +5,7 @@ import { AutomaticExecutionScreen } from "../components/automaticExecution/Autom
 import { ScriptLibraryScreen } from "../components/scriptLibrary/ScriptLibraryScreen";
 import { WorkspaceScreen } from "../components/workspace/WorkspaceScreen";
 import type { WorkspaceScreenProps } from "../components/workspace/workspaceScreen.type";
-import type { UseAppUpdaterResult } from "../hooks/app/updater/useAppUpdater.type";
+import type { UseAppUpdaterResult } from "../hooks/app/useAppUpdater.type";
 import type { UseWorkspaceExecutorResult } from "../hooks/workspace/executor/useWorkspaceExecutor.type";
 import type { AppSidebarItem } from "../lib/app/app.type";
 

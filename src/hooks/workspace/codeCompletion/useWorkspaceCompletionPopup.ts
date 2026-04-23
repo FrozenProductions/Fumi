@@ -3,7 +3,7 @@ import {
     getLuauCompletionQuery,
     shouldOpenLuauCompletion,
     shouldSuppressLuauCompletionForTokenType,
-} from "../../../lib/luau/completion";
+} from "../../../lib/luau/completion/completion";
 import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
 import { isLuauEditorSession } from "../../../lib/workspace/codeCompletion/ace";
 import type { UpdateWorkspaceCompletionPopupOptions } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";

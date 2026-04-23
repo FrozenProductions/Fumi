@@ -12,7 +12,7 @@ import type {
     WorkspaceSessionState,
     WorkspaceSessionTabActions,
     WorkspaceSessionWorkspaceActions,
-} from "../../../hooks/workspace/session/useWorkspaceSession.type";
+} from "../../../hooks/workspace/useWorkspaceSession.type";
 import type {
     AppCommandPaletteItem,
     AppSidebarItem,

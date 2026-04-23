@@ -1,6 +1,6 @@
 import type { KeyboardEvent, MouseEvent, RefObject } from "react";
 import type { UseWorkspaceExecutorResult } from "../../../hooks/workspace/executor/useWorkspaceExecutor.type";
-import type { UseWorkspaceSessionResult } from "../../../hooks/workspace/session/useWorkspaceSession.type";
+import type { UseWorkspaceSessionResult } from "../../../hooks/workspace/useWorkspaceSession.type";
 import type { WorkspaceTab } from "../../workspace/workspace.type";
 import type {
     AppCommandPaletteItem,

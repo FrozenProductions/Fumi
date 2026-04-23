@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import type { LuauFileSymbol } from "../../luau/luau.type";
-import type { LuauFileAnalysis } from "../../luau/symbolScanner.type";
+import type { LuauFileAnalysis } from "../../luau/symbolScanner/symbolScanner.type";
 import {
     getWorkspaceLineNumberFromOffset,
     getWorkspaceOutlineCacheHit,

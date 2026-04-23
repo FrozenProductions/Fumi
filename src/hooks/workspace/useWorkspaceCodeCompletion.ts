@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner.type";
+import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner/symbolScanner.type";
 import {
     bindWorkspaceEditorShortcuts,
     isPassiveCompletionTrigger,

@@ -1,6 +1,6 @@
 import { WORKSPACE_OUTLINE_CACHE_MAX_ENTRIES } from "../../../constants/workspace/outline";
 import { STRUCTURAL_TEXT_PATTERN } from "../../../constants/workspace/workspace";
-import type { LuauFileAnalysis } from "../../luau/symbolScanner.type";
+import type { LuauFileAnalysis } from "../../luau/symbolScanner/symbolScanner.type";
 import type {
     WorkspaceIncrementalOutlineUpdateOptions,
     WorkspaceOutlineCacheEntry,

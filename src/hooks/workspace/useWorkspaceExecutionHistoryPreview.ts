@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
-import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
+import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
+import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { copyTextToClipboard } from "../../lib/platform/clipboard";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { getReactAceComponent } from "../../lib/workspace/editor/editor";

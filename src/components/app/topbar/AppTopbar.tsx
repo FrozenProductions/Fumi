@@ -9,7 +9,7 @@ import {
     formatWorkspaceTooltipPath,
     getAnimatedTitleCharacters,
     isTopbarInteractiveTarget,
-} from "../../../lib/app/topbar/topbar";
+} from "../../../lib/app/topbar";
 import {
     startCurrentWindowDragging,
     toggleCurrentWindowMaximize,

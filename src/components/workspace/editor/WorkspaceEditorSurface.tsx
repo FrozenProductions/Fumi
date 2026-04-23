@@ -10,13 +10,13 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../../constants/workspace/editor";
-import type { LoadedAceRuntime } from "../../../lib/luau/loadAceRuntime.type";
+import type { LoadedAceRuntime } from "../../../lib/luau/ace/loadAceRuntime.type";
 import type { AceChangeDelta } from "../../../lib/workspace/codeCompletion/ace.type";
 import type { AceEditorComponent } from "../../../lib/workspace/editor/editor.type";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
 import { WorkspaceActionsButton } from "../actions/WorkspaceActionsButton";
 import { AppCodeCompletion } from "./AppCodeCompletion";
-import { WorkspaceEditorSearchPanel } from "./WorkspaceEditorSearchPanel";
+import { WorkspaceEditorSearchPanel } from "./search/WorkspaceEditorSearchPanel";
 import type {
     WorkspaceEditorCompletionProps,
     WorkspaceEditorOutlineProps,

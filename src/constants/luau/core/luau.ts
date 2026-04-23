@@ -1,8 +1,8 @@
 import type {
     LuauKeywordDocs,
     LuauTypeDocs,
-} from "../../../lib/luau/completion.type";
-import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner.type";
+} from "../../../lib/luau/completion/completion.type";
+import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner/symbolScanner.type";
 
 export const EMPTY_LUAU_FILE_ANALYSIS: LuauFileAnalysis = {
     functionScopes: [],

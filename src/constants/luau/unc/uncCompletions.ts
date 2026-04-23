@@ -3,16 +3,16 @@ import {
     createLuauCompletionItem,
     createLuauNamespaceCompletionGroup,
     normalizeLuauWhitespaceSummary,
-} from "../../../lib/luau/completionBuilder";
+} from "../../../lib/luau/completion/completionBuilder";
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,
 } from "../../../lib/luau/luau.type";
+import { UNC_TOP_LEVEL_DATA } from "./topLevel/uncTopLevelData";
 import { UNC_ALIAS_DATA } from "./uncAliasData";
 import { UNC_DOC_SOURCE } from "./uncCompletionSources";
 import { UNC_NAMESPACE_DATA } from "./uncNamespaceData";
 import { UNC_NAMESPACE_SUMMARIES } from "./uncNamespaceSummaries";
-import { UNC_TOP_LEVEL_DATA } from "./uncTopLevelData";
 
 export const UNC_GLOBAL_FUNCTION_NAMES = [
     ...UNC_TOP_LEVEL_DATA.map(([label]) => label),

@@ -1,4 +1,4 @@
-import { createLuauLanguageCompletionItem as createItem } from "../../../lib/luau/completionBuilder";
+import { createLuauLanguageCompletionItem as createItem } from "../../../lib/luau/completion/completionBuilder";
 import type { LuauCompletionItem } from "../../../lib/luau/luau.type";
 import { LUAU_DOC_SOURCE } from "./luauCompletionSources";
 

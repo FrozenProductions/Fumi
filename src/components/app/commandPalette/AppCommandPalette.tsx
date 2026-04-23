@@ -3,8 +3,8 @@ import {
     APP_COMMAND_PALETTE_SCOPE_LABELS,
     APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
 } from "../../../constants/app/commandPalette";
-import { useAppCommandPalette } from "../../../hooks/app/commandPalette/useAppCommandPalette";
-import { useWorkspaceSession } from "../../../hooks/workspace/session/useWorkspaceSession";
+import { useAppCommandPalette } from "../../../hooks/app/useAppCommandPalette";
+import { useWorkspaceSession } from "../../../hooks/workspace/useWorkspaceSession";
 import { joinClassNames } from "../../../lib/shared/className";
 import type { AppCommandPaletteProps } from "../shell/appShell.type";
 import { AppCommandPaletteInputRow } from "./AppCommandPaletteInputRow";

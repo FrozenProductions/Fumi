@@ -2,7 +2,7 @@ import {
     createLuauCompletionItem,
     createLuauNamespaceCompletionGroup,
     normalizeLuauMarkdownSummary,
-} from "../../../lib/luau/completionBuilder";
+} from "../../../lib/luau/completion/completionBuilder";
 import type {
     LuauCompletionItem,
     LuauNamespaceCompletionGroup,

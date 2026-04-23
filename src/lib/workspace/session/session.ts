@@ -18,4 +18,4 @@ export {
     updateActiveWorkspaceTab,
     updateWorkspaceTab,
     upsertWorkspaceTab,
-} from "./sessionTabs";
+} from "./tabs/sessionTabs";

@@ -13,7 +13,7 @@ import {
 import {
     getSteppedTextInputValue,
     resolveCommittedTextInputValue,
-} from "../../../lib/app/textInput/textInput";
+} from "../../../lib/app/textInput";
 import type { AppInputProps } from "./appForm.type";
 
 /**

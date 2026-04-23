@@ -1,19 +1,19 @@
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { AppCommandPalette } from "../components/app/commandPalette/AppCommandPalette";
-import { AppDragDropOverlay } from "../components/app/dragDrop/AppDragDropOverlay";
+import { AppDragDropOverlay } from "../components/app/shell/AppDragDropOverlay";
 import { AppSidebar } from "../components/app/shell/AppSidebar";
 import { AppTopbar } from "../components/app/topbar/AppTopbar";
 import { APP_TITLE } from "../constants/app/app";
 import { APP_ZOOM_DEFAULT, APP_ZOOM_STEP } from "../constants/app/settings";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
-import { useAppDragDrop } from "../hooks/app/dragDrop/useAppDragDrop";
 import { useAppExitGuard } from "../hooks/app/shell/useAppExitGuard";
 import { useAppShellLifecycle } from "../hooks/app/shell/useAppShellLifecycle";
-import { useAppUpdater } from "../hooks/app/updater/useAppUpdater";
+import { useAppDragDrop } from "../hooks/app/useAppDragDrop";
 import { useAppStore } from "../hooks/app/useAppStore";
 import { useAppThemeSync } from "../hooks/app/useAppThemeSync";
-import { useAppZoomSync } from "../hooks/app/zoom/useAppZoomSync";
+import { useAppUpdater } from "../hooks/app/useAppUpdater";
+import { useAppZoomSync } from "../hooks/app/useAppZoomSync";
 import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,

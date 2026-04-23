@@ -12,7 +12,7 @@ import type {
     AppCommandPaletteHotkeyLabels,
     GetAppCommandPaletteResultsOptions,
 } from "./commandPalette.type";
-import { searchAppCommandPaletteItems } from "./commandPaletteSearch";
+import { searchAppCommandPaletteItems } from "./search/commandPaletteSearch";
 
 export function getAppCommandPaletteHotkeyLabels(
     hotkeyBindings: AppHotkeyBindings,

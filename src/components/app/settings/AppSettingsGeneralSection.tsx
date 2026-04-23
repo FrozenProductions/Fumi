@@ -17,13 +17,13 @@ import {
     APP_ZOOM_STEP,
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import { useAppZoom } from "../../../hooks/app/zoom/useAppZoom";
+import { useAppZoom } from "../../../hooks/app/useAppZoom";
 import type { AppUpdaterStatus } from "../../../lib/app/app.type";
 import {
     getAppUpdaterPhrase,
     shouldRefreshAppUpdaterPhrase,
-} from "../../../lib/app/updater/updatePhrases";
-import { getAppUpdateProgressSummary } from "../../../lib/app/updater/updaterPresentation";
+} from "../../../lib/app/updatePhrases";
+import { getAppUpdateProgressSummary } from "../../../lib/app/updaterPresentation";
 import { openExternalUrl } from "../../../lib/platform/opener";
 import { AppAnimatedText } from "../common/AppAnimatedText";
 import { AppIcon } from "../common/AppIcon";

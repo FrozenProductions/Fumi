@@ -8,8 +8,8 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
-import { loadAceRuntime } from "../../lib/luau/loadAceRuntime";
-import type { LoadedAceRuntime } from "../../lib/luau/loadAceRuntime.type";
+import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
+import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { createMaskStyle } from "../../lib/shared/mask";
 import { getReactAceComponent } from "../../lib/workspace/editor/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";

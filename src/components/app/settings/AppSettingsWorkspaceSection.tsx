@@ -12,7 +12,7 @@ import {
 } from "../../../constants/workspace/archive";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
-import { useWorkspaceSession } from "../../../hooks/workspace/session/useWorkspaceSession";
+import { useWorkspaceSession } from "../../../hooks/workspace/useWorkspaceSession";
 import {
     createArchivedTabsDateFormatter,
     filterAndSortArchivedTabs,

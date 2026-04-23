@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactElement } from "react";
-import { getCompactLuauCompletionDetailLabel } from "../../../lib/luau/completionPopup";
+import { getCompactLuauCompletionDetailLabel } from "../../../lib/luau/completion/completionPopup";
 import type { AppCodeCompletionProps } from "./workspaceEditor.type";
 
 /**

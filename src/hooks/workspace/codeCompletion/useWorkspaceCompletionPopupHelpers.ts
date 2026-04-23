@@ -1,4 +1,4 @@
-import { getLuauCompletionPopupPosition } from "../../../lib/luau/completionPopup";
+import { getLuauCompletionPopupPosition } from "../../../lib/luau/completion/completionPopup";
 import type {
     LuauCompletionItem,
     LuauCompletionPopupState,

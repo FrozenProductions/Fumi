@@ -3,7 +3,7 @@ import { useAppGlobalHotkeyCapture } from "../../hooks/app/hotkeys/useAppGlobalH
 import { useAppScopedHotkeys } from "../../hooks/app/hotkeys/useAppScopedHotkeys";
 import { useResolvedAppHotkeyBindings } from "../../hooks/app/hotkeys/useResolvedAppHotkeyBindings";
 import { useAppStore } from "../../hooks/app/useAppStore";
-import { useWorkspaceSession } from "../../hooks/workspace/session/useWorkspaceSession";
+import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
 import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
 
 /**

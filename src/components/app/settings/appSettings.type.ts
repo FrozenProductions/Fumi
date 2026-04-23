@@ -1,4 +1,4 @@
-import type { UseAppUpdaterResult } from "../../../hooks/app/updater/useAppUpdater.type";
+import type { UseAppUpdaterResult } from "../../../hooks/app/useAppUpdater.type";
 
 export type AppSettingsScreenProps = {
     updater: UseAppUpdaterResult;

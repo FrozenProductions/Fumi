@@ -3,7 +3,7 @@ import type {
     ReactElement,
     PointerEvent as ReactPointerEvent,
 } from "react";
-import { WorkspaceOutlinePanel } from "../outline/WorkspaceOutlinePanel";
+import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
 import type { WorkspaceEditorOutlineProps } from "./workspaceEditor.type";
 
 type WorkspaceEditorOutlineSidebarProps = {

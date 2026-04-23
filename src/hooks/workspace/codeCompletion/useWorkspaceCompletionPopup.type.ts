@@ -4,7 +4,7 @@ import type {
     AppIntellisenseWidth,
 } from "../../../lib/app/app.type";
 import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
-import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner.type";
+import type { LuauFileAnalysis } from "../../../lib/luau/symbolScanner/symbolScanner.type";
 import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
 import type { UpdateWorkspaceCompletionPopupOptions } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 

@@ -9,7 +9,7 @@ import {
     getAppHotkeyDefinition,
     getAppHotkeyGroups,
 } from "../../../lib/app/hotkeys/hotkeys";
-import { AppSettingsHotkeyField } from "./hotkeys/AppSettingsHotkeyField";
+import { AppSettingsHotkeyField } from "./AppSettingsHotkeyField";
 
 /**
  * The hotkeys settings section with keyboard shortcut management.

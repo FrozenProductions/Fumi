@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import { useWorkspaceLuauAnalysis } from "../../../hooks/workspace/luau/useWorkspaceLuauAnalysis";
 import { useWorkspaceCodeCompletion } from "../../../hooks/workspace/useWorkspaceCodeCompletion";
+import { useWorkspaceLuauAnalysis } from "../../../hooks/workspace/useWorkspaceLuauAnalysis";
 import { useWorkspaceStore } from "../../../hooks/workspace/useWorkspaceStore";
 import { getEditorModeForFileName } from "../../../lib/luau/fileType";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
