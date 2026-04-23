@@ -9,6 +9,10 @@ import {
     MAX_LUAU_COMPLETION_ITEMS,
 } from "../../../constants/luau/core/luau";
 import {
+    EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY,
+    LUAU_COMPLETION_INDEX_PRIORITIES,
+} from "../../../constants/luau/core/luauCompletionIndex";
+import {
     LUAU_NAMESPACE_COMPLETIONS,
     LUAU_TOP_LEVEL_COMPLETIONS,
 } from "../../../constants/luau/core/luauCompletions";
@@ -32,33 +36,12 @@ import {
 import type { AppIntellisensePriority } from "../../app/app.type";
 import type { LuauCompletionItem, LuauFileSymbol } from "../luau.type";
 import type { LuauFileAnalysis } from "../symbolScanner/symbolScanner.type";
-import type { LuauCompletionQuery } from "./completion.type";
-
-type IndexedCompletionItem = {
-    item: LuauCompletionItem;
-    key: string;
-    normalizedLabel: string;
-};
-
-type FileIndexedCompletionItem = IndexedCompletionItem & {
-    symbol: LuauFileSymbol;
-};
-
-type CompletionIndexByPriority = Record<
-    AppIntellisensePriority,
-    IndexedCompletionItem[]
->;
-
-const COMPLETION_INDEX_PRIORITIES = [
-    "balanced",
-    "language",
-    "executor",
-] as const satisfies readonly AppIntellisensePriority[];
-const EMPTY_COMPLETION_INDEX_BY_PRIORITY: CompletionIndexByPriority = {
-    balanced: [],
-    executor: [],
-    language: [],
-};
+import type {
+    CompletionIndexByPriority,
+    FileIndexedCompletionItem,
+    IndexedCompletionItem,
+    LuauCompletionQuery,
+} from "./completion.type";
 
 const FILE_COMPLETION_INDEX_CACHE = new WeakMap<
     LuauFileAnalysis,
@@ -204,7 +187,7 @@ function createCompletionIndexByPriority(
     );
     const indexByPriority = {} as CompletionIndexByPriority;
 
-    for (const priority of COMPLETION_INDEX_PRIORITIES) {
+    for (const priority of LUAU_COMPLETION_INDEX_PRIORITIES) {
         indexByPriority[priority] = [...indexedItems].sort((left, right) =>
             compareIndexedCompletionItems(left, right, priority),
         );
@@ -532,7 +515,7 @@ export function getLuauCompletionQuery(options: {
         return {
             items: filterCompletions(
                 LUAU_NAMESPACE_INDEX.get(namespacePath) ??
-                    EMPTY_COMPLETION_INDEX_BY_PRIORITY,
+                    EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY,
                 prefix,
                 priority,
             ),
