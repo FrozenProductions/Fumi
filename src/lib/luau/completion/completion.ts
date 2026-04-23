@@ -34,6 +34,37 @@ import type { LuauCompletionItem, LuauFileSymbol } from "../luau.type";
 import type { LuauFileAnalysis } from "../symbolScanner/symbolScanner.type";
 import type { LuauCompletionQuery } from "./completion.type";
 
+type IndexedCompletionItem = {
+    item: LuauCompletionItem;
+    key: string;
+    normalizedLabel: string;
+};
+
+type FileIndexedCompletionItem = IndexedCompletionItem & {
+    symbol: LuauFileSymbol;
+};
+
+type CompletionIndexByPriority = Record<
+    AppIntellisensePriority,
+    IndexedCompletionItem[]
+>;
+
+const COMPLETION_INDEX_PRIORITIES = [
+    "balanced",
+    "language",
+    "executor",
+] as const satisfies readonly AppIntellisensePriority[];
+const EMPTY_COMPLETION_INDEX_BY_PRIORITY: CompletionIndexByPriority = {
+    balanced: [],
+    executor: [],
+    language: [],
+};
+
+const FILE_COMPLETION_INDEX_CACHE = new WeakMap<
+    LuauFileAnalysis,
+    FileIndexedCompletionItem[]
+>();
+
 /**
  * Returns whether auto-completion should be suppressed for the given Ace token type.
  *
@@ -62,6 +93,28 @@ function createCompletionItemFromFileSymbol(
         insertText: symbol.insertText,
         score: symbol.score,
         sourceGroup: "file",
+    };
+}
+
+function createIndexedCompletionItem(
+    item: LuauCompletionItem,
+    namespace = item.namespace ?? "",
+): IndexedCompletionItem {
+    return {
+        item,
+        key: getCompletionKey(item, namespace),
+        normalizedLabel: item.label.toLowerCase(),
+    };
+}
+
+function createIndexedCompletionItemFromFileSymbol(
+    symbol: LuauFileSymbol,
+): FileIndexedCompletionItem {
+    const item = createCompletionItemFromFileSymbol(symbol);
+
+    return {
+        ...createIndexedCompletionItem(item),
+        symbol,
     };
 }
 
@@ -138,8 +191,26 @@ function dedupeCompletionItems(
     return dedupedItems;
 }
 
-function createNamespaceIndex(): Map<string, LuauCompletionItem[]> {
-    const namespaceIndex = new Map<string, LuauCompletionItem[]>();
+function createCompletionIndexByPriority(
+    items: readonly LuauCompletionItem[],
+    namespace = "",
+): CompletionIndexByPriority {
+    const indexedItems = items.map((item) =>
+        createIndexedCompletionItem(item, namespace),
+    );
+    const indexByPriority = {} as CompletionIndexByPriority;
+
+    for (const priority of COMPLETION_INDEX_PRIORITIES) {
+        indexByPriority[priority] = [...indexedItems].sort((left, right) =>
+            compareIndexedCompletionItems(left, right, priority),
+        );
+    }
+
+    return indexByPriority;
+}
+
+function createNamespaceIndex(): Map<string, CompletionIndexByPriority> {
+    const namespaceItems = new Map<string, LuauCompletionItem[]>();
 
     for (const group of [
         ...LUAU_NAMESPACE_COMPLETIONS,
@@ -148,13 +219,21 @@ function createNamespaceIndex(): Map<string, LuauCompletionItem[]> {
         ...UNC_NAMESPACE_COMPLETIONS,
         ...RAKNET_NAMESPACE_COMPLETIONS,
     ]) {
-        const existingItems = namespaceIndex.get(group.namespace) ?? [];
-        const mergedItems = dedupeCompletionItems(
-            [...existingItems, ...group.items],
-            group.namespace,
-        );
+        const existingItems = namespaceItems.get(group.namespace) ?? [];
 
-        namespaceIndex.set(group.namespace, mergedItems);
+        namespaceItems.set(group.namespace, [...existingItems, ...group.items]);
+    }
+
+    const namespaceIndex = new Map<string, CompletionIndexByPriority>();
+
+    for (const [namespace, items] of namespaceItems) {
+        namespaceIndex.set(
+            namespace,
+            createCompletionIndexByPriority(
+                dedupeCompletionItems(items, namespace),
+                namespace,
+            ),
+        );
     }
 
     return namespaceIndex;
@@ -208,6 +287,9 @@ const LUAU_ROOT_COMPLETIONS: LuauCompletionItem[] = dedupeCompletionItems([
     ...ACTORS_TOP_LEVEL_COMPLETIONS,
     ...RAKNET_TOP_LEVEL_COMPLETIONS,
 ]);
+const LUAU_ROOT_COMPLETION_INDEX = createCompletionIndexByPriority(
+    LUAU_ROOT_COMPLETIONS,
+);
 
 function compareCompletionItems(
     left: LuauCompletionItem,
@@ -229,6 +311,14 @@ function compareCompletionItems(
     return left.label.localeCompare(right.label);
 }
 
+function compareIndexedCompletionItems(
+    left: IndexedCompletionItem,
+    right: IndexedCompletionItem,
+    priority: AppIntellisensePriority,
+): number {
+    return compareCompletionItems(left.item, right.item, priority);
+}
+
 function getPriorityWeight(
     sourceGroup: LuauCompletionItem["sourceGroup"],
     priority: AppIntellisensePriority,
@@ -248,29 +338,142 @@ function getPriorityWeight(
     return 1;
 }
 
+function insertTopCompletionItem(
+    topItems: IndexedCompletionItem[],
+    item: IndexedCompletionItem,
+    priority: AppIntellisensePriority,
+): void {
+    let insertIndex = 0;
+
+    while (
+        insertIndex < topItems.length &&
+        compareIndexedCompletionItems(topItems[insertIndex], item, priority) <=
+            0
+    ) {
+        insertIndex += 1;
+    }
+
+    if (insertIndex >= MAX_LUAU_COMPLETION_ITEMS) {
+        return;
+    }
+
+    topItems.splice(insertIndex, 0, item);
+
+    if (topItems.length > MAX_LUAU_COMPLETION_ITEMS) {
+        topItems.pop();
+    }
+}
+
+function addMatchingCompletionItems(options: {
+    items: readonly IndexedCompletionItem[];
+    normalizedPrefix: string;
+    priority: AppIntellisensePriority;
+    seen: Set<string>;
+    topItems: IndexedCompletionItem[];
+}): void {
+    const { items, normalizedPrefix, priority, seen, topItems } = options;
+
+    for (const item of items) {
+        if (seen.has(item.key)) {
+            continue;
+        }
+
+        seen.add(item.key);
+
+        addMatchingCompletionItem({
+            item,
+            normalizedPrefix,
+            priority,
+            topItems,
+        });
+    }
+}
+
+function addMatchingCompletionItem(options: {
+    item: IndexedCompletionItem;
+    normalizedPrefix: string;
+    priority: AppIntellisensePriority;
+    topItems: IndexedCompletionItem[];
+}): void {
+    const { item, normalizedPrefix, priority, topItems } = options;
+
+    if (
+        normalizedPrefix.length > 0 &&
+        !item.normalizedLabel.startsWith(normalizedPrefix)
+    ) {
+        return;
+    }
+
+    insertTopCompletionItem(topItems, item, priority);
+}
+
 function filterCompletions(
-    items: readonly LuauCompletionItem[],
+    indexByPriority: CompletionIndexByPriority,
     prefix: string,
     priority: AppIntellisensePriority,
 ): LuauCompletionItem[] {
     const normalizedPrefix = prefix.toLowerCase();
-    if (!normalizedPrefix) {
-        return [...items].sort((left, right) =>
-            compareCompletionItems(left, right, priority),
-        );
+    const items = indexByPriority[priority];
+
+    if (normalizedPrefix.length === 0) {
+        return items
+            .slice(0, MAX_LUAU_COMPLETION_ITEMS)
+            .map((indexedItem) => indexedItem.item);
     }
 
-    return items
-        .filter((item) => item.label.toLowerCase().startsWith(normalizedPrefix))
-        .sort((left, right) => compareCompletionItems(left, right, priority));
+    const topItems: IndexedCompletionItem[] = [];
+
+    addMatchingCompletionItems({
+        items,
+        normalizedPrefix,
+        priority,
+        seen: new Set<string>(),
+        topItems,
+    });
+
+    return topItems.map((indexedItem) => indexedItem.item);
 }
 
-function getVisibleFileCompletionItems(
-    analysis: LuauFileAnalysis | null,
-    cursorIndex: number,
-): LuauCompletionItem[] {
+function getFileCompletionIndex(
+    analysis: LuauFileAnalysis,
+): FileIndexedCompletionItem[] {
+    const cachedIndex = FILE_COMPLETION_INDEX_CACHE.get(analysis);
+
+    if (cachedIndex) {
+        return cachedIndex;
+    }
+
+    const index = analysis.symbols
+        .filter((symbol) => symbol.kind !== "comment")
+        .map(createIndexedCompletionItemFromFileSymbol)
+        .sort((left, right) =>
+            compareIndexedCompletionItems(left, right, "balanced"),
+        );
+
+    FILE_COMPLETION_INDEX_CACHE.set(analysis, index);
+
+    return index;
+}
+
+function addVisibleFileCompletionItems(options: {
+    analysis: LuauFileAnalysis | null;
+    cursorIndex: number;
+    normalizedPrefix: string;
+    priority: AppIntellisensePriority;
+    seen: Set<string>;
+    topItems: IndexedCompletionItem[];
+}): void {
+    const {
+        analysis,
+        cursorIndex,
+        normalizedPrefix,
+        priority,
+        seen,
+        topItems,
+    } = options;
+
     if (!analysis) {
-        return [];
+        return;
     }
 
     const currentFunctionOwner = getInnermostFunctionOwner(
@@ -278,11 +481,29 @@ function getVisibleFileCompletionItems(
         cursorIndex,
     );
 
-    return analysis.symbols
-        .filter((symbol) =>
-            shouldIncludeFileSymbol(symbol, cursorIndex, currentFunctionOwner),
-        )
-        .map(createCompletionItemFromFileSymbol);
+    for (const item of getFileCompletionIndex(analysis)) {
+        if (
+            !shouldIncludeFileSymbol(
+                item.symbol,
+                cursorIndex,
+                currentFunctionOwner,
+            )
+        ) {
+            continue;
+        }
+
+        if (seen.has(item.key)) {
+            continue;
+        }
+
+        seen.add(item.key);
+        addMatchingCompletionItem({
+            item,
+            normalizedPrefix,
+            priority,
+            topItems,
+        });
+    }
 }
 
 /**
@@ -304,10 +525,11 @@ export function getLuauCompletionQuery(options: {
 
         return {
             items: filterCompletions(
-                LUAU_NAMESPACE_INDEX.get(namespacePath) ?? [],
+                LUAU_NAMESPACE_INDEX.get(namespacePath) ??
+                    EMPTY_COMPLETION_INDEX_BY_PRIORITY,
                 prefix,
                 priority,
-            ).slice(0, MAX_LUAU_COMPLETION_ITEMS),
+            ),
             namespacePath,
             prefix,
             replaceStartColumn: beforeCursor.length - prefix.length,
@@ -317,20 +539,28 @@ export function getLuauCompletionQuery(options: {
 
     const rootPrefixMatch = beforeCursor.match(/([A-Za-z_][A-Za-z0-9_]*)$/);
     const prefix = rootPrefixMatch?.[1] ?? "";
-    const visibleFileItems = getVisibleFileCompletionItems(
+    const normalizedPrefix = prefix.toLowerCase();
+    const seen = new Set<string>();
+    const topItems: IndexedCompletionItem[] = [];
+
+    addVisibleFileCompletionItems({
         analysis,
         cursorIndex,
-    );
-    const rootItems = dedupeCompletionItems([
-        ...visibleFileItems,
-        ...LUAU_ROOT_COMPLETIONS,
-    ]);
+        normalizedPrefix,
+        priority,
+        seen,
+        topItems,
+    });
+    addMatchingCompletionItems({
+        items: LUAU_ROOT_COMPLETION_INDEX[priority],
+        normalizedPrefix,
+        priority,
+        seen,
+        topItems,
+    });
 
     return {
-        items: filterCompletions(rootItems, prefix, priority).slice(
-            0,
-            MAX_LUAU_COMPLETION_ITEMS,
-        ),
+        items: topItems.map((item) => item.item),
         namespacePath: null,
         prefix,
         replaceStartColumn: beforeCursor.length - prefix.length,
