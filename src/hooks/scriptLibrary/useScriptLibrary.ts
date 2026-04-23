@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { getVisibleScriptLibraryEntries } from "../../lib/scriptLibrary/scriptLibrary";
 import { useDebouncedValue } from "../shared/useDebouncedValue";
 import type { UseScriptLibraryResult } from "./useScriptLibrary.type";
@@ -84,16 +84,21 @@ export function useScriptLibrary(): UseScriptLibraryResult {
     );
     const favoriteCount = useScriptLibraryStore(selectFavoriteCount);
     const debouncedQuery = useDebouncedValue(query, 400);
-    const favoriteIds = new Set(
-        favoriteScripts.map((favoriteScript) => favoriteScript._id),
+    const favoriteIds = useMemo(
+        () =>
+            new Set(
+                favoriteScripts.map((favoriteScript) => favoriteScript._id),
+            ),
+        [favoriteScripts],
     );
-    const visibleFavoriteScripts = getVisibleScriptLibraryEntries(
-        favoriteScripts,
-        {
-            query,
-            filters,
-            orderBy,
-        },
+    const visibleFavoriteScripts = useMemo(
+        () =>
+            getVisibleScriptLibraryEntries(favoriteScripts, {
+                query,
+                filters,
+                orderBy,
+            }),
+        [favoriteScripts, filters, orderBy, query],
     );
     const isFavoritesMode = contentMode === "favorites";
     const scripts = isFavoritesMode ? visibleFavoriteScripts : remoteScripts;

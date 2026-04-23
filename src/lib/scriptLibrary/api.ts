@@ -4,7 +4,11 @@ import {
 } from "../../constants/scriptLibrary/scriptLibrary";
 import { copyTextToClipboard } from "../platform/clipboard";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
-import type { ScriptLibraryCachedSession, ScriptLibraryPage } from "./api.type";
+import type {
+    ScriptLibraryCachedSession,
+    ScriptLibraryFilteredCache,
+    ScriptLibraryPage,
+} from "./api.type";
 import {
     getDetailRawScriptUrl,
     normalizeScript,
@@ -48,8 +52,18 @@ async function fetchRawScriptText(
     return fetchTextResponse(rawScriptUrl, "fetchRawScriptText", { signal });
 }
 
+function createFilteredCache(): ScriptLibraryFilteredCache {
+    return {
+        filteredScripts: [],
+        isSourceExhausted: false,
+        maxSourcePages: null,
+        nextSourcePage: 1,
+    };
+}
+
 export function createScriptLibraryCachedSession(): ScriptLibraryCachedSession {
     return {
+        filteredResults: new Map<string, ScriptLibraryFilteredCache>(),
         pages: new Map<number, ScriptLibraryPage>(),
         maxPages: null,
     };
@@ -71,6 +85,32 @@ export function hasActiveScriptLibraryFilters(
     return (
         filters.keyless || filters.free || filters.unpatched || filters.verified
     );
+}
+
+function getScriptLibraryFilterKey(filters: ScriptLibraryFilters): string {
+    return JSON.stringify({
+        free: filters.free,
+        keyless: filters.keyless,
+        unpatched: filters.unpatched,
+        verified: filters.verified,
+    });
+}
+
+function getScriptLibraryFilteredCache(
+    session: ScriptLibraryCachedSession,
+    filters: ScriptLibraryFilters,
+): ScriptLibraryFilteredCache {
+    const filterKey = getScriptLibraryFilterKey(filters);
+    const existingCache = session.filteredResults.get(filterKey);
+
+    if (existingCache) {
+        return existingCache;
+    }
+
+    const cache = createFilteredCache();
+
+    session.filteredResults.set(filterKey, cache);
+    return cache;
 }
 
 export async function fetchScriptsPage(
@@ -131,11 +171,16 @@ export async function fetchFilteredScriptsPage(
 }> {
     const startIndex = (page - 1) * SCRIPT_LIBRARY_PAGE_SIZE;
     const endIndex = startIndex + SCRIPT_LIBRARY_PAGE_SIZE;
-    const filteredScripts: ScriptLibraryEntry[] = [];
-    let sourcePage = 1;
-    let maxSourcePages = session.maxPages ?? Number.POSITIVE_INFINITY;
+    const cache = getScriptLibraryFilteredCache(session, filters);
+    let sourcePage = cache.nextSourcePage;
+    let maxSourcePages =
+        cache.maxSourcePages ?? session.maxPages ?? Number.POSITIVE_INFINITY;
 
-    while (sourcePage <= maxSourcePages && filteredScripts.length <= endIndex) {
+    while (
+        !cache.isSourceExhausted &&
+        sourcePage <= maxSourcePages &&
+        cache.filteredScripts.length <= endIndex
+    ) {
         const currentPage = await fetchScriptsPage(
             session,
             query,
@@ -145,25 +190,29 @@ export async function fetchFilteredScriptsPage(
         );
 
         maxSourcePages = currentPage.maxPages;
+        cache.maxSourcePages = maxSourcePages;
 
         for (const script of currentPage.scripts) {
             if (matchesScriptLibraryFilters(script, filters)) {
-                filteredScripts.push(script);
+                cache.filteredScripts.push(script);
             }
         }
 
         sourcePage += 1;
+        cache.nextSourcePage = sourcePage;
     }
 
-    const sourceExhausted = sourcePage > maxSourcePages;
+    cache.isSourceExhausted = sourcePage > maxSourcePages;
 
     return {
-        scripts: filteredScripts.slice(startIndex, endIndex),
-        canGoNext: filteredScripts.length > endIndex,
-        maxPages: sourceExhausted
+        scripts: cache.filteredScripts.slice(startIndex, endIndex),
+        canGoNext: cache.filteredScripts.length > endIndex,
+        maxPages: cache.isSourceExhausted
             ? Math.max(
                   1,
-                  Math.ceil(filteredScripts.length / SCRIPT_LIBRARY_PAGE_SIZE),
+                  Math.ceil(
+                      cache.filteredScripts.length / SCRIPT_LIBRARY_PAGE_SIZE,
+                  ),
               )
             : null,
     };
