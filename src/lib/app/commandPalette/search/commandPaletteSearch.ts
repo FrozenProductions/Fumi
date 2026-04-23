@@ -1,6 +1,5 @@
 import { APP_COMMAND_PALETTE_SEARCH_FIELD_WEIGHTS } from "../../../../constants/app/commandPalette";
 import {
-    matchesSearchFields,
     normalizeSearchValue,
     scoreSearchFields,
     searchItems,
@@ -11,17 +10,6 @@ import type { AppCommandPaletteSearchFieldName } from "../commandPalette.type";
 
 export function normalizeAppCommandPaletteSearchValue(value: string): string {
     return normalizeSearchValue(value);
-}
-
-export function matchesAppCommandPaletteItem(
-    item: AppCommandPaletteItem,
-    searchValue: string,
-): boolean {
-    return matchesSearchFields(
-        getAppCommandPaletteSearchFields(item),
-        searchValue,
-        APP_COMMAND_PALETTE_SEARCH_FIELD_WEIGHTS,
-    );
 }
 
 export function scoreAppCommandPaletteItem(

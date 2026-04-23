@@ -19,9 +19,10 @@ vi.mock("../../../platform/workspace", () => ({
 }));
 
 vi.mock("../../persistence", async () => {
-    const actual = await vi.importActual<typeof import("../../persistence")>(
-        "../../persistence",
-    );
+    const actual =
+        await vi.importActual<typeof import("../../persistence")>(
+            "../../persistence",
+        );
 
     return {
         ...actual,

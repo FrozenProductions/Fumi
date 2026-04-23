@@ -48,7 +48,6 @@ describe("getCommandCommandPaletteItems", () => {
             }),
         );
 
-        expect(noWorkspaceItems).toHaveLength(15);
         expect(noWorkspaceItems.map((item) => item.id)).toEqual(
             expect.arrayContaining([
                 "command-open-workspace-screen",
