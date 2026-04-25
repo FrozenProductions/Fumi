@@ -82,7 +82,7 @@ export function AppTopbar({
 
     return (
         <header
-            className="relative z-20 box-border flex h-11 shrink-0 items-center gap-1.5 border-b border-fumi-200 bg-fumi-100 pl-[4rem] pr-3 select-none [cursor:default] [-webkit-user-select:none]"
+            className="relative z-40 box-border flex h-11 shrink-0 items-center gap-1.5 border-b border-fumi-200 bg-fumi-100 pl-[4rem] pr-3 select-none [cursor:default] [-webkit-user-select:none]"
             onMouseDownCapture={handleTopbarMouseDown}
         >
             <AppTopbarTrafficLights />
