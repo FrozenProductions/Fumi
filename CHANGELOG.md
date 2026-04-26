@@ -11,12 +11,15 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Add streamer mode privacy masking across accounts, executor labels, Roblox process labels, and workspace actions.
 - Add an editor word wrap setting.
 - Refresh application icon assets.
+- Improve drag and drop overlay to match app empty state style.
 
 ### Changed
 
 - Improve app resume coordination, workspace editor state churn, Luau outline analysis, tooltip rendering, tab bar scrolling, and Roblox shutdown batching.
 - Rework workspace screen orchestration and split oversized accounts, workspace, command palette, Luau, app, UI, and store modules into domain-aligned files.
 - Polish workspace actions, Roblox launch and kill affordances, workspace empty state layout, and workspace error banner dismissal.
+- Index Luau completion candidates and move Luau worker fallback off the scanner for faster completions.
+- Cache script library filtered pages to reduce redundant work.
 
 ### Removed
 
@@ -31,6 +34,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Fix repeated Roblox account binding.
 - Fix Luau completion popup updates.
 - Avoid splitting editor content during cursor clamps.
+- Fix workspace Ace cursor teardown.
+- Fix port dropdown layering.
+- Keep stale Luau completions visible during updates.
+- Keep Luau symbols visible after inserts.
 
 ## [1.0.6] - 2026-04-21
 
