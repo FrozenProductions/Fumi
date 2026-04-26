@@ -29,11 +29,12 @@ Fumi is an elegant and soft UI wrapper for MacSploit and Opiumware.
 
 ## Screens
 
-The current app shell exposes four primary screens:
+The current app shell exposes five primary screens:
 
 - `Workspace`
 - `Script Library`
 - `Accounts`
+- `Automatic Execution`
 - `Settings`
 
 Navigation also exists through the command palette and app hotkeys.
