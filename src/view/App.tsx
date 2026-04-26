@@ -181,7 +181,7 @@ export function App(): ReactElement {
     useAppExitGuard();
 
     return (
-        <AppHotkeysProvider>
+        <AppHotkeysProvider workspaceExecutor={workspaceExecutor}>
             <AppDragDropOverlay isVisible={isDragActive} />
             <div className="relative flex h-screen flex-col overflow-hidden rounded-[0.95rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-shell)]">
                 <AppTopbar

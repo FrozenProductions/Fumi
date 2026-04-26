@@ -134,6 +134,17 @@ export function useAppCommandPalette({
         scheduleInputFocus({ shouldSelect: true });
     }, [scheduleInputFocus]);
 
+    const activateAttachMode = useCallback((): void => {
+        startTransition(() => {
+            setMode("attach");
+            setScope("commands");
+            setQuery("");
+            setActiveResultIndex(0);
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
     const results = getAppCommandPaletteResults({
         workspaceSession,
         workspaceExecutor,
@@ -163,6 +174,7 @@ export function useAppCommandPalette({
         mode,
         scope,
         normalizedQuery,
+        onActivateAttachMode: activateAttachMode,
         onActivateGoToLineMode: activateGoToLineMode,
         onActivateThemeMode: activateThemeMode,
     });
@@ -304,7 +316,11 @@ export function useAppCommandPalette({
                     return;
                 }
 
-                if (mode === "goto-line" || mode === "theme") {
+                if (
+                    mode === "attach" ||
+                    mode === "goto-line" ||
+                    mode === "theme"
+                ) {
                     setMode("default");
                     setScope("commands");
                     setActiveResultIndex(0);

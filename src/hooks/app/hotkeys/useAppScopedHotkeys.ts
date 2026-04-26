@@ -28,6 +28,9 @@ export function useAppScopedHotkeys({
     resetWorkspaceSplitView,
     toggleWorkspaceSplitView,
     focusWorkspacePane,
+    hasSupportedExecutor,
+    isExecutorBusy,
+    toggleExecutorConnection,
 }: UseAppScopedHotkeysOptions): void {
     const isWorkspaceScreenActive = activeSidebarItem === "workspace";
     const hasSplitView = Boolean(workspace?.splitView);
@@ -40,6 +43,8 @@ export function useAppScopedHotkeys({
         hasSplitView;
     const canToggleSplitView =
         !isCommandPaletteOpen && Boolean(workspace) && hasActiveTab;
+    const canToggleExecutorConnection =
+        !isCommandPaletteOpen && hasSupportedExecutor && !isExecutorBusy;
 
     useHotkey(
         hotkeys.openWorkspaceDirectory,
@@ -262,6 +267,17 @@ export function useAppScopedHotkeys({
         },
         {
             enabled: canUseSplitViewHotkeys,
+        },
+    );
+
+    useHotkey(
+        hotkeys.toggleExecutorConnection,
+        () => {
+            selectSidebarItem("workspace");
+            void toggleExecutorConnection();
+        },
+        {
+            enabled: canToggleExecutorConnection,
         },
     );
 }

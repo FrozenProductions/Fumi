@@ -29,6 +29,7 @@ export type WorkspaceExecutorState = {
 export type WorkspaceExecutorActions = {
     updatePort: (value: string) => void;
     clearErrorMessage: () => void;
+    attachToPort: (port: number) => Promise<void>;
     toggleConnection: () => Promise<void>;
     executeActiveTab: () => Promise<void>;
     executeHistoryEntry: (

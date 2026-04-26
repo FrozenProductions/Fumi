@@ -196,6 +196,33 @@ export function useWorkspaceExecutor({
         });
     };
 
+    const attachToPort = async (nextPort: number): Promise<void> => {
+        const normalizedPort = normalizeExecutorPort(
+            String(nextPort),
+            availablePorts,
+        );
+        setPort(normalizedPort);
+        setDidRecentAttachFail(false);
+        setErrorMessage(null);
+        const parsedPort = parseExecutorPort(normalizedPort, availablePorts);
+
+        if (parsedPort !== null) {
+            persistExecutorPort(executorKind, parsedPort);
+        }
+
+        await toggleExecutorConnection({
+            isBusy,
+            hasSupportedExecutor,
+            isAttached: false,
+            port: normalizedPort,
+            availablePorts,
+            applyExecutorStatus,
+            setDidRecentAttachFail,
+            setErrorMessage,
+            setIsBusy,
+        });
+    };
+
     const executeScript = async (options: {
         fileName: string;
         scriptContent: string;
@@ -262,6 +289,7 @@ export function useWorkspaceExecutor({
         actions: {
             updatePort,
             clearErrorMessage,
+            attachToPort,
             toggleConnection,
             executeActiveTab,
             executeHistoryEntry,

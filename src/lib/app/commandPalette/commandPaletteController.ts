@@ -2,6 +2,7 @@ import { APP_COMMAND_PALETTE_MAX_RESULTS } from "../../../constants/app/commandP
 import { getAppHotkeyShortcutLabel } from "../hotkeys/hotkeys";
 import type { AppHotkeyBindings } from "../hotkeys/hotkeys.type";
 import {
+    getAttachCommandPaletteItems,
     getCommandCommandPaletteItems,
     getGoToLineCommandPaletteItems,
     getTabCommandPaletteItems,
@@ -27,6 +28,10 @@ export function getAppCommandPaletteHotkeyLabels(
         ),
         archiveWorkspaceTab: getAppHotkeyShortcutLabel(
             "ARCHIVE_WORKSPACE_TAB",
+            hotkeyBindings,
+        ),
+        toggleExecutorConnection: getAppHotkeyShortcutLabel(
+            "TOGGLE_EXECUTOR_CONNECTION",
             hotkeyBindings,
         ),
         createWorkspaceFile: getAppHotkeyShortcutLabel(
@@ -130,6 +135,7 @@ export function getAppCommandPaletteResults({
     mode,
     scope,
     normalizedQuery,
+    onActivateAttachMode,
     onActivateGoToLineMode,
     onActivateThemeMode,
 }: GetAppCommandPaletteResultsOptions) {
@@ -141,6 +147,7 @@ export function getAppCommandPaletteResults({
         activeSidebarItem,
         sidebarPosition,
         hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
+        onActivateAttachMode,
         onActivateGoToLineMode,
         onActivateThemeMode,
         onOpenWorkspaceScreen,
@@ -164,10 +171,22 @@ export function getAppCommandPaletteResults({
         goToLineNumber,
         onGoToLine,
     });
+    const attachItems = getAttachCommandPaletteItems({
+        workspaceExecutor,
+        onOpenWorkspaceScreen,
+    });
     const themeItems = getThemeCommandPaletteItems({
         currentTheme: theme,
         onSetTheme,
     });
+
+    if (mode === "attach") {
+        return searchAppCommandPaletteItems(
+            attachItems,
+            normalizedQuery,
+            APP_COMMAND_PALETTE_MAX_RESULTS,
+        );
+    }
 
     if (mode === "goto-line") {
         return goToLineItems;

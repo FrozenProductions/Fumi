@@ -40,14 +40,18 @@ export function AppCommandPaletteInputRow({
                 onChange={onInputChange}
                 onKeyDown={onInputKeyDown}
                 placeholder={
-                    mode === "goto-line"
-                        ? "Go to line..."
-                        : scopePlaceholders[scope]
+                    mode === "attach"
+                        ? "Select executor port..."
+                        : mode === "goto-line"
+                          ? "Go to line..."
+                          : scopePlaceholders[scope]
                 }
                 ariaLabel={
-                    mode === "goto-line"
-                        ? "Go to line"
-                        : `${scopeLabels[scope]} search`
+                    mode === "attach"
+                        ? "Select executor port"
+                        : mode === "goto-line"
+                          ? "Go to line"
+                          : `${scopeLabels[scope]} search`
                 }
                 inputClassName="h-9 w-full rounded-full border border-fumi-200 bg-fumi-50 px-3 text-[13px] font-semibold text-fumi-900 shadow-[var(--shadow-app-floating)] outline-none transition-[border-color,box-shadow] duration-200 placeholder:font-medium placeholder:text-fumi-400 focus:border-fumi-300"
             />

@@ -1,5 +1,6 @@
 import { CommandIcon } from "@hugeicons/core-free-icons";
 import type {
+    GetAttachCommandPaletteItemsOptions,
     GetGoToLineCommandPaletteItemsOptions,
     GetThemeCommandPaletteItemsOptions,
 } from "./commandPalette.type";
@@ -38,6 +39,60 @@ export function getGoToLineCommandPaletteItems({
             },
         },
     ];
+}
+
+/** Builds command palette items for choosing an executor port to attach to. */
+export function getAttachCommandPaletteItems({
+    workspaceExecutor,
+    onOpenWorkspaceScreen,
+}: GetAttachCommandPaletteItemsOptions): AppCommandPaletteItem[] {
+    const { availablePortSummaries, hasSupportedExecutor, isAttached, isBusy } =
+        workspaceExecutor.state;
+    const { attachToPort } = workspaceExecutor.actions;
+
+    if (isAttached) {
+        return [
+            {
+                id: "command-attach-already-attached",
+                label: "Executor already attached",
+                description:
+                    "Detach before choosing a different executor port.",
+                icon: CommandIcon,
+                keywords: "executor attach connected port",
+                isDisabled: true,
+                onSelect: () => {},
+            },
+        ];
+    }
+
+    if (!hasSupportedExecutor || availablePortSummaries.length === 0) {
+        return [
+            {
+                id: "command-attach-unavailable",
+                label: "No executor ports available",
+                description: hasSupportedExecutor
+                    ? "No executor ports are currently available."
+                    : "No supported executor detected.",
+                icon: CommandIcon,
+                keywords: "executor attach unavailable port",
+                isDisabled: true,
+                onSelect: () => {},
+            },
+        ];
+    }
+
+    return availablePortSummaries.map((summary) => ({
+        id: `command-attach-port-${summary.port}`,
+        label: `Attach to port ${summary.port}`,
+        description: "Connect to this executor port.",
+        icon: CommandIcon,
+        keywords: `executor attach connect port ${summary.port}`,
+        isDisabled: isBusy,
+        onSelect: () => {
+            onOpenWorkspaceScreen();
+            void attachToPort(summary.port);
+        },
+    }));
 }
 
 /** Builds command palette items for switching between light, dark, and system themes. */

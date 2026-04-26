@@ -16,6 +16,7 @@ import type { AppHotkeysProviderProps } from "./appHotkeysProvider.type";
  */
 export function AppHotkeysProvider({
     children,
+    workspaceExecutor,
 }: AppHotkeysProviderProps): ReactElement {
     const workspaceSession = useWorkspaceSession();
     const { activeTab, workspace } = workspaceSession.state;
@@ -47,6 +48,10 @@ export function AppHotkeysProvider({
         (state) => state.toggleCommandPalette,
     );
     const hotkeys = useResolvedAppHotkeyBindings();
+    const { hasSupportedExecutor, isBusy: isExecutorBusy } =
+        workspaceExecutor.state;
+    const { toggleConnection: toggleExecutorConnection } =
+        workspaceExecutor.actions;
 
     useAppGlobalHotkeyCapture({
         activeSidebarItem,
@@ -59,6 +64,7 @@ export function AppHotkeysProvider({
         toggleCommandPaletteScope,
         toggleGoToLineCommandPalette,
         toggleWorkspaceSplitView,
+        toggleExecutorConnection,
     });
 
     useAppScopedHotkeys({
@@ -80,6 +86,9 @@ export function AppHotkeysProvider({
         resetWorkspaceSplitView,
         toggleWorkspaceSplitView,
         focusWorkspacePane,
+        hasSupportedExecutor,
+        isExecutorBusy,
+        toggleExecutorConnection,
     });
 
     return <>{children}</>;

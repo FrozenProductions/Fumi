@@ -36,6 +36,7 @@ export const APP_HOTKEY_ACTIONS = [
     "FOCUS_WORKSPACE_LEFT_PANE",
     "FOCUS_WORKSPACE_RIGHT_PANE",
     "RESET_WORKSPACE_SPLIT_VIEW",
+    "TOGGLE_EXECUTOR_CONNECTION",
     "LAUNCH_ROBLOX",
     "KILL_ROBLOX",
     "OPEN_WORKSPACE_SCREEN",
@@ -206,6 +207,15 @@ export const APP_HOTKEY_DEFINITIONS = {
             mod: true,
             ctrl: true,
         },
+        groupLabel: "Workspace",
+        isEditable: true,
+        isVisibleInSettings: true,
+    },
+    TOGGLE_EXECUTOR_CONNECTION: {
+        label: "Attach or detach executor",
+        description:
+            "Attach to the selected executor port, or detach the active executor connection.",
+        defaultBinding: "Mod+Shift+C",
         groupLabel: "Workspace",
         isEditable: true,
         isVisibleInSettings: true,

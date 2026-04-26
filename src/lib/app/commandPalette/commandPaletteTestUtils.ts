@@ -117,6 +117,7 @@ export function createWorkspaceExecutor(
         actions: {
             updatePort: vi.fn(),
             clearErrorMessage: vi.fn(),
+            attachToPort: vi.fn().mockResolvedValue(undefined),
             toggleConnection: vi.fn().mockResolvedValue(undefined),
             executeActiveTab: vi.fn().mockResolvedValue(undefined),
             executeHistoryEntry: vi.fn().mockResolvedValue(undefined),
@@ -139,6 +140,7 @@ export function createCommandPaletteOptions(
         hotkeyLabels: {
             activateGoToLine: "Mod+Shift+\\",
             archiveWorkspaceTab: "Mod+W",
+            toggleExecutorConnection: "Mod+Shift+C",
             createWorkspaceFile: "Mod+T",
             focusWorkspaceLeftPane: "Ctrl+Mod+1",
             focusWorkspaceRightPane: "Ctrl+Mod+2",
@@ -159,6 +161,7 @@ export function createCommandPaletteOptions(
             toggleSidebarPosition: "",
         },
         onActivateGoToLineMode: vi.fn(),
+        onActivateAttachMode: vi.fn(),
         onActivateThemeMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
         onOpenAutomaticExecution: vi.fn(),

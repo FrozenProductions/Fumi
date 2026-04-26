@@ -15,6 +15,7 @@ type CommandPaletteBaseOptions = Pick<
     | "isOutlinePanelVisible"
     | "isSidebarOpen"
     | "onActivateThemeMode"
+    | "onActivateAttachMode"
     | "onOpenAccounts"
     | "onOpenAutomaticExecution"
     | "onOpenScriptLibrary"
@@ -28,6 +29,7 @@ type CommandPaletteBaseOptions = Pick<
     | "onZoomReset"
     | "sidebarPosition"
     | "workspaceSession"
+    | "workspaceExecutor"
 >;
 
 /** Builds command palette items for global app actions like navigation, zoom, sidebar, and theme. */
@@ -37,6 +39,7 @@ export function getBaseCommandPaletteItems({
     isOutlinePanelVisible,
     isSidebarOpen,
     onActivateThemeMode,
+    onActivateAttachMode,
     onOpenAccounts,
     onOpenAutomaticExecution,
     onOpenScriptLibrary,
@@ -50,10 +53,17 @@ export function getBaseCommandPaletteItems({
     onZoomReset,
     sidebarPosition,
     workspaceSession,
+    workspaceExecutor,
 }: CommandPaletteBaseOptions): AppCommandPaletteItem[] {
     const { activeTab, workspace } = workspaceSession.state;
     const { openWorkspaceDirectory } = workspaceSession.workspaceActions;
     const isDesktopShell = isTauriEnvironment();
+    const {
+        hasSupportedExecutor,
+        isAttached: isExecutorAttached,
+        isBusy: isExecutorBusy,
+    } = workspaceExecutor.state;
+    const { toggleConnection } = workspaceExecutor.actions;
 
     return [
         {
@@ -132,6 +142,36 @@ export function getBaseCommandPaletteItems({
             keywords: "workspace folder open choose switch",
             onSelect: () => {
                 void openWorkspaceDirectory();
+            },
+        },
+        {
+            id: "command-attach-executor",
+            label: "Attach executor",
+            description: hasSupportedExecutor
+                ? "Choose an executor port to attach to."
+                : "No supported executor detected.",
+            icon: CommandIcon,
+            meta: hotkeyLabels.toggleExecutorConnection,
+            keywords: "executor attach connect port",
+            closeOnSelect: false,
+            isDisabled:
+                !hasSupportedExecutor || isExecutorAttached || isExecutorBusy,
+            onSelect: onActivateAttachMode,
+        },
+        {
+            id: "command-detach-executor",
+            label: "Detach executor",
+            description: hasSupportedExecutor
+                ? "Disconnect from the active executor port."
+                : "No supported executor detected.",
+            icon: CommandIcon,
+            meta: hotkeyLabels.toggleExecutorConnection,
+            keywords: "executor detach disconnect port",
+            isDisabled:
+                !hasSupportedExecutor || !isExecutorAttached || isExecutorBusy,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                void toggleConnection();
             },
         },
         {

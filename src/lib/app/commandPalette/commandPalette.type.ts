@@ -20,6 +20,7 @@ export type GetCommandPaletteCommandItemsOptions = {
     sidebarPosition: AppSidebarPosition;
     hotkeyLabels: AppCommandPaletteHotkeyLabels;
     onActivateGoToLineMode: () => void;
+    onActivateAttachMode: () => void;
     onActivateThemeMode: () => void;
     onOpenWorkspaceScreen: () => void;
     onOpenAutomaticExecution: () => void;
@@ -105,6 +106,7 @@ export type AppCommandPaletteControllerResult = {
 export type AppCommandPaletteHotkeyLabels = {
     activateGoToLine: string;
     archiveWorkspaceTab: string;
+    toggleExecutorConnection: string;
     createWorkspaceFile: string;
     focusWorkspaceLeftPane: string;
     focusWorkspaceRightPane: string;
@@ -157,6 +159,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     scope: AppCommandPaletteScope;
     normalizedQuery: string;
     onActivateGoToLineMode: () => void;
+    onActivateAttachMode: () => void;
     onActivateThemeMode: () => void;
 };
 
@@ -164,6 +167,11 @@ export type GetGoToLineCommandPaletteItemsOptions = {
     activeTab: WorkspaceTab | null;
     goToLineNumber: number | null;
     onGoToLine: (lineNumber: number) => void;
+};
+
+export type GetAttachCommandPaletteItemsOptions = {
+    workspaceExecutor: UseWorkspaceExecutorResult;
+    onOpenWorkspaceScreen: () => void;
 };
 
 export type GetThemeCommandPaletteItemsOptions = {

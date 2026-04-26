@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { getCommandCommandPaletteItems } from "../commandPalette";
+import {
+    getAttachCommandPaletteItems,
+    getCommandCommandPaletteItems,
+} from "../commandPalette";
+import { getAppCommandPaletteResults } from "../commandPaletteController";
 import {
     createCommandPaletteOptions,
     createWorkspaceExecutor,
@@ -56,6 +60,8 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-open-accounts",
                 "command-settings",
                 "command-open-workspace-folder",
+                "command-attach-executor",
+                "command-detach-executor",
                 "command-launch-roblox",
                 "command-kill-roblox",
                 "command-sidebar",
@@ -89,7 +95,9 @@ describe("getCommandCommandPaletteItems", () => {
         const executeActiveTab = vi.fn().mockResolvedValue(undefined);
         const duplicateWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const deleteWorkspaceTab = vi.fn().mockResolvedValue(undefined);
+        const toggleConnection = vi.fn().mockResolvedValue(undefined);
         const openWorkspaceTabInPane = vi.fn();
+        const onActivateAttachMode = vi.fn();
         const onActivateGoToLineMode = vi.fn();
         const onActivateThemeMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
@@ -140,10 +148,12 @@ describe("getCommandCommandPaletteItems", () => {
                 workspaceExecutor: createWorkspaceExecutor({
                     actions: {
                         executeActiveTab,
+                        toggleConnection,
                     },
                 }),
                 isSidebarOpen: true,
                 activeSidebarItem: "script-library",
+                onActivateAttachMode,
                 onActivateGoToLineMode,
                 onActivateThemeMode,
                 onOpenWorkspaceScreen,
@@ -158,6 +168,7 @@ describe("getCommandCommandPaletteItems", () => {
             expect.arrayContaining([
                 "command-open-accounts",
                 "command-settings",
+                "command-attach-executor",
                 "command-change-theme",
                 "command-open-execution-history",
                 "command-create-file",
@@ -180,6 +191,7 @@ describe("getCommandCommandPaletteItems", () => {
 
         getCommand("command-open-accounts").onSelect();
         getCommand("command-settings").onSelect();
+        getCommand("command-attach-executor").onSelect();
         getCommand("command-change-theme").onSelect();
         getCommand("command-execute-tab").onSelect();
         getCommand("command-goto-line").onSelect();
@@ -191,6 +203,7 @@ describe("getCommandCommandPaletteItems", () => {
 
         expect(onOpenAccounts).toHaveBeenCalledOnce();
         expect(onOpenSettings).toHaveBeenCalledOnce();
+        expect(onActivateAttachMode).toHaveBeenCalledOnce();
         expect(onActivateThemeMode).toHaveBeenCalledOnce();
         expect(executeActiveTab).toHaveBeenCalledOnce();
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
@@ -211,6 +224,10 @@ describe("getCommandCommandPaletteItems", () => {
         expect(getCommand("command-goto-line")).toMatchObject({
             closeOnSelect: false,
         });
+        expect(getCommand("command-attach-executor")).toMatchObject({
+            closeOnSelect: false,
+            meta: "Mod+Shift+C",
+        });
         expect(getCommand("command-open-script-library")).toMatchObject({
             isDisabled: true,
             meta: "Current",
@@ -218,5 +235,105 @@ describe("getCommandCommandPaletteItems", () => {
         expect(getCommand("command-change-theme")).toMatchObject({
             closeOnSelect: false,
         });
+    });
+
+    it("offers detach only while attached", () => {
+        const toggleConnection = vi.fn().mockResolvedValue(undefined);
+        const onOpenWorkspaceScreen = vi.fn();
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceExecutor: createWorkspaceExecutor({
+                    state: {
+                        isAttached: true,
+                    },
+                    actions: {
+                        toggleConnection,
+                    },
+                }),
+                onOpenWorkspaceScreen,
+            }),
+        );
+        const attachItem = items.find(
+            (item) => item.id === "command-attach-executor",
+        );
+        const detachItem = items.find(
+            (item) => item.id === "command-detach-executor",
+        );
+
+        expect(attachItem).toMatchObject({
+            isDisabled: true,
+        });
+        expect(detachItem).toMatchObject({
+            isDisabled: false,
+            meta: "Mod+Shift+C",
+        });
+
+        detachItem?.onSelect();
+
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledOnce();
+        expect(toggleConnection).toHaveBeenCalledOnce();
+    });
+
+    it("builds attach port items for available executor ports", () => {
+        const attachToPort = vi.fn().mockResolvedValue(undefined);
+        const onOpenWorkspaceScreen = vi.fn();
+        const workspaceExecutor = createWorkspaceExecutor({
+            state: {
+                availablePortSummaries: [
+                    {
+                        port: 5553,
+                        boundAccountId: null,
+                        boundAccountDisplayName: null,
+                        isBoundToUnknownAccount: false,
+                    },
+                    {
+                        port: 5554,
+                        boundAccountId: null,
+                        boundAccountDisplayName: null,
+                        isBoundToUnknownAccount: false,
+                    },
+                ],
+            },
+            actions: {
+                attachToPort,
+            },
+        });
+        const items = getAttachCommandPaletteItems({
+            workspaceExecutor,
+            onOpenWorkspaceScreen,
+        });
+
+        expect(items.map((item) => item.id)).toEqual([
+            "command-attach-port-5553",
+            "command-attach-port-5554",
+        ]);
+
+        items[1]?.onSelect();
+
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledOnce();
+        expect(attachToPort).toHaveBeenCalledWith(5554);
+    });
+
+    it("filters attach port items by the typed port query", () => {
+        const workspaceExecutor = createWorkspaceExecutor();
+        const options = createCommandPaletteOptions({
+            workspaceExecutor,
+        });
+        const items = getAppCommandPaletteResults({
+            ...options,
+            activeTab: null,
+            goToLineNumber: null,
+            hotkeyBindings: {},
+            mode: "attach",
+            normalizedQuery: "5553",
+            scope: "commands",
+            theme: "dark",
+            onGoToLine: vi.fn(),
+            onSetTheme: vi.fn(),
+        });
+
+        expect(items.map((item) => item.id)).toEqual([
+            "command-attach-port-5553",
+        ]);
     });
 });

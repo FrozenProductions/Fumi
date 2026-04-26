@@ -81,5 +81,9 @@ export function useResolvedAppHotkeyBindings(): ResolvedAppHotkeyBindings {
             "FOCUS_WORKSPACE_RIGHT_PANE",
             hotkeyBindings,
         ),
+        toggleExecutorConnection: getAppHotkeyBinding(
+            "TOGGLE_EXECUTOR_CONNECTION",
+            hotkeyBindings,
+        ),
     };
 }

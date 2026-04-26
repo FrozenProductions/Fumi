@@ -11,6 +11,7 @@ import {
     WORKSPACE_MENU_RADIUS_REM,
 } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
+import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
 import { AppIcon } from "../common/AppIcon";
 import { AppTooltip } from "../tooltip/AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./appTopbar.type";
@@ -38,8 +39,13 @@ export function AppTopbarExecutorControls({
     } = state;
     const { toggleConnection, updatePort } = actions;
     const theme = useAppStore((state) => state.theme);
+    const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isStreamerModeEnabled = useAppStore(
         (state) => state.isStreamerModeEnabled,
+    );
+    const toggleExecutorConnectionShortcutLabel = getAppHotkeyShortcutLabel(
+        "TOGGLE_EXECUTOR_CONNECTION",
+        hotkeyBindings,
     );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [revealedPort, setRevealedPort] = useState<number | null>(null);
@@ -84,6 +90,7 @@ export function AppTopbarExecutorControls({
                                 ? "Disconnect from the active executor port"
                                 : `Connect to executor port ${port}`
                     }
+                    shortcut={toggleExecutorConnectionShortcutLabel}
                     side="bottom"
                 >
                     <button

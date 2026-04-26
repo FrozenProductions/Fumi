@@ -3,6 +3,7 @@ import type {
     AppHotkeyBindings,
 } from "../../../lib/app/hotkeys/hotkeys.type";
 import type { AppSidebarItem } from "../../../lib/app/sidebar.type";
+import type { UseWorkspaceExecutorResult } from "../../../lib/workspace/executor/executor.type";
 import type {
     WorkspaceSessionState,
     WorkspaceSessionTabActions,
@@ -30,6 +31,7 @@ export type ResolvedAppHotkeyBindings = {
     resetWorkspaceSplitView: AppHotkeyBinding;
     focusWorkspaceLeftPane: AppHotkeyBinding;
     focusWorkspaceRightPane: AppHotkeyBinding;
+    toggleExecutorConnection: AppHotkeyBinding;
 };
 
 export type UseAppGlobalHotkeyCaptureOptions = {
@@ -43,6 +45,7 @@ export type UseAppGlobalHotkeyCaptureOptions = {
     toggleCommandPaletteScope: (scope: "commands" | "workspaces") => void;
     toggleGoToLineCommandPalette: () => void;
     toggleWorkspaceSplitView: WorkspaceSessionTabActions["toggleWorkspaceSplitView"];
+    toggleExecutorConnection: UseWorkspaceExecutorResult["actions"]["toggleConnection"];
 };
 
 export type UseAppScopedHotkeysOptions = {
@@ -64,4 +67,7 @@ export type UseAppScopedHotkeysOptions = {
     resetWorkspaceSplitView: WorkspaceSessionTabActions["resetWorkspaceSplitView"];
     toggleWorkspaceSplitView: WorkspaceSessionTabActions["toggleWorkspaceSplitView"];
     focusWorkspacePane: WorkspaceSessionTabActions["focusWorkspacePane"];
+    hasSupportedExecutor: boolean;
+    isExecutorBusy: boolean;
+    toggleExecutorConnection: UseWorkspaceExecutorResult["actions"]["toggleConnection"];
 };

@@ -1,4 +1,5 @@
 export {
+    getAttachCommandPaletteItems,
     getGoToLineCommandPaletteItems,
     getThemeCommandPaletteItems,
 } from "./commandPaletteModes";

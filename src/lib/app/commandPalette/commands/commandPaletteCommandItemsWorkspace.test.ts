@@ -187,6 +187,7 @@ describe("getCommandCommandPaletteItems", () => {
                 hotkeyLabels: {
                     activateGoToLine: "Mod+Shift+\\",
                     archiveWorkspaceTab: "Mod+Backspace",
+                    toggleExecutorConnection: "Mod+Shift+C",
                     createWorkspaceFile: "Mod+N",
                     focusWorkspaceLeftPane: "Ctrl+Mod+1",
                     focusWorkspaceRightPane: "Ctrl+Mod+2",
