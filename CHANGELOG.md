@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-04-26
+
 ### Added
 
 - Add streamer mode privacy masking across accounts, executor labels, Roblox process labels, and workspace actions.
@@ -201,7 +203,8 @@ _First public release._
 - Fix Ace loading in production builds.
 - Fix Ace interop and Escape hotkeys.
 
-[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.6...HEAD
+[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.7...HEAD
+[1.0.7]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.6...app-v1.0.7
 [1.0.6]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.5...app-v1.0.6
 [1.0.5]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.4...app-v1.0.5
 [1.0.4]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.3...app-v1.0.4
