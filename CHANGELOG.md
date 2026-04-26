@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 ### Added
 
 - Add streamer mode privacy masking across accounts, executor labels, Roblox process labels, and workspace actions.
+- Add executor attach hotkey commands.
 - Add an editor word wrap setting.
 - Refresh application icon assets.
 - Improve drag and drop overlay to match app empty state style.
@@ -38,6 +39,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Fix port dropdown layering.
 - Keep stale Luau completions visible during updates.
 - Keep Luau symbols visible after inserts.
+- Fix the go to line shortcut.
 
 ## [1.0.6] - 2026-04-21
 
