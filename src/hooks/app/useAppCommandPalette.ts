@@ -297,6 +297,17 @@ export function useAppCommandPalette({
             }
 
             if (event.key === "Enter") {
+                if (mode === "goto-line") {
+                    event.preventDefault();
+
+                    if (goToLineNumber !== null) {
+                        onGoToLine(goToLineNumber);
+                        onClose();
+                    }
+
+                    return;
+                }
+
                 const nextItem = results[activeResultIndex];
 
                 if (!nextItem || nextItem.isDisabled) {
@@ -330,7 +341,16 @@ export function useAppCommandPalette({
                 onClose();
             }
         },
-        [activeResultIndex, commitSelection, mode, onClose, query, results],
+        [
+            activeResultIndex,
+            commitSelection,
+            goToLineNumber,
+            mode,
+            onClose,
+            onGoToLine,
+            query,
+            results,
+        ],
     );
 
     const handleScopeSelect = useCallback(

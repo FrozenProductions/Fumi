@@ -123,12 +123,13 @@ export function useAppGlobalHotkeyCapture({
                 return;
             }
 
-            if (!shouldTriggerAppHotkeyCodeFallback(event, hotkeys.goToLine)) {
+            if (!shouldTriggerAppHotkeyCapture(event, hotkeys.goToLine)) {
                 return;
             }
 
             event.preventDefault();
             event.stopPropagation();
+            event.stopImmediatePropagation();
             toggleGoToLineCommandPalette();
         };
 

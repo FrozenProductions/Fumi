@@ -26,6 +26,7 @@ export function bindWorkspaceEditorShortcuts(
     editor.commands.removeCommand("showSettingsMenu");
     editor.commands.removeCommand("find");
     editor.commands.bindKey("Command-\\", "null");
+    editor.commands.bindKey("Command-Shift-\\", "null");
     editor.commands.addCommand({
         name: "find",
         bindKey: {
