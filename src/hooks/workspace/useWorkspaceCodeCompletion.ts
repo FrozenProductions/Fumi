@@ -24,6 +24,17 @@ type StoredAceSessionState = {
     undoHistory: object;
 };
 
+type AceSelectionEventTarget = {
+    on: (eventName: "changeCursor", listener: () => void) => void;
+    off: (eventName: "changeCursor", listener: () => void) => void;
+};
+
+type AceEditorDestroyEventTarget = AceEditorInstance & {
+    destroyed?: boolean;
+    on: (eventName: "destroy", listener: () => void) => void;
+    off: (eventName: "destroy", listener: () => void) => void;
+};
+
 /**
  * Orchestrates Ace editor code completion, search, and cursor go-to functionality.
  *
@@ -46,6 +57,9 @@ export function useWorkspaceCodeCompletion({
     updateActiveTabScrollTop,
 }: UseWorkspaceCodeCompletionOptions): UseWorkspaceCodeCompletionResult {
     const editorByTabIdRef = useRef(new Map<string, AceEditorInstance>());
+    const cursorListenerCleanupByTabIdRef = useRef(
+        new Map<string, () => void>(),
+    );
     const sessionStateByTabIdRef = useRef(
         new Map<string, StoredAceSessionState>(),
     );
@@ -180,6 +194,8 @@ export function useWorkspaceCodeCompletion({
 
         for (const tabId of editorByTabIdRef.current.keys()) {
             if (!openTabIds.has(tabId)) {
+                cursorListenerCleanupByTabIdRef.current.get(tabId)?.();
+                cursorListenerCleanupByTabIdRef.current.delete(tabId);
                 editorByTabIdRef.current.delete(tabId);
             }
         }
@@ -190,6 +206,42 @@ export function useWorkspaceCodeCompletion({
             }
         }
     }, [tabs]);
+
+    const handleEditorCursorChangeRef = useRef<(tabId: string) => void>(
+        () => {},
+    );
+
+    handleEditorCursorChangeRef.current = (tabId: string): void => {
+        const editor = editorByTabIdRef.current.get(tabId) as
+            | AceEditorDestroyEventTarget
+            | undefined;
+
+        if (!editor || editor.destroyed || activeTabIdRef.current !== tabId) {
+            return;
+        }
+
+        const cursor = editor.getCursorPosition();
+        updateActiveTabCursor({
+            line: cursor.row,
+            column: cursor.column,
+            scrollTop: editor.session.getScrollTop(),
+        });
+
+        if (suppressNextPassiveCompletionRef.current) {
+            suppressNextPassiveCompletionRef.current = false;
+            closeCompletionPopup();
+            return;
+        }
+
+        if (!completionPopup) {
+            return;
+        }
+
+        updateCompletionPopup({
+            forceOpen: completionPopup.explicit,
+            preserveSelection: true,
+        });
+    };
 
     const createHandleEditorLoad = useCallback(
         (tabId: string) =>
@@ -205,6 +257,24 @@ export function useWorkspaceCodeCompletion({
                 }
 
                 const session = aceEditor.getSession();
+                cursorListenerCleanupByTabIdRef.current.get(tabId)?.();
+                const editorEventTarget =
+                    aceEditor as AceEditorDestroyEventTarget;
+                const selection = session.selection as AceSelectionEventTarget;
+                const handleCursorChange = (): void => {
+                    handleEditorCursorChangeRef.current(tabId);
+                };
+                const cleanupCursorListener = (): void => {
+                    selection.off("changeCursor", handleCursorChange);
+                    editorEventTarget.off("destroy", cleanupCursorListener);
+                };
+                selection.on("changeCursor", handleCursorChange);
+                editorEventTarget.on("destroy", cleanupCursorListener);
+                cursorListenerCleanupByTabIdRef.current.set(
+                    tabId,
+                    cleanupCursorListener,
+                );
+
                 const storedSessionState =
                     sessionStateByTabIdRef.current.get(tabId);
 
@@ -223,6 +293,13 @@ export function useWorkspaceCodeCompletion({
                 }
 
                 window.requestAnimationFrame(() => {
+                    if (
+                        editorByTabIdRef.current.get(tabId) !== aceEditor ||
+                        (aceEditor as AceEditorDestroyEventTarget).destroyed
+                    ) {
+                        return;
+                    }
+
                     if (
                         !storedSessionState ||
                         storedSessionState.content !== tab.content
@@ -261,6 +338,8 @@ export function useWorkspaceCodeCompletion({
                 });
             }
 
+            cursorListenerCleanupByTabIdRef.current.get(tabId)?.();
+            cursorListenerCleanupByTabIdRef.current.delete(tabId);
             editorByTabIdRef.current.delete(tabId);
 
             if (activeTabIdRef.current === tabId) {
@@ -310,45 +389,6 @@ export function useWorkspaceCodeCompletion({
         ],
     );
 
-    const createHandleCursorChange = useCallback(
-        (tabId: string) =>
-            (_selection: unknown): void => {
-                const editor = editorByTabIdRef.current.get(tabId);
-
-                if (!editor || activeTabIdRef.current !== tabId) {
-                    return;
-                }
-
-                const cursor = editor.getCursorPosition();
-                updateActiveTabCursor({
-                    line: cursor.row,
-                    column: cursor.column,
-                    scrollTop: editor.session.getScrollTop(),
-                });
-
-                if (suppressNextPassiveCompletionRef.current) {
-                    suppressNextPassiveCompletionRef.current = false;
-                    closeCompletionPopup();
-                    return;
-                }
-
-                if (!completionPopup) {
-                    return;
-                }
-
-                updateCompletionPopup({
-                    forceOpen: completionPopup.explicit,
-                    preserveSelection: true,
-                });
-            },
-        [
-            closeCompletionPopup,
-            completionPopup,
-            updateActiveTabCursor,
-            updateCompletionPopup,
-        ],
-    );
-
     const createHandleScroll = useCallback(
         (tabId: string) =>
             (_editor: unknown): void => {
@@ -373,7 +413,6 @@ export function useWorkspaceCodeCompletion({
         completionPopup,
         searchPanel,
         handleCompletionHover,
-        createHandleCursorChange,
         createHandleEditorChange,
         createHandleEditorLoad,
         createHandleEditorUnmount,

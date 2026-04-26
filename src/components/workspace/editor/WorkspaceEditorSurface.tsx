@@ -29,7 +29,6 @@ type WorkspaceAcePaneProps = {
     AceEditorComponent: AceEditorComponent;
     aceRuntime: LoadedAceRuntime;
     appTheme: WorkspaceEditorPaneProps["appTheme"];
-    createHandleCursorChange: WorkspaceEditorCompletionProps["createHandleCursorChange"];
     createHandleEditorChange: WorkspaceEditorCompletionProps["createHandleEditorChange"];
     createHandleEditorLoad: WorkspaceEditorCompletionProps["createHandleEditorLoad"];
     createHandleEditorUnmount: WorkspaceEditorCompletionProps["createHandleEditorUnmount"];
@@ -84,7 +83,6 @@ function WorkspaceAcePane({
     AceEditorComponent,
     aceRuntime,
     appTheme,
-    createHandleCursorChange,
     createHandleEditorChange,
     createHandleEditorLoad,
     createHandleEditorUnmount,
@@ -121,7 +119,6 @@ function WorkspaceAcePane({
 
                     editorChangeHandler(value, delta);
                 }}
-                onCursorChange={createHandleCursorChange(tab.id)}
                 onScroll={createHandleScroll(tab.id)}
                 enableBasicAutocompletion={false}
                 enableLiveAutocompletion={false}
@@ -177,7 +174,6 @@ export function WorkspaceEditorSurface({
     const {
         acceptCompletion,
         completionPopup,
-        createHandleCursorChange,
         createHandleEditorChange,
         createHandleEditorLoad,
         createHandleEditorUnmount,
@@ -289,9 +285,6 @@ export function WorkspaceEditorSurface({
                                       AceEditorComponent={AceEditorComponent}
                                       aceRuntime={aceRuntime}
                                       appTheme={appTheme}
-                                      createHandleCursorChange={
-                                          createHandleCursorChange
-                                      }
                                       createHandleEditorChange={
                                           createHandleEditorChange
                                       }

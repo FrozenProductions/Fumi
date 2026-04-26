@@ -86,7 +86,6 @@ export function WorkspaceEditorRegion({
     const {
         acceptCompletion,
         completionPopup,
-        createHandleCursorChange,
         createHandleEditorChange,
         createHandleEditorLoad,
         createHandleEditorUnmount,
@@ -165,7 +164,6 @@ export function WorkspaceEditorRegion({
     const completion = {
         acceptCompletion,
         completionPopup,
-        createHandleCursorChange,
         createHandleEditorChange,
         createHandleEditorLoad,
         createHandleEditorUnmount,

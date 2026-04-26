@@ -37,7 +37,6 @@ export type WorkspaceEditorCompletionProps = Pick<
     UseWorkspaceCodeCompletionResult,
     | "acceptCompletion"
     | "completionPopup"
-    | "createHandleCursorChange"
     | "createHandleEditorChange"
     | "createHandleEditorLoad"
     | "createHandleEditorUnmount"

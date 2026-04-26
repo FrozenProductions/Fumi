@@ -26,7 +26,6 @@ export type UseWorkspaceCodeCompletionResult = {
     completionPopup: LuauCompletionPopupState | null;
     searchPanel: WorkspaceEditorSearchController;
     handleCompletionHover: (index: number) => void;
-    createHandleCursorChange: (tabId: string) => (selection: unknown) => void;
     createHandleEditorChange: (
         tabId: string,
     ) => (value: string, delta?: AceChangeDelta) => void;
