@@ -14,6 +14,7 @@ import { useWorkspaceRobloxControls } from "../../hooks/workspace/useWorkspaceRo
 import { useWorkspaceScreenHotkeys } from "../../hooks/workspace/useWorkspaceScreenHotkeys";
 import { useWorkspaceStore } from "../../hooks/workspace/useWorkspaceStore";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys/hotkeys";
+import { selectWorkspaceScreenSession } from "../../lib/workspace/store/selectors";
 import { WorkspaceEditorRegion } from "./editor/WorkspaceEditorRegion";
 import { WorkspaceExecutionHistoryModal } from "./executionHistory/WorkspaceExecutionHistoryModal";
 import { WorkspaceMessageState } from "./feedback/WorkspaceMessageState";
@@ -47,7 +48,7 @@ export function WorkspaceReadyScreen({
     );
     const editorSettings = useAppStore((state) => state.editorSettings);
     const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
-    const workspace = useWorkspaceStore((state) => state.workspace);
+    const workspace = useWorkspaceStore(selectWorkspaceScreenSession);
     const persistWorkspaceState = useWorkspaceStore(
         (state) => state.persistWorkspaceState,
     );
