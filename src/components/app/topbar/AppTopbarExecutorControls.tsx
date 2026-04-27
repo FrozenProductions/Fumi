@@ -100,7 +100,7 @@ export function AppTopbarExecutorControls({
                         }}
                         disabled={isPrimaryButtonDisabled}
                         data-topbar-interactive="true"
-                        className={`app-select-none inline-flex h-full items-center justify-center gap-1.5 rounded-none px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 -mr-px z-10 hover:z-20 ${
+                        className={`app-select-none inline-flex h-full items-center justify-center gap-1.5 rounded-none px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 -mr-px z-10 hover:z-20 border-r border-fumi-200 ${
                             isExecutorUnavailable
                                 ? unavailableButtonClassName
                                 : didRecentAttachFail
@@ -146,9 +146,7 @@ export function AppTopbarExecutorControls({
                     </button>
                 </AppTooltip>
 
-                <div className="h-4 w-px bg-fumi-200" />
-
-                <AppTooltip content="Select executor port" side="bottom">
+<AppTooltip content="Select executor port" side="bottom">
                     <button
                         type="button"
                         onClick={() =>
@@ -164,7 +162,7 @@ export function AppTopbarExecutorControls({
                         }
                         disabled={isDropdownDisabled}
                         data-topbar-interactive="true"
-                        className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-none text-fumi-700 transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 -ml-px ${
+                        className={`app-select-none inline-flex h-full w-6 shrink-0 items-center justify-center rounded-none text-fumi-700 transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100 ${
                             isDropdownDisabled ? "" : "hover:bg-fumi-200"
                         } ${
                             isExecutorUnavailable

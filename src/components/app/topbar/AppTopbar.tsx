@@ -86,8 +86,7 @@ export function AppTopbar({
             onMouseDownCapture={handleTopbarMouseDown}
         >
             <AppTopbarTrafficLights />
-            <div className="pointer-events-none absolute left-[4.8rem] top-1/2 z-10 h-4 w-0.5 -translate-y-1/2 rounded-full bg-fumi-300" />
-            <div className="relative z-10 ml-5 flex items-center gap-1.5">
+            <div className="relative ml-1 z-10 flex items-center gap-1.5">
                 <AppTooltip
                     content={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
                     side="bottom"
