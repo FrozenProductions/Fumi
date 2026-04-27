@@ -164,13 +164,9 @@ export function WorkspaceActionsButton({
         ? "flex h-9 items-center rounded-[0.5rem] border border-fumi-300 bg-fumi-700 text-xs font-semibold tracking-wide text-fumi-50 shadow-sm transition-[background-color,border-color,box-shadow] duration-150 ease-out hover:border-fumi-400"
         : "flex h-9 items-center rounded-[0.5rem] border border-fumi-200 bg-fumi-600 text-xs font-semibold tracking-wide text-white shadow-sm transition-[background-color,border-color,box-shadow] duration-150 ease-out hover:border-fumi-700";
 
-    const leftButtonClass = isDark
-        ? "pointer-events-auto inline-flex h-full items-center gap-1.5 rounded-l-[0.5rem] pl-3.5 pr-2.5 transition-colors hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
-        : "pointer-events-auto inline-flex h-full items-center gap-1.5 rounded-l-[0.5rem] pl-3.5 pr-2.5 transition-colors hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50";
+    const leftButtonClass = "pointer-events-auto inline-flex h-full items-center gap-1.5 rounded-l-[0.5rem] pl-3.5 pr-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fumi-400";
 
-    const rightButtonClass = isDark
-        ? "pointer-events-auto inline-flex h-full items-center justify-center rounded-r-[0.5rem] px-2 transition-colors hover:bg-fumi-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
-        : "pointer-events-auto inline-flex h-full items-center justify-center rounded-r-[0.5rem] px-2 transition-colors hover:bg-fumi-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50";
+    const rightButtonClass = "pointer-events-auto inline-flex h-full items-center justify-center rounded-r-[0.5rem] px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fumi-400";
 
     const separatorClass = isDark
         ? "h-5 w-px bg-fumi-500"
