@@ -133,7 +133,7 @@ export function WorkspaceActionsProcessList({
                         type="button"
                         onClick={() => actions.onKillProcess(process.pid)}
                         disabled={!roblox.canKill}
-                        className={`flex size-5 shrink-0 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-fumi-600 ${
+                        className={`flex size-5 shrink-0 items-center justify-center rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset)*2)] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-fumi-600 ${
                             !roblox.canKill
                                 ? "cursor-not-allowed opacity-60"
                                 : isKillingProcess
