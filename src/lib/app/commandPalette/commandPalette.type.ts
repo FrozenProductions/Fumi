@@ -42,6 +42,7 @@ export type AppCommandPaletteControllerOptions = {
     isOpen: boolean;
     requestedScope: AppCommandPaletteScope | null;
     requestedMode: AppCommandPaletteMode | null;
+    visibility: AppCommandPaletteVisibilityState;
     workspaceSession: UseWorkspaceSessionResult;
     workspaceExecutor: UseWorkspaceExecutorResult;
     isSidebarOpen: boolean;

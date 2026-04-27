@@ -4,13 +4,10 @@ import {
     useCallback,
     useDeferredValue,
     useEffect,
+    useLayoutEffect,
     useRef,
     useState,
 } from "react";
-import {
-    COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS,
-    COMMAND_PALETTE_EXIT_DURATION_MS,
-} from "../../constants/app/commandPalette";
 import { parseGoToLineQuery } from "../../lib/app/commandPalette/commandPalette";
 import { getAppCommandPaletteResults } from "../../lib/app/commandPalette/commandPaletteController";
 import type {
@@ -20,12 +17,13 @@ import type {
     AppCommandPaletteMode as RequestedAppCommandPaletteMode,
 } from "../../lib/app/commandPalette/commandPaletteDomain.type";
 import { normalizeAppCommandPaletteSearchValue } from "../../lib/app/commandPalette/search/commandPaletteSearch";
-import { usePresenceTransition } from "../shared/usePresenceTransition";
 import type {
     UseAppCommandPaletteOptions,
     UseAppCommandPaletteResult,
 } from "./useAppCommandPalette.type";
 import { useAppStore } from "./useAppStore";
+
+const COMMAND_PALETTE_FOCUS_ATTEMPT_COUNT = 3;
 
 /**
  * Manages command palette state, input handling, scope switching, and result filtering.
@@ -38,6 +36,7 @@ export function useAppCommandPalette({
     isOpen,
     requestedScope,
     requestedMode,
+    visibility,
     workspaceSession,
     workspaceExecutor,
     isSidebarOpen,
@@ -68,16 +67,15 @@ export function useAppCommandPalette({
     const [activeResultIndex, setActiveResultIndex] = useState(0);
     const panelRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
+    const focusAnimationFrameRef = useRef<number | null>(null);
     const focusTimeoutRef = useRef<number | null>(null);
+    const isOpenRef = useRef(isOpen);
     const previousOpenRequestRef = useRef<{
         isOpen: boolean;
         requestedMode: RequestedAppCommandPaletteMode | null;
         requestedScope: AppCommandPaletteScope | null;
     } | null>(null);
-    const { isPresent, isClosing } = usePresenceTransition({
-        isOpen,
-        exitDurationMs: COMMAND_PALETTE_EXIT_DURATION_MS,
-    });
+    const { isPresent, isClosing } = visibility;
     const deferredQuery = useDeferredValue(query);
     const normalizedQuery =
         normalizeAppCommandPaletteSearchValue(deferredQuery);
@@ -87,29 +85,77 @@ export function useAppCommandPalette({
     const goToLineNumber =
         mode === "goto-line" ? parseGoToLineQuery(query) : null;
 
-    const scheduleInputFocus = useCallback(
-        (options?: { delayMs?: number; shouldSelect?: boolean }): void => {
-            if (focusTimeoutRef.current !== null) {
-                window.clearTimeout(focusTimeoutRef.current);
-                focusTimeoutRef.current = null;
+    isOpenRef.current = isOpen;
+
+    const cancelScheduledInputFocus = useCallback((): void => {
+        if (focusAnimationFrameRef.current !== null) {
+            window.cancelAnimationFrame(focusAnimationFrameRef.current);
+            focusAnimationFrameRef.current = null;
+        }
+
+        if (focusTimeoutRef.current !== null) {
+            window.clearTimeout(focusTimeoutRef.current);
+            focusTimeoutRef.current = null;
+        }
+    }, []);
+
+    const focusInput = useCallback(
+        (options?: { shouldSelect?: boolean }): void => {
+            const input = inputRef.current;
+
+            if (!input || !isOpenRef.current) {
+                return;
             }
 
-            const {
-                delayMs = COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS,
-                shouldSelect = false,
-            } = options ?? {};
+            input.focus({ preventScroll: true });
 
-            focusTimeoutRef.current = window.setTimeout(() => {
-                inputRef.current?.focus();
-
-                if (shouldSelect) {
-                    inputRef.current?.select();
-                }
-
-                focusTimeoutRef.current = null;
-            }, delayMs);
+            if (options?.shouldSelect === true) {
+                input.select();
+            }
         },
         [],
+    );
+
+    const scheduleInputFocus = useCallback(
+        (options?: { delayMs?: number; shouldSelect?: boolean }): void => {
+            cancelScheduledInputFocus();
+
+            const { delayMs = 0, shouldSelect = false } = options ?? {};
+            const requestFocus = (attemptsRemaining: number): void => {
+                focusAnimationFrameRef.current = null;
+                focusInput({
+                    shouldSelect:
+                        shouldSelect &&
+                        attemptsRemaining ===
+                            COMMAND_PALETTE_FOCUS_ATTEMPT_COUNT,
+                });
+
+                if (attemptsRemaining <= 1 || !isOpenRef.current) {
+                    return;
+                }
+
+                focusAnimationFrameRef.current = window.requestAnimationFrame(
+                    () => requestFocus(attemptsRemaining - 1),
+                );
+            };
+
+            if (delayMs > 0) {
+                focusTimeoutRef.current = window.setTimeout(() => {
+                    focusTimeoutRef.current = null;
+                    focusAnimationFrameRef.current =
+                        window.requestAnimationFrame(() =>
+                            requestFocus(COMMAND_PALETTE_FOCUS_ATTEMPT_COUNT),
+                        );
+                }, delayMs);
+
+                return;
+            }
+
+            focusAnimationFrameRef.current = window.requestAnimationFrame(() =>
+                requestFocus(COMMAND_PALETTE_FOCUS_ATTEMPT_COUNT),
+            );
+        },
+        [cancelScheduledInputFocus, focusInput],
     );
 
     const activateGoToLineMode = useCallback((): void => {
@@ -180,19 +226,16 @@ export function useAppCommandPalette({
     });
 
     useEffect(() => {
-        if (!isOpen && focusTimeoutRef.current !== null) {
-            window.clearTimeout(focusTimeoutRef.current);
-            focusTimeoutRef.current = null;
+        if (!isOpen) {
+            cancelScheduledInputFocus();
         }
-    }, [isOpen]);
+    }, [cancelScheduledInputFocus, isOpen]);
 
     useEffect(() => {
         return () => {
-            if (focusTimeoutRef.current !== null) {
-                window.clearTimeout(focusTimeoutRef.current);
-            }
+            cancelScheduledInputFocus();
         };
-    }, []);
+    }, [cancelScheduledInputFocus]);
 
     useEffect(() => {
         setActiveResultIndex((currentIndex) => {
@@ -204,7 +247,7 @@ export function useAppCommandPalette({
         });
     }, [results.length]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const previousOpenRequest = previousOpenRequestRef.current;
         const didOpen = isOpen && !previousOpenRequest?.isOpen;
         const didRequestedModeChange =
@@ -363,11 +406,9 @@ export function useAppCommandPalette({
                 setActiveResultIndex(0);
             });
 
-            window.requestAnimationFrame(() => {
-                inputRef.current?.focus();
-            });
+            scheduleInputFocus();
         },
-        [],
+        [scheduleInputFocus],
     );
 
     const handleHoverItem = useCallback((index: number): void => {

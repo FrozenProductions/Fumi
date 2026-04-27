@@ -139,72 +139,74 @@ export function getAppCommandPaletteResults({
     onActivateGoToLineMode,
     onActivateThemeMode,
 }: GetAppCommandPaletteResultsOptions) {
-    const tabItems = getTabCommandPaletteItems(workspaceSession);
-    const commandItems = getCommandCommandPaletteItems({
-        workspaceSession,
-        workspaceExecutor,
-        isSidebarOpen,
-        activeSidebarItem,
-        sidebarPosition,
-        hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
-        onActivateAttachMode,
-        onActivateGoToLineMode,
-        onActivateThemeMode,
-        onOpenWorkspaceScreen,
-        onOpenAutomaticExecution,
-        onOpenScriptLibrary,
-        onOpenAccounts,
-        onOpenExecutionHistory,
-        onOpenSettings,
-        onToggleSidebar,
-        onToggleOutlinePanel,
-        onSetSidebarPosition,
-        onZoomIn,
-        onZoomOut,
-        onZoomReset,
-        onRequestRenameCurrentTab,
-        isOutlinePanelVisible,
-    });
-    const workspaceItems = getWorkspaceCommandPaletteItems(workspaceSession);
-    const goToLineItems = getGoToLineCommandPaletteItems({
-        activeTab,
-        goToLineNumber,
-        onGoToLine,
-    });
-    const attachItems = getAttachCommandPaletteItems({
-        workspaceExecutor,
-        onOpenWorkspaceScreen,
-    });
-    const themeItems = getThemeCommandPaletteItems({
-        currentTheme: theme,
-        onSetTheme,
-    });
-
     if (mode === "attach") {
         return searchAppCommandPaletteItems(
-            attachItems,
+            getAttachCommandPaletteItems({
+                workspaceExecutor,
+                onOpenWorkspaceScreen,
+            }),
             normalizedQuery,
             APP_COMMAND_PALETTE_MAX_RESULTS,
         );
     }
 
     if (mode === "goto-line") {
-        return goToLineItems;
+        return getGoToLineCommandPaletteItems({
+            activeTab,
+            goToLineNumber,
+            onGoToLine,
+        });
     }
 
     if (mode === "theme") {
-        return themeItems;
+        return getThemeCommandPaletteItems({
+            currentTheme: theme,
+            onSetTheme,
+        });
     }
 
-    const scopedItems =
-        scope === "commands"
-            ? commandItems
-            : scope === "workspaces"
-              ? workspaceItems
-              : tabItems;
+    if (scope === "commands") {
+        return searchAppCommandPaletteItems(
+            getCommandCommandPaletteItems({
+                workspaceSession,
+                workspaceExecutor,
+                isSidebarOpen,
+                activeSidebarItem,
+                sidebarPosition,
+                hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
+                onActivateAttachMode,
+                onActivateGoToLineMode,
+                onActivateThemeMode,
+                onOpenWorkspaceScreen,
+                onOpenAutomaticExecution,
+                onOpenScriptLibrary,
+                onOpenAccounts,
+                onOpenExecutionHistory,
+                onOpenSettings,
+                onToggleSidebar,
+                onToggleOutlinePanel,
+                onSetSidebarPosition,
+                onZoomIn,
+                onZoomOut,
+                onZoomReset,
+                onRequestRenameCurrentTab,
+                isOutlinePanelVisible,
+            }),
+            normalizedQuery,
+            APP_COMMAND_PALETTE_MAX_RESULTS,
+        );
+    }
+
+    if (scope === "workspaces") {
+        return searchAppCommandPaletteItems(
+            getWorkspaceCommandPaletteItems(workspaceSession),
+            normalizedQuery,
+            APP_COMMAND_PALETTE_MAX_RESULTS,
+        );
+    }
 
     return searchAppCommandPaletteItems(
-        scopedItems,
+        getTabCommandPaletteItems(workspaceSession),
         normalizedQuery,
         APP_COMMAND_PALETTE_MAX_RESULTS,
     );

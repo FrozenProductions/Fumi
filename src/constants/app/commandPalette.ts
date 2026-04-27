@@ -2,7 +2,6 @@ import type { AppCommandPaletteSearchFieldName } from "../../lib/app/commandPale
 import type { AppCommandPaletteScope } from "../../lib/app/commandPalette/commandPaletteDomain.type";
 
 export const COMMAND_PALETTE_EXIT_DURATION_MS = 220;
-export const COMMAND_PALETTE_ENTER_FOCUS_DELAY_MS = 170;
 export const APP_COMMAND_PALETTE_MAX_RESULTS = 5;
 export const APP_COMMAND_PALETTE_RESULT_ROW_HEIGHT_REM = 3;
 export const APP_COMMAND_PALETTE_RESULT_ROW_GAP_REM = 0.125;

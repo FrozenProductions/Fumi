@@ -2,13 +2,20 @@ import type { ReactElement } from "react";
 import {
     APP_COMMAND_PALETTE_SCOPE_LABELS,
     APP_COMMAND_PALETTE_SCOPE_PLACEHOLDERS,
+    COMMAND_PALETTE_EXIT_DURATION_MS,
 } from "../../../constants/app/commandPalette";
 import { useAppCommandPalette } from "../../../hooks/app/useAppCommandPalette";
+import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
 import { useWorkspaceSession } from "../../../hooks/workspace/useWorkspaceSession";
+import type { AppCommandPaletteVisibilityState } from "../../../lib/app/commandPalette/commandPalette.type";
 import { joinClassNames } from "../../../lib/shared/className";
 import { AppCommandPaletteInputRow } from "./AppCommandPaletteInputRow";
 import { AppCommandPaletteResults } from "./AppCommandPaletteResults";
 import type { AppCommandPaletteProps } from "./appCommandPalette.type";
+
+type AppCommandPaletteContentProps = AppCommandPaletteProps & {
+    visibility: AppCommandPaletteVisibilityState;
+};
 
 /**
  * The command palette overlay for quick actions and navigation.
@@ -21,9 +28,35 @@ export function AppCommandPalette({
     context,
     actions,
 }: AppCommandPaletteProps): ReactElement | null {
+    const visibility = usePresenceTransition({
+        isOpen: request.isOpen,
+        exitDurationMs: COMMAND_PALETTE_EXIT_DURATION_MS,
+    });
+
+    if (!visibility.isPresent) {
+        return null;
+    }
+
+    return (
+        <AppCommandPaletteContent
+            request={request}
+            context={context}
+            actions={actions}
+            visibility={visibility}
+        />
+    );
+}
+
+function AppCommandPaletteContent({
+    request,
+    context,
+    actions,
+    visibility,
+}: AppCommandPaletteContentProps): ReactElement | null {
     const workspaceSession = useWorkspaceSession();
-    const { handlers, input, results, visibility } = useAppCommandPalette({
+    const { handlers, input, results } = useAppCommandPalette({
         workspaceSession,
+        visibility,
         ...request,
         ...context,
         ...actions,
