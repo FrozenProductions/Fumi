@@ -17,10 +17,7 @@ use anyhow::{anyhow, Context, Result};
 use flate2::{write::ZlibEncoder, Compression};
 use tauri::{AppHandle, Manager, Runtime};
 
-use crate::{
-    accounts,
-    events::emit_executor_status_changed,
-};
+use crate::{accounts, events::emit_executor_status_changed};
 
 pub use self::models::{ExecutorKind, ExecutorPortSummary, ExecutorStatusPayload};
 
@@ -71,7 +68,8 @@ struct ExecutorState {
 
 struct ExecutorConnection {
     id: u64,
-    writer: TcpStream,
+    writer: Arc<Mutex<TcpStream>>,
+    shutdown_writer: TcpStream,
     reader_thread: JoinHandle<()>,
 }
 
@@ -181,7 +179,10 @@ impl ExecutorRuntimeState {
                     let mut state = self.lock();
                     state.connection = Some(ExecutorConnection {
                         id: connection_id,
-                        writer,
+                        shutdown_writer: writer
+                            .try_clone()
+                            .context("failed to clone the MacSploit socket for shutdown")?,
+                        writer: Arc::new(Mutex::new(writer)),
                         reader_thread,
                     });
                     state.is_opiumware_attached = false;
@@ -264,7 +265,7 @@ impl ExecutorRuntimeState {
                     "detaching connection id {} on port {}",
                     connection.id, status.port
                 ));
-                let _ = connection.writer.shutdown(Shutdown::Both);
+                let _ = connection.shutdown_writer.shutdown(Shutdown::Both);
                 let _ = connection.reader_thread.join();
                 self.status(app)?
             }
@@ -376,13 +377,15 @@ impl ExecutorRuntimeState {
     }
 
     fn write_frame(&self, ipc_type: ExecutorIpcType, payload: &[u8]) -> Result<()> {
-        let mut state = self.lock();
-        let connection = state
-            .connection
-            .as_mut()
-            .ok_or_else(|| anyhow!("NotInjectedError: Please attach before executing scripts."))?;
-        let connection_id = connection.id;
         let frame = build_frame(ipc_type, payload)?;
+        let (connection_id, writer) = {
+            let state = self.lock();
+            let connection = state.connection.as_ref().ok_or_else(|| {
+                anyhow!("NotInjectedError: Please attach before executing scripts.")
+            })?;
+
+            (connection.id, Arc::clone(&connection.writer))
+        };
 
         log_executor_debug(format!(
             "writing frame; connection_id={connection_id}, ipc_type={}, payload_bytes={}, frame_bytes={}",
@@ -391,8 +394,9 @@ impl ExecutorRuntimeState {
             frame.len()
         ));
 
-        let write_result = connection
-            .writer
+        let write_result = writer
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
             .write_all(&frame)
             .context("failed to write to the MacSploit socket");
 
@@ -511,7 +515,7 @@ impl ExecutorRuntimeState {
                 connection.id,
                 self.current_port()
             ));
-            let _ = connection.writer.shutdown(Shutdown::Both);
+            let _ = connection.shutdown_writer.shutdown(Shutdown::Both);
             let _ = connection.reader_thread.join();
 
             if emit_status_change {
@@ -554,7 +558,7 @@ impl ExecutorRuntimeState {
         };
 
         if let Some(connection) = stale_connection.1 {
-            let _ = connection.writer.shutdown(Shutdown::Both);
+            let _ = connection.shutdown_writer.shutdown(Shutdown::Both);
             let _ = connection.reader_thread.join();
         }
 
