@@ -44,7 +44,7 @@ export function WorkspaceActionsProcessList({
         return (
             <div
                 key={process.pid}
-                className={`flex items-center justify-between rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] pl-2.5 pr-1 py-1 transition-colors ${
+                className={`flex items-center justify-between rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-1 py-1 transition-colors ${
                     isKillingProcess
                         ? menu.isDark
                             ? "bg-fumi-200/80"
@@ -59,7 +59,7 @@ export function WorkspaceActionsProcessList({
                 }`}
             >
                 <div
-                    className={`min-w-0 text-[11px] font-medium ${
+                    className={`min-w-0 pl-1.5 text-[11px] font-medium ${
                         isKillingProcess
                             ? menu.isDark
                                 ? "text-fumi-900"

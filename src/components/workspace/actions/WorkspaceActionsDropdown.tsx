@@ -92,7 +92,7 @@ export function WorkspaceActionsDropdown(
                         type="button"
                         role="menuitem"
                         onClick={actions.onToggleOutlinePanel}
-                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] p-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                             menu.isDark
                                 ? "text-fumi-900 hover:bg-fumi-200"
                                 : "text-fumi-700 hover:bg-fumi-100"
@@ -119,7 +119,7 @@ export function WorkspaceActionsDropdown(
                         type="button"
                         role="menuitem"
                         onClick={actions.onOpenExecutionHistory}
-                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] p-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                             menu.isDark
                                 ? "text-fumi-900 hover:bg-fumi-200"
                                 : "text-fumi-700 hover:bg-fumi-100"
@@ -144,7 +144,7 @@ export function WorkspaceActionsDropdown(
                         role="menuitem"
                         onClick={actions.onLaunch}
                         disabled={!roblox.canLaunch}
-                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] p-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                             !roblox.canLaunch
                                 ? "cursor-not-allowed opacity-60"
                                 : menu.isLaunchModifierActive
@@ -179,7 +179,7 @@ export function WorkspaceActionsDropdown(
                         role="menuitem"
                         onClick={actions.onKillAll}
                         disabled={!roblox.canKill}
-                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] px-2.5 py-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
+                        className={`app-select-none flex w-full items-center gap-2 rounded-[calc(var(--workspace-actions-menu-radius)-var(--workspace-actions-menu-inset))] p-1.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 ${
                             !roblox.canKill
                                 ? "cursor-not-allowed opacity-60"
                                 : killIsConfirming
@@ -232,7 +232,7 @@ export function WorkspaceActionsDropdown(
                     >
                         Instances
                     </div>
-                    <div className="flex flex-col gap-0.5 px-0.5">
+                    <div className="flex flex-col gap-0.5">
                         <WorkspaceActionsProcessList options={options} />
                     </div>
                 </div>
