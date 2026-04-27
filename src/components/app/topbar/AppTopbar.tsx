@@ -151,7 +151,7 @@ export function AppTopbar({
                             type="button"
                             onClick={onOpenWorkspace}
                             data-topbar-interactive="true"
-                            className="pointer-events-auto flex max-w-[12rem] items-center gap-1.5 rounded-md border border-fumi-200 bg-fumi-50 px-2.5 py-1 text-xs font-semibold text-fumi-700 transition-[background-color,border-color] duration-150 hover:border-fumi-200 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100"
+                            className="pointer-events-auto flex h-[1.625rem] max-w-[12rem] items-center gap-1.5 rounded-md border border-fumi-200 bg-fumi-50 px-2.5 text-xs font-semibold text-fumi-700 transition-[background-color,border-color] duration-150 hover:border-fumi-200 hover:bg-fumi-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-100"
                         >
                             <span className="truncate">{workspaceName}</span>
                         </button>
