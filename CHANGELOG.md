@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-05-02
+
+### Changed
+
+- Improve command palette focus handling and result rendering performance.
+- Refine topbar and workspace action spacing, process action button radius, and related workspace action class structure.
+
+### Fixed
+
+- Prevent executor IPC from blocking the app.
+- Fix workspace tab dirty indicators.
+- Allow launching Roblox when no supported executor is detected.
+- Detect Opiumware installs that use `libOpiumwareNative.dylib`.
+- Handle Roblox command failures without unhandled promise rejections.
+- Fix Opiumware detach getting stuck in the busy state.
+- Fix executor port tooltip indentation in the topbar controls.
+
 ## [1.0.7] - 2026-04-26
 
 ### Added
@@ -203,7 +220,8 @@ _First public release._
 - Fix Ace loading in production builds.
 - Fix Ace interop and Escape hotkeys.
 
-[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.7...HEAD
+[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.8...HEAD
+[1.0.8]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.7...app-v1.0.8
 [1.0.7]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.6...app-v1.0.7
 [1.0.6]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.5...app-v1.0.6
 [1.0.5]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.4...app-v1.0.5
