@@ -272,12 +272,15 @@ impl ExecutorRuntimeState {
                 self.status(app)?
             }
             ExecutorKind::Opiumware => {
-                let mut state = self.lock();
-                if !state.is_opiumware_attached {
-                    return Err(anyhow!("NotInjectedError: Socket is already closed."));
+                {
+                    let mut state = self.lock();
+                    if !state.is_opiumware_attached {
+                        return Err(anyhow!("NotInjectedError: Socket is already closed."));
+                    }
+
+                    state.is_opiumware_attached = false;
                 }
 
-                state.is_opiumware_attached = false;
                 self.status(app)?
             }
             ExecutorKind::Unsupported => {
