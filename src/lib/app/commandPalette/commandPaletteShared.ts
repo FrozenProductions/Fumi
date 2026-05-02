@@ -1,5 +1,16 @@
 import { killRobloxProcesses } from "../../platform/accounts";
 import { confirmAction } from "../../platform/dialog";
+import { getErrorMessage } from "../../shared/errorMessage";
+
+/** Runs an async command palette action without allowing rejected promises to escape. */
+export function runCommandPaletteAsyncAction(
+    action: () => Promise<void>,
+    failureMessage: string,
+): void {
+    void action().catch((error: unknown) => {
+        console.warn(getErrorMessage(error, failureMessage));
+    });
+}
 
 /**
  * Parses a go-to-line query string into a line number.

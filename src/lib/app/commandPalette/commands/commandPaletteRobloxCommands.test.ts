@@ -106,4 +106,28 @@ describe("Roblox command palette commands", () => {
         );
         expect(platformMocks.killRobloxProcesses).toHaveBeenCalledOnce();
     });
+
+    it("handles rejected Roblox launch commands", async () => {
+        const warningSpy = vi
+            .spyOn(console, "warn")
+            .mockImplementation(() => {});
+        platformMocks.launchRoblox.mockRejectedValue(
+            new Error("Roblox launch failed."),
+        );
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions(),
+        );
+        const launchItem = items.find(
+            (item) => item.id === "command-launch-roblox",
+        );
+
+        launchItem?.onSelect();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(platformMocks.launchRoblox).toHaveBeenCalledOnce();
+        expect(warningSpy).toHaveBeenCalledWith("Roblox launch failed.");
+
+        warningSpy.mockRestore();
+    });
 });

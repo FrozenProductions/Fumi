@@ -12,7 +12,9 @@ import {
 } from "../../lib/platform/accounts";
 import { confirmAction } from "../../lib/platform/dialog";
 import { isTauriEnvironment } from "../../lib/platform/runtime";
+import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { useWindowResume } from "../shared/useWindowResume";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 type UseWorkspaceRobloxControlsResult = {
     isDesktopShell: boolean;
@@ -38,6 +40,9 @@ type UseWorkspaceRobloxControlsResult = {
  * @returns Roblox process state and control actions
  */
 export function useWorkspaceRobloxControls(): UseWorkspaceRobloxControlsResult {
+    const setWorkspaceErrorMessage = useWorkspaceStore(
+        (state) => state.setErrorMessage,
+    );
     const [robloxProcesses, setRobloxProcesses] = useState<
         readonly RobloxProcessInfo[]
     >([]);
@@ -120,11 +125,16 @@ export function useWorkspaceRobloxControls(): UseWorkspaceRobloxControlsResult {
 
         try {
             await launchRobloxCommand();
+            setWorkspaceErrorMessage(null);
+        } catch (error: unknown) {
+            setWorkspaceErrorMessage(
+                getErrorMessage(error, "Could not launch Roblox."),
+            );
         } finally {
             setIsLaunching(false);
             void refreshRobloxProcesses();
         }
-    }, [isLaunching, refreshRobloxProcesses]);
+    }, [isLaunching, refreshRobloxProcesses, setWorkspaceErrorMessage]);
 
     const killRoblox = useCallback(async (): Promise<void> => {
         if (isKillingRoblox || killingRobloxProcessPid !== null) {
@@ -135,11 +145,21 @@ export function useWorkspaceRobloxControls(): UseWorkspaceRobloxControlsResult {
 
         try {
             await killRobloxProcessesCommand();
+            setWorkspaceErrorMessage(null);
+        } catch (error: unknown) {
+            setWorkspaceErrorMessage(
+                getErrorMessage(error, "Could not kill Roblox."),
+            );
         } finally {
             setIsKillingRoblox(false);
             void refreshRobloxProcesses();
         }
-    }, [isKillingRoblox, killingRobloxProcessPid, refreshRobloxProcesses]);
+    }, [
+        isKillingRoblox,
+        killingRobloxProcessPid,
+        refreshRobloxProcesses,
+        setWorkspaceErrorMessage,
+    ]);
 
     const killRobloxProcess = useCallback(
         async (pid: number): Promise<void> => {
@@ -151,6 +171,11 @@ export function useWorkspaceRobloxControls(): UseWorkspaceRobloxControlsResult {
 
             try {
                 await killRobloxProcessCommand(pid);
+                setWorkspaceErrorMessage(null);
+            } catch (error: unknown) {
+                setWorkspaceErrorMessage(
+                    getErrorMessage(error, "Could not kill Roblox."),
+                );
             } finally {
                 setKillingRobloxProcessPid((currentPid) =>
                     currentPid === pid ? null : currentPid,
@@ -158,7 +183,12 @@ export function useWorkspaceRobloxControls(): UseWorkspaceRobloxControlsResult {
                 void refreshRobloxProcesses();
             }
         },
-        [isKillingRoblox, killingRobloxProcessPid, refreshRobloxProcesses],
+        [
+            isKillingRoblox,
+            killingRobloxProcessPid,
+            refreshRobloxProcesses,
+            setWorkspaceErrorMessage,
+        ],
     );
 
     const confirmAndKillRoblox = useCallback(async (): Promise<void> => {

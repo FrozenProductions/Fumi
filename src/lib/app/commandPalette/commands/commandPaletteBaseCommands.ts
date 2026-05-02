@@ -6,6 +6,7 @@ import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 import {
     confirmKillRobloxProcesses,
     getCurrentStateMeta,
+    runCommandPaletteAsyncAction,
 } from "../commandPaletteShared";
 
 type CommandPaletteBaseOptions = Pick<
@@ -186,7 +187,10 @@ export function getBaseCommandPaletteItems({
             isDisabled: !isDesktopShell,
             onSelect: () => {
                 onOpenWorkspaceScreen();
-                void launchRoblox();
+                runCommandPaletteAsyncAction(
+                    launchRoblox,
+                    "Could not launch Roblox.",
+                );
             },
         },
         {
@@ -201,7 +205,10 @@ export function getBaseCommandPaletteItems({
             isDisabled: !isDesktopShell,
             onSelect: () => {
                 onOpenWorkspaceScreen();
-                void confirmKillRobloxProcesses();
+                runCommandPaletteAsyncAction(
+                    confirmKillRobloxProcesses,
+                    "Could not kill Roblox.",
+                );
             },
         },
         {
