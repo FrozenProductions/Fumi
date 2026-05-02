@@ -27,8 +27,10 @@ const FRAME_TERMINATOR_LENGTH: usize = 1;
 const SOCKET_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
 const POST_RECONNECT_SETTLE_DURATION: Duration = Duration::from_millis(75);
 const MACSPLOIT_DETECTION_PATH: &str = "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
-const OPIUMWARE_DETECTION_PATH: &str =
-    "/Applications/Roblox.app/Contents/Resources/libOpiumware.dylib";
+const OPIUMWARE_DETECTION_PATHS: [&str; 2] = [
+    "/Applications/Roblox.app/Contents/Resources/libOpiumware.dylib",
+    "/Applications/Roblox.app/Contents/Resources/libOpiumwareNative.dylib",
+];
 const MACSPLOIT_AVAILABLE_PORTS: [u16; 10] =
     [5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562];
 const OPIUMWARE_AVAILABLE_PORTS: [u16; 6] = [8392, 8393, 8394, 8395, 8396, 8397];
@@ -576,19 +578,18 @@ fn format_attach_error(error: std::io::Error) -> anyhow::Error {
 }
 
 fn detect_executor_kind() -> ExecutorKind {
-    detect_executor_kind_at(
-        Path::new(MACSPLOIT_DETECTION_PATH),
-        Path::new(OPIUMWARE_DETECTION_PATH),
-    )
+    let opiumware_dylib_paths = OPIUMWARE_DETECTION_PATHS.map(Path::new);
+
+    detect_executor_kind_at(Path::new(MACSPLOIT_DETECTION_PATH), &opiumware_dylib_paths)
 }
 
 fn detect_executor_kind_at(
     macsploit_dylib_path: &Path,
-    opiumware_dylib_path: &Path,
+    opiumware_dylib_paths: &[&Path],
 ) -> ExecutorKind {
     if macsploit_dylib_path.exists() {
         ExecutorKind::Macsploit
-    } else if opiumware_dylib_path.exists() {
+    } else if opiumware_dylib_paths.iter().any(|path| path.exists()) {
         ExecutorKind::Opiumware
     } else {
         ExecutorKind::Unsupported
@@ -856,7 +857,7 @@ mod tests {
         fs::write(&dylib_path, "present").expect("temp dylib should be created");
 
         assert_eq!(
-            detect_executor_kind_at(&dylib_path, &opiumware_path),
+            detect_executor_kind_at(&dylib_path, &[opiumware_path.as_path()]),
             ExecutorKind::Macsploit
         );
 
@@ -870,11 +871,31 @@ mod tests {
         fs::write(&opiumware_path, "present").expect("temp Opiumware dylib should be created");
 
         assert_eq!(
-            detect_executor_kind_at(&dylib_path, &opiumware_path),
+            detect_executor_kind_at(&dylib_path, &[opiumware_path.as_path()]),
             ExecutorKind::Opiumware
         );
 
         fs::remove_file(opiumware_path).expect("temp Opiumware dylib should be removed");
+    }
+
+    #[test]
+    fn detect_executor_kind_detects_opiumware_native_dylib() {
+        let dylib_path = create_temp_path("missing-macsploit-dylib");
+        let opiumware_path = create_temp_path("missing-opiumware-dylib");
+        let opiumware_native_path = create_temp_path("opiumware-native-dylib");
+        fs::write(&opiumware_native_path, "present")
+            .expect("temp native Opiumware dylib should be created");
+
+        assert_eq!(
+            detect_executor_kind_at(
+                &dylib_path,
+                &[opiumware_path.as_path(), opiumware_native_path.as_path()],
+            ),
+            ExecutorKind::Opiumware
+        );
+
+        fs::remove_file(opiumware_native_path)
+            .expect("temp native Opiumware dylib should be removed");
     }
 
     #[test]
@@ -883,7 +904,7 @@ mod tests {
         let opiumware_path = create_temp_path("missing-opiumware-dylib");
 
         assert_eq!(
-            detect_executor_kind_at(&dylib_path, &opiumware_path),
+            detect_executor_kind_at(&dylib_path, &[opiumware_path.as_path()]),
             ExecutorKind::Unsupported
         );
     }
