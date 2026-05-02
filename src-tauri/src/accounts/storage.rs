@@ -178,31 +178,40 @@ pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
         &executor_port_pool,
         running_processes.as_slice(),
     )?;
-    let reserved_port = reserve_free_executor_port(&manifest, &executor_port_pool)?;
     let existing_pids = running_processes
         .iter()
         .map(|process| process.pid)
         .collect::<HashSet<_>>();
+    let has_supported_executor = executor_port_pool.executor_kind != ExecutorKind::Unsupported;
+    let reserved_port = if has_supported_executor {
+        Some(reserve_free_executor_port(&manifest, &executor_port_pool)?)
+    } else {
+        None
+    };
 
     let launched_pid = launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
 
     let launched_process = wait_for_new_roblox_process(&existing_pids, Some(launched_pid))?;
-    let mut detected_processes = running_processes.clone();
-    detected_processes.push(launched_process.clone());
-    let inferred_binding = infer_saved_account_binding_for_new_processes(
-        &accounts_root,
-        &manifest,
-        detected_processes.as_slice(),
-    );
-    upsert_binding(
-        &mut manifest.roblox_bindings,
-        launched_process,
-        reserved_port,
-        inferred_binding.map(|binding| binding.account_id),
-    );
+    if let Some(port) = reserved_port {
+        let mut detected_processes = running_processes.clone();
+        detected_processes.push(launched_process.clone());
+        let inferred_binding = infer_saved_account_binding_for_new_processes(
+            &accounts_root,
+            &manifest,
+            detected_processes.as_slice(),
+        );
+        upsert_binding(
+            &mut manifest.roblox_bindings,
+            launched_process,
+            port,
+            inferred_binding.map(|binding| binding.account_id),
+        );
+    }
 
     write_accounts_manifest(&accounts_root, &manifest)?;
-    let _ = executor::select_current_executor_port(app, reserved_port)?;
+    if let Some(port) = reserved_port {
+        let _ = executor::select_current_executor_port(app, port)?;
+    }
 
     Ok(())
 }
@@ -2030,8 +2039,7 @@ mod tests {
     }
 
     #[test]
-    fn live_cookie_inference_can_bind_the_same_saved_account_to_multiple_processes(
-    ) -> Result<()> {
+    fn live_cookie_inference_can_bind_the_same_saved_account_to_multiple_processes() -> Result<()> {
         let accounts_dir = TestAccountsDir::new("infer-live-cookie-repeat");
         let account = upsert_account_at(
             accounts_dir.path(),
