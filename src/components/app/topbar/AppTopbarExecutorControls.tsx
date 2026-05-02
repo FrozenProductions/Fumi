@@ -146,7 +146,7 @@ export function AppTopbarExecutorControls({
                     </button>
                 </AppTooltip>
 
-<AppTooltip content="Select executor port" side="bottom">
+                <AppTooltip content="Select executor port" side="bottom">
                     <button
                         type="button"
                         onClick={() =>
