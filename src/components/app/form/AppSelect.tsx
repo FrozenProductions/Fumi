@@ -16,7 +16,7 @@ import type { AppSelectProps } from "./appForm.type";
  * @param props.onChange - Called when selection changes
  * @returns A React component
  */
-export function AppSelect<TValue extends string>({
+export function AppSelect<TValue extends string | number>({
     value,
     options,
     onChange,

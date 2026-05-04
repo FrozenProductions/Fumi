@@ -2,12 +2,16 @@ import type { ReactElement } from "react";
 import {
     APP_EDITOR_FONT_SIZE_MAX,
     APP_EDITOR_FONT_SIZE_MIN,
+    APP_EDITOR_TAB_SIZE_OPTIONS,
     APP_INTELLISENSE_PRIORITY_OPTIONS,
     APP_INTELLISENSE_WIDTH_OPTIONS,
     APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS,
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
-import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
+import type {
+    AppEditorTabSize,
+    AppMiddleClickTabAction,
+} from "../../../lib/app/app.type";
 import { AppInput } from "../form/AppInput";
 import { AppSelect } from "../form/AppSelect";
 import { AppSettingsToggle } from "../form/AppSettingsToggle";
@@ -23,6 +27,10 @@ export function AppSettingsEditorSection(): ReactElement {
     const setEditorWordWrapEnabled = useAppStore(
         (state) => state.setEditorWordWrapEnabled,
     );
+    const setEditorTabsToSpacesEnabled = useAppStore(
+        (state) => state.setEditorTabsToSpacesEnabled,
+    );
+    const setEditorTabSize = useAppStore((state) => state.setEditorTabSize);
     const setEditorIntellisenseEnabled = useAppStore(
         (state) => state.setEditorIntellisenseEnabled,
     );
@@ -49,6 +57,14 @@ export function AppSettingsEditorSection(): ReactElement {
 
     const handleWordWrapToggle = (): void => {
         setEditorWordWrapEnabled(!editorSettings.isWordWrapEnabled);
+    };
+
+    const handleTabsToSpacesToggle = (): void => {
+        setEditorTabsToSpacesEnabled(!editorSettings.isTabsToSpacesEnabled);
+    };
+
+    const handleTabSizeChange = (value: AppEditorTabSize): void => {
+        setEditorTabSize(value);
     };
 
     const handleIntellisensePriorityChange = (
@@ -115,6 +131,33 @@ export function AppSettingsEditorSection(): ReactElement {
                 isEnabled={editorSettings.isWordWrapEnabled}
                 onChange={handleWordWrapToggle}
             />
+            <AppSettingsToggle
+                label="Transform tabs into spaces"
+                description="Insert spaces when pressing Tab instead of writing tab characters."
+                isEnabled={editorSettings.isTabsToSpacesEnabled}
+                onChange={handleTabsToSpacesToggle}
+            >
+                <div className="flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 px-3.5 py-3.5">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                            <span className="mt-px size-1.5 shrink-0 rounded-full bg-fumi-500" />
+                            <p className="text-[11px] font-semibold tracking-[0.01em] text-fumi-800">
+                                Tab Size
+                            </p>
+                        </div>
+                        <p className="mt-1.5 text-xs leading-[1.55] text-fumi-400">
+                            Choose how many spaces the editor inserts for each
+                            tab stop.
+                        </p>
+                    </div>
+                    <AppSelect
+                        value={editorSettings.tabSize}
+                        options={APP_EDITOR_TAB_SIZE_OPTIONS}
+                        onChange={handleTabSizeChange}
+                        className="mt-0.5 shrink-0"
+                    />
+                </div>
+            </AppSettingsToggle>
             <AppSettingsToggle
                 label="IntelliSense"
                 description="Show Luau completion suggestions while typing."

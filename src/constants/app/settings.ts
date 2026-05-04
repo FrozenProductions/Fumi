@@ -1,5 +1,6 @@
 import type {
     AppEditorSettings,
+    AppEditorTabSize,
     AppMiddleClickTabAction,
     AppSettingsSection,
     AppTheme,
@@ -15,6 +16,7 @@ import {
 } from "../window/window";
 import { WORKSPACE_OUTLINE_PANEL_DEFAULT_WIDTH } from "../workspace/outline";
 import type {
+    AppEditorTabSizeOption,
     AppIntellisensePriorityOption,
     AppIntellisenseWidthOption,
     AppMiddleClickTabActionOption,
@@ -52,6 +54,13 @@ export const APP_INTELLISENSE_WIDTH_OPTIONS = [
     { value: "large", label: "Large" },
 ] as const satisfies AppIntellisenseWidthOption[];
 
+export const APP_EDITOR_TAB_SIZE_OPTIONS = [
+    { value: 2, label: "2 spaces" },
+    { value: 4, label: "4 spaces" },
+    { value: 6, label: "6 spaces" },
+    { value: 8, label: "8 spaces" },
+] as const satisfies AppEditorTabSizeOption[];
+
 export const APP_MIDDLE_CLICK_TAB_ACTION_OPTIONS = [
     { value: "archive", label: "Archive" },
     { value: "delete", label: "Delete" },
@@ -63,6 +72,7 @@ export const APP_SIDEBAR_POSITION_OPTIONS = [
 ] as const satisfies AppSidebarPositionOption[];
 
 export const DEFAULT_APP_THEME = "system" satisfies AppTheme;
+export const DEFAULT_APP_EDITOR_TAB_SIZE = 4 satisfies AppEditorTabSize;
 export const DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION =
     "archive" satisfies AppMiddleClickTabAction;
 export const DEFAULT_APP_SIDEBAR_POSITION = "left" satisfies AppSidebarPosition;
@@ -71,6 +81,8 @@ export const DEFAULT_APP_STREAMER_MODE_ENABLED = false;
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,
     isWordWrapEnabled: false,
+    isTabsToSpacesEnabled: true,
+    tabSize: DEFAULT_APP_EDITOR_TAB_SIZE,
     isIntellisenseEnabled: true,
     intellisensePriority: "balanced",
     intellisenseWidth: "large",

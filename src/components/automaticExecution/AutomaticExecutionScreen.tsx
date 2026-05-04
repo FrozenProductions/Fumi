@@ -33,6 +33,10 @@ export function AutomaticExecutionScreen({
     const isWordWrapEnabled = useAppStore(
         (state) => state.editorSettings.isWordWrapEnabled,
     );
+    const isTabsToSpacesEnabled = useAppStore(
+        (state) => state.editorSettings.isTabsToSpacesEnabled,
+    );
+    const tabSize = useAppStore((state) => state.editorSettings.tabSize);
     const {
         activeScript,
         activeScriptId,
@@ -276,6 +280,8 @@ export function AutomaticExecutionScreen({
                         appTheme={appTheme}
                         editorFontSize={editorFontSize}
                         isWordWrapEnabled={isWordWrapEnabled}
+                        isTabsToSpacesEnabled={isTabsToSpacesEnabled}
+                        tabSize={tabSize}
                         script={activeScript}
                         onCreateScript={handleCreateScript}
                         onChange={updateActiveScriptContent}

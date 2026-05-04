@@ -1,4 +1,5 @@
 import type {
+    AppEditorTabSize,
     AppIntellisensePriority,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
@@ -24,6 +25,11 @@ export type AppIntellisensePriorityOption = {
 
 export type AppIntellisenseWidthOption = {
     value: AppIntellisenseWidth;
+    label: string;
+};
+
+export type AppEditorTabSizeOption = {
+    value: AppEditorTabSize;
     label: string;
 };
 

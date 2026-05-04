@@ -4,14 +4,19 @@ import type {
     PointerEvent as ReactPointerEvent,
     RefObject,
 } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../../constants/workspace/editor";
+import type { AppEditorTabSize } from "../../../lib/app/app.type";
 import type { LoadedAceRuntime } from "../../../lib/luau/ace/loadAceRuntime.type";
-import type { AceChangeDelta } from "../../../lib/workspace/codeCompletion/ace.type";
+import type {
+    AceChangeDelta,
+    AceEditorInstance,
+} from "../../../lib/workspace/codeCompletion/ace.type";
+import { applyAceEditorIndentSettings } from "../../../lib/workspace/editor/editor";
 import type { AceEditorComponent } from "../../../lib/workspace/editor/editor.type";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
 import { WorkspaceActionsButton } from "../actions/WorkspaceActionsButton";
@@ -35,10 +40,12 @@ type WorkspaceAcePaneProps = {
     createHandleScroll: WorkspaceEditorCompletionProps["createHandleScroll"];
     editorFontSize: number;
     isWordWrapEnabled: boolean;
+    isTabsToSpacesEnabled: boolean;
     isActiveTab: boolean;
     isVisible: boolean;
     onActiveTabLuauChange: WorkspaceEditorOutlineProps["onActiveTabLuauChange"];
     tab: WorkspaceEditorPaneProps["tabs"][number];
+    tabSize: AppEditorTabSize;
 };
 
 type WorkspaceEditorSurfaceProps = {
@@ -89,12 +96,32 @@ function WorkspaceAcePane({
     createHandleScroll,
     editorFontSize,
     isWordWrapEnabled,
+    isTabsToSpacesEnabled,
     isActiveTab,
     isVisible,
     onActiveTabLuauChange,
     tab,
+    tabSize,
 }: WorkspaceAcePaneProps): ReactElement {
+    const editorRef = useRef<AceEditorInstance | null>(null);
     const editorChangeHandler = createHandleEditorChange(tab.id);
+    const editorOptions = {
+        ...WORKSPACE_EDITOR_OPTIONS,
+        useSoftTabs: isTabsToSpacesEnabled,
+    } as const;
+
+    useEffect(() => {
+        const editor = editorRef.current;
+
+        if (!editor) {
+            return;
+        }
+
+        applyAceEditorIndentSettings(editor, {
+            isTabsToSpacesEnabled,
+            tabSize,
+        });
+    }, [isTabsToSpacesEnabled, tabSize]);
 
     useEffect(
         () => createHandleEditorUnmount(tab.id),
@@ -111,7 +138,14 @@ function WorkspaceAcePane({
                 width="100%"
                 height="100%"
                 value={tab.content}
-                onLoad={createHandleEditorLoad(tab.id)}
+                onLoad={(editor: AceEditorInstance) => {
+                    editorRef.current = editor;
+                    applyAceEditorIndentSettings(editor, {
+                        isTabsToSpacesEnabled,
+                        tabSize,
+                    });
+                    createHandleEditorLoad(tab.id)(editor);
+                }}
                 onChange={(value: string, delta?: AceChangeDelta) => {
                     if (isActiveTab) {
                         onActiveTabLuauChange(normalizeOutlineChange(delta));
@@ -127,9 +161,9 @@ function WorkspaceAcePane({
                 showGutter
                 showPrintMargin={false}
                 highlightActiveLine
-                tabSize={4}
+                tabSize={tabSize}
                 wrapEnabled={isWordWrapEnabled}
-                setOptions={WORKSPACE_EDITOR_OPTIONS}
+                setOptions={editorOptions}
                 editorProps={WORKSPACE_EDITOR_PROPS}
                 style={WORKSPACE_EDITOR_STYLE}
             />
@@ -186,7 +220,9 @@ export function WorkspaceEditorSurface({
         appTheme,
         editorFontSize,
         isWordWrapEnabled,
+        isTabsToSpacesEnabled,
         searchPanel,
+        tabSize,
         workspaceActionsButton,
     } = pane;
     const { onFocusPane } = splitViewState;
@@ -297,12 +333,16 @@ export function WorkspaceEditorSurface({
                                       createHandleScroll={createHandleScroll}
                                       editorFontSize={editorFontSize}
                                       isWordWrapEnabled={isWordWrapEnabled}
+                                      isTabsToSpacesEnabled={
+                                          isTabsToSpacesEnabled
+                                      }
                                       isActiveTab={tab.id === activeTabId}
                                       isVisible={isVisible}
                                       onActiveTabLuauChange={
                                           onActiveTabLuauChange
                                       }
                                       tab={tab}
+                                      tabSize={tabSize}
                                   />
                               </div>
                           );

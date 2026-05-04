@@ -130,6 +130,8 @@ describe("useAppStore editorSettings", () => {
             editorSettings: {
                 ...state.editorSettings,
                 isWordWrapEnabled: false,
+                isTabsToSpacesEnabled: true,
+                tabSize: 4,
                 isOutlinePanelVisible: true,
                 outlinePanelWidth: 256,
             },
@@ -149,6 +151,33 @@ describe("useAppStore editorSettings", () => {
         expect(mergedState.editorSettings.isWordWrapEnabled).toBe(false);
     });
 
+    it("defaults tab settings when old persisted state lacks them", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                editorSettings: {
+                    fontSize: 16,
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.editorSettings.isTabsToSpacesEnabled).toBe(true);
+        expect(mergedState.editorSettings.tabSize).toBe(4);
+    });
+
+    it("normalizes invalid persisted tab size", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                editorSettings: {
+                    tabSize: 3,
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.editorSettings.tabSize).toBe(4);
+    });
+
     it("stores word wrap changes", () => {
         useAppStore.getState().setEditorWordWrapEnabled(true);
 
@@ -160,6 +189,25 @@ describe("useAppStore editorSettings", () => {
             {
                 editorSettings: {
                     isWordWrapEnabled: true,
+                },
+            },
+        );
+    });
+
+    it("stores tab settings", () => {
+        useAppStore.getState().setEditorTabsToSpacesEnabled(false);
+        useAppStore.getState().setEditorTabSize(2);
+
+        expect(
+            useAppStore.getState().editorSettings.isTabsToSpacesEnabled,
+        ).toBe(false);
+        expect(useAppStore.getState().editorSettings.tabSize).toBe(2);
+
+        expect(getPersistedAppStoreState(useAppStore.getState())).toMatchObject(
+            {
+                editorSettings: {
+                    isTabsToSpacesEnabled: false,
+                    tabSize: 2,
                 },
             },
         );

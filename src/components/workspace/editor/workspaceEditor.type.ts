@@ -1,4 +1,4 @@
-import type { AppTheme } from "../../../lib/app/app.type";
+import type { AppEditorTabSize, AppTheme } from "../../../lib/app/app.type";
 import type { AppSidebarPosition } from "../../../lib/app/sidebar.type";
 import type {
     LuauCompletionItem,
@@ -28,6 +28,8 @@ export type WorkspaceEditorPaneProps = {
     appTheme: AppTheme;
     editorFontSize: number;
     isWordWrapEnabled: boolean;
+    isTabsToSpacesEnabled: boolean;
+    tabSize: AppEditorTabSize;
     tabs: WorkspaceTab[];
     searchPanel: WorkspaceEditorSearchController;
     workspaceActionsButton: WorkspaceActionsButtonProps;

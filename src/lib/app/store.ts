@@ -1,4 +1,5 @@
 import {
+    APP_EDITOR_TAB_SIZES,
     APP_INTELLISENSE_WIDTHS,
     APP_MIDDLE_CLICK_TAB_ACTIONS,
     APP_SIDEBAR_POSITIONS,
@@ -9,6 +10,7 @@ import {
     APP_ZOOM_MAX,
     APP_ZOOM_MIN,
     DEFAULT_APP_EDITOR_SETTINGS,
+    DEFAULT_APP_EDITOR_TAB_SIZE,
     DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
     DEFAULT_APP_SIDEBAR_POSITION,
 } from "../../constants/app/settings";
@@ -18,6 +20,7 @@ import {
     WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
 } from "../../constants/workspace/outline";
 import type {
+    AppEditorTabSize,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
     AppTheme,
@@ -25,6 +28,7 @@ import type {
 import type { AppSidebarItem, AppSidebarPosition } from "./sidebar.type";
 
 export {
+    APP_EDITOR_TAB_SIZES,
     APP_INTELLISENSE_WIDTHS,
     APP_MIDDLE_CLICK_TAB_ACTIONS,
     APP_SIDEBAR_POSITIONS,
@@ -81,6 +85,16 @@ export function normalizeAppSidebarPosition(
     value: unknown,
 ): AppSidebarPosition {
     return isAppSidebarPosition(value) ? value : DEFAULT_APP_SIDEBAR_POSITION;
+}
+
+/**
+ * Normalizes an editor tab size value, falling back to the default if invalid.
+ */
+export function normalizeAppEditorTabSize(value: unknown): AppEditorTabSize {
+    return typeof value === "number" &&
+        APP_EDITOR_TAB_SIZES.includes(value as AppEditorTabSize)
+        ? (value as AppEditorTabSize)
+        : DEFAULT_APP_EDITOR_TAB_SIZE;
 }
 
 /**

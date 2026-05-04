@@ -1,6 +1,7 @@
 import type {
     AppAccountPrivacySettings,
     AppEditorSettings,
+    AppEditorTabSize,
     AppIntellisensePriority,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
@@ -65,6 +66,8 @@ export type AppStoreActions = {
     setStreamerModeEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
     setEditorWordWrapEnabled: (isEnabled: boolean) => void;
+    setEditorTabsToSpacesEnabled: (isEnabled: boolean) => void;
+    setEditorTabSize: (tabSize: AppEditorTabSize) => void;
     setEditorIntellisenseEnabled: (isEnabled: boolean) => void;
     setEditorIntellisensePriority: (priority: AppIntellisensePriority) => void;
     setEditorIntellisenseWidth: (width: AppIntellisenseWidth) => void;

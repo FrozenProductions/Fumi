@@ -11,7 +11,10 @@ import {
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { createMaskStyle } from "../../lib/shared/mask";
-import { getReactAceComponent } from "../../lib/workspace/editor/editor";
+import {
+    applyAceEditorIndentSettings,
+    getReactAceComponent,
+} from "../../lib/workspace/editor/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
 import { AppIcon } from "../app/common/AppIcon";
 import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.type";
@@ -33,6 +36,8 @@ export function AutomaticExecutionEditor({
     appTheme,
     editorFontSize,
     isWordWrapEnabled,
+    isTabsToSpacesEnabled,
+    tabSize,
     script,
     onCreateScript,
     onChange,
@@ -43,6 +48,23 @@ export function AutomaticExecutionEditor({
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
     const editorRef = useRef<Ace.Editor | null>(null);
     const appliedScriptIdRef = useRef<string | null>(null);
+    const editorOptions = {
+        ...WORKSPACE_EDITOR_OPTIONS,
+        useSoftTabs: isTabsToSpacesEnabled,
+    } as const;
+
+    useEffect(() => {
+        const editor = editorRef.current;
+
+        if (!editor) {
+            return;
+        }
+
+        applyAceEditorIndentSettings(editor, {
+            isTabsToSpacesEnabled,
+            tabSize,
+        });
+    }, [isTabsToSpacesEnabled, tabSize]);
 
     useEffect(() => {
         let isMounted = true;
@@ -145,15 +167,19 @@ export function AutomaticExecutionEditor({
                 showGutter
                 showPrintMargin={false}
                 highlightActiveLine
-                tabSize={4}
+                tabSize={tabSize}
                 wrapEnabled={isWordWrapEnabled}
-                setOptions={WORKSPACE_EDITOR_OPTIONS}
+                setOptions={editorOptions}
                 style={WORKSPACE_EDITOR_STYLE}
                 onChange={(value: string) => {
                     onChange(value);
                 }}
                 onLoad={(editor: Ace.Editor) => {
                     editorRef.current = editor;
+                    applyAceEditorIndentSettings(editor, {
+                        isTabsToSpacesEnabled,
+                        tabSize,
+                    });
                     appliedScriptIdRef.current = script.id;
                     editor.selection.moveCursorTo(
                         script.cursor.line,

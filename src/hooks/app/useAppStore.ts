@@ -19,6 +19,7 @@ import {
     isAppSidebarItem,
     isAppSidebarPosition,
     isAppTheme,
+    normalizeAppEditorTabSize,
     normalizeAppIntellisenseWidth,
     normalizeAppMiddleClickTabAction,
     normalizeAppOutlinePanelWidth,
@@ -60,6 +61,14 @@ export function mergeAppStoreState(
         typeof persistedAppState.editorSettings?.isWordWrapEnabled === "boolean"
             ? persistedAppState.editorSettings.isWordWrapEnabled
             : currentState.editorSettings.isWordWrapEnabled;
+    const isTabsToSpacesEnabled =
+        typeof persistedAppState.editorSettings?.isTabsToSpacesEnabled ===
+        "boolean"
+            ? persistedAppState.editorSettings.isTabsToSpacesEnabled
+            : currentState.editorSettings.isTabsToSpacesEnabled;
+    const tabSize = normalizeAppEditorTabSize(
+        persistedAppState.editorSettings?.tabSize,
+    );
     const outlinePanelWidth = normalizeAppOutlinePanelWidth(
         persistedAppState.editorSettings?.outlinePanelWidth,
     );
@@ -93,6 +102,8 @@ export function mergeAppStoreState(
             ...currentState.editorSettings,
             ...persistedAppState.editorSettings,
             isWordWrapEnabled,
+            isTabsToSpacesEnabled,
+            tabSize,
             intellisenseWidth,
             outlinePanelWidth,
         },
@@ -334,6 +345,22 @@ export const useAppStore = create<AppStore>()(
                     editorSettings: {
                         ...state.editorSettings,
                         isWordWrapEnabled: isEnabled,
+                    },
+                }));
+            },
+            setEditorTabsToSpacesEnabled: (isEnabled) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        isTabsToSpacesEnabled: isEnabled,
+                    },
+                }));
+            },
+            setEditorTabSize: (tabSize) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        tabSize: normalizeAppEditorTabSize(tabSize),
                     },
                 }));
             },

@@ -157,6 +157,8 @@ export function WorkspaceEditorRegion({
         appTheme,
         editorFontSize: editorSettings.fontSize,
         isWordWrapEnabled: editorSettings.isWordWrapEnabled,
+        isTabsToSpacesEnabled: editorSettings.isTabsToSpacesEnabled,
+        tabSize: editorSettings.tabSize,
         tabs: resolvedTabs,
         searchPanel,
         workspaceActionsButton,
