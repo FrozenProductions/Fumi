@@ -9,6 +9,7 @@ use super::models::{
 const CURRENT_FILE_DOC_SOURCE: &str = "Current File";
 
 type SharedScope = Rc<RefCell<ScopeFrame>>;
+type ScopeInitializer<'content> = Box<dyn FnOnce(&SharedScope, &mut LuauSymbolScanner<'content>)>;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum TokenKind {
@@ -44,6 +45,21 @@ struct PendingLuauFileSymbol {
     owner_function: Option<SharedScope>,
     scope: SharedScope,
     visible_start: usize,
+    doc_summary: String,
+    signature: Option<String>,
+    insert_text: Option<String>,
+}
+
+#[derive(Debug)]
+struct LuauSymbolDraft {
+    label: String,
+    kind: LuauSymbolKind,
+    detail: String,
+    declaration: TokenBoundary,
+    is_lexical: bool,
+    owner_function: Option<SharedScope>,
+    scope: SharedScope,
+    visible_start: Option<usize>,
     doc_summary: String,
     signature: Option<String>,
     insert_text: Option<String>,
@@ -151,32 +167,19 @@ impl<'content> LuauSymbolScanner<'content> {
         }
     }
 
-    fn add_symbol(
-        &mut self,
-        declaration: TokenBoundary,
-        detail: &str,
-        doc_summary: &str,
-        is_lexical: bool,
-        kind: LuauSymbolKind,
-        label: impl Into<String>,
-        owner_function: Option<SharedScope>,
-        scope: SharedScope,
-        signature: Option<String>,
-        insert_text: Option<String>,
-        visible_start: Option<usize>,
-    ) {
+    fn add_symbol(&mut self, draft: LuauSymbolDraft) {
         self.pending_symbols.push(PendingLuauFileSymbol {
-            label: label.into(),
-            kind,
-            detail: detail.to_string(),
-            declaration,
-            is_lexical,
-            owner_function,
-            scope,
-            visible_start: visible_start.unwrap_or(declaration.end),
-            doc_summary: doc_summary.to_string(),
-            signature,
-            insert_text,
+            label: draft.label,
+            kind: draft.kind,
+            detail: draft.detail,
+            declaration: draft.declaration,
+            is_lexical: draft.is_lexical,
+            owner_function: draft.owner_function,
+            scope: draft.scope,
+            visible_start: draft.visible_start.unwrap_or(draft.declaration.end),
+            doc_summary: draft.doc_summary,
+            signature: draft.signature,
+            insert_text: draft.insert_text,
         });
     }
 
@@ -389,22 +392,22 @@ impl<'content> LuauSymbolScanner<'content> {
                     candidate.start == equals_token.start && candidate.end == equals_token.end
                 }) {
                     self.index = equals_index + 1;
-                    self.add_symbol(
-                        TokenBoundary {
+                    self.add_symbol(LuauSymbolDraft {
+                        declaration: TokenBoundary {
                             start: identifier_token.start,
                             end: identifier_token.end,
                         },
-                        "global variable",
-                        "Global variable assigned in the current file.",
-                        false,
-                        LuauSymbolKind::Constant,
-                        identifier_token.value,
-                        None,
-                        self.root_scope.clone(),
-                        None,
-                        None,
-                        Some(identifier_token.end),
-                    );
+                        detail: "global variable".to_string(),
+                        doc_summary: "Global variable assigned in the current file.".to_string(),
+                        is_lexical: false,
+                        kind: LuauSymbolKind::Constant,
+                        label: identifier_token.value,
+                        owner_function: None,
+                        scope: self.root_scope.clone(),
+                        signature: None,
+                        insert_text: None,
+                        visible_start: Some(identifier_token.end),
+                    });
                 }
             }
         }
@@ -508,19 +511,19 @@ impl<'content> LuauSymbolScanner<'content> {
                 }
 
                 for binding in &bindings {
-                    scanner.add_symbol(
-                        binding.declaration,
-                        "loop variable",
-                        "Loop variable declared in the current file.",
-                        true,
-                        LuauSymbolKind::Constant,
-                        binding.label.clone(),
-                        current_function_scope.clone(),
-                        scope.clone(),
-                        None,
-                        None,
-                        None,
-                    );
+                    scanner.add_symbol(LuauSymbolDraft {
+                        declaration: binding.declaration,
+                        detail: "loop variable".to_string(),
+                        doc_summary: "Loop variable declared in the current file.".to_string(),
+                        is_lexical: true,
+                        kind: LuauSymbolKind::Constant,
+                        label: binding.label.clone(),
+                        owner_function: current_function_scope.clone(),
+                        scope: scope.clone(),
+                        signature: None,
+                        insert_text: None,
+                        visible_start: None,
+                    });
                 }
             })),
             None,
@@ -612,40 +615,41 @@ impl<'content> LuauSymbolScanner<'content> {
                 }
 
                 for parameter in &parameter_tokens {
-                    scanner.add_symbol(
-                        parameter.declaration,
-                        &parameter.detail,
-                        &parameter.summary,
-                        true,
-                        parameter.kind,
-                        parameter.label.clone(),
-                        Some(function_scope.clone()),
-                        scope.clone(),
-                        None,
-                        None,
-                        None,
-                    );
+                    scanner.add_symbol(LuauSymbolDraft {
+                        declaration: parameter.declaration,
+                        detail: parameter.detail.clone(),
+                        doc_summary: parameter.summary.clone(),
+                        is_lexical: true,
+                        kind: parameter.kind,
+                        label: parameter.label.clone(),
+                        owner_function: Some(function_scope.clone()),
+                        scope: scope.clone(),
+                        signature: None,
+                        insert_text: None,
+                        visible_start: None,
+                    });
                 }
 
                 if uses_method_syntax {
                     let scope_start = scope.borrow().start;
 
-                    scanner.add_symbol(
-                        TokenBoundary {
+                    scanner.add_symbol(LuauSymbolDraft {
+                        declaration: TokenBoundary {
                             start: declaration_start,
                             end: declaration_start,
                         },
-                        "parameter",
-                        "Implicit method receiver parameter in the current file.",
-                        true,
-                        LuauSymbolKind::Constant,
-                        "self",
-                        Some(function_scope.clone()),
-                        scope.clone(),
-                        None,
-                        None,
-                        Some(scope_start),
-                    );
+                        detail: "parameter".to_string(),
+                        doc_summary: "Implicit method receiver parameter in the current file."
+                            .to_string(),
+                        is_lexical: true,
+                        kind: LuauSymbolKind::Constant,
+                        label: "self".to_string(),
+                        owner_function: Some(function_scope.clone()),
+                        scope: scope.clone(),
+                        signature: None,
+                        insert_text: None,
+                        visible_start: Some(scope_start),
+                    });
                 }
             })),
             Some(function_scope_for_block),
@@ -662,40 +666,42 @@ impl<'content> LuauSymbolScanner<'content> {
         let signature =
             normalize_whitespace(&self.content[declaration_start_byte..function_scope_start_byte]);
 
-        self.add_symbol(
-            TokenBoundary {
+        self.add_symbol(LuauSymbolDraft {
+            declaration: TokenBoundary {
                 start: declaration_start,
                 end: declaration_end,
             },
-            if function_kind == LuauSymbolKind::Namespace {
+            detail: if function_kind == LuauSymbolKind::Namespace {
                 "function namespace"
             } else if is_local {
                 "local function"
             } else {
                 "function"
-            },
-            if function_kind == LuauSymbolKind::Namespace {
+            }
+            .to_string(),
+            doc_summary: if function_kind == LuauSymbolKind::Namespace {
                 "Function namespace declared in the current file."
             } else {
                 "Function declared in the current file."
-            },
-            is_local,
-            function_kind,
-            function_label,
-            if is_local {
+            }
+            .to_string(),
+            is_lexical: is_local,
+            kind: function_kind,
+            label: function_label,
+            owner_function: if is_local {
                 current_function_scope
             } else {
                 None
             },
-            if is_local {
+            scope: if is_local {
                 parent_scope
             } else {
                 self.root_scope.clone()
             },
-            (!signature.is_empty()).then_some(signature),
-            None,
-            Some(declaration_start),
-        );
+            signature: (!signature.is_empty()).then_some(signature),
+            insert_text: None,
+            visible_start: Some(declaration_start),
+        });
     }
 
     fn parse_function_parameters(&mut self) -> Vec<ParsedParameter> {
@@ -820,19 +826,19 @@ impl<'content> LuauSymbolScanner<'content> {
         self.skip_simple_statement();
 
         for binding in bindings {
-            self.add_symbol(
-                binding.declaration,
-                "local variable",
-                "Local variable declared in the current file.",
-                true,
-                LuauSymbolKind::Constant,
-                binding.label,
-                current_function_scope.clone(),
-                scope.clone(),
-                None,
-                None,
-                Some(visible_start),
-            );
+            self.add_symbol(LuauSymbolDraft {
+                declaration: binding.declaration,
+                detail: "local variable".to_string(),
+                doc_summary: "Local variable declared in the current file.".to_string(),
+                is_lexical: true,
+                kind: LuauSymbolKind::Constant,
+                label: binding.label,
+                owner_function: current_function_scope.clone(),
+                scope: scope.clone(),
+                signature: None,
+                insert_text: None,
+                visible_start: Some(visible_start),
+            });
         }
     }
 
@@ -870,7 +876,7 @@ impl<'content> LuauSymbolScanner<'content> {
         &mut self,
         end_keywords: HashSet<&str>,
         current_function_scope: Option<SharedScope>,
-        initialize_scope: Option<Box<dyn FnOnce(&SharedScope, &mut Self)>>,
+        initialize_scope: Option<ScopeInitializer<'content>>,
         existing_scope: Option<SharedScope>,
     ) {
         let child_scope = existing_scope.unwrap_or_else(|| {
@@ -1321,11 +1327,12 @@ fn is_standalone_comment(content: &str, comment_start_byte: usize) -> bool {
 }
 
 fn normalize_outline_comment_line(value: &str) -> String {
-    value.trim_start_matches(|character: char| {
-        character.is_whitespace() || matches!(character, '#' | '*' | '/' | '=' | '-')
-    })
-    .trim()
-    .to_string()
+    value
+        .trim_start_matches(|character: char| {
+            character.is_whitespace() || matches!(character, '#' | '*' | '/' | '=' | '-')
+        })
+        .trim()
+        .to_string()
 }
 
 fn get_outline_comment_metadata(comment_body: &str) -> Option<(String, String, bool)> {
@@ -1337,7 +1344,11 @@ fn get_outline_comment_metadata(comment_body: &str) -> Option<(String, String, b
 
     let summary = cleaned_lines.join(" ").trim().to_string();
 
-    if summary.is_empty() || !summary.chars().any(|character| character.is_ascii_alphanumeric()) {
+    if summary.is_empty()
+        || !summary
+            .chars()
+            .any(|character| character.is_ascii_alphanumeric())
+    {
         return None;
     }
 
@@ -1494,7 +1505,8 @@ fn extract_outline_comment_symbols(
         }
 
         if character == '[' {
-            if let Some((close_delimiter, delimiter_length)) = match_long_bracket(&content[cursor.byte..])
+            if let Some((close_delimiter, delimiter_length)) =
+                match_long_bracket(&content[cursor.byte..])
             {
                 advance_bytes(&mut cursor, delimiter_length);
 
@@ -1613,7 +1625,10 @@ mod tests {
         assert!(!labels.contains(&"fake"));
         assert!(!labels.contains(&"hidden"));
         assert!(!labels.contains(&"buried"));
-        assert_eq!(comment_labels, vec!["local function fake() end", "function buried() end"]);
+        assert_eq!(
+            comment_labels,
+            vec!["local function fake() end", "function buried() end"]
+        );
     }
 
     #[test]

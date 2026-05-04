@@ -135,7 +135,7 @@ impl StoredAccountRecord {
             } else {
                 AccountStatus::Offline
             },
-            bound_port: bound_port,
+            bound_port,
             last_launched_at: self.last_launched_at,
         }
     }

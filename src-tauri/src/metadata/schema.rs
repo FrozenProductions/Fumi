@@ -2,7 +2,7 @@
 
 use std::sync::OnceLock;
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use jsonschema::Validator;
 use serde_json::Value;
 
@@ -12,9 +12,9 @@ struct CompiledSchema {
     validator: Validator,
 }
 
-static WORKSPACE_SCHEMA: OnceLock<CompiledSchema> = OnceLock::new();
-static AUTOMATIC_EXECUTION_SCHEMA: OnceLock<CompiledSchema> = OnceLock::new();
-static ACCOUNTS_SCHEMA: OnceLock<CompiledSchema> = OnceLock::new();
+static WORKSPACE_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
+static AUTOMATIC_EXECUTION_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
+static ACCOUNTS_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
 
 pub(crate) fn validate_instance(kind: MetadataKind, instance: &Value) -> Result<()> {
     let compiled = compiled_schema(kind)?;
@@ -117,31 +117,31 @@ fn compiled_schema(kind: MetadataKind) -> Result<&'static CompiledSchema> {
         MetadataKind::Accounts => &ACCOUNTS_SCHEMA,
     };
 
-    Ok(cell.get_or_init(|| {
-        let text = match kind {
-            MetadataKind::Workspace => {
-                include_str!("../../../src/shared/metadata/schemas/workspace.v5.schema.json")
-            }
-            MetadataKind::AutomaticExecution => {
-                include_str!(
-                    "../../../src/shared/metadata/schemas/automatic-execution.v2.schema.json"
-                )
-            }
-            MetadataKind::Accounts => {
-                include_str!("../../../src/shared/metadata/schemas/accounts.v3.schema.json")
-            }
-        };
+    cell.get_or_init(|| load_compiled_schema(kind).map_err(|error| format!("{error:#}")))
+        .as_ref()
+        .map_err(|message| anyhow!(message.clone()))
+}
 
-        let raw: Value = serde_json::from_str(text)
-            .unwrap_or_else(|error| panic!("failed to parse embedded metadata schema: {error}"));
-        validate_schema_document(&raw)
-            .unwrap_or_else(|error| panic!("embedded metadata schema is invalid: {error:#}"));
-        let validator = jsonschema::validator_for(&raw).unwrap_or_else(|error| {
-            panic!("failed to compile embedded metadata validator: {error:#}")
-        });
+fn load_compiled_schema(kind: MetadataKind) -> Result<CompiledSchema> {
+    let text = match kind {
+        MetadataKind::Workspace => {
+            include_str!("../../../src/shared/metadata/schemas/workspace.v5.schema.json")
+        }
+        MetadataKind::AutomaticExecution => {
+            include_str!("../../../src/shared/metadata/schemas/automatic-execution.v2.schema.json")
+        }
+        MetadataKind::Accounts => {
+            include_str!("../../../src/shared/metadata/schemas/accounts.v3.schema.json")
+        }
+    };
+    let raw: Value = serde_json::from_str(text)
+        .with_context(|| format!("failed to parse embedded {kind} metadata schema"))?;
+    validate_schema_document(&raw)
+        .with_context(|| format!("embedded {kind} metadata schema is invalid"))?;
+    let validator = jsonschema::validator_for(&raw)
+        .with_context(|| format!("failed to compile embedded {kind} metadata validator"))?;
 
-        CompiledSchema { validator }
-    }))
+    Ok(CompiledSchema { validator })
 }
 
 #[cfg(test)]

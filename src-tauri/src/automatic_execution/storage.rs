@@ -710,8 +710,8 @@ pub(super) fn read_automatic_execution_snapshot_at(
     automatic_execution_path: &Path,
     executor_kind: ExecutorKind,
 ) -> Result<AutomaticExecutionSnapshot> {
-    ensure_directory(&automatic_execution_path)?;
-    let metadata = read_automatic_execution_metadata(&automatic_execution_path)?;
+    ensure_directory(automatic_execution_path)?;
+    let metadata = read_automatic_execution_metadata(automatic_execution_path)?;
     let mut scripts = Vec::with_capacity(metadata.scripts.len());
     let mut existing_script_states = Vec::with_capacity(metadata.scripts.len());
 
@@ -744,7 +744,7 @@ pub(super) fn read_automatic_execution_snapshot_at(
     .with_repaired_active_script_id();
 
     if normalized_metadata != metadata {
-        write_automatic_execution_metadata(&automatic_execution_path, &normalized_metadata)?;
+        write_automatic_execution_metadata(automatic_execution_path, &normalized_metadata)?;
     }
 
     Ok(AutomaticExecutionSnapshot {

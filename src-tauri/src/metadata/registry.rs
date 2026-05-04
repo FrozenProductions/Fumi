@@ -85,10 +85,10 @@ pub(crate) fn metadata_schema_id(kind: MetadataKind, version: u8) -> &'static st
 }
 
 pub(crate) fn current_unix_timestamp() -> Result<i64> {
-    Ok(std::time::SystemTime::now()
+    std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .context("system clock is before unix epoch")?
         .as_secs()
         .try_into()
-        .context("timestamp exceeds i64")?)
+        .context("timestamp exceeds i64")
 }

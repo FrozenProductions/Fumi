@@ -1604,12 +1604,12 @@ pub(super) fn normalize_cookie_value(cookie_value: &str) -> Result<String> {
 }
 
 fn current_timestamp() -> Result<i64> {
-    Ok(SystemTime::now()
+    SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .context("system clock is before unix epoch")?
         .as_secs()
         .try_into()
-        .context("timestamp exceeds i64")?)
+        .context("timestamp exceeds i64")
 }
 
 #[cfg(test)]

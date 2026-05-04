@@ -4,6 +4,7 @@ use std::{
     fs,
     io::ErrorKind,
     path::Path,
+    str,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -715,9 +716,9 @@ pub(crate) fn read_roblosecurity_cookie_value(input_path: &Path) -> Result<Optio
     };
 
     Ok(Some(
-        String::from_utf8(cookie.value.clone())
-            .map_err(|error| anyhow!(error))
-            .context("failed to decode the roblox cookie value")?,
+        str::from_utf8(&cookie.value)
+            .context("failed to decode the roblox cookie value")?
+            .to_owned(),
     ))
 }
 

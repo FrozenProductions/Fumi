@@ -35,8 +35,8 @@ pub(crate) fn show_warning_confirmation_dialog<R: Runtime>(
 ) -> Result<bool, String> {
     #[cfg(target_os = "macos")]
     {
-        return show_macos_confirmation_dialog(app, &options)
-            .or_else(|_| Ok(show_plugin_confirmation_dialog(app, &options)));
+        show_macos_confirmation_dialog(app, &options)
+            .or_else(|_| Ok(show_plugin_confirmation_dialog(app, &options)))
     }
 
     #[cfg(not(target_os = "macos"))]
