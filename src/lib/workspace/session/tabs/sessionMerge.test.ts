@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vite-plus/test";
-import { mergeWorkspaceSession } from "../session";
 import {
     createCursor,
     createSnapshotTab,
@@ -7,6 +6,7 @@ import {
     createWorkspaceSession,
     createWorkspaceSnapshot,
 } from "../sessionTestUtils";
+import { mergeWorkspaceSession } from "./sessionTabs";
 
 describe("mergeWorkspaceSession", () => {
     it("refreshes clean tabs, preserves dirty local tabs, and resolves the next active tab", () => {

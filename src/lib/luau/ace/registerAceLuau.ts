@@ -24,7 +24,15 @@ import {
 } from "../../../constants/luau/unc/uncCompletions";
 import type {
     AceEditorRuntime,
+    AceLuaFoldModeModule,
+    AceLuaModeModule,
+    AceLuauHighlightRulesModule,
+    AceOopModule,
+    AceTextHighlightRulesModule,
+    LuauHighlightRulesInstance,
+    LuauModeInstance,
     LuauModePrototype,
+    LuauRuleContext,
 } from "./registerAceLuau.type";
 
 function escapeRegex(value: string): string {
@@ -88,11 +96,14 @@ function defineLuauMode(ace: AceEditorRuntime): void {
             "ace/mode/text_highlight_rules",
         ],
         (require, exports) => {
-            const oop = require("ace/lib/oop");
-            const TextHighlightRules =
-                require("ace/mode/text_highlight_rules").TextHighlightRules;
+            const oop = require("ace/lib/oop") as AceOopModule;
+            const TextHighlightRules = (
+                require("ace/mode/text_highlight_rules") as AceTextHighlightRulesModule
+            ).TextHighlightRules;
 
-            const LuauHighlightRules = function (this: any) {
+            const LuauHighlightRules = function (
+                this: LuauHighlightRulesInstance,
+            ) {
                 const keywordMapper = this.createKeywordMapper(
                     {
                         keyword: keywordPattern,
@@ -131,6 +142,7 @@ function defineLuauMode(ace: AceEditorRuntime): void {
                         {
                             stateName: "bracketedComment",
                             onMatch: function (
+                                this: LuauRuleContext,
                                 value: string,
                                 state: string,
                                 stack: unknown[],
@@ -146,9 +158,10 @@ function defineLuauMode(ace: AceEditorRuntime): void {
                             next: [
                                 {
                                     onMatch: function (
+                                        this: LuauRuleContext,
                                         value: string,
                                         _state: string,
-                                        stack: any[],
+                                        stack: unknown[],
                                     ) {
                                         if (value.length === stack[1]) {
                                             stack.shift();
@@ -175,6 +188,7 @@ function defineLuauMode(ace: AceEditorRuntime): void {
                         {
                             stateName: "bracketedString",
                             onMatch: function (
+                                this: LuauRuleContext,
                                 value: string,
                                 state: string,
                                 stack: unknown[],
@@ -186,9 +200,10 @@ function defineLuauMode(ace: AceEditorRuntime): void {
                             next: [
                                 {
                                     onMatch: function (
+                                        this: LuauRuleContext,
                                         value: string,
                                         _state: string,
-                                        stack: any[],
+                                        stack: unknown[],
                                     ) {
                                         if (value.length === stack[1]) {
                                             stack.shift();
@@ -267,13 +282,16 @@ function defineLuauMode(ace: AceEditorRuntime): void {
             "ace/mode/luau_highlight_rules",
         ],
         (require, exports) => {
-            const oop = require("ace/lib/oop");
-            const LuaMode = require("ace/mode/lua").Mode;
-            const FoldMode = require("ace/mode/folding/lua").FoldMode;
-            const LuauHighlightRules =
-                require("ace/mode/luau_highlight_rules").LuauHighlightRules;
+            const oop = require("ace/lib/oop") as AceOopModule;
+            const LuaMode = (require("ace/mode/lua") as AceLuaModeModule).Mode;
+            const FoldMode = (
+                require("ace/mode/folding/lua") as AceLuaFoldModeModule
+            ).FoldMode;
+            const LuauHighlightRules = (
+                require("ace/mode/luau_highlight_rules") as AceLuauHighlightRulesModule
+            ).LuauHighlightRules;
 
-            const LuauMode = function (this: any) {
+            const LuauMode = function (this: LuauModeInstance) {
                 LuaMode.call(this);
                 this.HighlightRules = LuauHighlightRules;
                 this.foldingRules = new FoldMode();

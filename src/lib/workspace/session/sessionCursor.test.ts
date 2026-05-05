@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { clampCursorToContent } from "./session";
+import { clampCursorToContent } from "./sessionCursor";
 
 describe("clampCursorToContent", () => {
     it("clamps the line, column, and scroll position to valid content bounds", () => {

@@ -1,4 +1,4 @@
-import { getActiveTabIndex } from "../session/session";
+import { getActiveTabIndex } from "../session/tabs/sessionTabs";
 import type {
     WorkspaceExecutionHistoryEntry,
     WorkspacePaneId,

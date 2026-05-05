@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { getCommandCommandPaletteItems } from "../commandPalette";
 import { createCommandPaletteOptions } from "../commandPaletteTestUtils";
+import { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 
 const platformMocks = vi.hoisted(() => ({
     confirmAction: vi.fn().mockResolvedValue(true),

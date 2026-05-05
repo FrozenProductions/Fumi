@@ -1,6 +1,6 @@
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
-import type { WorkspaceTabContextMenuState } from "../../../components/workspace/workspaceTabBar.type";
+import type { WorkspaceTabContextMenuState } from "../../../components/workspace/tabBar/workspaceTabBar.type";
 import { useWorkspaceUiStore } from "../useWorkspaceUiStore";
 
 type UseWorkspaceTabBarStateOptions = {

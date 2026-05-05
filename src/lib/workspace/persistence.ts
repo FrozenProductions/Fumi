@@ -4,7 +4,7 @@ import {
 } from "../../constants/workspace/workspace";
 import { isString } from "../shared/validation";
 import { PersistenceError } from "./errors";
-import { serializeTabState } from "./session/session";
+import { serializeTabState } from "./session/tabs/sessionTabs";
 import type { WorkspaceSession } from "./workspace.type";
 
 let lastPersistedWorkspaceSignature: string | null = null;

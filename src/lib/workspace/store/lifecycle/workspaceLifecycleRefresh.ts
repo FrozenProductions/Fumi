@@ -5,7 +5,7 @@ import {
     getWorkspaceDirtyTabCount,
     hasWorkspaceDraftChanges,
     mergeWorkspaceSession,
-} from "../../session/session";
+} from "../../session/tabs/sessionTabs";
 import type { WorkspaceSession } from "../../workspace.type";
 import { isMatchingWorkspacePath } from "../workspaceNavigation";
 import type {

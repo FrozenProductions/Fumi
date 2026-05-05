@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { getGoToLineCommandPaletteItems } from "../commandPalette";
+import { getGoToLineCommandPaletteItems } from "../commandPaletteModes";
 
 describe("getGoToLineCommandPaletteItems", () => {
     it("keeps go-to-line items driven only by the parsed line number", () => {

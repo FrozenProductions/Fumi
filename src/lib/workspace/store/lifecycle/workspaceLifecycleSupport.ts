@@ -3,12 +3,12 @@ import {
     persistRecentWorkspacePaths,
     updateRecentWorkspacePaths,
 } from "../../persistence";
+import { clampCursorToContent } from "../../session/sessionCursor";
 import {
     buildWorkspaceSession,
-    clampCursorToContent,
     getWorkspaceDirtyTabCount,
     serializeTabState,
-} from "../../session/session";
+} from "../../session/tabs/sessionTabs";
 import type { WorkspaceSession } from "../../workspace.type";
 import type {
     WorkspaceStoreGet,

@@ -1,7 +1,7 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { getTabCommandPaletteItems } from "../commandPalette";
 import { createWorkspaceSession } from "../commandPaletteTestUtils";
+import { getTabCommandPaletteItems } from "./commandPaletteTabs";
 
 describe("getTabCommandPaletteItems", () => {
     it("returns a workspace fallback item when no workspace is open", async () => {

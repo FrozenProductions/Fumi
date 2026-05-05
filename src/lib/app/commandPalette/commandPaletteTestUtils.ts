@@ -14,8 +14,8 @@ import type {
     WorkspaceSessionWorkspaceActions,
 } from "../../workspace/session.type";
 import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";
-import type { getCommandCommandPaletteItems } from "./commandPalette";
 import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
+import type { getCommandCommandPaletteItems } from "./commands/commandPaletteCommands";
 
 type WorkspaceSessionOverrides = {
     state?: Partial<WorkspaceSessionState>;

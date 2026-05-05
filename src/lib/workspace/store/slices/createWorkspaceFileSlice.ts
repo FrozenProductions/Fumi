@@ -14,12 +14,12 @@ import {
     isWorkspaceTabBaseNameTooLong,
     splitWorkspaceFileName,
 } from "../../fileName";
+import { removedTabFromSplitView } from "../../session/sessionSplitView";
 import {
     getNextActiveTabId,
-    removedTabFromSplitView,
     updateWorkspaceTab,
     upsertWorkspaceTab,
-} from "../../session/session";
+} from "../../session/tabs/sessionTabs";
 import { createWorkspaceStoreSupport } from "../createWorkspaceStoreSupport";
 import type {
     WorkspaceFileSlice,

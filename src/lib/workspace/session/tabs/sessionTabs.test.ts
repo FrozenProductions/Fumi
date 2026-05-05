@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { getNextActiveTabId } from "../session";
 import { createWorkspaceSession } from "../sessionTestUtils";
+import { getNextActiveTabId } from "./sessionTabs";
 
 describe("getNextActiveTabId", () => {
     it("selects the next tab when one exists and otherwise falls back to the previous tab", () => {

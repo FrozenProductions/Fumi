@@ -6,7 +6,7 @@ import { joinClassNames } from "../../lib/shared/className";
 import { WorkspaceTabBarControls } from "./tabBar/WorkspaceTabBarControls";
 import { WorkspaceTabBarTabs } from "./tabBar/WorkspaceTabBarTabs";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
-import type { WorkspaceTabBarInternalProps } from "./workspaceTabBar.type";
+import type { WorkspaceTabBarInternalProps } from "./tabBar/workspaceTabBar.type";
 
 /**
  * The tab bar for workspace files with drag-and-drop reordering.

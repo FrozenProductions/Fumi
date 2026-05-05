@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { getCommandCommandPaletteItems } from "../commandPalette";
 import {
     createCommandPaletteOptions,
     createWorkspaceSession,
 } from "../commandPaletteTestUtils";
+import { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 
 describe("getCommandCommandPaletteItems", () => {
     it("adds an execution history command only when a workspace is open", () => {

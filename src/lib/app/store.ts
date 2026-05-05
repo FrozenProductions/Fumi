@@ -19,6 +19,7 @@ import {
     WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
     WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
 } from "../../constants/workspace/outline";
+import { isNumberLiteral, isStringLiteral } from "../shared/validation";
 import type {
     AppEditorTabSize,
     AppIntellisenseWidth,
@@ -26,14 +27,6 @@ import type {
     AppTheme,
 } from "./app.type";
 import type { AppSidebarItem, AppSidebarPosition } from "./sidebar.type";
-
-export {
-    APP_EDITOR_TAB_SIZES,
-    APP_INTELLISENSE_WIDTHS,
-    APP_MIDDLE_CLICK_TAB_ACTIONS,
-    APP_SIDEBAR_POSITIONS,
-    APP_THEMES,
-};
 
 /**
  * Clamps a zoom percentage value to the valid range [APP_ZOOM_MIN, APP_ZOOM_MAX].
@@ -53,17 +46,14 @@ export function clampAppZoomPercent(zoomPercent: number): number {
  * Returns whether the value is a valid sidebar item identifier.
  */
 export function isAppSidebarItem(value: unknown): value is AppSidebarItem {
-    return (
-        typeof value === "string" &&
-        APP_SIDEBAR_ITEM_IDS.includes(value as AppSidebarItem)
-    );
+    return isStringLiteral(value, APP_SIDEBAR_ITEM_IDS);
 }
 
 /**
  * Returns whether the value is a valid app theme.
  */
 export function isAppTheme(value: unknown): value is AppTheme {
-    return typeof value === "string" && APP_THEMES.includes(value as AppTheme);
+    return isStringLiteral(value, APP_THEMES);
 }
 
 /**
@@ -72,10 +62,7 @@ export function isAppTheme(value: unknown): value is AppTheme {
 export function isAppSidebarPosition(
     value: unknown,
 ): value is AppSidebarPosition {
-    return (
-        typeof value === "string" &&
-        APP_SIDEBAR_POSITIONS.includes(value as AppSidebarPosition)
-    );
+    return isStringLiteral(value, APP_SIDEBAR_POSITIONS);
 }
 
 /**
@@ -91,9 +78,8 @@ export function normalizeAppSidebarPosition(
  * Normalizes an editor tab size value, falling back to the default if invalid.
  */
 export function normalizeAppEditorTabSize(value: unknown): AppEditorTabSize {
-    return typeof value === "number" &&
-        APP_EDITOR_TAB_SIZES.includes(value as AppEditorTabSize)
-        ? (value as AppEditorTabSize)
+    return isNumberLiteral(value, APP_EDITOR_TAB_SIZES)
+        ? value
         : DEFAULT_APP_EDITOR_TAB_SIZE;
 }
 
@@ -119,9 +105,8 @@ export function normalizeAppIntellisenseWidth(
         return "large";
     }
 
-    return typeof value === "string" &&
-        APP_INTELLISENSE_WIDTHS.includes(value as AppIntellisenseWidth)
-        ? (value as AppIntellisenseWidth)
+    return isStringLiteral(value, APP_INTELLISENSE_WIDTHS)
+        ? value
         : DEFAULT_APP_EDITOR_SETTINGS.intellisenseWidth;
 }
 
@@ -131,9 +116,8 @@ export function normalizeAppIntellisenseWidth(
 export function normalizeAppMiddleClickTabAction(
     value: unknown,
 ): AppMiddleClickTabAction {
-    return typeof value === "string" &&
-        APP_MIDDLE_CLICK_TAB_ACTIONS.includes(value as AppMiddleClickTabAction)
-        ? (value as AppMiddleClickTabAction)
+    return isStringLiteral(value, APP_MIDDLE_CLICK_TAB_ACTIONS)
+        ? value
         : DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION;
 }
 

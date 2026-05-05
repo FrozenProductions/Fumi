@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
-import { reorderWorkspaceTabs } from "../session";
 import { createSnapshotTab, createWorkspaceSession } from "../sessionTestUtils";
+import { reorderWorkspaceTabs } from "./sessionTabs";
 
 describe("reorderWorkspaceTabs", () => {
     it("returns the current workspace for invalid or self-targeted reorder requests", () => {

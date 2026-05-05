@@ -8,7 +8,7 @@ import {
 import {
     buildWorkspaceSession,
     getWorkspaceDirtyTabCount,
-} from "../../session/session";
+} from "../../session/tabs/sessionTabs";
 import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
-import { getCommandCommandPaletteItems } from "../commandPalette";
 import {
     createCommandPaletteOptions,
     createWorkspaceExecutor,
     createWorkspaceSession,
 } from "../commandPaletteTestUtils";
+import { getCommandCommandPaletteItems } from "../commands/commandPaletteCommands";
 import { normalizeAppCommandPaletteSearchValue } from "./commandPaletteSearch";
 
 describe("normalizeAppCommandPaletteSearchValue", () => {

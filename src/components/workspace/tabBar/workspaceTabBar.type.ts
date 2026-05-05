@@ -12,6 +12,32 @@ import type {
     WorkspaceSplitView,
 } from "../../../lib/workspace/workspace.type";
 
+export type WorkspaceTabBarProps = {
+    workspace: WorkspaceScreenSession;
+    splitView: WorkspaceSplitView | null;
+    renameState: UseWorkspaceTabRenameResult;
+    onCreateFile: () => void;
+    onSelectTab: (tabId: string) => void;
+    onDuplicateTab: (tabId: string) => void;
+    onArchiveTab: (tabId: string) => void;
+    onDeleteTab: (tabId: string) => void;
+    onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
+    onCloseSplitView: () => void;
+    splitDropTarget: WorkspacePaneId | null;
+    middleClickTabAction: AppMiddleClickTabAction;
+};
+
+export type WorkspaceTabContextMenuState = {
+    tabId: string;
+    x: number;
+    y: number;
+};
+
+export type WorkspaceTabBarInternalProps = WorkspaceTabBarProps & {
+    previewTabs: WorkspaceTabBarProps["workspace"]["tabs"];
+    isTabDragActive: boolean;
+};
+
 export type WorkspaceTabItemIdentityProps = {
     index: number;
     sortableGroup: string;

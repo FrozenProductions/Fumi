@@ -12,19 +12,15 @@ import {
     EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY,
     LUAU_COMPLETION_INDEX_PRIORITIES,
 } from "../../../constants/luau/core/luauCompletionIndex";
-import {
-    LUAU_NAMESPACE_COMPLETIONS,
-    LUAU_TOP_LEVEL_COMPLETIONS,
-} from "../../../constants/luau/core/luauCompletions";
+import { LUAU_TOP_LEVEL_COMPLETIONS } from "../../../constants/luau/core/luauTopLevelCompletions";
+import { LUAU_NAMESPACE_COMPLETIONS } from "../../../constants/luau/core/namespaces/luauNamespaceCompletions";
 import {
     LUAU_BUILTIN_CONSTANTS,
     LUAU_BUILTIN_TYPES,
     LUAU_COMPLETION_KEYWORDS,
 } from "../../../constants/luau/core/syntax";
-import {
-    ROBLOX_NAMESPACE_COMPLETIONS,
-    ROBLOX_TOP_LEVEL_COMPLETIONS,
-} from "../../../constants/luau/roblox/robloxCompletions";
+import { ROBLOX_NAMESPACE_COMPLETIONS } from "../../../constants/luau/roblox/robloxNamespaceCompletions";
+import { ROBLOX_TOP_LEVEL_COMPLETIONS } from "../../../constants/luau/roblox/robloxTopLevelCompletions";
 import {
     SUNC_NAMESPACE_COMPLETIONS,
     SUNC_TOP_LEVEL_COMPLETIONS,

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { getWorkspaceCommandPaletteItems } from "../commandPalette";
 import { createWorkspaceSession } from "../commandPaletteTestUtils";
+import { getWorkspaceCommandPaletteItems } from "./commandPaletteWorkspaces";
 
 describe("getWorkspaceCommandPaletteItems", () => {
     it("excludes the current workspace from recent workspace results", () => {

@@ -25,3 +25,23 @@ export function isNumber(value: unknown): value is number {
 export function isBoolean(value: unknown): value is boolean {
     return typeof value === "boolean";
 }
+
+/**
+ * Returns whether the value is one of the provided string literals.
+ */
+export function isStringLiteral<TValue extends string>(
+    value: unknown,
+    values: readonly TValue[],
+): value is TValue {
+    return typeof value === "string" && values.some((item) => item === value);
+}
+
+/**
+ * Returns whether the value is one of the provided number literals.
+ */
+export function isNumberLiteral<TValue extends number>(
+    value: unknown,
+    values: readonly TValue[],
+): value is TValue {
+    return typeof value === "number" && values.some((item) => item === value);
+}

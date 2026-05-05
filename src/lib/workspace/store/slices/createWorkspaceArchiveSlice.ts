@@ -5,11 +5,11 @@ import {
     restoreAllArchivedWorkspaceTabs as restoreAllArchivedWorkspaceTabsCommand,
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
 } from "../../../platform/workspace";
+import { removedTabFromSplitView } from "../../session/sessionSplitView";
 import {
     getNextActiveTabId,
-    removedTabFromSplitView,
     serializeTabState,
-} from "../../session/session";
+} from "../../session/tabs/sessionTabs";
 import { createWorkspaceStoreSupport } from "../createWorkspaceStoreSupport";
 import type {
     WorkspaceArchiveSlice,

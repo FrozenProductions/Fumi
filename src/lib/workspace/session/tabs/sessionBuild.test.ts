@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
-import { buildWorkspaceSession } from "../session";
 import {
     createCursor,
     createSnapshotTab,
     createTabState,
     createWorkspaceSnapshot,
 } from "../sessionTestUtils";
+import { buildWorkspaceSession } from "./sessionTabs";
 
 describe("buildWorkspaceSession", () => {
     it("initializes saved content, ignores orphan metadata entries, and falls back the active tab", () => {

@@ -1,9 +1,9 @@
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
 import {
     openWorkspaceTabInPaneState,
-    reorderWorkspaceTabs,
     selectWorkspaceTabState,
-} from "../../session/session";
+} from "../../session/sessionSplitView";
+import { reorderWorkspaceTabs } from "../../session/tabs/sessionTabs";
 import { normalizeWorkspaceSplitRatio } from "../../splitView";
 import type { WorkspacePaneId } from "../../workspace.type";
 import { createWorkspaceStoreSupport } from "../createWorkspaceStoreSupport";

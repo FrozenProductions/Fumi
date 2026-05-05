@@ -20,7 +20,7 @@ export type AceRuntime = {
     define: (
         name: string,
         deps: string[],
-        factory: (...args: any[]) => void,
+        factory: (...args: unknown[]) => void,
     ) => void;
     require: (name: string) => unknown;
 };

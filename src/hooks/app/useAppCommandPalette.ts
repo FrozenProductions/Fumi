@@ -8,7 +8,6 @@ import {
     useRef,
     useState,
 } from "react";
-import { parseGoToLineQuery } from "../../lib/app/commandPalette/commandPalette";
 import { getAppCommandPaletteResults } from "../../lib/app/commandPalette/commandPaletteController";
 import type {
     AppCommandPaletteItem,
@@ -16,6 +15,7 @@ import type {
     AppCommandPaletteViewMode,
     AppCommandPaletteMode as RequestedAppCommandPaletteMode,
 } from "../../lib/app/commandPalette/commandPaletteDomain.type";
+import { parseGoToLineQuery } from "../../lib/app/commandPalette/commandPaletteShared";
 import { normalizeAppCommandPaletteSearchValue } from "../../lib/app/commandPalette/search/commandPaletteSearch";
 import type {
     UseAppCommandPaletteOptions,

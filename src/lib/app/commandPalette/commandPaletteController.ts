@@ -1,18 +1,18 @@
 import { APP_COMMAND_PALETTE_MAX_RESULTS } from "../../../constants/app/commandPalette";
 import { getAppHotkeyShortcutLabel } from "../hotkeys/hotkeys";
 import type { AppHotkeyBindings } from "../hotkeys/hotkeys.type";
-import {
-    getAttachCommandPaletteItems,
-    getCommandCommandPaletteItems,
-    getGoToLineCommandPaletteItems,
-    getTabCommandPaletteItems,
-    getThemeCommandPaletteItems,
-    getWorkspaceCommandPaletteItems,
-} from "./commandPalette";
 import type {
     AppCommandPaletteHotkeyLabels,
     GetAppCommandPaletteResultsOptions,
 } from "./commandPalette.type";
+import {
+    getAttachCommandPaletteItems,
+    getGoToLineCommandPaletteItems,
+    getThemeCommandPaletteItems,
+} from "./commandPaletteModes";
+import { getCommandCommandPaletteItems } from "./commands/commandPaletteCommands";
+import { getTabCommandPaletteItems } from "./items/commandPaletteTabs";
+import { getWorkspaceCommandPaletteItems } from "./items/commandPaletteWorkspaces";
 import { searchAppCommandPaletteItems } from "./search/commandPaletteSearch";
 
 /**

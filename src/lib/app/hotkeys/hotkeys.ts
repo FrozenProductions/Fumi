@@ -14,6 +14,7 @@ import {
     APP_RESERVED_NATIVE_MENU_HOTKEYS,
     HOTKEY_KEY_CODE_MAP,
 } from "../../../constants/app/hotkeys";
+import { isRecord, isStringLiteral } from "../../shared/validation";
 import type {
     AppHotkeyAction,
     AppHotkeyBinding,
@@ -24,10 +25,7 @@ import type {
 } from "./hotkeys.type";
 
 export function isAppHotkeyAction(value: unknown): value is AppHotkeyAction {
-    return (
-        typeof value === "string" &&
-        APP_HOTKEY_ACTIONS.includes(value as AppHotkeyAction)
-    );
+    return isStringLiteral(value, APP_HOTKEY_ACTIONS);
 }
 
 export function isAppHotkeyBinding(value: unknown): value is AppHotkeyBinding {
@@ -38,19 +36,24 @@ export function isAppHotkeyBinding(value: unknown): value is AppHotkeyBinding {
  * Filters and normalizes persisted hotkey bindings, keeping only editable overrides.
  */
 export function normalizeAppHotkeyBindings(value: unknown): AppHotkeyBindings {
-    if (!value || typeof value !== "object") {
+    if (!isRecord(value)) {
         return {};
     }
 
-    const entries = Object.entries(value as Record<string, unknown>).filter(
-        ([action, binding]) =>
+    const hotkeyBindings: AppHotkeyBindings = {};
+
+    for (const [action, binding] of Object.entries(value)) {
+        if (
             isAppHotkeyAction(action) &&
             APP_HOTKEY_DEFINITIONS[action].isEditable &&
             isAppHotkeyBinding(binding) &&
-            isAppHotkeyOverride(action, binding),
-    );
+            isAppHotkeyOverride(action, binding)
+        ) {
+            hotkeyBindings[action] = binding;
+        }
+    }
 
-    return Object.fromEntries(entries) as AppHotkeyBindings;
+    return hotkeyBindings;
 }
 
 export function getAppHotkeyDefinition(

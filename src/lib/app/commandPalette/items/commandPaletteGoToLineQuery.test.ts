@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { parseGoToLineQuery } from "../commandPalette";
+import { parseGoToLineQuery } from "../commandPaletteShared";
 
 describe("parseGoToLineQuery", () => {
     it("accepts supported go-to-line formats", () => {
