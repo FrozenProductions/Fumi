@@ -13,7 +13,7 @@ import {
 import {
     startCurrentWindowDragging,
     toggleCurrentWindowMaximize,
-} from "../../../lib/platform/window";
+} from "../../../lib/platform/window/window";
 import { AppIcon } from "../common/AppIcon";
 import { AppIconButton } from "../common/AppIconButton";
 import { AppTooltip } from "../tooltip/AppTooltip";

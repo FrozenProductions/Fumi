@@ -1,4 +1,4 @@
-import { confirmAction } from "../../platform/dialog";
+import { confirmAction } from "../../platform/core/dialog";
 import { hasWorkspaceDraftChanges } from "../session/tabs/sessionTabs";
 import type { WorkspaceSession, WorkspaceTab } from "../workspace.type";
 

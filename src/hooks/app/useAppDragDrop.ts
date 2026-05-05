@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { subscribeToDroppedFilesHover } from "../../lib/platform/window";
+import { subscribeToDroppedFilesHover } from "../../lib/platform/window/window";
 import type { UseAppDragDropResult } from "./useAppDragDrop.type";
 
 /**

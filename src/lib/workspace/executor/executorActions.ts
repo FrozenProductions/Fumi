@@ -2,8 +2,8 @@ import {
     attachExecutor,
     detachExecutor,
     executeExecutorScript,
-} from "../../platform/executor";
-import { appendWorkspaceExecutionHistory } from "../../platform/workspace";
+} from "../../platform/roblox/executor";
+import { appendWorkspaceExecutionHistory } from "../../platform/workspace/workspace";
 import { getErrorMessage } from "../../shared/errorMessage";
 import type {
     ExecutorKind,

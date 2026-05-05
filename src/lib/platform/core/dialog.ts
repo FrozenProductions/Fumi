@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
 import { PlatformOperationError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 

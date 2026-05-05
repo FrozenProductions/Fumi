@@ -1,5 +1,5 @@
-import type { OperationErrorOptions } from "../shared/operationError";
-import { OperationError } from "../shared/operationError";
+import type { OperationErrorOptions } from "../../shared/operationError";
+import { OperationError } from "../../shared/operationError";
 
 /**
  * Error thrown when a general platform operation fails (e.g. opening URLs or directories).

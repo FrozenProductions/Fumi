@@ -12,7 +12,7 @@ import {
     bootstrapAutomaticExecution as bootstrapAutomaticExecutionCommand,
     persistAutomaticExecutionState,
     refreshAutomaticExecution,
-} from "../../lib/platform/automaticExecution";
+} from "../../lib/platform/roblox/automaticExecution";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { ExecutorKind } from "../../lib/workspace/workspace.type";
 

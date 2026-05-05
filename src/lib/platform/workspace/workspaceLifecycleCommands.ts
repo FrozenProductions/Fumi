@@ -4,8 +4,8 @@ import type {
     WorkspaceSnapshot,
     WorkspaceSplitView,
     WorkspaceTabState,
-} from "../workspace/workspace.type";
-import { isTauriEnvironment } from "./runtime";
+} from "../../workspace/workspace.type";
+import { isTauriEnvironment } from "../core/runtime";
 import {
     createDesktopShellRequiredError,
     invokeWorkspaceCommand,

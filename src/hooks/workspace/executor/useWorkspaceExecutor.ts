@@ -6,7 +6,7 @@ import {
 import {
     getExecutorStatus,
     subscribeToExecutorStatusChanged,
-} from "../../../lib/platform/executor";
+} from "../../../lib/platform/roblox/executor";
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
 import {
     getExecutorPortsFromSummaries,

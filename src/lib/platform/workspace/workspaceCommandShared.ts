@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import { DESKTOP_SHELL_REQUIRED_ERROR } from "../../constants/platform/platform";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { WorkspaceCommandError } from "./errors";
+import { DESKTOP_SHELL_REQUIRED_ERROR } from "../../../constants/platform/platform";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
+import { WorkspaceCommandError } from "../core/errors";
 
 /**
  * Creates a {@link WorkspaceCommandError} indicating the Tauri desktop shell is required.

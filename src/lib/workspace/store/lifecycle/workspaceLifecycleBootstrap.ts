@@ -1,5 +1,5 @@
-import { isTauriEnvironment } from "../../../platform/runtime";
-import { bootstrapWorkspace } from "../../../platform/workspace";
+import { isTauriEnvironment } from "../../../platform/core/runtime";
+import { bootstrapWorkspace } from "../../../platform/workspace/workspace";
 import { getErrorMessage } from "../../../shared/errorMessage";
 import {
     persistRecentWorkspacePaths,

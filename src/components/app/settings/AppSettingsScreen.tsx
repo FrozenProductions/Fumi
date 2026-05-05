@@ -5,7 +5,7 @@ import {
     DEFAULT_APP_SETTINGS_SECTION,
 } from "../../../constants/app/settings";
 import type { AppSettingsSection } from "../../../lib/app/app.type";
-import { isDevRuntime } from "../../../lib/platform/runtime";
+import { isDevRuntime } from "../../../lib/platform/core/runtime";
 import { AppSettingsDevSection } from "./AppSettingsDevSection";
 import { AppSettingsEditorSection } from "./AppSettingsEditorSection";
 import { AppSettingsGeneralSection } from "./AppSettingsGeneralSection";

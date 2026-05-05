@@ -1,4 +1,4 @@
-import { pickDirectory } from "../../../platform/dialog";
+import { pickDirectory } from "../../../platform/core/dialog";
 import { getErrorMessage } from "../../../shared/errorMessage";
 import { shouldProceedWithWorkspaceSwitch } from "../workspaceNavigation";
 import type {

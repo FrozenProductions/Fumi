@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
-import { scanLuauFileAnalysis as scanLuauFileAnalysisFallback } from "../luau/symbolScanner/symbolScanner";
+import { scanLuauFileAnalysis as scanLuauFileAnalysisFallback } from "../../luau/symbolScanner/symbolScanner";
 import type {
     LuauFileAnalysis,
     LuauScanMode,
-} from "../luau/symbolScanner/symbolScanner.type";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
+} from "../../luau/symbolScanner/symbolScanner.type";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
 import { isTauriEnvironment } from "./runtime";
 
 class LuauAnalysisCommandError extends Error {

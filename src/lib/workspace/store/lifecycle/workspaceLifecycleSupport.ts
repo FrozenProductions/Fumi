@@ -1,4 +1,4 @@
-import { openWorkspace as openWorkspaceCommand } from "../../../platform/workspace";
+import { openWorkspace as openWorkspaceCommand } from "../../../platform/workspace/workspace";
 import {
     persistRecentWorkspacePaths,
     updateRecentWorkspacePaths,

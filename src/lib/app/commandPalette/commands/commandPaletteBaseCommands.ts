@@ -1,6 +1,6 @@
 import { CommandIcon } from "@hugeicons/core-free-icons";
-import { launchRoblox } from "../../../platform/accounts";
-import { isTauriEnvironment } from "../../../platform/runtime";
+import { isTauriEnvironment } from "../../../platform/core/runtime";
+import { launchRoblox } from "../../../platform/roblox/accounts";
 import type { GetCommandPaletteCommandItemsOptions } from "../commandPalette.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 import {

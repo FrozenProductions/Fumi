@@ -8,7 +8,7 @@ import {
     deleteAutomaticExecutionScript,
     renameAutomaticExecutionScript,
     saveAutomaticExecutionScript,
-} from "../../lib/platform/automaticExecution";
+} from "../../lib/platform/roblox/automaticExecution";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreLifecycle";
 import { runRefreshAfterFlush } from "./automaticExecutionStoreLifecycle";

@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
     shouldProceedWithWorkspaceSwitch: vi.fn(),
 }));
 
-vi.mock("../../../platform/workspace", () => ({
+vi.mock("../../../platform/workspace/workspace", () => ({
     bootstrapWorkspace: vi.fn(),
     openWorkspace: mocks.openWorkspace,
     persistWorkspaceState: mocks.persistWorkspaceState,

@@ -4,7 +4,7 @@ import warningIcon from "../../assets/icons/warning.svg";
 import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import { useScriptLibrary } from "../../hooks/scriptLibrary/useScriptLibrary";
 import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
-import { copyTextToClipboard } from "../../lib/platform/clipboard";
+import { copyTextToClipboard } from "../../lib/platform/core/clipboard";
 import {
     copyScriptToClipboard,
     fetchScriptText,

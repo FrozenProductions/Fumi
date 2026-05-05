@@ -68,7 +68,7 @@ vi.mock("@tauri-apps/api/window", () => ({
     getCurrentWindow: () => mocks.window,
 }));
 
-vi.mock("./runtime", () => ({
+vi.mock("../core/runtime", () => ({
     isTauriEnvironment: mocks.isTauriEnvironment,
 }));
 

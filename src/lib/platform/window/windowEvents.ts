@@ -7,8 +7,8 @@ import {
     ZOOM_IN_EVENT,
     ZOOM_OUT_EVENT,
     ZOOM_RESET_EVENT,
-} from "../../constants/platform/platform";
-import { isTauriEnvironment } from "./runtime";
+} from "../../../constants/platform/platform";
+import { isTauriEnvironment } from "../core/runtime";
 import { listenDroppedFilesEvent } from "./windowDropEvents";
 import { createWindowShellError } from "./windowShared";
 

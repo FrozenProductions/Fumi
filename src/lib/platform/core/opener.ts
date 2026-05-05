@@ -2,8 +2,8 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import {
     OPEN_PATH_REQUIRED_ERROR,
     OPENER_REQUIRED_ERROR,
-} from "../../constants/platform/platform";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
+} from "../../../constants/platform/platform";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
 import { PlatformOperationError } from "./errors";
 import { isTauriEnvironment } from "./runtime";
 

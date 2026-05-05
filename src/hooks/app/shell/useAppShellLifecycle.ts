@@ -3,7 +3,7 @@ import {
     isPreparingToExit,
     subscribeToCheckForUpdatesRequested,
     subscribeToOpenSettings,
-} from "../../../lib/platform/window";
+} from "../../../lib/platform/window/window";
 import type { UseAppShellLifecycleOptions } from "./useAppShellLifecycle.type";
 
 /**

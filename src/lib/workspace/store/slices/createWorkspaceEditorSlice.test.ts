@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
     saveWorkspaceFile: vi.fn(),
 }));
 
-vi.mock("../../../platform/workspace", () => ({
+vi.mock("../../../platform/workspace/workspace", () => ({
     saveWorkspaceFile: mocks.saveWorkspaceFile,
 }));
 

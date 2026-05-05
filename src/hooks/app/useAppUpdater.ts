@@ -5,14 +5,14 @@ import type {
     AppUpdateMetadata,
     AppUpdaterStatus,
 } from "../../lib/app/updater.type";
-import { confirmAction } from "../../lib/platform/dialog";
-import { isTauriEnvironment } from "../../lib/platform/runtime";
+import { confirmAction } from "../../lib/platform/core/dialog";
+import { isTauriEnvironment } from "../../lib/platform/core/runtime";
 import {
     checkForAppUpdate,
     downloadAndInstallAppUpdate,
     relaunchApp,
-} from "../../lib/platform/updater";
-import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window";
+} from "../../lib/platform/core/updater";
+import { subscribeToCheckForUpdatesRequested } from "../../lib/platform/window/window";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { useAppStore } from "./useAppStore";
 import type {

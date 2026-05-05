@@ -12,7 +12,7 @@ import {
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { useWorkspaceActionsMenu } from "../../../hooks/workspace/useWorkspaceActionsMenu";
 import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
-import { isTauriEnvironment } from "../../../lib/platform/runtime";
+import { isTauriEnvironment } from "../../../lib/platform/core/runtime";
 import { AppIcon } from "../../app/common/AppIcon";
 import { AppTooltip } from "../../app/tooltip/AppTooltip";
 import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";

@@ -3,8 +3,8 @@ import { DEFAULT_APP_STREAMER_MODE_ENABLED } from "../../constants/app/settings"
 import {
     getPersistedAppStoreState,
     mergeAppStoreState,
-    useAppStore,
-} from "./useAppStore";
+} from "../../lib/app/appStorePersistence";
+import { useAppStore } from "./useAppStore";
 
 beforeEach(() => {
     globalThis.localStorage?.clear();

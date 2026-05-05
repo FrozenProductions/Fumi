@@ -3,11 +3,11 @@ import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/w
 import type { WorkspaceSession, WorkspaceTab } from "../../workspace.type";
 import type { WorkspaceStore } from "../workspaceStore.type";
 
-vi.mock("../../../platform/dialog", () => ({
+vi.mock("../../../platform/core/dialog", () => ({
     confirmAction: vi.fn(),
 }));
 
-vi.mock("../../../platform/workspace", () => ({
+vi.mock("../../../platform/workspace/workspace", () => ({
     createWorkspaceFile: vi.fn(),
     deleteAllArchivedWorkspaceTabs: vi.fn(),
     deleteArchivedWorkspaceTab: vi.fn(),

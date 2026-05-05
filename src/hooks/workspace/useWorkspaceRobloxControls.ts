@@ -3,15 +3,15 @@ import type {
     RobloxAccountIdentity,
     RobloxProcessInfo,
 } from "../../lib/accounts/accounts.type";
+import { confirmAction } from "../../lib/platform/core/dialog";
+import { isTauriEnvironment } from "../../lib/platform/core/runtime";
 import {
     getLiveRobloxAccount,
     killRobloxProcess as killRobloxProcessCommand,
     killRobloxProcesses as killRobloxProcessesCommand,
     launchRoblox as launchRobloxCommand,
     listRobloxProcesses,
-} from "../../lib/platform/accounts";
-import { confirmAction } from "../../lib/platform/dialog";
-import { isTauriEnvironment } from "../../lib/platform/runtime";
+} from "../../lib/platform/roblox/accounts";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { useWindowResume } from "../shared/useWindowResume";
 import { useWorkspaceStore } from "./useWorkspaceStore";

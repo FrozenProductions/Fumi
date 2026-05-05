@@ -4,7 +4,7 @@ import {
     subscribeToZoomInRequested,
     subscribeToZoomOutRequested,
     subscribeToZoomResetRequested,
-} from "../../lib/platform/window";
+} from "../../lib/platform/window/window";
 import { useAppStore } from "./useAppStore";
 
 /**

@@ -5,12 +5,17 @@ import type {
     AutomaticExecutionScriptSnapshot,
     AutomaticExecutionScriptState,
     AutomaticExecutionSnapshot,
-} from "../automaticExecution/automaticExecution.type";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
-import type { ExecutorKind } from "../workspace/workspace.type";
-import { AutomaticExecutionCommandError } from "./errors";
-import { isTauriEnvironment } from "./runtime";
+} from "../../automaticExecution/automaticExecution.type";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
+import {
+    isBoolean,
+    isNumber,
+    isRecord,
+    isString,
+} from "../../shared/validation";
+import type { ExecutorKind } from "../../workspace/workspace.type";
+import { AutomaticExecutionCommandError } from "../core/errors";
+import { isTauriEnvironment } from "../core/runtime";
 
 const DESKTOP_SHELL_REQUIRED_ERROR =
     "Automatic execution commands require the Tauri desktop shell.";

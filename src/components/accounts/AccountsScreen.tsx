@@ -4,7 +4,7 @@ import { useAccountReveal } from "../../hooks/accounts/useAccountReveal";
 import { useAccounts } from "../../hooks/accounts/useAccounts";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import type { AccountSummary } from "../../lib/accounts/accounts.type";
-import { confirmAction } from "../../lib/platform/dialog";
+import { confirmAction } from "../../lib/platform/core/dialog";
 import { AppIcon } from "../app/common/AppIcon";
 import { AccountsAddModal } from "./AccountsAddModal";
 import { AccountsEmptyState } from "./AccountsEmptyState";

@@ -1,5 +1,5 @@
-import { killRobloxProcesses } from "../../platform/accounts";
-import { confirmAction } from "../../platform/dialog";
+import { confirmAction } from "../../platform/core/dialog";
+import { killRobloxProcesses } from "../../platform/roblox/accounts";
 import { getErrorMessage } from "../../shared/errorMessage";
 
 /** Runs an async command palette action without allowing rejected promises to escape. */

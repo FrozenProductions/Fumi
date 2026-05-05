@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
     scanPlatformLuauFileAnalysis: vi.fn(),
 }));
 
-vi.mock("../../platform/luau", () => ({
+vi.mock("../../platform/core/luau", () => ({
     scanLuauFileAnalysis: mocks.scanPlatformLuauFileAnalysis,
 }));
 

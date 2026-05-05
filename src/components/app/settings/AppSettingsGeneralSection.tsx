@@ -24,7 +24,7 @@ import {
 } from "../../../lib/app/updatePhrases";
 import type { AppUpdaterStatus } from "../../../lib/app/updater.type";
 import { getAppUpdateProgressSummary } from "../../../lib/app/updaterPresentation";
-import { openExternalUrl } from "../../../lib/platform/opener";
+import { openExternalUrl } from "../../../lib/platform/core/opener";
 import { AppAnimatedText } from "../common/AppAnimatedText";
 import { AppIcon } from "../common/AppIcon";
 import { AppInput } from "../form/AppInput";

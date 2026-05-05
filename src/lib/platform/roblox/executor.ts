@@ -1,19 +1,24 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { EXECUTOR_STATUS_CHANGED_EVENT } from "../../constants/platform/platform";
+import { EXECUTOR_STATUS_CHANGED_EVENT } from "../../../constants/platform/platform";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
     getExecutorPorts,
-} from "../../constants/workspace/executor";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
+} from "../../../constants/workspace/executor";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
+import {
+    isBoolean,
+    isNumber,
+    isRecord,
+    isString,
+} from "../../shared/validation";
 import type {
     ExecutorPortSummary,
     ExecutorStatusPayload,
-} from "../workspace/workspace.type";
-import { ExecutorCommandError } from "./errors";
-import { isTauriEnvironment } from "./runtime";
+} from "../../workspace/workspace.type";
+import { ExecutorCommandError } from "../core/errors";
+import { isTauriEnvironment } from "../core/runtime";
 
 function createDefaultExecutorPortSummaries(): readonly ExecutorPortSummary[] {
     return getExecutorPorts(DEFAULT_EXECUTOR_KIND).map((port) => ({

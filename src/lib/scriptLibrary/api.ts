@@ -2,7 +2,7 @@ import {
     RSCRIPTS_API_BASE_URL,
     SCRIPT_LIBRARY_PAGE_SIZE,
 } from "../../constants/scriptLibrary/scriptLibrary";
-import { copyTextToClipboard } from "../platform/clipboard";
+import { copyTextToClipboard } from "../platform/core/clipboard";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
 import type {
     ScriptLibraryCachedSession,

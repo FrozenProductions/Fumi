@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { setAutomaticExecutionUnsavedChanges } from "../../../lib/platform/automaticExecution";
+import { setAutomaticExecutionUnsavedChanges } from "../../../lib/platform/roblox/automaticExecution";
 import {
     completeExitPreparation,
     resolveExitGuardSync,
     subscribeToExitGuardSyncRequested,
     subscribeToPrepareForExit,
-} from "../../../lib/platform/window";
-import { setWorkspaceUnsavedChanges } from "../../../lib/platform/workspace";
+} from "../../../lib/platform/window/window";
+import { setWorkspaceUnsavedChanges } from "../../../lib/platform/workspace/workspace";
 import { selectWorkspaceHasUnsavedChanges } from "../../../lib/workspace/store/selectors";
 import {
     selectAutomaticExecutionHasUnsavedChanges,

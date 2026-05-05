@@ -16,7 +16,7 @@ vi.mock("@tauri-apps/api/core", () => ({
     invoke: mocks.invoke,
 }));
 
-vi.mock("./runtime", () => ({
+vi.mock("../core/runtime", () => ({
     isTauriEnvironment: mocks.isTauriEnvironment,
 }));
 

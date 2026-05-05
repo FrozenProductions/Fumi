@@ -1,4 +1,4 @@
-import { scanLuauFileAnalysis } from "../../platform/luau";
+import { scanLuauFileAnalysis } from "../../platform/core/luau";
 import type {
     LuauFileAnalysis,
     LuauScanMode,

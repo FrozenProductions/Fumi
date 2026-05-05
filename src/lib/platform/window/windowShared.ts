@@ -1,5 +1,5 @@
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { WindowShellError } from "./errors";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
+import { WindowShellError } from "../core/errors";
 
 /**
  * Creates a {@link WindowShellError} from an unknown error, using a fallback message

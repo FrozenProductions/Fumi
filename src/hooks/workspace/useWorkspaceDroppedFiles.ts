@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent } from "react";
-import { subscribeToDroppedFiles } from "../../lib/platform/window";
+import { subscribeToDroppedFiles } from "../../lib/platform/window/window";
 import { useAppStore } from "../app/useAppStore";
 import { useWorkspaceStore } from "./useWorkspaceStore";
 

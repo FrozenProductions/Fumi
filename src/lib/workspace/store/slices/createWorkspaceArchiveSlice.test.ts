@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
     restoreArchivedWorkspaceTab: vi.fn(),
 }));
 
-vi.mock("../../../platform/dialog", () => ({
+vi.mock("../../../platform/core/dialog", () => ({
     confirmAction: mocks.confirmAction,
 }));
 
-vi.mock("../../../platform/workspace", () => ({
+vi.mock("../../../platform/workspace/workspace", () => ({
     deleteAllArchivedWorkspaceTabs: mocks.deleteAllArchivedWorkspaceTabs,
     deleteArchivedWorkspaceTab: mocks.deleteArchivedWorkspaceTab,
     restoreAllArchivedWorkspaceTabs: mocks.restoreAllArchivedWorkspaceTabs,

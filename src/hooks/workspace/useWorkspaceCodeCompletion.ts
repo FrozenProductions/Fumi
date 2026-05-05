@@ -1,9 +1,6 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner/symbolScanner.type";
-import {
-    bindWorkspaceEditorShortcuts,
-    isPassiveCompletionTrigger,
-} from "../../lib/workspace/codeCompletion/ace";
+import { isPassiveCompletionTrigger } from "../../lib/workspace/codeCompletion/ace";
 import type {
     AceChangeDelta,
     AceEditorInstance,
@@ -12,28 +9,14 @@ import type {
     UseWorkspaceCodeCompletionOptions,
     UseWorkspaceCodeCompletionResult,
 } from "../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
-import { useAppStore } from "../app/useAppStore";
+import type {
+    AceEditorDestroyEventTarget,
+    StoredAceSessionState,
+} from "./codeCompletion/useWorkspaceCodeCompletionLifecycle";
+import { useWorkspaceCodeCompletionLifecycle } from "./codeCompletion/useWorkspaceCodeCompletionLifecycle";
 import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
+import { useWorkspaceEditorLoadHandler } from "./codeCompletion/useWorkspaceEditorLoadHandler";
 import { useWorkspaceEditorSearch } from "./editorSearch/useWorkspaceEditorSearch";
-
-type StoredAceSessionState = {
-    content: string;
-    scrollLeft: number;
-    scrollTop: number;
-    selection: unknown;
-    undoHistory: object;
-};
-
-type AceSelectionEventTarget = {
-    on: (eventName: "changeCursor", listener: () => void) => void;
-    off: (eventName: "changeCursor", listener: () => void) => void;
-};
-
-type AceEditorDestroyEventTarget = AceEditorInstance & {
-    destroyed?: boolean;
-    on: (eventName: "destroy", listener: () => void) => void;
-    off: (eventName: "destroy", listener: () => void) => void;
-};
 
 /**
  * Orchestrates Ace editor code completion, search, and cursor go-to functionality.
@@ -71,11 +54,6 @@ export function useWorkspaceCodeCompletion({
     const tabsByIdRef = useRef(
         new Map(tabs.map((tab) => [tab.id, tab] as const)),
     );
-    const clearGoToLineRequest = useAppStore(
-        (state) => state.clearGoToLineRequest,
-    );
-    const goToLineRequest = useAppStore((state) => state.goToLineRequest);
-
     activeTabIdRef.current = activeTabId;
     activeLuauAnalysisRef.current = activeLuauAnalysis;
     tabsByIdRef.current = new Map(tabs.map((tab) => [tab.id, tab] as const));
@@ -135,77 +113,17 @@ export function useWorkspaceCodeCompletion({
         [closeCompletionPopup, getActiveEditor],
     );
 
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent): void => {
-            const isSaveShortcut =
-                (event.metaKey || event.ctrlKey) &&
-                event.key.toLowerCase() === "s";
-
-            if (!isSaveShortcut) {
-                return;
-            }
-
-            event.preventDefault();
-            void saveActiveWorkspaceTab();
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [saveActiveWorkspaceTab]);
-
-    useEffect(() => {
-        if (!activeTabId) {
-            closeCompletionPopup();
-            return;
-        }
-
-        closeCompletionPopup();
-        const animationFrameId = window.requestAnimationFrame(() => {
-            const editor = getActiveEditor();
-
-            if (!editor) {
-                return;
-            }
-
-            editor.resize();
-            editor.focus();
-        });
-
-        return () => {
-            window.cancelAnimationFrame(animationFrameId);
-        };
-    }, [activeTabId, closeCompletionPopup, getActiveEditor]);
-
-    useEffect(() => {
-        if (!goToLineRequest || !activeTabId) {
-            return;
-        }
-
-        if (goToLine(goToLineRequest.lineNumber)) {
-            clearGoToLineRequest();
-        }
-    }, [activeTabId, clearGoToLineRequest, goToLine, goToLineRequest]);
-
-    useEffect(() => {
-        const openTabIds = new Set(tabs.map((tab) => tab.id));
-
-        for (const tabId of editorByTabIdRef.current.keys()) {
-            if (!openTabIds.has(tabId)) {
-                cursorListenerCleanupByTabIdRef.current.get(tabId)?.();
-                cursorListenerCleanupByTabIdRef.current.delete(tabId);
-                editorByTabIdRef.current.delete(tabId);
-            }
-        }
-
-        for (const tabId of sessionStateByTabIdRef.current.keys()) {
-            if (!openTabIds.has(tabId)) {
-                sessionStateByTabIdRef.current.delete(tabId);
-            }
-        }
-    }, [tabs]);
+    useWorkspaceCodeCompletionLifecycle({
+        activeTabId,
+        closeCompletionPopup,
+        cursorListenerCleanupByTabIdRef,
+        editorByTabIdRef,
+        getActiveEditor,
+        goToLine,
+        saveActiveWorkspaceTab,
+        sessionStateByTabIdRef,
+        tabs,
+    });
 
     const handleEditorCursorChangeRef = useRef<(tabId: string) => void>(
         () => {},
@@ -243,84 +161,16 @@ export function useWorkspaceCodeCompletion({
         });
     };
 
-    const createHandleEditorLoad = useCallback(
-        (tabId: string) =>
-            (editor: unknown): void => {
-                const aceEditor = editor as AceEditorInstance;
-                bindWorkspaceEditorShortcuts(aceEditor, toggleSearch);
-                editorByTabIdRef.current.set(tabId, aceEditor);
-
-                const tab = tabsByIdRef.current.get(tabId);
-
-                if (!tab) {
-                    return;
-                }
-
-                const session = aceEditor.getSession();
-                cursorListenerCleanupByTabIdRef.current.get(tabId)?.();
-                const editorEventTarget =
-                    aceEditor as AceEditorDestroyEventTarget;
-                const selection = session.selection as AceSelectionEventTarget;
-                const handleCursorChange = (): void => {
-                    handleEditorCursorChangeRef.current(tabId);
-                };
-                const cleanupCursorListener = (): void => {
-                    selection.off("changeCursor", handleCursorChange);
-                    editorEventTarget.off("destroy", cleanupCursorListener);
-                };
-                selection.on("changeCursor", handleCursorChange);
-                editorEventTarget.on("destroy", cleanupCursorListener);
-                cursorListenerCleanupByTabIdRef.current.set(
-                    tabId,
-                    cleanupCursorListener,
-                );
-
-                const storedSessionState =
-                    sessionStateByTabIdRef.current.get(tabId);
-
-                if (
-                    storedSessionState &&
-                    storedSessionState.content === tab.content
-                ) {
-                    session
-                        .getUndoManager()
-                        .fromJSON(storedSessionState.undoHistory);
-                    session.selection.fromJSON(storedSessionState.selection);
-                    session.setScrollLeft(storedSessionState.scrollLeft);
-                    session.setScrollTop(storedSessionState.scrollTop);
-                } else {
-                    sessionStateByTabIdRef.current.delete(tabId);
-                }
-
-                window.requestAnimationFrame(() => {
-                    if (
-                        editorByTabIdRef.current.get(tabId) !== aceEditor ||
-                        (aceEditor as AceEditorDestroyEventTarget).destroyed
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        !storedSessionState ||
-                        storedSessionState.content !== tab.content
-                    ) {
-                        aceEditor.moveCursorTo(
-                            tab.cursor.line,
-                            tab.cursor.column,
-                        );
-                        aceEditor.clearSelection();
-                        aceEditor.session.setScrollTop(tab.cursor.scrollTop);
-                    }
-
-                    if (activeTabIdRef.current === tabId) {
-                        aceEditor.resize();
-                        aceEditor.focus();
-                        closeCompletionPopup();
-                    }
-                });
-            },
-        [closeCompletionPopup, toggleSearch],
-    );
+    const createHandleEditorLoad = useWorkspaceEditorLoadHandler({
+        activeTabIdRef,
+        closeCompletionPopup,
+        cursorListenerCleanupByTabIdRef,
+        editorByTabIdRef,
+        handleEditorCursorChangeRef,
+        sessionStateByTabIdRef,
+        tabsByIdRef,
+        toggleSearch,
+    });
 
     const createHandleEditorUnmount = useCallback(
         (tabId: string) => (): void => {

@@ -1,5 +1,5 @@
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
 import { PlatformOperationError } from "./errors";
 
 /**

@@ -1,5 +1,5 @@
 import { WORKSPACE_UNAVAILABLE_ERROR_MESSAGE } from "../../../../constants/workspace/workspace";
-import { refreshWorkspace as refreshWorkspaceCommand } from "../../../platform/workspace";
+import { refreshWorkspace as refreshWorkspaceCommand } from "../../../platform/workspace/workspace";
 import { getErrorMessage } from "../../../shared/errorMessage";
 import {
     getWorkspaceDirtyTabCount,

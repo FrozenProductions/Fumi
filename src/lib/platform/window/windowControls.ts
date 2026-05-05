@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { isTauriEnvironment } from "./runtime";
+import { isTauriEnvironment } from "../core/runtime";
 import { createWindowShellError } from "./windowShared";
 
 /**

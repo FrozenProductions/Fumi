@@ -1,12 +1,12 @@
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../../constants/workspace/workspace";
 import { isLuauFileName } from "../../../luau/fileType";
-import { confirmAction } from "../../../platform/dialog";
+import { confirmAction } from "../../../platform/core/dialog";
 import {
     createWorkspaceFile as createWorkspaceFileCommand,
     deleteWorkspaceFile as deleteWorkspaceFileCommand,
     importWorkspaceFile as importWorkspaceFileCommand,
     renameWorkspaceFile as renameWorkspaceFileCommand,
-} from "../../../platform/workspace";
+} from "../../../platform/workspace/workspace";
 import { buildDuplicateWorkspaceTabDraft } from "../../duplicate";
 import {
     buildWorkspaceFileName,

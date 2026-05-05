@@ -1,10 +1,10 @@
-import { confirmAction } from "../../../platform/dialog";
+import { confirmAction } from "../../../platform/core/dialog";
 import {
     deleteAllArchivedWorkspaceTabs as deleteAllArchivedWorkspaceTabsCommand,
     deleteArchivedWorkspaceTab as deleteArchivedWorkspaceTabCommand,
     restoreAllArchivedWorkspaceTabs as restoreAllArchivedWorkspaceTabsCommand,
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
-} from "../../../platform/workspace";
+} from "../../../platform/workspace/workspace";
 import { removedTabFromSplitView } from "../../session/sessionSplitView";
 import {
     getNextActiveTabId,

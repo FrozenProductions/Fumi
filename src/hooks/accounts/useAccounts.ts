@@ -9,7 +9,7 @@ import {
     deleteAccount,
     launchAccount,
     listAccounts,
-} from "../../lib/platform/accounts";
+} from "../../lib/platform/roblox/accounts";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import type { UseAccountsResult } from "./useAccounts.type";
 

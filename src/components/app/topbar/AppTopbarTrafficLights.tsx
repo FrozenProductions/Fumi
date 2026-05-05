@@ -7,7 +7,7 @@ import {
     readCurrentWindowMaximizedState,
     subscribeToCurrentWindowResize,
     toggleCurrentWindowMaximize,
-} from "../../../lib/platform/window";
+} from "../../../lib/platform/window/window";
 import type {
     MaximizeGlyphProps,
     TrafficLightButtonProps,

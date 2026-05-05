@@ -15,16 +15,16 @@ const platformMocks = vi.hoisted(() => ({
     launchRoblox: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../../../platform/accounts", () => ({
+vi.mock("../../../platform/roblox/accounts", () => ({
     killRobloxProcesses: platformMocks.killRobloxProcesses,
     launchRoblox: platformMocks.launchRoblox,
 }));
 
-vi.mock("../../../platform/dialog", () => ({
+vi.mock("../../../platform/core/dialog", () => ({
     confirmAction: platformMocks.confirmAction,
 }));
 
-vi.mock("../../../platform/runtime", () => ({
+vi.mock("../../../platform/core/runtime", () => ({
     isTauriEnvironment: platformMocks.isTauriEnvironment,
 }));
 

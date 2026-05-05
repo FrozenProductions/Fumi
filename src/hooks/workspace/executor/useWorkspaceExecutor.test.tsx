@@ -25,7 +25,7 @@ const mocks = vi.hoisted(() => ({
     subscribeToExecutorStatusChanged: vi.fn(),
 }));
 
-vi.mock("../../../lib/platform/executor", () => ({
+vi.mock("../../../lib/platform/roblox/executor", () => ({
     attachExecutor: mocks.attachExecutor,
     detachExecutor: mocks.detachExecutor,
     executeExecutorScript: mocks.executeExecutorScript,
@@ -33,7 +33,7 @@ vi.mock("../../../lib/platform/executor", () => ({
     subscribeToExecutorStatusChanged: mocks.subscribeToExecutorStatusChanged,
 }));
 
-vi.mock("../../../lib/platform/workspace", () => ({
+vi.mock("../../../lib/platform/workspace/workspace", () => ({
     appendWorkspaceExecutionHistory: mocks.appendWorkspaceExecutionHistory,
 }));
 

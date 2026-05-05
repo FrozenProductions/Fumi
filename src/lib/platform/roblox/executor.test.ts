@@ -22,7 +22,7 @@ vi.mock("@tauri-apps/api/event", () => ({
     listen: mocks.listen,
 }));
 
-vi.mock("./runtime", () => ({
+vi.mock("../core/runtime", () => ({
     isTauriEnvironment: mocks.isTauriEnvironment,
 }));
 

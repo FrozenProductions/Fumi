@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
-import { copyTextToClipboard } from "../../lib/platform/clipboard";
+import { copyTextToClipboard } from "../../lib/platform/core/clipboard";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { getReactAceComponent } from "../../lib/workspace/editor/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";

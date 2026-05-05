@@ -4,11 +4,16 @@ import type {
     AccountSummary,
     RobloxAccountIdentity,
     RobloxProcessInfo,
-} from "../accounts/accounts.type";
-import { getUnknownCauseMessage } from "../shared/errorMessage";
-import { isBoolean, isNumber, isRecord, isString } from "../shared/validation";
-import { AccountsCommandError } from "./errors";
-import { isTauriEnvironment } from "./runtime";
+} from "../../accounts/accounts.type";
+import { getUnknownCauseMessage } from "../../shared/errorMessage";
+import {
+    isBoolean,
+    isNumber,
+    isRecord,
+    isString,
+} from "../../shared/validation";
+import { AccountsCommandError } from "../core/errors";
+import { isTauriEnvironment } from "../core/runtime";
 
 const DESKTOP_SHELL_REQUIRED_ERROR =
     "Accounts commands require the Tauri desktop shell.";
