@@ -17,7 +17,6 @@ use tauri::{AppHandle, Manager, Runtime};
 use uuid::Uuid;
 
 use crate::{
-    binarycookies::{read_roblosecurity_cookie_value, write_minimal_roblosecurity_cookie_file},
     executor::{self, ExecutorKind, ExecutorPortPool, ExecutorPortSummary},
     metadata::{
         backup::{create_backup, join_backup_path},
@@ -28,6 +27,9 @@ use crate::{
     },
 };
 
+use super::binarycookies::{
+    read_roblosecurity_cookie_value, write_minimal_roblosecurity_cookie_file,
+};
 use super::models::{
     AccountListResponse, AccountSummary, PersistedAccountsDocumentV1, PersistedAccountsDocumentV2,
     PersistedAccountsDocumentV3, ResolvedRobloxAccount, RobloxAccountIdentity, RobloxProcessInfo,
