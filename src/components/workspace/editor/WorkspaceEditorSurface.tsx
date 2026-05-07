@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { KeyboardEvent, ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
@@ -233,23 +233,47 @@ export function WorkspaceEditorSurface({
                           const isVisible = !isSplit
                               ? tab.id === activeTabId
                               : isPrimaryPane || isSecondaryPane;
+                          const paneToFocus = isPrimaryPane
+                              ? "primary"
+                              : isSecondaryPane
+                                ? "secondary"
+                                : null;
+                          const handlePaneClick =
+                              paneToFocus !== null
+                                  ? () => {
+                                        onFocusPane(paneToFocus);
+                                    }
+                                  : undefined;
+                          const handlePaneKeyDown =
+                              paneToFocus !== null
+                                  ? (event: KeyboardEvent<HTMLDivElement>) => {
+                                        if (
+                                            event.key !== "Enter" &&
+                                            event.key !== " "
+                                        ) {
+                                            return;
+                                        }
+
+                                        event.preventDefault();
+                                        onFocusPane(paneToFocus);
+                                    }
+                                  : undefined;
                           return (
                               <div
                                   key={tab.id}
                                   aria-hidden={!isVisible}
-                                  className={layoutClass}
-                                  style={getTabLayoutStyle(tab.id)}
-                                  onClick={
-                                      isSplit
-                                          ? () => {
-                                                if (isPrimaryPane) {
-                                                    onFocusPane("primary");
-                                                } else if (isSecondaryPane) {
-                                                    onFocusPane("secondary");
-                                                }
-                                            }
+                                  role={
+                                      paneToFocus !== null
+                                          ? "button"
                                           : undefined
                                   }
+                                  tabIndex={
+                                      paneToFocus !== null ? 0 : undefined
+                                  }
+                                  className={layoutClass}
+                                  style={getTabLayoutStyle(tab.id)}
+                                  onClick={handlePaneClick}
+                                  onKeyDown={handlePaneKeyDown}
                               >
                                   <WorkspaceAcePane
                                       AceEditorComponent={AceEditorComponent}
