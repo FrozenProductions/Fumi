@@ -75,6 +75,11 @@ export function useAppCommandPalette({
         requestedMode: RequestedAppCommandPaletteMode | null;
         requestedScope: AppCommandPaletteScope | null;
     } | null>(null);
+    const previousFocusStateRef = useRef<{
+        isOpen: boolean;
+        mode: AppCommandPaletteViewMode;
+        scope: AppCommandPaletteScope;
+    } | null>(null);
     const { isPresent, isClosing } = visibility;
     const deferredQuery = useDeferredValue(query);
     const normalizedQuery =
@@ -288,6 +293,25 @@ export function useAppCommandPalette({
         requestedScope,
         scheduleInputFocus,
     ]);
+
+    useLayoutEffect(() => {
+        const previousFocusState = previousFocusStateRef.current;
+        const didOpen = isOpen && !previousFocusState?.isOpen;
+        const didModeChange = isOpen && previousFocusState?.mode !== mode;
+        const didScopeChange = isOpen && previousFocusState?.scope !== scope;
+
+        previousFocusStateRef.current = {
+            isOpen,
+            mode,
+            scope,
+        };
+
+        if (!didOpen && !didModeChange && !didScopeChange) {
+            return;
+        }
+
+        scheduleInputFocus({ shouldSelect: didOpen });
+    }, [isOpen, mode, scheduleInputFocus, scope]);
 
     const commitSelection = useCallback(
         (item: AppCommandPaletteItem): void => {
