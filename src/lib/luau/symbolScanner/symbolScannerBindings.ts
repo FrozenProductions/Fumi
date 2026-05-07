@@ -1,6 +1,8 @@
 import { LuauSymbolScannerCursor } from "./parser/symbolScannerCursor";
 import type { ScopeFrame, TokenBoundary } from "./symbolScanner.type";
 
+const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
+
 export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor {
     protected parseBareAssignment(): void {
         if (this.mode === "functions") {
@@ -11,6 +13,11 @@ export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor 
         const identifierToken = this.current();
 
         if (!identifierToken || identifierToken.type !== "identifier") {
+            return;
+        }
+
+        if (identifierToken.value === GLOBAL_ENVIRONMENT_IDENTIFIER) {
+            this.parseGlobalEnvironmentAssignment(identifierToken.end);
             return;
         }
 
@@ -29,6 +36,42 @@ export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor 
                 scope: this.rootScope,
                 docSummary: "Global variable assigned in the current file.",
                 visibleStart: identifierToken.end,
+            });
+        }
+
+        this.skipSimpleStatement();
+    }
+
+    private parseGlobalEnvironmentAssignment(visibleStart: number): void {
+        this.index += 1;
+
+        if (!this.matchSymbol(".")) {
+            this.skipSimpleStatement();
+            return;
+        }
+
+        const memberToken = this.current();
+        if (!memberToken || memberToken.type !== "identifier") {
+            this.skipSimpleStatement();
+            return;
+        }
+
+        this.index += 1;
+
+        const equalsToken = this.peekNonNewline();
+        if (equalsToken?.type === "symbol" && equalsToken.value === "=") {
+            this.index = this.tokens.indexOf(equalsToken) + 1;
+            this.addSymbol({
+                label: memberToken.value,
+                namespace: GLOBAL_ENVIRONMENT_IDENTIFIER,
+                kind: "constant",
+                detail: "global variable",
+                declaration: memberToken,
+                isLexical: false,
+                ownerFunction: null,
+                scope: this.rootScope,
+                docSummary: "Global _G member assigned in the current file.",
+                visibleStart,
             });
         }
 

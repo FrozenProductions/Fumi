@@ -6,6 +6,8 @@ import type {
 } from "../symbolScanner.type";
 import { LuauSymbolScannerBindings } from "../symbolScannerBindings";
 
+const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
+
 export abstract class LuauSymbolScannerFunctions extends LuauSymbolScannerBindings {
     protected abstract parseScopedBlock(
         endKeywords: Set<string>,
@@ -50,12 +52,27 @@ export abstract class LuauSymbolScannerFunctions extends LuauSymbolScannerBindin
         }
 
         if (nameSegments.length > 0) {
-            functionLabel = isLocal
-                ? (nameSegments[nameSegments.length - 1]?.value ?? null)
+            const lastNameSegment = nameSegments[nameSegments.length - 1];
+            const isGlobalEnvironmentMember =
+                !isLocal &&
+                nameSegments[0]?.value === GLOBAL_ENVIRONMENT_IDENTIFIER &&
+                nameSegments.length > 1;
+
+            if (isGlobalEnvironmentMember) {
+                functionLabel = lastNameSegment?.value ?? null;
+            } else if (isLocal) {
+                functionLabel = lastNameSegment?.value ?? null;
+            } else if (nameSegments.length === 1) {
+                functionLabel = nameSegments[0]?.value ?? null;
+            } else {
+                functionLabel = nameSegments[0]?.value ?? null;
+            }
+
+            functionKind = isGlobalEnvironmentMember
+                ? "function"
                 : nameSegments.length === 1
-                  ? (nameSegments[0]?.value ?? null)
-                  : (nameSegments[0]?.value ?? null);
-            functionKind = nameSegments.length === 1 ? "function" : "namespace";
+                  ? "function"
+                  : "namespace";
         }
 
         while (this.matchSymbol("<")) {
@@ -133,27 +150,35 @@ export abstract class LuauSymbolScannerFunctions extends LuauSymbolScannerBindin
             .slice(declarationStart, functionScopeStart)
             .replace(/\s+/g, " ")
             .trim();
+        const isGlobalEnvironmentMember =
+            !isLocal &&
+            nameSegments[0]?.value === GLOBAL_ENVIRONMENT_IDENTIFIER;
 
         this.addSymbol({
             label: functionLabel,
             kind: functionKind,
-            detail:
-                functionKind === "namespace"
-                    ? "function namespace"
-                    : isLocal
-                      ? "local function"
-                      : "function",
+            detail: isGlobalEnvironmentMember
+                ? "global function"
+                : functionKind === "namespace"
+                  ? "function namespace"
+                  : isLocal
+                    ? "local function"
+                    : "function",
             declaration: {
                 start: declarationStart,
                 end: declarationEnd,
             },
             isLexical: isLocal,
+            namespace: isGlobalEnvironmentMember
+                ? GLOBAL_ENVIRONMENT_IDENTIFIER
+                : undefined,
             ownerFunction: isLocal ? currentFunctionScope : null,
             scope: isLocal ? parentScope : this.rootScope,
-            docSummary:
-                functionKind === "namespace"
-                    ? "Function namespace declared in the current file."
-                    : "Function declared in the current file.",
+            docSummary: isGlobalEnvironmentMember
+                ? "Global _G function declared in the current file."
+                : functionKind === "namespace"
+                  ? "Function namespace declared in the current file."
+                  : "Function declared in the current file.",
             signature: signature || undefined,
             visibleStart: declarationStart,
         });

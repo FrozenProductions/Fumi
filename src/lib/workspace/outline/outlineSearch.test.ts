@@ -111,6 +111,23 @@ describe("searchWorkspaceOutlineGroups", () => {
         ]);
     });
 
+    it("matches namespaced labels", () => {
+        const groups = searchWorkspaceOutlineGroups(
+            [
+                createSymbol({
+                    label: "SharedValue",
+                    kind: "constant",
+                    namespace: "_G",
+                }),
+            ],
+            "_G.Shared",
+        );
+
+        expect(groups[0]?.symbols.map((symbol) => symbol.label)).toEqual([
+            "SharedValue",
+        ]);
+    });
+
     it("supports fuzzy subsequence matching", () => {
         const groups = searchWorkspaceOutlineGroups(symbols, "hs");
 

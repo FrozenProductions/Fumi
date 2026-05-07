@@ -48,6 +48,7 @@ export type LuauFileSymbol = {
     visibleEnd: number;
     doc: LuauDocEntry;
     insertText?: string;
+    namespace?: string;
     score?: number;
 };
 

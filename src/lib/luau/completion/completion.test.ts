@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { EMPTY_LUAU_FILE_ANALYSIS } from "../../../constants/luau/core/luau";
+import { scanLuauFileAnalysis } from "../symbolScanner/symbolScanner";
 import {
     getLuauCompletionQuery,
     shouldOpenLuauCompletion,
@@ -186,6 +187,43 @@ describe("shouldOpenLuauCompletion", () => {
 
         expect(query.items.map((item) => item.label)).not.toContain(
             "Networking",
+        );
+    });
+
+    it("suggests global environment file symbols through _G", () => {
+        const content = [
+            "local localOnly = true",
+            "_G.SharedValue = localOnly",
+            "function _G.SharedFunction()",
+            "end",
+        ].join("\n");
+        const beforeCursor = `${content}\n_G.Shared`;
+        const analysis = scanLuauFileAnalysis(content);
+        const query = getLuauCompletionQuery({
+            analysis,
+            beforeCursor,
+            cursorIndex: beforeCursor.length,
+            priority: "balanced",
+        });
+
+        expect(query.items.map((item) => item.label)).toEqual([
+            "SharedFunction",
+            "SharedValue",
+        ]);
+        expect(query.items.every((item) => item.namespace === "_G")).toBe(true);
+    });
+
+    it("keeps global environment members out of root file completions", () => {
+        const analysis = scanLuauFileAnalysis("_G.SharedValue = true");
+        const query = getLuauCompletionQuery({
+            analysis,
+            beforeCursor: "Shared",
+            cursorIndex: "Shared".length,
+            priority: "balanced",
+        });
+
+        expect(query.items.map((item) => item.label)).not.toContain(
+            "SharedValue",
         );
     });
 });

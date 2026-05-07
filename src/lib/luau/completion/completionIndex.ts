@@ -26,6 +26,7 @@ function createCompletionItemFromFileSymbol(
         detail: symbol.detail,
         doc: symbol.doc,
         insertText: symbol.insertText,
+        namespace: symbol.namespace,
         score: symbol.score,
         sourceGroup: "file",
     };

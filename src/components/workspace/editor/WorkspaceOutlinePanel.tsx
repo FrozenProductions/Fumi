@@ -66,6 +66,12 @@ function getOutlineEntrySize(entry: OutlineEntry | undefined): number {
         : WORKSPACE_OUTLINE_VIRTUAL_ITEM_HEIGHT;
 }
 
+function getOutlineSymbolLabel(symbol: LuauFileSymbol): string {
+    return symbol.namespace
+        ? `${symbol.namespace}.${symbol.label}`
+        : symbol.label;
+}
+
 const OutlineSymbolRow = memo(function OutlineSymbolRow({
     symbol,
     onSelectSymbol,
@@ -75,6 +81,7 @@ const OutlineSymbolRow = memo(function OutlineSymbolRow({
 }): ReactElement {
     const iconColor = getSymbolColor(symbol.kind);
     const icon = getSymbolIcon(symbol.kind);
+    const label = getOutlineSymbolLabel(symbol);
 
     return (
         <button
@@ -90,7 +97,7 @@ const OutlineSymbolRow = memo(function OutlineSymbolRow({
                 {icon}
             </span>
             <span className="min-w-0 flex-1 truncate font-mono text-fumi-800">
-                {symbol.label}
+                {label}
             </span>
             {symbol.detail ? (
                 <span className="flex-shrink-0 text-[10px] text-fumi-500">

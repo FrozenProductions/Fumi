@@ -12,7 +12,6 @@ import {
     addMatchingCompletionItems,
     compareIndexedCompletionItems,
     createIndexedCompletionItemFromFileSymbol,
-    filterCompletions,
     LUAU_NAMESPACE_INDEX,
     LUAU_ROOT_COMPLETION_INDEX,
 } from "./completionIndex";
@@ -21,6 +20,7 @@ const FILE_COMPLETION_INDEX_CACHE = new WeakMap<
     LuauFileAnalysis,
     FileIndexedCompletionItem[]
 >();
+const STALE_ANALYSIS_BOUNDARY_TOLERANCE = 1;
 
 /**
  * Returns whether auto-completion should be suppressed for the given Ace token type.
@@ -69,14 +69,21 @@ function shouldIncludeFileSymbol(
     cursorIndex: number,
     tokenStartIndex: number,
     currentFunctionOwner: number | null,
+    namespace: string | null,
 ): boolean {
     if (symbol.kind === "comment") {
         return false;
     }
 
+    if ((symbol.namespace ?? null) !== namespace) {
+        return false;
+    }
+
     if (
         symbol.visibleStart > cursorIndex ||
-        (cursorIndex > symbol.visibleEnd && tokenStartIndex > symbol.visibleEnd)
+        (cursorIndex > symbol.visibleEnd &&
+            tokenStartIndex >
+                symbol.visibleEnd + STALE_ANALYSIS_BOUNDARY_TOLERANCE)
     ) {
         return false;
     }
@@ -112,6 +119,8 @@ function getFileCompletionIndex(
 function addVisibleFileCompletionItems(options: {
     analysis: LuauFileAnalysis | null;
     cursorIndex: number;
+    expressionStartIndex: number;
+    namespace: string | null;
     normalizedPrefix: string;
     priority: AppIntellisensePriority;
     seen: Set<string>;
@@ -120,12 +129,13 @@ function addVisibleFileCompletionItems(options: {
     const {
         analysis,
         cursorIndex,
+        expressionStartIndex,
+        namespace,
         normalizedPrefix,
         priority,
         seen,
         topItems,
     } = options;
-    const tokenStartIndex = cursorIndex - normalizedPrefix.length;
 
     if (!analysis) {
         return;
@@ -141,8 +151,9 @@ function addVisibleFileCompletionItems(options: {
             !shouldIncludeFileSymbol(
                 item.symbol,
                 cursorIndex,
-                tokenStartIndex,
+                expressionStartIndex,
                 currentFunctionOwner,
+                namespace,
             )
         ) {
             continue;
@@ -178,14 +189,34 @@ export function getLuauCompletionQuery(options: {
 
     if (namespacedMatch) {
         const [, namespacePath, prefix] = namespacedMatch;
+        const normalizedPrefix = prefix.toLowerCase();
+        const expressionStartIndex =
+            cursorIndex - namespacePath.length - 1 - prefix.length;
+        const seen = new Set<string>();
+        const topItems: IndexedCompletionItem[] = [];
+
+        addVisibleFileCompletionItems({
+            analysis,
+            cursorIndex,
+            expressionStartIndex,
+            namespace: namespacePath,
+            normalizedPrefix,
+            priority,
+            seen,
+            topItems,
+        });
+        addMatchingCompletionItems({
+            items:
+                LUAU_NAMESPACE_INDEX.get(namespacePath)?.[priority] ??
+                EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY[priority],
+            normalizedPrefix,
+            priority,
+            seen,
+            topItems,
+        });
 
         return {
-            items: filterCompletions(
-                LUAU_NAMESPACE_INDEX.get(namespacePath) ??
-                    EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY,
-                prefix,
-                priority,
-            ),
+            items: topItems.map((item) => item.item),
             namespacePath,
             prefix,
             replaceStartColumn: beforeCursor.length - prefix.length,
@@ -196,12 +227,15 @@ export function getLuauCompletionQuery(options: {
     const rootPrefixMatch = beforeCursor.match(/([A-Za-z_][A-Za-z0-9_]*)$/);
     const prefix = rootPrefixMatch?.[1] ?? "";
     const normalizedPrefix = prefix.toLowerCase();
+    const expressionStartIndex = cursorIndex - prefix.length;
     const seen = new Set<string>();
     const topItems: IndexedCompletionItem[] = [];
 
     addVisibleFileCompletionItems({
         analysis,
         cursorIndex,
+        expressionStartIndex,
+        namespace: null,
         normalizedPrefix,
         priority,
         seen,

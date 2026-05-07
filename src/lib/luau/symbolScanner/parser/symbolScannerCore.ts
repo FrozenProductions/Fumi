@@ -66,6 +66,7 @@ export abstract class LuauSymbolScannerCore {
         insertText?: string;
         kind: LuauSymbolKind;
         label: string;
+        namespace?: string;
         ownerFunction: ScopeFrame | null;
         scope: ScopeFrame;
         signature?: string;
@@ -78,6 +79,7 @@ export abstract class LuauSymbolScannerCore {
             declarationStart: options.declaration.start,
             declarationEnd: options.declaration.end,
             isLexical: options.isLexical,
+            namespace: options.namespace,
             ownerFunction: options.ownerFunction,
             visibleStart: options.visibleStart ?? options.declaration.end,
             insertText: options.insertText,

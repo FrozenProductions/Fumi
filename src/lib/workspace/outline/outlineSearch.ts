@@ -90,8 +90,12 @@ function getWorkspaceOutlineSearchFields(
     symbol: LuauFileSymbol,
     groupTitle: string,
 ): SearchField<WorkspaceOutlineSearchFieldName>[] {
+    const namespacedLabel = symbol.namespace
+        ? `${symbol.namespace}.${symbol.label}`
+        : symbol.label;
+
     return [
-        { name: "label", value: symbol.label },
+        { name: "label", value: namespacedLabel },
         { name: "detail", value: symbol.detail },
         { name: "group", value: groupTitle },
         { name: "kind", value: symbol.kind },

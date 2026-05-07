@@ -1,10 +1,26 @@
 import type { LuauToken, TokenBoundary } from "../symbolScanner.type";
 import { LuauSymbolScannerCore } from "./symbolScannerCore";
 
+const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
+
 export abstract class LuauSymbolScannerCursor extends LuauSymbolScannerCore {
     protected canStartBareAssignment(): boolean {
         const currentToken = this.current();
         const nextToken = this.peekNonNewline(1);
+        const memberToken = this.peekNonNewline(2);
+        const memberAssignmentToken = this.peekNonNewline(3);
+
+        if (
+            currentToken?.type === "identifier" &&
+            currentToken.value === GLOBAL_ENVIRONMENT_IDENTIFIER &&
+            nextToken?.type === "symbol" &&
+            nextToken.value === "." &&
+            memberToken?.type === "identifier" &&
+            memberAssignmentToken?.type === "symbol" &&
+            memberAssignmentToken.value === "="
+        ) {
+            return true;
+        }
 
         return (
             currentToken?.type === "identifier" &&
