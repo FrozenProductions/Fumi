@@ -1,90 +1,24 @@
-import type {
-    CSSProperties,
-    ReactElement,
-    PointerEvent as ReactPointerEvent,
-    RefObject,
-} from "react";
+import type { ReactElement } from "react";
 import { useEffect, useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../../constants/workspace/editor";
-import type { AppEditorTabSize } from "../../../lib/app/app.type";
-import type { LoadedAceRuntime } from "../../../lib/luau/ace/loadAceRuntime.type";
 import type {
     AceChangeDelta,
     AceEditorInstance,
 } from "../../../lib/workspace/codeCompletion/ace.type";
 import { applyAceEditorIndentSettings } from "../../../lib/workspace/editor/editor";
-import type { AceEditorComponent } from "../../../lib/workspace/editor/editor.type";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
 import { WorkspaceActionsButton } from "../actions/WorkspaceActionsButton";
 import { AppCodeCompletion } from "./AppCodeCompletion";
 import { WorkspaceEditorSearchPanel } from "./search/WorkspaceEditorSearchPanel";
 import type {
-    WorkspaceEditorCompletionProps,
-    WorkspaceEditorOutlineProps,
-    WorkspaceEditorPaneProps,
-    WorkspaceEditorSplitViewProps,
+    WorkspaceAcePaneProps,
+    WorkspaceEditorSurfaceProps,
     WorkspaceSplitDropZoneProps,
 } from "./workspaceEditor.type";
-
-type WorkspaceAcePaneProps = {
-    AceEditorComponent: AceEditorComponent;
-    aceRuntime: LoadedAceRuntime;
-    appTheme: WorkspaceEditorPaneProps["appTheme"];
-    createHandleEditorChange: WorkspaceEditorCompletionProps["createHandleEditorChange"];
-    createHandleEditorLoad: WorkspaceEditorCompletionProps["createHandleEditorLoad"];
-    createHandleEditorUnmount: WorkspaceEditorCompletionProps["createHandleEditorUnmount"];
-    createHandleScroll: WorkspaceEditorCompletionProps["createHandleScroll"];
-    editorFontSize: number;
-    isWordWrapEnabled: boolean;
-    isTabsToSpacesEnabled: boolean;
-    isActiveTab: boolean;
-    isVisible: boolean;
-    onActiveTabLuauChange: WorkspaceEditorOutlineProps["onActiveTabLuauChange"];
-    tab: WorkspaceEditorPaneProps["tabs"][number];
-    tabSize: AppEditorTabSize;
-};
-
-type WorkspaceEditorSurfaceProps = {
-    completion: WorkspaceEditorCompletionProps;
-    outline: Pick<WorkspaceEditorOutlineProps, "onActiveTabLuauChange">;
-    pane: WorkspaceEditorPaneProps;
-    splitViewState: Pick<WorkspaceEditorSplitViewProps, "onFocusPane">;
-    surface: {
-        refs: {
-            editorContainerRef: RefObject<HTMLDivElement | null>;
-            leftDropRef: (element: HTMLDivElement | null) => void;
-            rightDropRef: (element: HTMLDivElement | null) => void;
-        };
-        state: {
-            AceEditorComponent: AceEditorComponent | null;
-            aceRuntime: LoadedAceRuntime | null;
-            isAceReady: boolean;
-            isDropTarget: {
-                left: boolean;
-                right: boolean;
-            };
-            isSplit: boolean;
-            primaryTabId: string | null;
-            secondaryTabId: string | null;
-            splitDividerStyle: CSSProperties;
-            tabs: WorkspaceEditorPaneProps["tabs"];
-            visibleTabIds: Set<string | null>;
-            workspaceActionsClassName: string;
-            workspaceActionsStyle: CSSProperties;
-        };
-        actions: {
-            getTabLayoutClass: (tabId: string) => string;
-            getTabLayoutStyle: (tabId: string) => CSSProperties | undefined;
-            handleSplitResizePointerDown: (
-                event: ReactPointerEvent<HTMLButtonElement>,
-            ) => void;
-        };
-    };
-};
 
 function WorkspaceAcePane({
     AceEditorComponent,
