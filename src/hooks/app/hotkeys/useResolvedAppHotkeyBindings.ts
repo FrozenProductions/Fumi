@@ -85,5 +85,9 @@ export function useResolvedAppHotkeyBindings(): ResolvedAppHotkeyBindings {
             "TOGGLE_EXECUTOR_CONNECTION",
             hotkeyBindings,
         ),
+        executeActiveTab: getAppHotkeyBinding(
+            "EXECUTE_ACTIVE_TAB",
+            hotkeyBindings,
+        ),
     };
 }

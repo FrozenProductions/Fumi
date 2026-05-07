@@ -40,16 +40,22 @@ export function getActiveTabCommandItems({
     const { executeActiveTab } = workspaceExecutor.actions;
     const executorState = workspaceExecutor.state;
     const splitView = workspace?.splitView ?? null;
+    const executeDescription = getExecuteActiveTabDescription(
+        activeTab.fileName,
+        executorState,
+    );
     const items: AppCommandPaletteItem[] = [
         {
             id: "command-execute-tab",
             label: "Execute active tab",
-            description: executorState.hasSupportedExecutor
-                ? `Run ${activeTab.fileName} through the executor.`
-                : "No supported executor detected.",
+            description: executeDescription,
             icon: CommandIcon,
+            meta: hotkeyLabels.executeActiveTab,
             keywords: `execute run script ${activeTab.fileName}`,
-            isDisabled: !executorState.hasSupportedExecutor,
+            isDisabled:
+                !executorState.hasSupportedExecutor ||
+                !executorState.isAttached ||
+                executorState.isBusy,
             onSelect: () => {
                 void executeActiveTab();
             },
@@ -208,4 +214,23 @@ export function getActiveTabCommandItems({
             },
         },
     ];
+}
+
+function getExecuteActiveTabDescription(
+    fileName: string,
+    executorState: CommandPaletteTabOptions["workspaceExecutor"]["state"],
+): string {
+    if (!executorState.hasSupportedExecutor) {
+        return "No supported executor detected.";
+    }
+
+    if (!executorState.isAttached) {
+        return "Attach to an executor before executing.";
+    }
+
+    if (executorState.isBusy) {
+        return "Executor is busy.";
+    }
+
+    return `Run ${fileName} through the executor.`;
 }

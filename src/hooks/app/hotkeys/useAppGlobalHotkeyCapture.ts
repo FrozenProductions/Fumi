@@ -24,6 +24,10 @@ export function useAppGlobalHotkeyCapture({
     toggleGoToLineCommandPalette,
     toggleWorkspaceSplitView,
     toggleExecutorConnection,
+    executeActiveTab,
+    hasSupportedExecutor,
+    isExecutorAttached,
+    isExecutorBusy,
 }: UseAppGlobalHotkeyCaptureOptions): void {
     useEffect(() => {
         const handleGlobalAppKeydown = (event: KeyboardEvent): void => {
@@ -40,6 +44,26 @@ export function useAppGlobalHotkeyCapture({
                     toggleWorkspaceSplitView();
                 }
 
+                return;
+            }
+
+            if (
+                shouldTriggerAppHotkeyCapture(event, hotkeys.executeActiveTab)
+            ) {
+                if (
+                    isCommandPaletteOpen ||
+                    !activeTab ||
+                    !workspace ||
+                    !hasSupportedExecutor ||
+                    !isExecutorAttached ||
+                    isExecutorBusy
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                void executeActiveTab();
                 return;
             }
 
@@ -141,14 +165,19 @@ export function useAppGlobalHotkeyCapture({
     }, [
         activeSidebarItem,
         activeTab,
+        executeActiveTab,
+        hasSupportedExecutor,
         hotkeys.commandPaletteCommands,
         hotkeys.commandPaletteWorkspaces,
+        hotkeys.executeActiveTab,
         hotkeys.goToLine,
         hotkeys.openCommandPalette,
         hotkeys.openSettings,
         hotkeys.toggleExecutorConnection,
         hotkeys.toggleWorkspaceSplitView,
         isCommandPaletteOpen,
+        isExecutorAttached,
+        isExecutorBusy,
         selectSidebarItem,
         toggleCommandPalette,
         toggleCommandPaletteScope,

@@ -29,8 +29,10 @@ export function useAppScopedHotkeys({
     toggleWorkspaceSplitView,
     focusWorkspacePane,
     hasSupportedExecutor,
+    isExecutorAttached,
     isExecutorBusy,
     toggleExecutorConnection,
+    executeActiveTab,
 }: UseAppScopedHotkeysOptions): void {
     const isWorkspaceScreenActive = activeSidebarItem === "workspace";
     const hasSplitView = Boolean(workspace?.splitView);
@@ -45,6 +47,12 @@ export function useAppScopedHotkeys({
         !isCommandPaletteOpen && Boolean(workspace) && hasActiveTab;
     const canToggleExecutorConnection =
         !isCommandPaletteOpen && hasSupportedExecutor && !isExecutorBusy;
+    const canExecuteActiveTab =
+        !isCommandPaletteOpen &&
+        hasActiveTab &&
+        hasSupportedExecutor &&
+        isExecutorAttached &&
+        !isExecutorBusy;
 
     useHotkey(
         hotkeys.openWorkspaceDirectory,
@@ -278,6 +286,16 @@ export function useAppScopedHotkeys({
         },
         {
             enabled: canToggleExecutorConnection,
+        },
+    );
+
+    useHotkey(
+        hotkeys.executeActiveTab,
+        () => {
+            void executeActiveTab();
+        },
+        {
+            enabled: canExecuteActiveTab,
         },
     );
 }

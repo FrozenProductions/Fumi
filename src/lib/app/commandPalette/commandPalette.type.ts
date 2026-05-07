@@ -107,6 +107,7 @@ export type AppCommandPaletteControllerResult = {
 export type AppCommandPaletteHotkeyLabels = {
     activateGoToLine: string;
     archiveWorkspaceTab: string;
+    executeActiveTab: string;
     toggleExecutorConnection: string;
     createWorkspaceFile: string;
     focusWorkspaceLeftPane: string;

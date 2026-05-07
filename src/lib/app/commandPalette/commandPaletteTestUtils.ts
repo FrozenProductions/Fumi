@@ -140,6 +140,7 @@ export function createCommandPaletteOptions(
         hotkeyLabels: {
             activateGoToLine: "Mod+Shift+\\",
             archiveWorkspaceTab: "Mod+W",
+            executeActiveTab: "Mod+Enter",
             toggleExecutorConnection: "Mod+Shift+C",
             createWorkspaceFile: "Mod+T",
             focusWorkspaceLeftPane: "Ctrl+Mod+1",

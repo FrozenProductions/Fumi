@@ -48,9 +48,12 @@ export function AppHotkeysProvider({
         (state) => state.toggleCommandPalette,
     );
     const hotkeys = useResolvedAppHotkeyBindings();
-    const { hasSupportedExecutor, isBusy: isExecutorBusy } =
-        workspaceExecutor.state;
-    const { toggleConnection: toggleExecutorConnection } =
+    const {
+        hasSupportedExecutor,
+        isAttached: isExecutorAttached,
+        isBusy: isExecutorBusy,
+    } = workspaceExecutor.state;
+    const { executeActiveTab, toggleConnection: toggleExecutorConnection } =
         workspaceExecutor.actions;
 
     useAppGlobalHotkeyCapture({
@@ -65,6 +68,10 @@ export function AppHotkeysProvider({
         toggleGoToLineCommandPalette,
         toggleWorkspaceSplitView,
         toggleExecutorConnection,
+        executeActiveTab,
+        hasSupportedExecutor,
+        isExecutorAttached,
+        isExecutorBusy,
     });
 
     useAppScopedHotkeys({
@@ -87,8 +94,10 @@ export function AppHotkeysProvider({
         toggleWorkspaceSplitView,
         focusWorkspacePane,
         hasSupportedExecutor,
+        isExecutorAttached,
         isExecutorBusy,
         toggleExecutorConnection,
+        executeActiveTab,
     });
 
     return <>{children}</>;

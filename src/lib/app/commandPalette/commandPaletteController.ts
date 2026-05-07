@@ -30,6 +30,10 @@ export function getAppCommandPaletteHotkeyLabels(
             "ARCHIVE_WORKSPACE_TAB",
             hotkeyBindings,
         ),
+        executeActiveTab: getAppHotkeyShortcutLabel(
+            "EXECUTE_ACTIVE_TAB",
+            hotkeyBindings,
+        ),
         toggleExecutorConnection: getAppHotkeyShortcutLabel(
             "TOGGLE_EXECUTOR_CONNECTION",
             hotkeyBindings,

@@ -32,6 +32,7 @@ export type ResolvedAppHotkeyBindings = {
     focusWorkspaceLeftPane: AppHotkeyBinding;
     focusWorkspaceRightPane: AppHotkeyBinding;
     toggleExecutorConnection: AppHotkeyBinding;
+    executeActiveTab: AppHotkeyBinding;
 };
 
 export type UseAppGlobalHotkeyCaptureOptions = {
@@ -46,6 +47,10 @@ export type UseAppGlobalHotkeyCaptureOptions = {
     toggleGoToLineCommandPalette: () => void;
     toggleWorkspaceSplitView: WorkspaceSessionTabActions["toggleWorkspaceSplitView"];
     toggleExecutorConnection: UseWorkspaceExecutorResult["actions"]["toggleConnection"];
+    executeActiveTab: UseWorkspaceExecutorResult["actions"]["executeActiveTab"];
+    hasSupportedExecutor: boolean;
+    isExecutorAttached: boolean;
+    isExecutorBusy: boolean;
 };
 
 export type UseAppScopedHotkeysOptions = {
@@ -68,6 +73,8 @@ export type UseAppScopedHotkeysOptions = {
     toggleWorkspaceSplitView: WorkspaceSessionTabActions["toggleWorkspaceSplitView"];
     focusWorkspacePane: WorkspaceSessionTabActions["focusWorkspacePane"];
     hasSupportedExecutor: boolean;
+    isExecutorAttached: boolean;
     isExecutorBusy: boolean;
     toggleExecutorConnection: UseWorkspaceExecutorResult["actions"]["toggleConnection"];
+    executeActiveTab: UseWorkspaceExecutorResult["actions"]["executeActiveTab"];
 };

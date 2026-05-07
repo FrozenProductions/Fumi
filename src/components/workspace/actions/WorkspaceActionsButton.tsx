@@ -49,6 +49,10 @@ export function WorkspaceActionsButton({
         "TOGGLE_OUTLINE_PANEL",
         hotkeyBindings,
     );
+    const executeActiveTabShortcutLabel = getAppHotkeyShortcutLabel(
+        "EXECUTE_ACTIVE_TAB",
+        hotkeyBindings,
+    );
     const isDark = theme === "dark";
     const { isAttached, isBusy, hasSupportedExecutor } = executor.state;
     const { executeActiveTab } = executor.actions;
@@ -201,7 +205,13 @@ export function WorkspaceActionsButton({
     return (
         <div className="relative inline-flex items-center" ref={containerRef}>
             <div className={`app-select-none ${containerClass}`}>
-                <AppTooltip content={getExecuteTooltip()} side="top">
+                <AppTooltip
+                    content={getExecuteTooltip()}
+                    shortcut={
+                        canExecute ? executeActiveTabShortcutLabel : undefined
+                    }
+                    side="top"
+                >
                     <button
                         type="button"
                         onClick={handleExecuteClick}
