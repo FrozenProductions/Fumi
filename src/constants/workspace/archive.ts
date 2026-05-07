@@ -9,6 +9,7 @@ export const ARCHIVED_TABS_SORT_OPTIONS = [
 ] as const satisfies ArchivedTabsSortOptionConfig[];
 
 export const ARCHIVED_TABS_HEADER_EXIT_DURATION_MS = 150;
+export const ARCHIVED_TABS_MINIFY_REMAINING_SCROLL_RANGE_PX = 48;
 export const ARCHIVED_TABS_SENTINEL_STYLE = {
     top: "0px",
 } satisfies CSSProperties;

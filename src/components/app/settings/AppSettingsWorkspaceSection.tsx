@@ -7,6 +7,7 @@ import type { ChangeEvent, ReactElement } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
     ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
+    ARCHIVED_TABS_MINIFY_REMAINING_SCROLL_RANGE_PX,
     ARCHIVED_TABS_SENTINEL_STYLE,
     ARCHIVED_TABS_SORT_OPTIONS,
 } from "../../../constants/workspace/archive";
@@ -23,6 +24,40 @@ import { AppSelect } from "../form/AppSelect";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";
 import { AppSettingsWorkspaceEmptyState } from "./workspace/AppSettingsWorkspaceEmptyState";
 import type { ArchivedTabActionButtonClassNames } from "./workspace/appSettingsWorkspace.type";
+
+function getScrollableAncestor(element: HTMLElement): HTMLElement | null {
+    let parent = element.parentElement;
+
+    while (parent) {
+        const overflowY = window.getComputedStyle(parent).overflowY;
+
+        if (overflowY === "auto" || overflowY === "scroll") {
+            return parent;
+        }
+
+        parent = parent.parentElement;
+    }
+
+    return null;
+}
+
+function getArchiveSettingsScrollRange(scrollRoot: HTMLElement | null): number {
+    if (scrollRoot) {
+        return scrollRoot.scrollHeight - scrollRoot.clientHeight;
+    }
+
+    return document.documentElement.scrollHeight - window.innerHeight;
+}
+
+function canMinifyArchiveSearch(
+    scrollRange: number,
+    searchContainerHeight: number,
+): boolean {
+    return (
+        scrollRange >
+        searchContainerHeight + ARCHIVED_TABS_MINIFY_REMAINING_SCROLL_RANGE_PX
+    );
+}
 
 /**
  * Manages the workspace settings section with archived tab search, sort, and bulk actions.
@@ -54,6 +89,7 @@ export function AppSettingsWorkspaceSection(): ReactElement {
     }, [workspace, searchQuery, sortBy]);
 
     const sentinelRef = useRef<HTMLDivElement>(null);
+    const searchContainerHeightRef = useRef(0);
     const [isMinified, setIsMinified] = useState(false);
     const [isExpandedFully, setIsExpandedFully] = useState(true);
 
@@ -63,12 +99,26 @@ export function AppSettingsWorkspaceSection(): ReactElement {
             return;
         }
 
+        const scrollRoot = getScrollableAncestor(el);
         const observer = new IntersectionObserver(
             ([entry]) => {
+                const scrollRange = getArchiveSettingsScrollRange(scrollRoot);
+
+                if (
+                    !entry.isIntersecting &&
+                    !canMinifyArchiveSearch(
+                        scrollRange,
+                        searchContainerHeightRef.current,
+                    )
+                ) {
+                    setIsMinified(false);
+                    return;
+                }
+
                 setIsMinified(!entry.isIntersecting);
             },
             {
-                root: null,
+                root: scrollRoot,
                 threshold: 0,
                 rootMargin: "0px",
             },
@@ -93,9 +143,17 @@ export function AppSettingsWorkspaceSection(): ReactElement {
         exitDurationMs: ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
     });
 
-    const searchMotionClass = isClosing
+    const searchExitMotionClass = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:-motion-translate-y-out-[10%] motion-safe:motion-duration-150"
-        : "motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[10%] motion-safe:motion-duration-150 motion-safe:motion-ease-out-cubic";
+        : "";
+
+    const handleSearchContainerRef = (element: HTMLDivElement | null): void => {
+        if (!element) {
+            return;
+        }
+
+        searchContainerHeightRef.current = element.offsetHeight;
+    };
 
     const handleRestoreTab = (tabId: string): void => {
         void restoreArchivedWorkspaceTab(tabId);
@@ -163,7 +221,7 @@ export function AppSettingsWorkspaceSection(): ReactElement {
                 style={ARCHIVED_TABS_SENTINEL_STYLE}
             />
 
-            <div className="sticky top-0 z-30 -mx-6 -mt-6 bg-fumi-50 px-6 pt-6 pb-2">
+            <div className="sticky top-0 z-30 -mx-6 -mt-6 bg-gradient-to-b from-fumi-50 from-[0%] via-fumi-50 via-[78%] to-fumi-50/0 px-6 pt-6 pb-2">
                 <div
                     className={`flex flex-col rounded-[1rem] border border-fumi-200 bg-fumi-100/95 backdrop-blur-md transition-shadow ${
                         isMinified ? "shadow-md" : "shadow-sm"
@@ -183,7 +241,8 @@ export function AppSettingsWorkspaceSection(): ReactElement {
                         >
                             {isPresent ? (
                                 <div
-                                    className={`flex items-center justify-between gap-4 border-b border-fumi-200/50 p-4 ${searchMotionClass}`}
+                                    ref={handleSearchContainerRef}
+                                    className={`flex items-center justify-between gap-4 border-b border-fumi-200/50 p-4 ${searchExitMotionClass}`}
                                 >
                                     <div className="relative flex-1">
                                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
