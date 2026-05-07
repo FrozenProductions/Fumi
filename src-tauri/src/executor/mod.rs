@@ -1,50 +1,41 @@
 //! Executor runtime: socket-based IPC for script injection and execution.
 
+mod ipc;
 mod models;
+mod ports;
 
 pub(crate) mod commands;
 
 use std::{
     io::{ErrorKind, Read, Write},
-    net::{Ipv4Addr, Shutdown, SocketAddrV4, TcpStream},
-    path::Path,
+    net::{Shutdown, TcpStream},
     sync::{Arc, Mutex, MutexGuard},
     thread::{self, JoinHandle},
     time::Duration,
 };
 
 use anyhow::{anyhow, Context, Result};
-use flate2::{write::ZlibEncoder, Compression};
 use tauri::{AppHandle, Manager, Runtime};
 
 use crate::{accounts, events::emit_executor_status_changed};
 
+use self::ipc::{
+    build_frame, build_opiumware_payload, connect_to_executor_port, should_retry_after_write_error,
+    ExecutorIpcType,
+};
 pub use self::models::{ExecutorKind, ExecutorPortSummary, ExecutorStatusPayload};
-
-const LOCALHOST: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
-const HEADER_LENGTH: usize = 16;
-const FRAME_TERMINATOR_LENGTH: usize = 1;
-const SOCKET_CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
+#[cfg(test)]
+pub(crate) use self::ports::unsupported_executor_port_pool;
+pub(crate) use self::ports::{
+    current_executor_port_pool, executor_port_pool_for_kind, ExecutorPortPool,
+};
+use self::ports::{
+    default_executor_port, detect_executor_kind, is_supported_port, normalize_executor_port,
+};
 const POST_RECONNECT_SETTLE_DURATION: Duration = Duration::from_millis(75);
-const MACSPLOIT_DETECTION_PATH: &str = "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
-const OPIUMWARE_DETECTION_PATHS: [&str; 2] = [
-    "/Applications/Roblox.app/Contents/Resources/libOpiumware.dylib",
-    "/Applications/Roblox.app/Contents/Resources/libOpiumwareNative.dylib",
-];
-const MACSPLOIT_AVAILABLE_PORTS: [u16; 10] =
-    [5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562];
-const OPIUMWARE_AVAILABLE_PORTS: [u16; 6] = [8392, 8393, 8394, 8395, 8396, 8397];
-const UNSUPPORTED_EXECUTOR_PORTS: [u16; 0] = [];
-const OPIUMWARE_SCRIPT_PREFIX: &str = "OpiumwareScript ";
 
 fn log_executor_debug(message: impl AsRef<str>) {
     eprintln!("[executor] {}", message.as_ref());
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ExecutorPortPool {
-    pub executor_kind: ExecutorKind,
-    pub ports: Vec<u16>,
 }
 
 #[derive(Clone)]
@@ -73,13 +64,6 @@ struct ExecutorConnection {
     writer: Arc<Mutex<TcpStream>>,
     shutdown_writer: TcpStream,
     reader_thread: JoinHandle<()>,
-}
-
-#[derive(Clone, Copy)]
-#[repr(u8)]
-enum ExecutorIpcType {
-    Execute = 0,
-    Setting = 1,
 }
 
 impl Default for ExecutorRuntimeState {
@@ -150,9 +134,7 @@ impl ExecutorRuntimeState {
                     }
                 }
 
-                let address = SocketAddrV4::new(LOCALHOST, port);
-                let writer = TcpStream::connect_timeout(&address.into(), SOCKET_CONNECT_TIMEOUT)
-                    .map_err(format_attach_error)?;
+                let writer = connect_to_executor_port(port)?;
                 writer
                     .set_nodelay(true)
                     .context("failed to configure the MacSploit socket")?;
@@ -554,10 +536,7 @@ impl ExecutorRuntimeState {
             state.port = normalize_executor_port(detected_kind, state.port);
 
             (
-                ExecutorPortPool {
-                    executor_kind: state.executor_kind,
-                    ports: available_ports_for_executor(state.executor_kind).to_vec(),
-                },
+                executor_port_pool_for_kind(state.executor_kind),
                 stale_connection,
             )
         };
@@ -568,77 +547,6 @@ impl ExecutorRuntimeState {
         }
 
         stale_connection.0
-    }
-}
-
-fn format_attach_error(error: std::io::Error) -> anyhow::Error {
-    match error.kind() {
-        ErrorKind::ConnectionRefused => {
-            anyhow!("ConnectionRefusedError: Socket is not open.")
-        }
-        _ => anyhow!("ConnectionError: {error}"),
-    }
-}
-
-fn detect_executor_kind() -> ExecutorKind {
-    let opiumware_dylib_paths = OPIUMWARE_DETECTION_PATHS.map(Path::new);
-
-    detect_executor_kind_at(Path::new(MACSPLOIT_DETECTION_PATH), &opiumware_dylib_paths)
-}
-
-fn detect_executor_kind_at(
-    macsploit_dylib_path: &Path,
-    opiumware_dylib_paths: &[&Path],
-) -> ExecutorKind {
-    if macsploit_dylib_path.exists() {
-        ExecutorKind::Macsploit
-    } else if opiumware_dylib_paths.iter().any(|path| path.exists()) {
-        ExecutorKind::Opiumware
-    } else {
-        ExecutorKind::Unsupported
-    }
-}
-
-pub(crate) fn current_executor_port_pool() -> ExecutorPortPool {
-    executor_port_pool_for_kind(detect_executor_kind())
-}
-
-#[cfg(test)]
-pub(crate) fn unsupported_executor_port_pool() -> ExecutorPortPool {
-    executor_port_pool_for_kind(ExecutorKind::Unsupported)
-}
-
-pub(crate) fn executor_port_pool_for_kind(executor_kind: ExecutorKind) -> ExecutorPortPool {
-    ExecutorPortPool {
-        executor_kind,
-        ports: available_ports_for_executor(executor_kind).to_vec(),
-    }
-}
-
-fn available_ports_for_executor(executor_kind: ExecutorKind) -> &'static [u16] {
-    match executor_kind {
-        ExecutorKind::Macsploit => &MACSPLOIT_AVAILABLE_PORTS,
-        ExecutorKind::Opiumware => &OPIUMWARE_AVAILABLE_PORTS,
-        ExecutorKind::Unsupported => &UNSUPPORTED_EXECUTOR_PORTS,
-    }
-}
-
-fn default_executor_port(executor_kind: ExecutorKind) -> u16 {
-    available_ports_for_executor(executor_kind)
-        .first()
-        .copied()
-        .unwrap_or(0)
-}
-
-fn is_supported_port(executor_kind: ExecutorKind, port: u16) -> bool {
-    available_ports_for_executor(executor_kind).contains(&port)
-}
-
-fn normalize_executor_port(executor_kind: ExecutorKind, port: u16) -> u16 {
-    if is_supported_port(executor_kind, port) {
-        port
-    } else {
-        default_executor_port(executor_kind)
     }
 }
 
@@ -671,49 +579,6 @@ pub(crate) fn select_current_executor_port<R: Runtime>(
 ) -> Result<ExecutorStatusPayload> {
     let state = app.state::<ExecutorRuntimeState>();
     state.select_current_port(app, port)
-}
-
-fn connect_to_executor_port(port: u16) -> Result<TcpStream> {
-    let address = SocketAddrV4::new(LOCALHOST, port);
-    TcpStream::connect_timeout(&address.into(), SOCKET_CONNECT_TIMEOUT).map_err(format_attach_error)
-}
-
-fn build_opiumware_payload(script: &str) -> Result<Vec<u8>> {
-    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-    encoder
-        .write_all(format!("{OPIUMWARE_SCRIPT_PREFIX}{script}").as_bytes())
-        .context("failed to compress the Opiumware payload")?;
-    encoder
-        .finish()
-        .context("failed to finalize the Opiumware payload")
-}
-
-fn build_frame(ipc_type: ExecutorIpcType, payload: &[u8]) -> Result<Vec<u8>> {
-    let payload_length = u32::try_from(payload.len())
-        .context("script payload is too large for the MacSploit IPC protocol")?;
-    let mut frame = vec![0_u8; HEADER_LENGTH + payload.len() + FRAME_TERMINATOR_LENGTH];
-
-    frame[0] = ipc_type as u8;
-    frame[8..12].copy_from_slice(&payload_length.to_le_bytes());
-    frame[HEADER_LENGTH..HEADER_LENGTH + payload.len()].copy_from_slice(payload);
-
-    Ok(frame)
-}
-
-fn should_retry_after_write_error(error: &anyhow::Error) -> bool {
-    error
-        .chain()
-        .find_map(|cause| cause.downcast_ref::<std::io::Error>())
-        .is_some_and(|io_error| {
-            matches!(
-                io_error.kind(),
-                ErrorKind::BrokenPipe
-                    | ErrorKind::ConnectionAborted
-                    | ErrorKind::ConnectionReset
-                    | ErrorKind::NotConnected
-                    | ErrorKind::UnexpectedEof
-            )
-        })
 }
 
 fn run_reader_loop<R: Runtime>(
@@ -813,6 +678,7 @@ fn run_reader_loop<R: Runtime>(
 
 #[cfg(test)]
 mod tests {
+    use super::ports::detect_executor_kind_at;
     use super::*;
     use std::{
         fs,
@@ -965,15 +831,15 @@ mod tests {
     fn executor_port_pool_exposes_executor_specific_ports() {
         assert_eq!(
             executor_port_pool_for_kind(ExecutorKind::Macsploit).ports,
-            MACSPLOIT_AVAILABLE_PORTS.to_vec()
+            vec![5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562]
         );
         assert_eq!(
             executor_port_pool_for_kind(ExecutorKind::Opiumware).ports,
-            OPIUMWARE_AVAILABLE_PORTS.to_vec()
+            vec![8392, 8393, 8394, 8395, 8396, 8397]
         );
         assert_eq!(
             executor_port_pool_for_kind(ExecutorKind::Unsupported).ports,
-            UNSUPPORTED_EXECUTOR_PORTS.to_vec()
+            Vec::<u16>::new()
         );
     }
 
