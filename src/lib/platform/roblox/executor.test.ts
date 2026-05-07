@@ -82,6 +82,32 @@ describe("executor platform commands", () => {
         );
     });
 
+    it("reattaches through the backend and decodes the updated status", async () => {
+        const executorModule = await loadExecutorModule();
+        mocks.invoke.mockResolvedValue(createExecutorStatusPayload());
+
+        await expect(executorModule.reattachExecutor()).resolves.toEqual(
+            createExecutorStatusPayload(),
+        );
+        expect(mocks.invoke).toHaveBeenCalledWith(
+            "reattach_executor",
+            undefined,
+        );
+    });
+
+    it("updates executor settings through the backend", async () => {
+        const executorModule = await loadExecutorModule();
+        mocks.invoke.mockResolvedValue(undefined);
+
+        await expect(
+            executorModule.updateExecutorSetting("autoexecute", true),
+        ).resolves.toBeUndefined();
+        expect(mocks.invoke).toHaveBeenCalledWith("update_executor_setting", {
+            key: "autoexecute",
+            value: true,
+        });
+    });
+
     it("rejects malformed status payloads instead of returning invalid executor state", async () => {
         const executorModule = await loadExecutorModule();
         mocks.invoke.mockResolvedValue({
@@ -141,5 +167,22 @@ describe("executor platform commands", () => {
         ).resolves.toEqual(expect.any(Function));
         expect(mocks.invoke).not.toHaveBeenCalled();
         expect(mocks.listen).not.toHaveBeenCalled();
+    });
+
+    it("rejects mutating commands outside the desktop shell", async () => {
+        mocks.isTauriEnvironment.mockReturnValue(false);
+        const executorModule = await loadExecutorModule();
+
+        await expect(executorModule.reattachExecutor()).rejects.toHaveProperty(
+            "message",
+            "Executor commands require the Tauri desktop shell.",
+        );
+        await expect(
+            executorModule.updateExecutorSetting("autoexecute", false),
+        ).rejects.toHaveProperty(
+            "message",
+            "Executor commands require the Tauri desktop shell.",
+        );
+        expect(mocks.invoke).not.toHaveBeenCalled();
     });
 });

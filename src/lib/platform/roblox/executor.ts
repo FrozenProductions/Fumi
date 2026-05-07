@@ -196,6 +196,31 @@ export function detachExecutor(): Promise<ExecutorStatusPayload> {
 }
 
 /**
+ * Reattaches the executor using the last known port.
+ *
+ * Invokes the `reattach_executor` Tauri command.
+ *
+ * @returns Updated executor status with port binding info
+ * @throws {ExecutorCommandError} If the command fails or the desktop shell is unavailable
+ */
+export function reattachExecutor(): Promise<ExecutorStatusPayload> {
+    if (!isTauriEnvironment()) {
+        return Promise.reject(
+            new ExecutorCommandError({
+                operation: "reattachExecutor",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invokeExecutorCommand(
+        "reattach_executor",
+        "reattachExecutor",
+        parseExecutorStatusPayload,
+    );
+}
+
+/**
  * Executes a Luau script string via the attached executor.
  *
  * Invokes the `execute_executor_script` Tauri command.
@@ -220,6 +245,40 @@ export function executeExecutorScript(script: string): Promise<void> {
             "executeExecutorScript",
             error,
             "Could not execute the active script.",
+        );
+    });
+}
+
+/**
+ * Updates a boolean executor setting.
+ *
+ * Invokes the `update_executor_setting` Tauri command.
+ *
+ * @param key - The backend setting key to update
+ * @param value - The setting value
+ * @throws {ExecutorCommandError} If the command fails or the desktop shell is unavailable
+ */
+export function updateExecutorSetting(
+    key: string,
+    value: boolean,
+): Promise<void> {
+    if (!isTauriEnvironment()) {
+        return Promise.reject(
+            new ExecutorCommandError({
+                operation: "updateExecutorSetting",
+                message: DESKTOP_SHELL_REQUIRED_ERROR,
+            }),
+        );
+    }
+
+    return invoke<void>("update_executor_setting", {
+        key,
+        value,
+    }).catch((error) => {
+        throw createExecutorCommandError(
+            "updateExecutorSetting",
+            error,
+            "Could not update executor setting.",
         );
     });
 }
