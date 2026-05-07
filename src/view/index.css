@@ -82,11 +82,26 @@
     }
 
     html,
-    body,
-    #root {
+    body {
         width: 100%;
         height: 100%;
         overflow: hidden;
+    }
+
+    #root {
+        --app-zoom-scale: 1;
+        --app-zoom-inverse-scale: 1;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .app-zoom-surface {
+        width: calc(100% * var(--app-zoom-inverse-scale));
+        height: calc(100% * var(--app-zoom-inverse-scale));
+        overflow: hidden;
+        transform: scale(var(--app-zoom-scale));
+        transform-origin: top left;
     }
 
     html,

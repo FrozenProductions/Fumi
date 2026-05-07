@@ -31,7 +31,7 @@ try {
     createRoot(rootElement).render(
         <StrictMode>
             <HotkeysProvider defaultOptions={HOTKEY_PROVIDER_DEFAULT_OPTIONS}>
-                <div className="contents">
+                <div className="app-zoom-surface">
                     <App />
                     <AppTooltipHost />
                 </div>

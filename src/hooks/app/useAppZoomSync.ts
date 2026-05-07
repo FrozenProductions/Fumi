@@ -8,20 +8,33 @@ import {
 import { useAppStore } from "./useAppStore";
 
 /**
- * Applies CSS zoom to the document and subscribes to zoom menu events.
+ * Applies app zoom to the React surface and subscribes to zoom menu events.
  *
  * @remarks
- * Syncs the zoom percent from app store to the document root style. Cleans up
- * the zoom style on unmount. Subscribes to Tauri zoom events for keyboard/menu zooming.
+ * Uses transform scaling with inverse layout dimensions so the app surface
+ * fills the viewport at every zoom level. Cleans up the zoom styles on
+ * unmount. Subscribes to Tauri zoom events for keyboard/menu zooming.
  */
 export function useAppZoomSync(): void {
     const zoomPercent = useAppStore((state) => state.zoomPercent);
 
     useEffect(() => {
-        document.documentElement.style.zoom = `${zoomPercent / 100}`;
+        const rootElement = document.getElementById("root");
+
+        if (!rootElement) {
+            return;
+        }
+
+        const zoomScale = zoomPercent / 100;
+        rootElement.style.setProperty("--app-zoom-scale", String(zoomScale));
+        rootElement.style.setProperty(
+            "--app-zoom-inverse-scale",
+            String(1 / zoomScale),
+        );
 
         return () => {
-            document.documentElement.style.zoom = "1";
+            rootElement.style.removeProperty("--app-zoom-scale");
+            rootElement.style.removeProperty("--app-zoom-inverse-scale");
         };
     }, [zoomPercent]);
 

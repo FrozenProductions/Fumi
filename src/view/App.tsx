@@ -183,7 +183,7 @@ export function App(): ReactElement {
     return (
         <AppHotkeysProvider workspaceExecutor={workspaceExecutor}>
             <AppDragDropOverlay isVisible={isDragActive} />
-            <div className="relative flex h-screen flex-col overflow-hidden rounded-[0.95rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-shell)]">
+            <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[0.95rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-shell)]">
                 <AppTopbar
                     title={APP_TITLE}
                     isSidebarOpen={isSidebarOpen}
