@@ -141,6 +141,16 @@ export function AppSettingsGeneralSection({
         setStreamerModeEnabled(!isStreamerModeEnabled);
     };
 
+    const handleThemeChange = (nextTheme: typeof theme): void => {
+        setTheme(nextTheme);
+    };
+
+    const handleSidebarPositionChange = (
+        nextSidebarPosition: typeof sidebarPosition,
+    ): void => {
+        setSidebarPosition(nextSidebarPosition);
+    };
+
     const handleOpenAuthorUrl = (): void => {
         void openExternalUrl(APP_AUTHOR_URL);
     };
@@ -283,7 +293,7 @@ export function AppSettingsGeneralSection({
                 <AppSelect
                     value={theme}
                     options={APP_THEME_OPTIONS}
-                    onChange={setTheme}
+                    onChange={handleThemeChange}
                     className="shrink-0"
                 />
             </div>
@@ -299,7 +309,7 @@ export function AppSettingsGeneralSection({
                 <AppSelect
                     value={sidebarPosition}
                     options={APP_SIDEBAR_POSITION_OPTIONS}
-                    onChange={setSidebarPosition}
+                    onChange={handleSidebarPositionChange}
                     className="shrink-0"
                 />
             </div>
