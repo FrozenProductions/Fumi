@@ -4,6 +4,7 @@ pub(crate) mod commands;
 pub(crate) mod models;
 
 mod binarycookies;
+mod process;
 mod roblox;
 pub(crate) mod storage;
 
