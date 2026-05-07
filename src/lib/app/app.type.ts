@@ -7,10 +7,14 @@ export type AppMiddleClickTabAction = "archive" | "delete";
 
 export type AppIntellisensePriority = "balanced" | "language" | "executor";
 export type AppIntellisenseWidth = "small" | "normal" | "large";
+export type AppEditorCursorStyle = "ace" | "slim";
 export type AppEditorTabSize = 2 | 4 | 6 | 8;
 
 export type AppEditorSettings = {
     fontSize: number;
+    cursorStyle: AppEditorCursorStyle;
+    isSmoothCaretEnabled: boolean;
+    isScopeHighlightingEnabled: boolean;
     isWordWrapEnabled: boolean;
     isTabsToSpacesEnabled: boolean;
     tabSize: AppEditorTabSize;

@@ -155,7 +155,10 @@ export function WorkspaceEditorRegion({
     const pane = {
         activeTabId,
         appTheme,
+        cursorStyle: editorSettings.cursorStyle,
         editorFontSize: editorSettings.fontSize,
+        isSmoothCaretEnabled: editorSettings.isSmoothCaretEnabled,
+        isScopeHighlightingEnabled: editorSettings.isScopeHighlightingEnabled,
         isWordWrapEnabled: editorSettings.isWordWrapEnabled,
         isTabsToSpacesEnabled: editorSettings.isTabsToSpacesEnabled,
         tabSize: editorSettings.tabSize,

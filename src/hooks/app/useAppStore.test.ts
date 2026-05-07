@@ -129,6 +129,9 @@ describe("useAppStore editorSettings", () => {
         useAppStore.setState((state) => ({
             editorSettings: {
                 ...state.editorSettings,
+                cursorStyle: "ace",
+                isSmoothCaretEnabled: false,
+                isScopeHighlightingEnabled: true,
                 isWordWrapEnabled: false,
                 isTabsToSpacesEnabled: true,
                 tabSize: 4,
@@ -163,6 +166,60 @@ describe("useAppStore editorSettings", () => {
 
         expect(mergedState.editorSettings.isTabsToSpacesEnabled).toBe(true);
         expect(mergedState.editorSettings.tabSize).toBe(4);
+    });
+
+    it("defaults caret settings when old persisted state lacks them", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                editorSettings: {
+                    fontSize: 16,
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.editorSettings.cursorStyle).toBe("ace");
+        expect(mergedState.editorSettings.isSmoothCaretEnabled).toBe(false);
+        expect(mergedState.editorSettings.isScopeHighlightingEnabled).toBe(
+            true,
+        );
+    });
+
+    it("normalizes invalid persisted cursor style", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                editorSettings: {
+                    cursorStyle: "block",
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.editorSettings.cursorStyle).toBe("ace");
+    });
+
+    it("stores caret settings", () => {
+        useAppStore.getState().setEditorCursorStyle("slim");
+        useAppStore.getState().setEditorSmoothCaretEnabled(true);
+        useAppStore.getState().setEditorScopeHighlightingEnabled(false);
+
+        expect(useAppStore.getState().editorSettings.cursorStyle).toBe("slim");
+        expect(useAppStore.getState().editorSettings.isSmoothCaretEnabled).toBe(
+            true,
+        );
+        expect(
+            useAppStore.getState().editorSettings.isScopeHighlightingEnabled,
+        ).toBe(false);
+
+        expect(getPersistedAppStoreState(useAppStore.getState())).toMatchObject(
+            {
+                editorSettings: {
+                    cursorStyle: "slim",
+                    isSmoothCaretEnabled: true,
+                    isScopeHighlightingEnabled: false,
+                },
+            },
+        );
     });
 
     it("normalizes invalid persisted tab size", () => {

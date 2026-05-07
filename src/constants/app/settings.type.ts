@@ -1,4 +1,5 @@
 import type {
+    AppEditorCursorStyle,
     AppEditorTabSize,
     AppIntellisensePriority,
     AppIntellisenseWidth,
@@ -25,6 +26,11 @@ export type AppIntellisensePriorityOption = {
 
 export type AppIntellisenseWidthOption = {
     value: AppIntellisenseWidth;
+    label: string;
+};
+
+export type AppEditorCursorStyleOption = {
+    value: AppEditorCursorStyle;
     label: string;
 };
 

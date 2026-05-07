@@ -163,8 +163,22 @@
         background: rgb(var(--color-editor-bracket-background));
     }
 
+    .workspace-ace-editor.workspace-ace-editor-disable-scope-highlight
+        .ace_marker-layer
+        .ace_bracket {
+        display: none;
+    }
+
     .workspace-ace-editor .ace_cursor {
         color: rgb(var(--color-editor-cursor) / 1);
+    }
+
+    .workspace-ace-editor.workspace-ace-editor-smooth-caret .ace_cursor {
+        transition:
+            left 80ms linear,
+            top 80ms linear,
+            transform 80ms linear,
+            opacity 0.18s;
     }
 
     .workspace-ace-editor .ace_print-margin {

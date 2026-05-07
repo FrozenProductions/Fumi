@@ -1,4 +1,5 @@
 import type {
+    AppEditorCursorStyle,
     AppEditorSettings,
     AppEditorTabSize,
     AppMiddleClickTabAction,
@@ -16,6 +17,7 @@ import {
 } from "../window/window";
 import { WORKSPACE_OUTLINE_PANEL_DEFAULT_WIDTH } from "../workspace/outline";
 import type {
+    AppEditorCursorStyleOption,
     AppEditorTabSizeOption,
     AppIntellisensePriorityOption,
     AppIntellisenseWidthOption,
@@ -54,6 +56,11 @@ export const APP_INTELLISENSE_WIDTH_OPTIONS = [
     { value: "large", label: "Large" },
 ] as const satisfies AppIntellisenseWidthOption[];
 
+export const APP_EDITOR_CURSOR_STYLE_OPTIONS = [
+    { value: "ace", label: "Default" },
+    { value: "slim", label: "Slim" },
+] as const satisfies AppEditorCursorStyleOption[];
+
 export const APP_EDITOR_TAB_SIZE_OPTIONS = [
     { value: 2, label: "2 spaces" },
     { value: 4, label: "4 spaces" },
@@ -72,6 +79,8 @@ export const APP_SIDEBAR_POSITION_OPTIONS = [
 ] as const satisfies AppSidebarPositionOption[];
 
 export const DEFAULT_APP_THEME = "system" satisfies AppTheme;
+export const DEFAULT_APP_EDITOR_CURSOR_STYLE =
+    "ace" satisfies AppEditorCursorStyle;
 export const DEFAULT_APP_EDITOR_TAB_SIZE = 4 satisfies AppEditorTabSize;
 export const DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION =
     "archive" satisfies AppMiddleClickTabAction;
@@ -80,6 +89,9 @@ export const DEFAULT_APP_STREAMER_MODE_ENABLED = false;
 
 export const DEFAULT_APP_EDITOR_SETTINGS = {
     fontSize: 13,
+    cursorStyle: DEFAULT_APP_EDITOR_CURSOR_STYLE,
+    isSmoothCaretEnabled: false,
+    isScopeHighlightingEnabled: true,
     isWordWrapEnabled: false,
     isTabsToSpacesEnabled: true,
     tabSize: DEFAULT_APP_EDITOR_TAB_SIZE,

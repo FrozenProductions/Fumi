@@ -10,6 +10,7 @@ import {
 } from "../../constants/workspace/editor";
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
+import { joinClassNames } from "../../lib/shared/className";
 import { createMaskStyle } from "../../lib/shared/mask";
 import {
     applyAceEditorIndentSettings,
@@ -34,7 +35,10 @@ const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);
  */
 export function AutomaticExecutionEditor({
     appTheme,
+    cursorStyle,
     editorFontSize,
+    isSmoothCaretEnabled,
+    isScopeHighlightingEnabled,
     isWordWrapEnabled,
     isTabsToSpacesEnabled,
     tabSize,
@@ -50,8 +54,16 @@ export function AutomaticExecutionEditor({
     const appliedScriptIdRef = useRef<string | null>(null);
     const editorOptions = {
         ...WORKSPACE_EDITOR_OPTIONS,
+        animatedScroll: isSmoothCaretEnabled,
+        cursorStyle,
         useSoftTabs: isTabsToSpacesEnabled,
     } as const;
+    const editorClassName = joinClassNames(
+        "workspace-ace-editor",
+        isSmoothCaretEnabled && "workspace-ace-editor-smooth-caret",
+        !isScopeHighlightingEnabled &&
+            "workspace-ace-editor-disable-scope-highlight",
+    );
 
     useEffect(() => {
         const editor = editorRef.current;
@@ -153,7 +165,7 @@ export function AutomaticExecutionEditor({
     return (
         <div className="h-full bg-fumi-50">
             <AceEditorComponent
-                className="workspace-ace-editor"
+                className={editorClassName}
                 name={`automatic-execution-editor-${script.id}`}
                 value={script.content}
                 mode={aceRuntime.getMode(script.fileName)}

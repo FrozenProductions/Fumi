@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import {
+    APP_EDITOR_CURSOR_STYLE_OPTIONS,
     APP_EDITOR_FONT_SIZE_MAX,
     APP_EDITOR_FONT_SIZE_MIN,
     APP_EDITOR_TAB_SIZE_OPTIONS,
@@ -9,6 +10,7 @@ import {
 } from "../../../constants/app/settings";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import type {
+    AppEditorCursorStyle,
     AppEditorTabSize,
     AppMiddleClickTabAction,
 } from "../../../lib/app/app.type";
@@ -24,6 +26,15 @@ import { AppSettingsToggle } from "../form/AppSettingsToggle";
 export function AppSettingsEditorSection(): ReactElement {
     const editorSettings = useAppStore((state) => state.editorSettings);
     const setEditorFontSize = useAppStore((state) => state.setEditorFontSize);
+    const setEditorCursorStyle = useAppStore(
+        (state) => state.setEditorCursorStyle,
+    );
+    const setEditorSmoothCaretEnabled = useAppStore(
+        (state) => state.setEditorSmoothCaretEnabled,
+    );
+    const setEditorScopeHighlightingEnabled = useAppStore(
+        (state) => state.setEditorScopeHighlightingEnabled,
+    );
     const setEditorWordWrapEnabled = useAppStore(
         (state) => state.setEditorWordWrapEnabled,
     );
@@ -49,6 +60,20 @@ export function AppSettingsEditorSection(): ReactElement {
 
     const handleFontSizeChange = (value: string): void => {
         setEditorFontSize(Number(value));
+    };
+
+    const handleCursorStyleChange = (value: AppEditorCursorStyle): void => {
+        setEditorCursorStyle(value);
+    };
+
+    const handleSmoothCaretToggle = (): void => {
+        setEditorSmoothCaretEnabled(!editorSettings.isSmoothCaretEnabled);
+    };
+
+    const handleScopeHighlightingToggle = (): void => {
+        setEditorScopeHighlightingEnabled(
+            !editorSettings.isScopeHighlightingEnabled,
+        );
     };
 
     const handleIntellisenseToggle = (): void => {
@@ -111,6 +136,22 @@ export function AppSettingsEditorSection(): ReactElement {
             <div className="flex items-center justify-between gap-6 py-4">
                 <div className="min-w-0">
                     <p className="text-xs font-semibold text-fumi-900">
+                        Cursor style
+                    </p>
+                    <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
+                        Choose the caret shape used inside code editors.
+                    </p>
+                </div>
+                <AppSelect
+                    value={editorSettings.cursorStyle}
+                    options={APP_EDITOR_CURSOR_STYLE_OPTIONS}
+                    onChange={handleCursorStyleChange}
+                    className="shrink-0"
+                />
+            </div>
+            <div className="flex items-center justify-between gap-6 py-4">
+                <div className="min-w-0">
+                    <p className="text-xs font-semibold text-fumi-900">
                         Middle-click tab action
                     </p>
                     <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
@@ -125,6 +166,18 @@ export function AppSettingsEditorSection(): ReactElement {
                     className="shrink-0"
                 />
             </div>
+            <AppSettingsToggle
+                label="Smooth caret movement"
+                description="Animate caret movement and editor scrolling while navigating code."
+                isEnabled={editorSettings.isSmoothCaretEnabled}
+                onChange={handleSmoothCaretToggle}
+            />
+            <AppSettingsToggle
+                label="Scope highlighting"
+                description="Outline matching Luau scope pairs such as do/end and function/end."
+                isEnabled={editorSettings.isScopeHighlightingEnabled}
+                onChange={handleScopeHighlightingToggle}
+            />
             <AppSettingsToggle
                 label="Word wrap"
                 description="Wrap long lines in editor panes instead of forcing horizontal scrolling."

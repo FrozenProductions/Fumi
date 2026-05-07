@@ -1,4 +1,5 @@
 import {
+    APP_EDITOR_CURSOR_STYLES,
     APP_EDITOR_TAB_SIZES,
     APP_INTELLISENSE_WIDTHS,
     APP_MIDDLE_CLICK_TAB_ACTIONS,
@@ -9,6 +10,7 @@ import {
     APP_ZOOM_DEFAULT,
     APP_ZOOM_MAX,
     APP_ZOOM_MIN,
+    DEFAULT_APP_EDITOR_CURSOR_STYLE,
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_EDITOR_TAB_SIZE,
     DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
@@ -21,6 +23,7 @@ import {
 } from "../../constants/workspace/outline";
 import { isNumberLiteral, isStringLiteral } from "../shared/validation";
 import type {
+    AppEditorCursorStyle,
     AppEditorTabSize,
     AppIntellisenseWidth,
     AppMiddleClickTabAction,
@@ -81,6 +84,17 @@ export function normalizeAppEditorTabSize(value: unknown): AppEditorTabSize {
     return isNumberLiteral(value, APP_EDITOR_TAB_SIZES)
         ? value
         : DEFAULT_APP_EDITOR_TAB_SIZE;
+}
+
+/**
+ * Normalizes an editor cursor style value, falling back to the default if invalid.
+ */
+export function normalizeAppEditorCursorStyle(
+    value: unknown,
+): AppEditorCursorStyle {
+    return isStringLiteral(value, APP_EDITOR_CURSOR_STYLES)
+        ? value
+        : DEFAULT_APP_EDITOR_CURSOR_STYLE;
 }
 
 /**

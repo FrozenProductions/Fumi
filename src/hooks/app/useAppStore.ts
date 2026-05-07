@@ -9,6 +9,7 @@ import {
 import { isAppHotkeyOverride } from "../../lib/app/hotkeys/hotkeys";
 import {
     clampAppZoomPercent,
+    normalizeAppEditorCursorStyle,
     normalizeAppEditorTabSize,
     normalizeAppOutlinePanelWidth,
 } from "../../lib/app/store";
@@ -190,6 +191,30 @@ export const useAppStore = create<AppStore>()(
                     editorSettings: {
                         ...state.editorSettings,
                         fontSize,
+                    },
+                }));
+            },
+            setEditorCursorStyle: (cursorStyle) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        cursorStyle: normalizeAppEditorCursorStyle(cursorStyle),
+                    },
+                }));
+            },
+            setEditorSmoothCaretEnabled: (isEnabled) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        isSmoothCaretEnabled: isEnabled,
+                    },
+                }));
+            },
+            setEditorScopeHighlightingEnabled: (isEnabled) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        isScopeHighlightingEnabled: isEnabled,
                     },
                 }));
             },

@@ -14,6 +14,7 @@ import {
     isAppSidebarItem,
     isAppSidebarPosition,
     isAppTheme,
+    normalizeAppEditorCursorStyle,
     normalizeAppEditorTabSize,
     normalizeAppIntellisenseWidth,
     normalizeAppMiddleClickTabAction,
@@ -52,6 +53,19 @@ export function mergeAppStoreState(
     const intellisenseWidth = normalizeAppIntellisenseWidth(
         persistedAppState.editorSettings?.intellisenseWidth,
     );
+    const cursorStyle = normalizeAppEditorCursorStyle(
+        persistedAppState.editorSettings?.cursorStyle,
+    );
+    const isSmoothCaretEnabled =
+        typeof persistedAppState.editorSettings?.isSmoothCaretEnabled ===
+        "boolean"
+            ? persistedAppState.editorSettings.isSmoothCaretEnabled
+            : currentState.editorSettings.isSmoothCaretEnabled;
+    const isScopeHighlightingEnabled =
+        typeof persistedAppState.editorSettings?.isScopeHighlightingEnabled ===
+        "boolean"
+            ? persistedAppState.editorSettings.isScopeHighlightingEnabled
+            : currentState.editorSettings.isScopeHighlightingEnabled;
     const isWordWrapEnabled =
         typeof persistedAppState.editorSettings?.isWordWrapEnabled === "boolean"
             ? persistedAppState.editorSettings.isWordWrapEnabled
@@ -96,6 +110,9 @@ export function mergeAppStoreState(
         editorSettings: {
             ...currentState.editorSettings,
             ...persistedAppState.editorSettings,
+            cursorStyle,
+            isSmoothCaretEnabled,
+            isScopeHighlightingEnabled,
             isWordWrapEnabled,
             isTabsToSpacesEnabled,
             tabSize,

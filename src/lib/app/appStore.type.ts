@@ -1,5 +1,6 @@
 import type {
     AppAccountPrivacySettings,
+    AppEditorCursorStyle,
     AppEditorSettings,
     AppEditorTabSize,
     AppIntellisensePriority,
@@ -65,6 +66,9 @@ export type AppStoreActions = {
     setAutoUpdateEnabled: (isEnabled: boolean) => void;
     setStreamerModeEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
+    setEditorCursorStyle: (cursorStyle: AppEditorCursorStyle) => void;
+    setEditorSmoothCaretEnabled: (isEnabled: boolean) => void;
+    setEditorScopeHighlightingEnabled: (isEnabled: boolean) => void;
     setEditorWordWrapEnabled: (isEnabled: boolean) => void;
     setEditorTabsToSpacesEnabled: (isEnabled: boolean) => void;
     setEditorTabSize: (tabSize: AppEditorTabSize) => void;

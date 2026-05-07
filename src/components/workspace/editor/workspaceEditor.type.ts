@@ -3,7 +3,11 @@ import type {
     PointerEvent as ReactPointerEvent,
     RefObject,
 } from "react";
-import type { AppEditorTabSize, AppTheme } from "../../../lib/app/app.type";
+import type {
+    AppEditorCursorStyle,
+    AppEditorTabSize,
+    AppTheme,
+} from "../../../lib/app/app.type";
 import type { AppSidebarPosition } from "../../../lib/app/sidebar.type";
 import type { LoadedAceRuntime } from "../../../lib/luau/ace/loadAceRuntime.type";
 import type {
@@ -33,7 +37,10 @@ export type AppCodeCompletionProps = {
 export type WorkspaceEditorPaneProps = {
     activeTabId: string;
     appTheme: AppTheme;
+    cursorStyle: AppEditorCursorStyle;
     editorFontSize: number;
+    isSmoothCaretEnabled: boolean;
+    isScopeHighlightingEnabled: boolean;
     isWordWrapEnabled: boolean;
     isTabsToSpacesEnabled: boolean;
     tabSize: AppEditorTabSize;
@@ -96,7 +103,10 @@ export type WorkspaceAcePaneProps = {
     createHandleEditorLoad: WorkspaceEditorCompletionProps["createHandleEditorLoad"];
     createHandleEditorUnmount: WorkspaceEditorCompletionProps["createHandleEditorUnmount"];
     createHandleScroll: WorkspaceEditorCompletionProps["createHandleScroll"];
+    cursorStyle: AppEditorCursorStyle;
     editorFontSize: number;
+    isSmoothCaretEnabled: boolean;
+    isScopeHighlightingEnabled: boolean;
     isWordWrapEnabled: boolean;
     isTabsToSpacesEnabled: boolean;
     isActiveTab: boolean;

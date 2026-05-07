@@ -6,6 +6,7 @@ export const APP_AUTHOR_NAME = "FrozenProductions";
 export const APP_AUTHOR_URL = "https://github.com/FrozenProductions/";
 export const APP_THEMES = ["system", "light", "dark"] as const;
 export const APP_INTELLISENSE_WIDTHS = ["small", "normal", "large"] as const;
+export const APP_EDITOR_CURSOR_STYLES = ["ace", "slim"] as const;
 export const APP_EDITOR_TAB_SIZES = [2, 4, 6, 8] as const;
 export const APP_MIDDLE_CLICK_TAB_ACTIONS = ["archive", "delete"] as const;
 export const APP_SIDEBAR_POSITIONS = ["left", "right"] as const;

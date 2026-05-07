@@ -5,6 +5,7 @@ import {
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../../constants/workspace/editor";
+import { joinClassNames } from "../../../lib/shared/className";
 import type {
     AceChangeDelta,
     AceEditorInstance,
@@ -28,7 +29,10 @@ function WorkspaceAcePane({
     createHandleEditorLoad,
     createHandleEditorUnmount,
     createHandleScroll,
+    cursorStyle,
     editorFontSize,
+    isSmoothCaretEnabled,
+    isScopeHighlightingEnabled,
     isWordWrapEnabled,
     isTabsToSpacesEnabled,
     isActiveTab,
@@ -41,8 +45,16 @@ function WorkspaceAcePane({
     const editorChangeHandler = createHandleEditorChange(tab.id);
     const editorOptions = {
         ...WORKSPACE_EDITOR_OPTIONS,
+        animatedScroll: isSmoothCaretEnabled,
+        cursorStyle,
         useSoftTabs: isTabsToSpacesEnabled,
     } as const;
+    const editorClassName = joinClassNames(
+        "workspace-ace-editor",
+        isSmoothCaretEnabled && "workspace-ace-editor-smooth-caret",
+        !isScopeHighlightingEnabled &&
+            "workspace-ace-editor-disable-scope-highlight",
+    );
 
     useEffect(() => {
         const editor = editorRef.current;
@@ -65,7 +77,7 @@ function WorkspaceAcePane({
     return (
         <div aria-hidden={!isVisible} className="absolute inset-0 z-10">
             <AceEditorComponent
-                className="workspace-ace-editor"
+                className={editorClassName}
                 name={`workspace-editor-${tab.id}`}
                 mode={aceRuntime.getMode(tab.fileName)}
                 theme={aceRuntime.getTheme(appTheme)}
@@ -152,7 +164,10 @@ export function WorkspaceEditorSurface({
     const {
         activeTabId,
         appTheme,
+        cursorStyle,
         editorFontSize,
+        isSmoothCaretEnabled,
+        isScopeHighlightingEnabled,
         isWordWrapEnabled,
         isTabsToSpacesEnabled,
         searchPanel,
@@ -289,7 +304,14 @@ export function WorkspaceEditorSurface({
                                           createHandleEditorUnmount
                                       }
                                       createHandleScroll={createHandleScroll}
+                                      cursorStyle={cursorStyle}
                                       editorFontSize={editorFontSize}
+                                      isSmoothCaretEnabled={
+                                          isSmoothCaretEnabled
+                                      }
+                                      isScopeHighlightingEnabled={
+                                          isScopeHighlightingEnabled
+                                      }
                                       isWordWrapEnabled={isWordWrapEnabled}
                                       isTabsToSpacesEnabled={
                                           isTabsToSpacesEnabled

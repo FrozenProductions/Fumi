@@ -30,6 +30,15 @@ export function AutomaticExecutionScreen({
     const editorFontSize = useAppStore(
         (state) => state.editorSettings.fontSize,
     );
+    const cursorStyle = useAppStore(
+        (state) => state.editorSettings.cursorStyle,
+    );
+    const isSmoothCaretEnabled = useAppStore(
+        (state) => state.editorSettings.isSmoothCaretEnabled,
+    );
+    const isScopeHighlightingEnabled = useAppStore(
+        (state) => state.editorSettings.isScopeHighlightingEnabled,
+    );
     const isWordWrapEnabled = useAppStore(
         (state) => state.editorSettings.isWordWrapEnabled,
     );
@@ -278,7 +287,10 @@ export function AutomaticExecutionScreen({
                 <div className="min-h-0 flex-1">
                     <AutomaticExecutionEditor
                         appTheme={appTheme}
+                        cursorStyle={cursorStyle}
                         editorFontSize={editorFontSize}
+                        isSmoothCaretEnabled={isSmoothCaretEnabled}
+                        isScopeHighlightingEnabled={isScopeHighlightingEnabled}
                         isWordWrapEnabled={isWordWrapEnabled}
                         isTabsToSpacesEnabled={isTabsToSpacesEnabled}
                         tabSize={tabSize}
