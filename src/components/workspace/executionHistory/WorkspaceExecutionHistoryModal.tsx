@@ -1,10 +1,18 @@
 import type { ReactElement } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+    DEFAULT_WORKSPACE_EXECUTION_HISTORY_FILTER,
+    WORKSPACE_EXECUTION_HISTORY_SEARCH_DEBOUNCE_MS,
+} from "../../../constants/workspace/executionHistory";
 import { useAppStore } from "../../../hooks/app/useAppStore";
+import { useDebouncedValue } from "../../../hooks/shared/useDebouncedValue";
 import { useWorkspaceExecutionHistoryPreview } from "../../../hooks/workspace/useWorkspaceExecutionHistoryPreview";
+import { getVisibleWorkspaceExecutionHistoryEntries } from "../../../lib/workspace/executionHistory/executionHistorySearch";
+import type { WorkspaceExecutionHistoryFilterValue } from "../../../lib/workspace/executionHistory/executionHistorySearch.type";
 import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/workspace.type";
 import { WorkspaceExecutionHistoryPreview } from "./WorkspaceExecutionHistoryPreview";
 import { WorkspaceExecutionHistorySidebar } from "./WorkspaceExecutionHistorySidebar";
+import { WorkspaceExecutionHistoryToolbar } from "./WorkspaceExecutionHistoryToolbar";
 
 type WorkspaceExecutionHistoryModalProps = {
     isOpen: boolean;
@@ -24,16 +32,47 @@ export function WorkspaceExecutionHistoryModal({
     onClose,
     onReRun,
 }: WorkspaceExecutionHistoryModalProps): ReactElement | null {
+    const [query, setQuery] = useState("");
+    const [filterValue, setFilterValue] =
+        useState<WorkspaceExecutionHistoryFilterValue>(
+            DEFAULT_WORKSPACE_EXECUTION_HISTORY_FILTER,
+        );
+    const debouncedQuery = useDebouncedValue(
+        query,
+        WORKSPACE_EXECUTION_HISTORY_SEARCH_DEBOUNCE_MS,
+    );
     const appTheme = useAppStore((state) => state.theme);
+    const cursorStyle = useAppStore(
+        (state) => state.editorSettings.cursorStyle,
+    );
     const editorFontSize = useAppStore(
         (state) => state.editorSettings.fontSize,
+    );
+    const isScopeHighlightingEnabled = useAppStore(
+        (state) => state.editorSettings.isScopeHighlightingEnabled,
+    );
+    const isSmoothCaretEnabled = useAppStore(
+        (state) => state.editorSettings.isSmoothCaretEnabled,
+    );
+    const isTabsToSpacesEnabled = useAppStore(
+        (state) => state.editorSettings.isTabsToSpacesEnabled,
     );
     const isWordWrapEnabled = useAppStore(
         (state) => state.editorSettings.isWordWrapEnabled,
     );
+    const tabSize = useAppStore((state) => state.editorSettings.tabSize);
+
+    const visibleEntries = useMemo(
+        () =>
+            getVisibleWorkspaceExecutionHistoryEntries(entries, {
+                filterValue,
+                query: debouncedQuery,
+            }),
+        [debouncedQuery, entries, filterValue],
+    );
 
     const executionHistoryPreview = useWorkspaceExecutionHistoryPreview({
-        entries,
+        entries: visibleEntries,
         isOpen,
         onReRun,
     });
@@ -66,6 +105,9 @@ export function WorkspaceExecutionHistoryModal({
         };
     }, [isOpen, onClose]);
 
+    const hasActiveSearch =
+        debouncedQuery.trim().length > 0 || filterValue !== "all";
+
     if (!isOpen) {
         return null;
     }
@@ -79,7 +121,7 @@ export function WorkspaceExecutionHistoryModal({
                 }
             }}
         >
-            <div className="flex h-[min(36rem,80vh)] w-full max-w-[44rem] flex-col overflow-hidden rounded-[0.9rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-floating)]">
+            <div className="flex h-[min(38rem,84vh)] w-full max-w-[56rem] flex-col overflow-hidden rounded-[0.9rem] border border-fumi-200 bg-fumi-50 shadow-[var(--shadow-app-floating)]">
                 <div className="flex shrink-0 items-center justify-between border-b border-fumi-200 py-2.5 pl-4 pr-2.5">
                     <h2 className="text-xs font-semibold tracking-[-0.01em] text-fumi-900">
                         Execution History
@@ -94,9 +136,16 @@ export function WorkspaceExecutionHistoryModal({
                 </div>
 
                 <div className="flex min-h-0 flex-1">
-                    <div className="flex w-60 shrink-0 flex-col border-r border-fumi-200 bg-fumi-50/30">
+                    <div className="flex w-80 shrink-0 flex-col border-r border-fumi-200 bg-fumi-50/30">
+                        <WorkspaceExecutionHistoryToolbar
+                            filterValue={filterValue}
+                            query={query}
+                            onFilterChange={setFilterValue}
+                            onQueryChange={setQuery}
+                        />
                         <WorkspaceExecutionHistorySidebar
-                            entries={entries}
+                            entries={visibleEntries}
+                            hasActiveSearch={hasActiveSearch}
                             selectedEntry={selectedEntry}
                             onSelectEntry={selectEntry}
                         />
@@ -107,13 +156,20 @@ export function WorkspaceExecutionHistoryModal({
                             aceRuntime={aceRuntime}
                             AceEditorComp={AceEditorComp}
                             appTheme={appTheme}
+                            cursorStyle={cursorStyle}
                             editorFontSize={editorFontSize}
                             editorLoadError={editorLoadError}
                             feedbackMessage={feedbackMessage}
                             isCopying={isCopying}
                             isReRunning={isReRunning}
+                            isScopeHighlightingEnabled={
+                                isScopeHighlightingEnabled
+                            }
+                            isSmoothCaretEnabled={isSmoothCaretEnabled}
+                            isTabsToSpacesEnabled={isTabsToSpacesEnabled}
                             isWordWrapEnabled={isWordWrapEnabled}
                             selectedEntry={selectedEntry}
+                            tabSize={tabSize}
                             onCopyScript={copyScript}
                             onReRun={reRun}
                             onRetryEditorLoad={retryEditorLoad}

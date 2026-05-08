@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { copyTextToClipboard } from "../../lib/platform/core/clipboard";
@@ -121,7 +121,7 @@ export function useWorkspaceExecutionHistoryPreview({
         };
     }, [AceEditorComp, aceRuntime, editorLoadNonce, isOpen]);
 
-    const copyScript = async (): Promise<void> => {
+    const copyScript = useCallback(async (): Promise<void> => {
         if (!selectedEntry || isCopying) {
             return;
         }
@@ -138,9 +138,9 @@ export function useWorkspaceExecutionHistoryPreview({
         } finally {
             setIsCopying(false);
         }
-    };
+    }, [isCopying, selectedEntry]);
 
-    const reRun = async (): Promise<void> => {
+    const reRun = useCallback(async (): Promise<void> => {
         if (!selectedEntry || isReRunning) {
             return;
         }
@@ -153,14 +153,14 @@ export function useWorkspaceExecutionHistoryPreview({
         } finally {
             setIsReRunning(false);
         }
-    };
+    }, [isReRunning, onReRun, selectedEntry]);
 
-    const retryEditorLoad = (): void => {
+    const retryEditorLoad = useCallback((): void => {
         setEditorLoadError(null);
         setAceRuntime(null);
         setAceEditorComp(null);
         setEditorLoadNonce((currentValue) => currentValue + 1);
-    };
+    }, []);
 
     return {
         state: {
