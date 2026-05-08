@@ -1,26 +1,21 @@
 import {
     buildAutomaticExecutionScripts,
     serializeAutomaticExecutionScriptState,
-} from "../../lib/automaticExecution/automaticExecution";
-import type { AutomaticExecutionSnapshot } from "../../lib/automaticExecution/automaticExecution.type";
+} from "./automaticExecution";
+import type { AutomaticExecutionSnapshot } from "./automaticExecution.type";
 import type {
     AutomaticExecutionStore,
     AutomaticExecutionStoreGet,
     AutomaticExecutionStoreSet,
-} from "../../lib/automaticExecution/automaticExecutionStore.type";
+} from "./automaticExecutionStore.type";
 import {
     bootstrapAutomaticExecution as bootstrapAutomaticExecutionCommand,
     persistAutomaticExecutionState,
     refreshAutomaticExecution,
-} from "../../lib/platform/roblox/automaticExecution";
-import { getErrorMessage } from "../../lib/shared/errorMessage";
-import type { ExecutorKind } from "../../lib/workspace/workspace.type";
-
-export type AutomaticExecutionRuntime = {
-    latestBootstrapRequestId: number;
-    latestRefreshRequestId: number;
-    shouldRefreshAfterFlush: boolean;
-};
+} from "../platform/roblox/automaticExecution";
+import { getErrorMessage } from "../shared/errorMessage";
+import type { ExecutorKind } from "../workspace/workspace.type";
+import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreRuntime.type";
 
 /**
  * Creates a fresh automatic execution runtime tracking object.

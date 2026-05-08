@@ -3,8 +3,8 @@ import type { AutomaticExecutionStore } from "../../lib/automaticExecution/autom
 import {
     createAutomaticExecutionLifecycleActions,
     createAutomaticExecutionRuntime,
-} from "./automaticExecutionStoreLifecycle";
-import { createAutomaticExecutionScriptActions } from "./automaticExecutionStoreScripts";
+} from "../../lib/automaticExecution/automaticExecutionStoreLifecycle";
+import { createAutomaticExecutionScriptActions } from "../../lib/automaticExecution/automaticExecutionStoreScripts";
 
 /**
  * Zustand store for automatic execution state, combining lifecycle and script actions.

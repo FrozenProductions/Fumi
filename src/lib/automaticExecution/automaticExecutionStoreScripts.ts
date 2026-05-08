@@ -2,15 +2,15 @@ import type {
     AutomaticExecutionStore,
     AutomaticExecutionStoreGet,
     AutomaticExecutionStoreSet,
-} from "../../lib/automaticExecution/automaticExecutionStore.type";
+} from "./automaticExecutionStore.type";
 import {
     createAutomaticExecutionScript,
     deleteAutomaticExecutionScript,
     renameAutomaticExecutionScript,
     saveAutomaticExecutionScript,
-} from "../../lib/platform/roblox/automaticExecution";
-import { getErrorMessage } from "../../lib/shared/errorMessage";
-import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreLifecycle";
+} from "../platform/roblox/automaticExecution";
+import { getErrorMessage } from "../shared/errorMessage";
+import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreRuntime.type";
 import { runRefreshAfterFlush } from "./automaticExecutionStoreLifecycle";
 
 /**
