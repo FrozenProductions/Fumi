@@ -172,6 +172,60 @@ export function WorkspaceTabBar({
         "CREATE_WORKSPACE_FILE",
         hotkeyBindings,
     );
+    const tabsLayout = {
+        activeTabId,
+        dividerStyle,
+        isSplit,
+        primarySectionStyle,
+        primaryTabs,
+        secondarySectionStyle,
+        secondaryTabId,
+        secondaryTabs,
+        secondaryTabsClassName,
+        singlePaneTabsClassName,
+        splitDividerClassName,
+        splitDropTarget,
+        splitView,
+    };
+    const tabItemRename = {
+        handleRenameInputBlur,
+        handleRenameInputChange,
+        handleRenameInputKeyDown,
+        handleStartRename,
+        hasRenameError,
+        isRenameSubmitting,
+        renameInputRef,
+        renameValue,
+        renamingTabId,
+    };
+    const tabItems = {
+        isTabDragActive,
+        middleClickTabAction,
+        onArchiveTab,
+        onDeleteTab,
+        onOpenContextMenu: openContextMenu,
+        onOpenTabInPane,
+        onSelectTab,
+        rename: tabItemRename,
+    };
+    const controlsRefs = {
+        tabListDropdownRef,
+    };
+    const controlsState = {
+        closeSplitViewShortcutLabel,
+        createFileShortcutLabel,
+        isSplit,
+        isTabListOpen,
+        tabListButtonClassName,
+    };
+    const controlsActions = {
+        closeContextMenu,
+        closeTabList,
+        onCloseSplitView,
+        onCreateFile,
+        onSelectTab,
+        toggleTabList,
+    };
 
     return (
         <div
@@ -186,41 +240,8 @@ export function WorkspaceTabBar({
                     className="min-w-0 flex-1 overflow-hidden"
                 >
                     <WorkspaceTabBarTabs
-                        layout={{
-                            activeTabId,
-                            dividerStyle,
-                            isSplit,
-                            primarySectionStyle,
-                            primaryTabs,
-                            secondarySectionStyle,
-                            secondaryTabId,
-                            secondaryTabs,
-                            secondaryTabsClassName,
-                            singlePaneTabsClassName,
-                            splitDividerClassName,
-                            splitDropTarget,
-                            splitView,
-                        }}
-                        items={{
-                            isTabDragActive,
-                            middleClickTabAction,
-                            onArchiveTab,
-                            onDeleteTab,
-                            onOpenContextMenu: openContextMenu,
-                            onOpenTabInPane,
-                            onSelectTab,
-                            rename: {
-                                handleRenameInputBlur,
-                                handleRenameInputChange,
-                                handleRenameInputKeyDown,
-                                handleStartRename,
-                                hasRenameError,
-                                isRenameSubmitting,
-                                renameInputRef,
-                                renameValue,
-                                renamingTabId,
-                            },
-                        }}
+                        layout={tabsLayout}
+                        items={tabItems}
                     />
                 </div>
             </div>
@@ -240,25 +261,10 @@ export function WorkspaceTabBar({
             />
 
             <WorkspaceTabBarControls
-                refs={{
-                    tabListDropdownRef,
-                }}
-                state={{
-                    closeSplitViewShortcutLabel,
-                    createFileShortcutLabel,
-                    isSplit,
-                    isTabListOpen,
-                    tabListButtonClassName,
-                }}
+                refs={controlsRefs}
+                state={controlsState}
                 workspace={workspace}
-                actions={{
-                    closeContextMenu,
-                    closeTabList,
-                    onCloseSplitView,
-                    onCreateFile,
-                    onSelectTab,
-                    toggleTabList,
-                }}
+                actions={controlsActions}
             />
         </div>
     );
