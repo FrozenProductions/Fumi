@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import type { AppIconButtonProps } from "./appVisual.type";
+import type { AppIconButtonProps } from "./AppIconButton.type";
 
 /**
  * A styled icon button with active state styling.

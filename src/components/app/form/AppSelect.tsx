@@ -5,7 +5,7 @@ import { APP_SELECT_DROPDOWN_EXIT_DURATION_MS } from "../../../constants/app/inp
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
 import { joinClassNames } from "../../../lib/shared/className";
 import { AppIcon } from "../common/AppIcon";
-import type { AppSelectProps } from "./appForm.type";
+import type { AppSelectProps } from "./AppSelect.type";
 
 /**
  * A dropdown select component with animated open/close transitions.

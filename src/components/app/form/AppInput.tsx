@@ -14,7 +14,7 @@ import {
     getSteppedTextInputValue,
     resolveCommittedTextInputValue,
 } from "../../../lib/app/textInput";
-import type { AppInputProps } from "./appForm.type";
+import type { AppInputProps } from "./AppInput.type";
 
 /**
  * A styled text input with optional step controls and prefix/suffix support.

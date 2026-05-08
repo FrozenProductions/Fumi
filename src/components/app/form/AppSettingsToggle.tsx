@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { AppSettingsToggleProps } from "./appForm.type";
+import type { AppSettingsToggleProps } from "./AppSettingsToggle.type";
 
 /**
  * A settings toggle switch with label and optional nested controls.

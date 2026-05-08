@@ -1,4 +1,4 @@
-import type { AppSelectOption } from "../../components/app/form/appForm.type";
+import type { AppSelectOption } from "../../components/app/form/AppSelect.type";
 import type {
     WorkspaceExecutionHistoryFilterValue,
     WorkspaceExecutionHistorySearchFieldName,

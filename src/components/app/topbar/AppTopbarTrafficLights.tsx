@@ -11,7 +11,7 @@ import {
 import type {
     MaximizeGlyphProps,
     TrafficLightButtonProps,
-} from "../common/appVisual.type";
+} from "./AppTopbarTrafficLights.type";
 import { AppTooltip } from "../tooltip/AppTooltip";
 
 function createWindowActionHandler(action: () => Promise<unknown>): () => void {

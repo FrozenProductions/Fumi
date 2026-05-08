@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { TrafficLightTone } from "../../components/app/common/appVisual.type";
+import type { TrafficLightTone } from "../../components/app/topbar/AppTopbarTrafficLights.type";
 
 export const TOPBAR_INTERACTIVE_SELECTOR = [
     "button",

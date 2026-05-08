@@ -2,7 +2,7 @@ import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { ChangeEvent, ReactElement } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { AppIcon } from "../common/AppIcon";
-import type { AppSearchFieldProps } from "./appForm.type";
+import type { AppSearchFieldProps } from "./AppSearchField.type";
 
 /**
  * A search input field with optional clear button support.
