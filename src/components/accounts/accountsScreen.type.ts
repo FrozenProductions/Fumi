@@ -16,7 +16,7 @@ export type AccountsAddModalProps = Pick<
     | "closeAddModal"
     | "draftCookie"
     | "isSubmittingAdd"
-    | "setDraftCookie"
+    | "onDraftCookieChange"
     | "submitAddAccount"
 > & {
     isOpen: boolean;

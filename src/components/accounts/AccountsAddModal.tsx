@@ -11,7 +11,7 @@ export function AccountsAddModal({
     draftCookie,
     isOpen,
     isSubmittingAdd,
-    setDraftCookie,
+    onDraftCookieChange,
     submitAddAccount,
 }: AccountsAddModalProps): ReactElement | null {
     if (!isOpen) {
@@ -43,7 +43,7 @@ export function AccountsAddModal({
                     <textarea
                         value={draftCookie}
                         onChange={(event) => {
-                            setDraftCookie(event.target.value);
+                            onDraftCookieChange(event.target.value);
                         }}
                         rows={6}
                         placeholder="Paste your .ROBLOSECURITY cookie"

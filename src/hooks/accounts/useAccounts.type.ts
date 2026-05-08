@@ -11,7 +11,7 @@ export type UseAccountsResult = {
     deletingAccountId: string | null;
     openAddModal: () => void;
     closeAddModal: () => void;
-    setDraftCookie: (cookie: string) => void;
+    onDraftCookieChange: (cookie: string) => void;
     submitAddAccount: () => Promise<void>;
     launchAccount: (accountId: string) => Promise<void>;
     deleteAccount: (accountId: string) => Promise<void>;

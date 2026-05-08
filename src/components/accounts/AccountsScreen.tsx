@@ -30,7 +30,7 @@ export function AccountsScreen(): ReactElement {
         deletingAccountId,
         openAddModal,
         closeAddModal,
-        setDraftCookie,
+        onDraftCookieChange,
         submitAddAccount,
         launchAccount,
         deleteAccount,
@@ -111,7 +111,7 @@ export function AccountsScreen(): ReactElement {
                 draftCookie={draftCookie}
                 isOpen={isAddModalOpen}
                 isSubmittingAdd={isSubmittingAdd}
-                setDraftCookie={setDraftCookie}
+                onDraftCookieChange={onDraftCookieChange}
                 submitAddAccount={submitAddAccount}
             />
         </section>

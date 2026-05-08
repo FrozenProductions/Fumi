@@ -134,6 +134,10 @@ export function useAccounts(): UseAccountsResult {
         setErrorMessage(null);
     };
 
+    const handleDraftCookieChange = (cookie: string): void => {
+        setDraftCookie(cookie);
+    };
+
     const submitAddAccount = async (): Promise<void> => {
         if (isSubmittingAdd) {
             return;
@@ -214,7 +218,7 @@ export function useAccounts(): UseAccountsResult {
         deletingAccountId,
         openAddModal,
         closeAddModal,
-        setDraftCookie,
+        onDraftCookieChange: handleDraftCookieChange,
         submitAddAccount,
         launchAccount: launchSelectedAccount,
         deleteAccount: deleteSelectedAccount,
