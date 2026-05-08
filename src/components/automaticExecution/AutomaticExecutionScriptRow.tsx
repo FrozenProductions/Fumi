@@ -1,38 +1,14 @@
 import { Delete02Icon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
-import type {
-    ChangeEvent,
-    ReactElement,
-    KeyboardEvent as ReactKeyboardEvent,
-    RefObject,
-} from "react";
+import type { ReactElement } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../constants/app/input";
 import { MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH } from "../../constants/automaticExecution/automaticExecution";
 import { clampAutomaticExecutionText } from "../../lib/automaticExecution/automaticExecution";
-import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
 import { joinClassNames } from "../../lib/shared/className";
 import { splitWorkspaceFileName } from "../../lib/workspace/fileName";
 import { AppIcon } from "../app/common/AppIcon";
 import { AppIconButton } from "../app/common/AppIconButton";
 import { AppTooltip } from "../app/tooltip/AppTooltip";
-
-type AutomaticExecutionScriptRowProps = {
-    script: AutomaticExecutionScript;
-    isActive: boolean;
-    isRenaming: boolean;
-    hasRenameError: boolean;
-    isRenameSubmitting: boolean;
-    renameInputRef: RefObject<HTMLInputElement | null>;
-    renameValue: string;
-    onDeleteScript: (scriptId: string, fileName: string) => void;
-    onRenameInputBlur: (script: AutomaticExecutionScript) => void;
-    onRenameInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onRenameInputKeyDown: (
-        event: ReactKeyboardEvent<HTMLInputElement>,
-        script: AutomaticExecutionScript,
-    ) => void;
-    onSelectScript: (scriptId: string) => void;
-    onStartRename: (script: AutomaticExecutionScript) => void;
-};
+import type { AutomaticExecutionScriptRowProps } from "./automaticExecution.type";
 
 const SCRIPT_ROW_GEOMETRY_CLASS = [
     "[--automatic-execution-script-row-radius:0.65rem]",
