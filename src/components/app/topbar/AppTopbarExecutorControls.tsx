@@ -15,7 +15,7 @@ import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
 import { AppIcon } from "../common/AppIcon";
 import { AppTooltip } from "../tooltip/AppTooltip";
 import type { AppTopbarExecutorControlsProps } from "./appTopbar.type";
-import { getExecutorPortLabel } from "./executorPortLabel";
+import { getExecutorPortLabel } from "./getExecutorPortLabel";
 
 /**
  * Executor connection controls displayed in the topbar.
