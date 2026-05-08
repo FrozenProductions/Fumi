@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { DEFAULT_APP_STORE_STATE } from "../../constants/app/appStore";
 import type { AppStore } from "../../lib/app/appStore.type";
 import {
-    DEFAULT_APP_STORE_STATE,
     getPersistedAppStoreState,
     mergeAppStoreState,
 } from "../../lib/app/appStorePersistence";

@@ -1,12 +1,4 @@
-import {
-    APP_ZOOM_DEFAULT,
-    DEFAULT_APP_EDITOR_SETTINGS,
-    DEFAULT_APP_SIDEBAR_POSITION,
-    DEFAULT_APP_STREAMER_MODE_ENABLED,
-    DEFAULT_APP_THEME,
-    DEFAULT_APP_UPDATER_SETTINGS,
-    DEFAULT_APP_WORKSPACE_SETTINGS,
-} from "../../constants/app/settings";
+import { APP_ZOOM_DEFAULT } from "../../constants/app/settings";
 import type { AppStore, AppStoreState } from "./appStore.type";
 import { normalizeAppHotkeyBindings } from "./hotkeys/hotkeys";
 import {
@@ -149,23 +141,3 @@ export function getPersistedAppStoreState(
         sidebarPosition: state.sidebarPosition,
     };
 }
-
-export const DEFAULT_APP_STORE_STATE = {
-    isSidebarOpen: true,
-    isCommandPaletteOpen: false,
-    commandPaletteScope: null,
-    commandPaletteMode: null,
-    activeSidebarItem: "workspace",
-    goToLineRequest: null,
-    nextGoToLineRequestId: 0,
-    renameCurrentTabRequest: null,
-    nextRenameCurrentTabRequestId: 0,
-    zoomPercent: APP_ZOOM_DEFAULT,
-    theme: DEFAULT_APP_THEME,
-    isStreamerModeEnabled: DEFAULT_APP_STREAMER_MODE_ENABLED,
-    hotkeyBindings: {},
-    editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
-    updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
-    workspaceSettings: DEFAULT_APP_WORKSPACE_SETTINGS,
-    sidebarPosition: DEFAULT_APP_SIDEBAR_POSITION,
-} satisfies AppStoreState;
