@@ -4,7 +4,7 @@ import type {
     ReactElement,
     MouseEvent as ReactMouseEvent,
 } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
     WORKSPACE_MENU_INSET_REM,
     WORKSPACE_MENU_RADIUS_REM,
@@ -202,6 +202,76 @@ export function WorkspaceActionsButton({
         return "More actions";
     }
 
+    const dropdownMenu = useMemo(
+        () => ({
+            dropdownStyle,
+            isDark,
+            isOutlinePanelVisible,
+            isLaunchModifierActive,
+            toggleOutlinePanelShortcutLabel,
+            launchRobloxShortcutLabel,
+            killRobloxShortcutLabel,
+        }),
+        [
+            dropdownStyle,
+            isDark,
+            isOutlinePanelVisible,
+            isLaunchModifierActive,
+            toggleOutlinePanelShortcutLabel,
+            launchRobloxShortcutLabel,
+            killRobloxShortcutLabel,
+        ],
+    );
+    const dropdownRoblox = useMemo(
+        () => ({
+            processes: robloxProcesses,
+            liveAccount: liveRobloxAccount,
+            isDesktopShell,
+            isLaunching,
+            isKillingRoblox,
+            killingRobloxProcessPid,
+            canLaunch,
+            canKill,
+            isStreamerModeEnabled,
+            revealedProcessPid,
+        }),
+        [
+            robloxProcesses,
+            liveRobloxAccount,
+            isDesktopShell,
+            isLaunching,
+            isKillingRoblox,
+            killingRobloxProcessPid,
+            canLaunch,
+            canKill,
+            isStreamerModeEnabled,
+            revealedProcessPid,
+        ],
+    );
+    const dropdownConfirm = useMemo(
+        () => ({
+            confirmingAction,
+        }),
+        [confirmingAction],
+    );
+    const dropdownActions = useMemo(
+        () => ({
+            onLaunch: handleLaunchClick,
+            onKillAll: handleKillClick,
+            onKillProcess: handleKillProcessClick,
+            onOpenExecutionHistory: handleOpenExecutionHistoryClick,
+            onProcessRowBlur: handleProcessRowBlur,
+            onRevealProcess: revealProcess,
+            onHideProcess: handleHideProcess,
+            onToggleOutlinePanel: handleToggleOutlinePanelClick,
+        }),
+        [
+            handleProcessRowBlur,
+            revealProcess,
+            handleHideProcess,
+        ],
+    );
+
     return (
         <div className="relative inline-flex items-center" ref={containerRef}>
             <div className={`app-select-none ${containerClass}`}>
@@ -257,40 +327,10 @@ export function WorkspaceActionsButton({
 
             {isDropdownOpen ? (
                 <WorkspaceActionsDropdown
-                    menu={{
-                        dropdownStyle,
-                        isDark,
-                        isOutlinePanelVisible,
-                        isLaunchModifierActive,
-                        toggleOutlinePanelShortcutLabel,
-                        launchRobloxShortcutLabel,
-                        killRobloxShortcutLabel,
-                    }}
-                    roblox={{
-                        processes: robloxProcesses,
-                        liveAccount: liveRobloxAccount,
-                        isDesktopShell,
-                        isLaunching,
-                        isKillingRoblox,
-                        killingRobloxProcessPid,
-                        canLaunch,
-                        canKill,
-                        isStreamerModeEnabled,
-                        revealedProcessPid,
-                    }}
-                    confirm={{
-                        confirmingAction,
-                    }}
-                    actions={{
-                        onLaunch: handleLaunchClick,
-                        onKillAll: handleKillClick,
-                        onKillProcess: handleKillProcessClick,
-                        onOpenExecutionHistory: handleOpenExecutionHistoryClick,
-                        onProcessRowBlur: handleProcessRowBlur,
-                        onRevealProcess: revealProcess,
-                        onHideProcess: handleHideProcess,
-                        onToggleOutlinePanel: handleToggleOutlinePanelClick,
-                    }}
+                    menu={dropdownMenu}
+                    roblox={dropdownRoblox}
+                    confirm={dropdownConfirm}
+                    actions={dropdownActions}
                 />
             ) : null}
         </div>
