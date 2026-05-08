@@ -1,8 +1,8 @@
 import type {
     LuauAnalysisWorkerRequest,
     LuauAnalysisWorkerResponse,
-} from "../lib/luau/analysis/workerAnalysis.type";
-import { scanLuauFileAnalysis } from "../lib/luau/symbolScanner/symbolScanner";
+} from "./workerAnalysis.type";
+import { scanLuauFileAnalysis } from "../symbolScanner/symbolScanner";
 
 const workerScope = globalThis as typeof globalThis & {
     addEventListener: (

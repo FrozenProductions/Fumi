@@ -94,7 +94,7 @@ function getLuauAnalysisWorkerState(): LuauAnalysisWorkerState {
     }
 
     const worker = new Worker(
-        new URL("../../../workers/luauAnalysis.worker.ts", import.meta.url),
+        new URL("./luauAnalysis.worker.ts", import.meta.url),
         {
             type: "module",
         },
