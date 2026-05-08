@@ -1,4 +1,4 @@
-import { startApp } from "./appStartup";
+import { startApp } from "./startApp";
 import "./index.css";
 
 startApp();
