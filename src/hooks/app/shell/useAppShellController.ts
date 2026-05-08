@@ -13,7 +13,7 @@ import { useWorkspaceStore } from "../../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../../../hooks/workspace/useWorkspaceStoreLifecycle";
 import { showsWorkspaceContext } from "../../../lib/app/sidebar";
 import { selectWorkspaceHasUnsavedChanges } from "../../../lib/workspace/store/selectors";
-import { getAppScreen } from "../../../view/appScreens";
+import { getAppScreen } from "../../../view/getAppScreen";
 import { useAppDragDrop } from "../useAppDragDrop";
 import { useAppStore } from "../useAppStore";
 import { useAppThemeSync } from "../useAppThemeSync";
