@@ -1,25 +1,6 @@
-import type {
-    CSSProperties,
-    ReactElement,
-    PointerEvent as ReactPointerEvent,
-} from "react";
+import type { ReactElement } from "react";
 import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
-import type { WorkspaceEditorOutlineProps } from "./workspaceEditor.type";
-
-type WorkspaceEditorOutlineSidebarProps = {
-    handleOutlineResizePointerDown: (
-        event: ReactPointerEvent<HTMLButtonElement>,
-    ) => void;
-    handleSelectSymbol: (
-        symbol: WorkspaceEditorOutlineProps["luauSymbols"][number],
-    ) => void;
-    outline: WorkspaceEditorOutlineProps;
-    sidebar: {
-        isOutlinePanelSupported: boolean;
-        outlinePanelClassName: string;
-        outlinePanelStyle: CSSProperties;
-    };
-};
+import type { WorkspaceEditorOutlineSidebarProps } from "./WorkspaceEditorOutlineSidebar.type";
 
 /**
  * Renders the outline sidebar panel with a resize handle and symbol tree.

@@ -1,6 +1,10 @@
 import type { ChangeEvent, KeyboardEvent, RefObject } from "react";
 import type { WorkspaceEditorSearchController } from "../../../../lib/workspace/editor/editorSearch.type";
 
+export type WorkspaceEditorSearchPanelProps = {
+    searchPanel: WorkspaceEditorSearchController;
+};
+
 export type WorkspaceEditorSearchReplaceControlsProps = {
     isReplaceDropdownOpen: boolean;
     replaceDropdownRef: RefObject<HTMLDivElement | null>;

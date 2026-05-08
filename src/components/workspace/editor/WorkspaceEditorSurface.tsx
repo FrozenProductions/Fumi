@@ -19,7 +19,7 @@ import type {
     WorkspaceAcePaneProps,
     WorkspaceEditorSurfaceProps,
     WorkspaceSplitDropZoneProps,
-} from "./workspaceEditor.type";
+} from "./WorkspaceEditorSurface.type";
 
 function WorkspaceAcePane({
     AceEditorComponent,

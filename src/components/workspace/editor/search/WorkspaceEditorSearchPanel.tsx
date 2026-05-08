@@ -8,7 +8,7 @@ import { APP_TEXT_INPUT_PROPS } from "../../../../constants/app/input";
 import { useWorkspaceEditorSearchPanel } from "../../../../hooks/workspace/editorSearch/useWorkspaceEditorSearchPanel";
 import { AppIcon } from "../../../app/common/AppIcon";
 import { AppTooltip } from "../../../app/tooltip/AppTooltip";
-import type { WorkspaceEditorSearchPanelProps } from "../workspaceEditor.type";
+import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditorSearchPanel.type";
 import { WorkspaceEditorSearchActions } from "./WorkspaceEditorSearchActions";
 import { WorkspaceEditorSearchReplaceControls } from "./WorkspaceEditorSearchReplaceControls";
 

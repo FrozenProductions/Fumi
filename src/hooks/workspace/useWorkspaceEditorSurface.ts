@@ -9,7 +9,7 @@ import type {
     WorkspaceEditorOutlineProps,
     WorkspaceEditorPaneProps,
     WorkspaceEditorSplitViewProps,
-} from "../../components/workspace/editor/workspaceEditor.type";
+} from "../../components/workspace/editor/WorkspaceEditorProps.type";
 import {
     WORKSPACE_OUTLINE_PANEL_MAX_WIDTH,
     WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
