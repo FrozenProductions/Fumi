@@ -1,8 +1,7 @@
 import { setWorkspaceUnsavedChanges } from "../../platform/workspace/workspace";
 import { selectWorkspaceShouldGuardExit } from "./selectors";
+import type { WorkspaceExitGuardSync } from "./syncExitGuard.type";
 import type { WorkspaceStore } from "./workspaceStore.type";
-
-export type WorkspaceExitGuardSync = (state: WorkspaceStore) => void;
 
 /**
  * Creates a sync function that notifies the native backend about unsaved-changes exit guard state.

@@ -1,4 +1,4 @@
-import type { OperationErrorOptions } from "../shared/operationError";
+import type { OperationErrorOptions } from "../shared/operationError.type";
 import { OperationError } from "../shared/operationError";
 
 export class ScriptLibraryError extends OperationError {

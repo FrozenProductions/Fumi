@@ -1,7 +1,4 @@
-export type OperationErrorOptions = {
-    operation: string;
-    message: string;
-};
+import type { OperationErrorOptions } from "./operationError.type";
 
 /**
  * Error class for failed workspace operations, carrying the operation name and message.
