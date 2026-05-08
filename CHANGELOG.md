@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- Add execution history search and filters.
+- Add editor caret and tab spacing settings.
+- Add an execute-active-tab hotkey and command palette action.
+- Add `_G` symbol support to Luau intellisense and outline search.
+
+### Changed
+
+- Improve Rust backend reliability across metadata, storage, binary cookie, dialog, and Luau parser flows.
+- Reorganize platform wrappers, window helpers, workspace command wrappers, automatic execution rows, and Luau completion modules into smaller domain files.
+- Extract app shell and view startup orchestration out of the main entry files.
+- Move binary cookie and Roblox process helpers under the accounts backend domain.
+- Clean up frontend type ownership, imports, shared validation helpers, and editor surface prop types.
+
+### Removed
+
+- Trim low-value frontend tests.
+
+### Fixed
+
+- Fix command palette toggle focus.
+- Fix app zoom viewport fill behavior.
+- Fix archive search header jitter in workspace settings.
+- Add typed executor command wrappers for Roblox executor platform calls.
+- Improve keyboard focus handling for editor split panes.
+- Wrap settings select handlers to avoid passing raw setters through UI props.
+
 ## [1.0.8] - 2026-05-02
 
 ### Changed
