@@ -33,29 +33,34 @@ export function WorkspaceTabBarTabs({
                     style={layout.primarySectionStyle}
                     className="min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
-                    {layout.primaryTabs.map((tab, index) => (
-                        <WorkspaceTabItem
-                            key={tab.id}
-                            item={{
-                                index,
-                                sortableGroup: TAB_BAR_SORTABLE_GROUP,
-                                tab,
-                            }}
-                            state={{
-                                ...sharedTabItemState,
-                                isActive: tab.id === layout.activeTabId,
-                                isVisibleInSplit:
-                                    splitView.primaryTabId === tab.id,
-                            }}
-                            actions={{
-                                ...sharedTabItemActions,
-                                onSelectTab: (id: string): void => {
-                                    items.onOpenTabInPane(id, "primary");
-                                },
-                            }}
-                            rename={items.rename}
-                        />
-                    ))}
+                    {layout.primaryTabs.map((tab, index) => {
+                        const item = {
+                            index,
+                            sortableGroup: TAB_BAR_SORTABLE_GROUP,
+                            tab,
+                        };
+                        const state = {
+                            ...sharedTabItemState,
+                            isActive: tab.id === layout.activeTabId,
+                            isVisibleInSplit: splitView.primaryTabId === tab.id,
+                        };
+                        const actions = {
+                            ...sharedTabItemActions,
+                            onSelectTab: (id: string): void => {
+                                items.onOpenTabInPane(id, "primary");
+                            },
+                        };
+
+                        return (
+                            <WorkspaceTabItem
+                                key={tab.id}
+                                item={item}
+                                state={state}
+                                actions={actions}
+                                rename={items.rename}
+                            />
+                        );
+                    })}
                 </div>
 
                 <div
@@ -67,30 +72,34 @@ export function WorkspaceTabBarTabs({
                     style={layout.secondarySectionStyle}
                     className={layout.secondaryTabsClassName}
                 >
-                    {layout.secondaryTabs.map((tab, secondaryIndex) => (
-                        <WorkspaceTabItem
-                            key={tab.id}
-                            item={{
-                                index:
-                                    layout.primaryTabs.length + secondaryIndex,
-                                sortableGroup: TAB_BAR_SORTABLE_GROUP,
-                                tab,
-                            }}
-                            state={{
-                                ...sharedTabItemState,
-                                isActive: tab.id === layout.activeTabId,
-                                isVisibleInSplit:
-                                    tab.id === layout.secondaryTabId,
-                            }}
-                            actions={{
-                                ...sharedTabItemActions,
-                                onSelectTab: (id: string): void => {
-                                    items.onOpenTabInPane(id, "secondary");
-                                },
-                            }}
-                            rename={items.rename}
-                        />
-                    ))}
+                    {layout.secondaryTabs.map((tab, secondaryIndex) => {
+                        const item = {
+                            index: layout.primaryTabs.length + secondaryIndex,
+                            sortableGroup: TAB_BAR_SORTABLE_GROUP,
+                            tab,
+                        };
+                        const state = {
+                            ...sharedTabItemState,
+                            isActive: tab.id === layout.activeTabId,
+                            isVisibleInSplit: tab.id === layout.secondaryTabId,
+                        };
+                        const actions = {
+                            ...sharedTabItemActions,
+                            onSelectTab: (id: string): void => {
+                                items.onOpenTabInPane(id, "secondary");
+                            },
+                        };
+
+                        return (
+                            <WorkspaceTabItem
+                                key={tab.id}
+                                item={item}
+                                state={state}
+                                actions={actions}
+                                rename={items.rename}
+                            />
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -98,26 +107,32 @@ export function WorkspaceTabBarTabs({
 
     return (
         <div className={layout.singlePaneTabsClassName}>
-            {layout.primaryTabs.map((tab, index) => (
-                <WorkspaceTabItem
-                    key={tab.id}
-                    item={{
-                        index,
-                        sortableGroup: TAB_BAR_SORTABLE_GROUP,
-                        tab,
-                    }}
-                    state={{
-                        ...sharedTabItemState,
-                        isActive: tab.id === layout.activeTabId,
-                        isVisibleInSplit: false,
-                    }}
-                    actions={{
-                        ...sharedTabItemActions,
-                        onSelectTab: items.onSelectTab,
-                    }}
-                    rename={items.rename}
-                />
-            ))}
+            {layout.primaryTabs.map((tab, index) => {
+                const item = {
+                    index,
+                    sortableGroup: TAB_BAR_SORTABLE_GROUP,
+                    tab,
+                };
+                const state = {
+                    ...sharedTabItemState,
+                    isActive: tab.id === layout.activeTabId,
+                    isVisibleInSplit: false,
+                };
+                const actions = {
+                    ...sharedTabItemActions,
+                    onSelectTab: items.onSelectTab,
+                };
+
+                return (
+                    <WorkspaceTabItem
+                        key={tab.id}
+                        item={item}
+                        state={state}
+                        actions={actions}
+                        rename={items.rename}
+                    />
+                );
+            })}
         </div>
     );
 }
