@@ -1,6 +1,6 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createWorkspaceSession } from "../commandPaletteTestUtils";
+import { createWorkspaceSession } from "../commandPaletteTestSupport";
 import { getTabCommandPaletteItems } from "./commandPaletteTabs";
 
 describe("getTabCommandPaletteItems", () => {

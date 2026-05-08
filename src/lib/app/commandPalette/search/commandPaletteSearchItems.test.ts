@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { createAppCommandPaletteItem } from "../commandPaletteTestUtils";
+import { createAppCommandPaletteItem } from "../commandPaletteTestSupport";
 import { searchAppCommandPaletteItems } from "./commandPaletteSearch";
 
 describe("searchAppCommandPaletteItems", () => {

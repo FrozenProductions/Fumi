@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { createCommandPaletteOptions } from "../commandPaletteTestUtils";
+import { createCommandPaletteOptions } from "../commandPaletteTestSupport";
 import { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 
 const platformMocks = vi.hoisted(() => ({

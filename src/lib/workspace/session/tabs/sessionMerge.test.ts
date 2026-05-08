@@ -5,7 +5,7 @@ import {
     createTabState,
     createWorkspaceSession,
     createWorkspaceSnapshot,
-} from "../sessionTestUtils";
+} from "../sessionTestSupport";
 import { mergeWorkspaceSession } from "./sessionTabs";
 
 describe("mergeWorkspaceSession", () => {

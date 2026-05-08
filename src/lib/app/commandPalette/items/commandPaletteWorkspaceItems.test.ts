@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createWorkspaceSession } from "../commandPaletteTestUtils";
+import { createWorkspaceSession } from "../commandPaletteTestSupport";
 import { getWorkspaceCommandPaletteItems } from "./commandPaletteWorkspaces";
 
 describe("getWorkspaceCommandPaletteItems", () => {

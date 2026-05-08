@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import {
     createCommandPaletteOptions,
     createWorkspaceSession,
-} from "../commandPaletteTestUtils";
+} from "../commandPaletteTestSupport";
 import { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 
 describe("getCommandCommandPaletteItems", () => {

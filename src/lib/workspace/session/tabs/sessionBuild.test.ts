@@ -5,7 +5,7 @@ import {
     createSnapshotTab,
     createTabState,
     createWorkspaceSnapshot,
-} from "../sessionTestUtils";
+} from "../sessionTestSupport";
 import { buildWorkspaceSession } from "./sessionTabs";
 
 describe("buildWorkspaceSession", () => {

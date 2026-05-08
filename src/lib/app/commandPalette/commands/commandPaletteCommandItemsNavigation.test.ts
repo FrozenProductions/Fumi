@@ -5,7 +5,7 @@ import {
     createCommandPaletteOptions,
     createWorkspaceExecutor,
     createWorkspaceSession,
-} from "../commandPaletteTestUtils";
+} from "../commandPaletteTestSupport";
 import { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 
 const platformMocks = vi.hoisted(() => ({
