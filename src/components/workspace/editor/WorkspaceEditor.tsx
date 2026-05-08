@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useWorkspaceEditorSurface } from "../../../hooks/workspace/useWorkspaceEditorSurface";
 import type { LuauFileSymbol } from "../../../lib/luau/luau.type";
 import { getWorkspaceLineNumberFromOffset } from "../../../lib/workspace/outline/outline";
@@ -47,6 +47,18 @@ export function WorkspaceEditor({
         pane,
         splitViewState,
     });
+    const sidebar = useMemo(
+        () => ({
+            isOutlinePanelSupported: surface.state.isOutlinePanelSupported,
+            outlinePanelClassName: surface.state.outlinePanelClassName,
+            outlinePanelStyle: surface.state.outlinePanelStyle,
+        }),
+        [
+            surface.state.isOutlinePanelSupported,
+            surface.state.outlinePanelClassName,
+            surface.state.outlinePanelStyle,
+        ],
+    );
 
     return (
         <div className="relative flex min-h-0 flex-1 bg-fumi-50">
@@ -63,12 +75,7 @@ export function WorkspaceEditor({
                 }
                 handleSelectSymbol={handleSelectSymbol}
                 outline={outline}
-                sidebar={{
-                    isOutlinePanelSupported:
-                        surface.state.isOutlinePanelSupported,
-                    outlinePanelClassName: surface.state.outlinePanelClassName,
-                    outlinePanelStyle: surface.state.outlinePanelStyle,
-                }}
+                sidebar={sidebar}
             />
         </div>
     );
