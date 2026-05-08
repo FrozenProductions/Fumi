@@ -242,15 +242,10 @@ export function useAppCommandPalette({
         };
     }, [cancelScheduledInputFocus]);
 
-    useEffect(() => {
-        setActiveResultIndex((currentIndex) => {
-            if (results.length === 0) {
-                return 0;
-            }
-
-            return Math.min(currentIndex, results.length - 1);
-        });
-    }, [results.length]);
+    const clampedActiveResultIndex =
+        results.length === 0
+            ? 0
+            : Math.min(activeResultIndex, results.length - 1);
 
     useLayoutEffect(() => {
         const previousOpenRequest = previousOpenRequestRef.current;
@@ -375,7 +370,7 @@ export function useAppCommandPalette({
                     return;
                 }
 
-                const nextItem = results[activeResultIndex];
+                const nextItem = results[clampedActiveResultIndex];
 
                 if (!nextItem || nextItem.isDisabled) {
                     return;
@@ -409,7 +404,7 @@ export function useAppCommandPalette({
             }
         },
         [
-            activeResultIndex,
+            clampedActiveResultIndex,
             commitSelection,
             goToLineNumber,
             mode,
@@ -452,7 +447,7 @@ export function useAppCommandPalette({
             scope,
         },
         results: {
-            activeResultIndex,
+            activeResultIndex: clampedActiveResultIndex,
             results,
         },
         handlers: {
