@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useRef } from "react";
 import { CHARACTER_STAGGER_DELAY_MS } from "../../../constants/app/app";
 import type {
     AnimatedCharacter,
@@ -35,20 +35,10 @@ export function AppAnimatedText({
     text,
     animateOnInitialRender = true,
 }: AppAnimatedTextProps): ReactElement {
-    const [displayedText, setDisplayedText] = useState(text);
-    const [animationKey, setAnimationKey] = useState(0);
-
-    useEffect(() => {
-        if (text === displayedText) {
-            return;
-        }
-
-        setDisplayedText(text);
-        setAnimationKey((currentKey) => currentKey + 1);
-    }, [displayedText, text]);
-
-    const characters = splitTextIntoCharacters(displayedText);
-    const shouldAnimateCharacters = animateOnInitialRender || animationKey > 0;
+    const initialTextRef = useRef(text);
+    const characters = splitTextIntoCharacters(text);
+    const shouldAnimateCharacters =
+        animateOnInitialRender || text !== initialTextRef.current;
     const characterClassName = shouldAnimateCharacters
         ? "inline-block whitespace-pre motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[18%] motion-safe:motion-duration-130 motion-safe:motion-ease-out-cubic motion-reduce:animate-none motion-reduce:transform-none"
         : "inline-block whitespace-pre";
@@ -59,10 +49,10 @@ export function AppAnimatedText({
             aria-live="polite"
         >
             <span
-                key={`${animationKey}-${displayedText}`}
+                key={text}
                 className="inline-block whitespace-pre-wrap"
             >
-                <span className="sr-only">{displayedText}</span>
+                <span className="sr-only">{text}</span>
                 {characters.map(({ character, delayMs, key }) => {
                     const characterStyle = {
                         animationDelay: `${delayMs}ms`,
@@ -70,7 +60,7 @@ export function AppAnimatedText({
 
                     return (
                         <span
-                            key={`${animationKey}-${key}`}
+                            key={key}
                             aria-hidden="true"
                             className={characterClassName}
                             style={characterStyle}
