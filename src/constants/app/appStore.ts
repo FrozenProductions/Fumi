@@ -1,3 +1,4 @@
+import type { AppStoreState } from "../../lib/app/appStore.type";
 import {
     APP_ZOOM_DEFAULT,
     DEFAULT_APP_EDITOR_SETTINGS,
@@ -7,7 +8,6 @@ import {
     DEFAULT_APP_UPDATER_SETTINGS,
     DEFAULT_APP_WORKSPACE_SETTINGS,
 } from "./settings";
-import type { AppStoreState } from "../../lib/app/appStore.type";
 
 export const DEFAULT_APP_STORE_STATE = {
     isSidebarOpen: true,

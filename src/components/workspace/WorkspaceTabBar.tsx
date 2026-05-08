@@ -239,10 +239,7 @@ export function WorkspaceTabBar({
                     aria-label="Workspace files"
                     className="min-w-0 flex-1 overflow-hidden"
                 >
-                    <WorkspaceTabBarTabs
-                        layout={tabsLayout}
-                        items={tabItems}
-                    />
+                    <WorkspaceTabBarTabs layout={tabsLayout} items={tabItems} />
                 </div>
             </div>
 

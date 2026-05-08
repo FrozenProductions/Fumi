@@ -176,10 +176,13 @@ export function WorkspaceActionsButton({
         ? "pointer-events-auto inline-flex h-full items-center justify-center rounded-r-[0.5rem] px-2 transition-colors duration-150 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fumi-400"
         : "pointer-events-auto inline-flex h-full items-center justify-center rounded-r-[0.5rem] px-2 transition-colors duration-150 hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fumi-400";
 
-    const dropdownStyle: CSSProperties & Record<string, string> = {
-        "--workspace-actions-menu-radius": `${WORKSPACE_MENU_RADIUS_REM}rem`,
-        "--workspace-actions-menu-inset": `${WORKSPACE_MENU_INSET_REM}rem`,
-    };
+    const dropdownStyle: CSSProperties & Record<string, string> = useMemo(
+        () => ({
+            "--workspace-actions-menu-radius": `${WORKSPACE_MENU_RADIUS_REM}rem`,
+            "--workspace-actions-menu-inset": `${WORKSPACE_MENU_INSET_REM}rem`,
+        }),
+        [],
+    );
 
     function getExecuteTooltip(): string {
         if (!hasSupportedExecutor) {
@@ -254,23 +257,16 @@ export function WorkspaceActionsButton({
         }),
         [confirmingAction],
     );
-    const dropdownActions = useMemo(
-        () => ({
-            onLaunch: handleLaunchClick,
-            onKillAll: handleKillClick,
-            onKillProcess: handleKillProcessClick,
-            onOpenExecutionHistory: handleOpenExecutionHistoryClick,
-            onProcessRowBlur: handleProcessRowBlur,
-            onRevealProcess: revealProcess,
-            onHideProcess: handleHideProcess,
-            onToggleOutlinePanel: handleToggleOutlinePanelClick,
-        }),
-        [
-            handleProcessRowBlur,
-            revealProcess,
-            handleHideProcess,
-        ],
-    );
+    const dropdownActions = {
+        onLaunch: handleLaunchClick,
+        onKillAll: handleKillClick,
+        onKillProcess: handleKillProcessClick,
+        onOpenExecutionHistory: handleOpenExecutionHistoryClick,
+        onProcessRowBlur: handleProcessRowBlur,
+        onRevealProcess: revealProcess,
+        onHideProcess: handleHideProcess,
+        onToggleOutlinePanel: handleToggleOutlinePanelClick,
+    };
 
     return (
         <div className="relative inline-flex items-center" ref={containerRef}>

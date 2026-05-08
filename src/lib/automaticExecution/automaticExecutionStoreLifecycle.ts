@@ -1,4 +1,11 @@
 import {
+    bootstrapAutomaticExecution as bootstrapAutomaticExecutionCommand,
+    persistAutomaticExecutionState,
+    refreshAutomaticExecution,
+} from "../platform/roblox/automaticExecution";
+import { getErrorMessage } from "../shared/errorMessage";
+import type { ExecutorKind } from "../workspace/workspace.type";
+import {
     buildAutomaticExecutionScripts,
     serializeAutomaticExecutionScriptState,
 } from "./automaticExecution";
@@ -8,13 +15,6 @@ import type {
     AutomaticExecutionStoreGet,
     AutomaticExecutionStoreSet,
 } from "./automaticExecutionStore.type";
-import {
-    bootstrapAutomaticExecution as bootstrapAutomaticExecutionCommand,
-    persistAutomaticExecutionState,
-    refreshAutomaticExecution,
-} from "../platform/roblox/automaticExecution";
-import { getErrorMessage } from "../shared/errorMessage";
-import type { ExecutorKind } from "../workspace/workspace.type";
 import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreRuntime.type";
 
 /**

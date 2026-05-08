@@ -1,7 +1,4 @@
-import type {
-    CSSProperties,
-    PointerEvent as ReactPointerEvent,
-} from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import type { WorkspaceEditorOutlineProps } from "./WorkspaceEditorProps.type";
 
 export type WorkspaceEditorOutlineSidebarProps = {

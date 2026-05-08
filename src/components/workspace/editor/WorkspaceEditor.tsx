@@ -4,8 +4,8 @@ import { useWorkspaceEditorSurface } from "../../../hooks/workspace/useWorkspace
 import type { LuauFileSymbol } from "../../../lib/luau/luau.type";
 import { getWorkspaceLineNumberFromOffset } from "../../../lib/workspace/outline/outline";
 import { WorkspaceEditorOutlineSidebar } from "./WorkspaceEditorOutlineSidebar";
-import { WorkspaceEditorSurface } from "./WorkspaceEditorSurface";
 import type { WorkspaceEditorProps } from "./WorkspaceEditorProps.type";
+import { WorkspaceEditorSurface } from "./WorkspaceEditorSurface";
 
 /**
  * The main workspace editor with tab management, split view, and outline panel.

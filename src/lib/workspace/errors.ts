@@ -1,5 +1,5 @@
-import type { OperationErrorOptions } from "../shared/operationError.type";
 import { OperationError } from "../shared/operationError";
+import type { OperationErrorOptions } from "../shared/operationError.type";
 
 /**
  * Error thrown when a workspace persistence operation fails.

@@ -48,10 +48,7 @@ export function AppAnimatedText({
             className="inline-grid overflow-hidden align-top"
             aria-live="polite"
         >
-            <span
-                key={text}
-                className="inline-block whitespace-pre-wrap"
-            >
+            <span key={text} className="inline-block whitespace-pre-wrap">
                 <span className="sr-only">{text}</span>
                 {characters.map(({ character, delayMs, key }) => {
                     const characterStyle = {

@@ -8,9 +8,9 @@ import { APP_TEXT_INPUT_PROPS } from "../../../../constants/app/input";
 import { useWorkspaceEditorSearchPanel } from "../../../../hooks/workspace/editorSearch/useWorkspaceEditorSearchPanel";
 import { AppIcon } from "../../../app/common/AppIcon";
 import { AppTooltip } from "../../../app/tooltip/AppTooltip";
-import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditorSearchPanel.type";
 import { WorkspaceEditorSearchActions } from "./WorkspaceEditorSearchActions";
 import { WorkspaceEditorSearchReplaceControls } from "./WorkspaceEditorSearchReplaceControls";
+import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditorSearchPanel.type";
 
 /**
  * Floating search panel for the workspace editor with find/replace.

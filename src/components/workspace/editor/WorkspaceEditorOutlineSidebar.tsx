@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
-import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
 import type { WorkspaceEditorOutlineSidebarProps } from "./WorkspaceEditorOutlineSidebar.type";
+import { WorkspaceOutlinePanel } from "./WorkspaceOutlinePanel";
 
 /**
  * Renders the outline sidebar panel with a resize handle and symbol tree.

@@ -1,8 +1,3 @@
-import type {
-    AutomaticExecutionStore,
-    AutomaticExecutionStoreGet,
-    AutomaticExecutionStoreSet,
-} from "./automaticExecutionStore.type";
 import {
     createAutomaticExecutionScript,
     deleteAutomaticExecutionScript,
@@ -10,8 +5,13 @@ import {
     saveAutomaticExecutionScript,
 } from "../platform/roblox/automaticExecution";
 import { getErrorMessage } from "../shared/errorMessage";
-import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreRuntime.type";
+import type {
+    AutomaticExecutionStore,
+    AutomaticExecutionStoreGet,
+    AutomaticExecutionStoreSet,
+} from "./automaticExecutionStore.type";
 import { runRefreshAfterFlush } from "./automaticExecutionStoreLifecycle";
+import type { AutomaticExecutionRuntime } from "./automaticExecutionStoreRuntime.type";
 
 /**
  * Creates the script-related action slice for the automatic execution store.

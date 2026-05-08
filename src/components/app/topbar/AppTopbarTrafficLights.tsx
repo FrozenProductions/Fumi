@@ -8,11 +8,11 @@ import {
     subscribeToCurrentWindowResize,
     toggleCurrentWindowMaximize,
 } from "../../../lib/platform/window/window";
+import { AppTooltip } from "../tooltip/AppTooltip";
 import type {
     MaximizeGlyphProps,
     TrafficLightButtonProps,
 } from "./AppTopbarTrafficLights.type";
-import { AppTooltip } from "../tooltip/AppTooltip";
 
 function createWindowActionHandler(action: () => Promise<unknown>): () => void {
     return () => {
