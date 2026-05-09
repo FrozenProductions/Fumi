@@ -14,6 +14,12 @@ import {
     normalizeAppOutlinePanelWidth,
 } from "../../lib/app/store";
 
+/**
+ * Global Zustand store for app-wide UI state, persisted to localStorage.
+ *
+ * Manages sidebar, command palette, theme, zoom, hotkey bindings, editor settings,
+ * and workspace preferences. State is merged on hydration to handle schema migrations.
+ */
 export const useAppStore = create<AppStore>()(
     persist(
         (set) => ({

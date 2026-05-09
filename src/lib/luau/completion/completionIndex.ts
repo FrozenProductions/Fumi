@@ -50,6 +50,12 @@ function createIndexedCompletionItem(
     };
 }
 
+/**
+ * Creates an indexed completion item from a file symbol, preserving the original symbol for re-export.
+ *
+ * @param symbol - The file symbol to index
+ * @returns An indexed completion item with lookup key, normalized label, and the source symbol
+ */
 export function createIndexedCompletionItemFromFileSymbol(
     symbol: LuauFileSymbol,
 ): FileIndexedCompletionItem {
@@ -100,6 +106,14 @@ function compareCompletionItems(
     return left.label.localeCompare(right.label);
 }
 
+/**
+ * Compares two indexed completion items for sorted insertion based on source group weight, score, and label.
+ *
+ * @param left - First indexed item
+ * @param right - Second indexed item
+ * @param priority - The active intellisense priority context
+ * @returns Negative if left comes before right, positive if after, zero if equal
+ */
 export function compareIndexedCompletionItems(
     left: IndexedCompletionItem,
     right: IndexedCompletionItem,
@@ -182,6 +196,14 @@ function insertTopCompletionItem(
     }
 }
 
+/**
+ * Inserts a single indexed item into the top-items list if it matches the prefix and ranks high enough.
+ *
+ * @param options.item - The indexed completion item to evaluate
+ * @param options.normalizedPrefix - Lowercase prefix to match against the item label
+ * @param options.priority - Active intellisense priority for comparison
+ * @param options.topItems - Mutable sorted list of top candidates (truncated to max items)
+ */
 export function addMatchingCompletionItem(options: {
     item: IndexedCompletionItem;
     normalizedPrefix: string;
@@ -200,6 +222,15 @@ export function addMatchingCompletionItem(options: {
     insertTopCompletionItem(topItems, item, priority);
 }
 
+/**
+ * Iterates a list of indexed items, inserting each match into the top-items list while deduplicating by key.
+ *
+ * @param options.items - Readonly list of indexed completion items to scan
+ * @param options.normalizedPrefix - Lowercase prefix to match against item labels
+ * @param options.priority - Active intellisense priority for comparison
+ * @param options.seen - Set of already-processed keys for deduplication
+ * @param options.topItems - Mutable sorted list of top candidates
+ */
 export function addMatchingCompletionItems(options: {
     items: readonly IndexedCompletionItem[];
     normalizedPrefix: string;
@@ -225,6 +256,14 @@ export function addMatchingCompletionItems(options: {
     }
 }
 
+/**
+ * Filters a pre-sorted completion index by prefix, returning at most MAX_LUAU_COMPLETION_ITEMS results.
+ *
+ * @param indexByPriority - The completion index for the active priority
+ * @param prefix - Raw typed prefix (case-insensitive)
+ * @param priority - Active intellisense priority
+ * @returns Filtered completion items sorted by relevance
+ */
 export function filterCompletions(
     indexByPriority: CompletionIndexByPriority,
     prefix: string,

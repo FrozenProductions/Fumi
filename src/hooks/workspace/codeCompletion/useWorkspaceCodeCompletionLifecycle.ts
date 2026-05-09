@@ -35,6 +35,22 @@ type UseWorkspaceCodeCompletionLifecycleOptions = {
     tabs: readonly WorkspaceTab[];
 };
 
+/**
+ * Manages editor lifecycle concerns: save shortcut, tab switching, go-to-line, and orphaned editor cleanup.
+ *
+ * Registers a global Cmd/Ctrl+S shortcut, resizes and focuses the active editor on tab change,
+ * processes go-to-line requests, and prunes stale editor refs when tabs close.
+ *
+ * @param options.activeTabId - Currently active tab ID
+ * @param options.closeCompletionPopup - Callback to dismiss the completion popup
+ * @param options.cursorListenerCleanupByTabIdRef - Map of cleanup functions for cursor listeners
+ * @param options.editorByTabIdRef - Map of Ace editor instances keyed by tab ID
+ * @param options.getActiveEditor - Returns the currently focused Ace editor instance
+ * @param options.goToLine - Navigates the editor to a specific line number
+ * @param options.saveActiveWorkspaceTab - Persists the active tab's content
+ * @param options.sessionStateByTabIdRef - Map of stored Ace session states keyed by tab ID
+ * @param options.tabs - Currently open workspace tabs
+ */
 export function useWorkspaceCodeCompletionLifecycle({
     activeTabId,
     closeCompletionPopup,

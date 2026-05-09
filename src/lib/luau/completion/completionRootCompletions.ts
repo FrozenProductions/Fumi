@@ -22,6 +22,13 @@ function getCompletionKey(
     return `${namespace.toLowerCase()}::${item.label.toLowerCase()}`;
 }
 
+/**
+ * Removes duplicate completion items by normalized namespace::label key, keeping the first occurrence.
+ *
+ * @param items - Completion items to deduplicate
+ * @param namespace - Optional namespace to scope the deduplication key
+ * @returns Deduplicated list of completion items
+ */
 export function dedupeCompletionItems(
     items: readonly LuauCompletionItem[],
     namespace = "",

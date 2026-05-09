@@ -32,6 +32,24 @@ const ACTION_BUTTON_SIZE_CLASS =
 const ACTION_BUTTON_RADIUS_CLASS =
     "rounded-[calc(var(--automatic-execution-script-action-button-size)*0.36)]";
 
+/**
+ * Renders a single script row in the automatic execution sidebar with rename, delete, and selection actions.
+ *
+ * @component
+ * @param props.script - The script data to display
+ * @param props.isActive - Whether this row is the currently selected script
+ * @param props.isRenaming - Whether the rename input is active
+ * @param props.hasRenameError - Whether the rename input is in an error state
+ * @param props.isRenameSubmitting - Whether a rename is in progress
+ * @param props.renameInputRef - Ref for the rename text input
+ * @param props.renameValue - Current value of the rename input
+ * @param props.onDeleteScript - Callback to delete the script
+ * @param props.onRenameInputBlur - Callback when rename input loses focus
+ * @param props.onRenameInputChange - Callback when rename input value changes
+ * @param props.onRenameInputKeyDown - Callback on rename input keydown
+ * @param props.onSelectScript - Callback when the row is clicked
+ * @param props.onStartRename - Callback to initiate rename mode
+ */
 export function AutomaticExecutionScriptRow({
     script,
     isActive,

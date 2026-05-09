@@ -56,12 +56,25 @@ export function normalizeAppHotkeyBindings(value: unknown): AppHotkeyBindings {
     return hotkeyBindings;
 }
 
+/**
+ * Retrieves the static definition (label, default binding, group) for a hotkey action.
+ *
+ * @param action - The hotkey action to look up
+ * @returns The definition object for the given action
+ */
 export function getAppHotkeyDefinition(
     action: AppHotkeyAction,
 ): (typeof APP_HOTKEY_DEFINITIONS)[AppHotkeyAction] {
     return APP_HOTKEY_DEFINITIONS[action];
 }
 
+/**
+ * Resolves the effective key binding for a hotkey action, falling back to the default if not customized.
+ *
+ * @param action - The hotkey action to resolve
+ * @param hotkeyBindings - Persisted user overrides
+ * @returns The active binding for the action
+ */
 export function getAppHotkeyBinding(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
@@ -91,6 +104,13 @@ export function getAppHotkeyShortcutLabel(
     );
 }
 
+/**
+ * Checks whether a hotkey action has been customized from its default binding.
+ *
+ * @param action - The hotkey action to check
+ * @param hotkeyBindings - Persisted user overrides
+ * @returns True if the user has set a non-default binding for this action
+ */
 export function isAppHotkeyCustomized(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
@@ -124,12 +144,23 @@ export function getResolvedAppHotkey(
     };
 }
 
+/**
+ * Returns hotkey actions that should appear in the settings UI.
+ *
+ * @returns Filtered list of actions marked as visible in settings
+ */
 export function getAppHotkeySettingsActions(): AppHotkeyAction[] {
     return APP_HOTKEY_ACTIONS.filter(
         (action) => APP_HOTKEY_DEFINITIONS[action].isVisibleInSettings,
     );
 }
 
+/**
+ * Groups resolved hotkeys by their group label for display in the settings panel.
+ *
+ * @param hotkeyBindings - Persisted user overrides
+ * @returns Array of groups, each containing a label and its resolved hotkeys
+ */
 export function getAppHotkeyGroups(hotkeyBindings: AppHotkeyBindings): Array<{
     groupLabel: string;
     hotkeys: ResolvedAppHotkey[];
@@ -202,6 +233,13 @@ export function findAppHotkeyConflict(
     return null;
 }
 
+/**
+ * Determines whether a binding differs from the action's default after normalization.
+ *
+ * @param action - The hotkey action to compare
+ * @param binding - The binding to check
+ * @returns True if the binding is a non-default override
+ */
 export function isAppHotkeyOverride(
     action: AppHotkeyAction,
     binding: AppHotkeyBinding,

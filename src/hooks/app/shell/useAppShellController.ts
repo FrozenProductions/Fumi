@@ -23,6 +23,14 @@ import { useAppExitGuard } from "./useAppExitGuard";
 import type { UseAppShellControllerResult } from "./useAppShellController.type";
 import { useAppShellLifecycle } from "./useAppShellLifecycle";
 
+/**
+ * Top-level composition hook that wires together all shell subsystems and returns the full shell state.
+ *
+ * Initializes workspace lifecycle, drag-and-drop, theme/zoom sync, updater, and exit guard.
+ * Derives sidebar, topbar, command palette, and executor control props for the App shell.
+ *
+ * @returns The complete shell controller result used by the App component
+ */
 export function useAppShellController(): UseAppShellControllerResult {
     useWorkspaceStoreLifecycle();
     useWorkspaceDroppedFiles();

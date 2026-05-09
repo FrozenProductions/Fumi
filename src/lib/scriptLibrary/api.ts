@@ -61,6 +61,11 @@ function createFilteredCache(): ScriptLibraryFilteredCache {
     };
 }
 
+/**
+ * Creates a fresh cached session for script library browsing.
+ *
+ * @returns An empty session with no cached pages or filtered results
+ */
 export function createScriptLibraryCachedSession(): ScriptLibraryCachedSession {
     return {
         filteredResults: new Map<string, ScriptLibraryFilteredCache>(),
@@ -69,6 +74,13 @@ export function createScriptLibraryCachedSession(): ScriptLibraryCachedSession {
     };
 }
 
+/**
+ * Produces a stable cache key from a query and sort order for session lookups.
+ *
+ * @param query - The search query string
+ * @param orderBy - The active sort option
+ * @returns A JSON string suitable for use as a Map key
+ */
 export function getScriptLibrarySessionKey(
     query: string,
     orderBy: ScriptLibrarySort,
@@ -79,6 +91,12 @@ export function getScriptLibrarySessionKey(
     });
 }
 
+/**
+ * Checks whether any script library filter toggles are active.
+ *
+ * @param filters - The current filter state
+ * @returns True if at least one filter toggle is enabled
+ */
 export function hasActiveScriptLibraryFilters(
     filters: ScriptLibraryFilters,
 ): boolean {
@@ -113,6 +131,18 @@ function getScriptLibraryFilteredCache(
     return cache;
 }
 
+/**
+ * Fetches a single page of scripts from the remote API, caching the result in the session.
+ *
+ * Returns the cached page if available; otherwise fetches, parses, normalizes, and stores it.
+ *
+ * @param session - The active cached session
+ * @param query - Search query string (empty for no filter)
+ * @param page - 1-based page number
+ * @param orderBy - Sort order for results
+ * @param signal - Abort signal for cancellation
+ * @returns The fetched or cached page of normalized scripts
+ */
 export async function fetchScriptsPage(
     session: ScriptLibraryCachedSession,
     query: string,
@@ -157,6 +187,19 @@ export async function fetchScriptsPage(
     return normalizedPage;
 }
 
+/**
+ * Fetches a page of scripts matching the given filters by lazily loading source pages until the slice is filled.
+ *
+ * Internally paginates the unfiltered API and filters client-side, caching results per filter combination.
+ *
+ * @param session - The active cached session
+ * @param query - Search query string
+ * @param page - 1-based page number within filtered results
+ * @param filters - Active filter toggles
+ * @param orderBy - Sort order for source pages
+ * @param signal - Abort signal for cancellation
+ * @returns Filtered scripts for the requested page and pagination metadata
+ */
 export async function fetchFilteredScriptsPage(
     session: ScriptLibraryCachedSession,
     query: string,
@@ -218,6 +261,14 @@ export async function fetchFilteredScriptsPage(
     };
 }
 
+/**
+ * Fetches the raw source text of a script, fetching the detail URL first if not already available.
+ *
+ * @param script - The script entry to fetch text for
+ * @param signal - Optional abort signal for cancellation
+ * @returns The raw script source text
+ * @throws {ScriptLibraryError} If the raw script URL is unavailable or the fetch fails
+ */
 export async function fetchScriptText(
     script: ScriptLibraryEntry,
     signal?: AbortSignal,
@@ -225,6 +276,12 @@ export async function fetchScriptText(
     return fetchRawScriptText(script, signal);
 }
 
+/**
+ * Fetches a script's source text and copies it to the system clipboard.
+ *
+ * @param script - The script entry to copy
+ * @throws {ScriptLibraryError} If fetching or clipboard write fails
+ */
 export async function copyScriptToClipboard(
     script: ScriptLibraryEntry,
 ): Promise<void> {

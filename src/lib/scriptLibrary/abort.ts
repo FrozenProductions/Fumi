@@ -1,5 +1,14 @@
 import type { AbortSignalSource } from "./abort.type";
 
+/**
+ * Combines multiple abort signals into a single aggregated signal.
+ *
+ * If any source signal aborts, the combined signal aborts immediately.
+ * The returned cleanup function removes all listeners and should be called when done.
+ *
+ * @param signals - Abort signals to combine (nullish values are ignored)
+ * @returns An object with the combined signal and a cleanup function
+ */
 export function combineAbortSignals(...signals: AbortSignalSource[]): {
     signal: AbortSignal;
     cleanup: () => void;

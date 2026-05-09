@@ -52,6 +52,11 @@ function renderApp(rootElement: HTMLElement): void {
     );
 }
 
+/**
+ * Application entry point: registers error handlers, initializes the Tauri window shell, and renders the React root.
+ *
+ * On error during render, falls back to the startup error screen and re-throws.
+ */
 export function startApp(): void {
     registerStartupErrorHandlers();
     initializeAppWindowShell();

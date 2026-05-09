@@ -108,6 +108,14 @@ function parseRscriptsListScript(
     };
 }
 
+/**
+ * Validates and parses a raw rscripts list API response into a typed structure.
+ *
+ * @param value - The raw response value to parse
+ * @param operation - Operation name for error context
+ * @returns The parsed list response with scripts and pagination info
+ * @throws {ScriptLibraryError} If the response shape is invalid
+ */
 export function parseRscriptsListResponse(
     value: unknown,
     operation: string,
@@ -177,6 +185,14 @@ function parseRawScriptContainer(
     };
 }
 
+/**
+ * Validates and parses a raw rscripts script detail API response.
+ *
+ * @param value - The raw response value to parse
+ * @param operation - Operation name for error context
+ * @returns The parsed detail response with raw script URL container
+ * @throws {ScriptLibraryError} If the response shape is invalid
+ */
 export function parseRscriptsScriptDetailResponse(
     value: unknown,
     operation: string,
@@ -198,6 +214,13 @@ export function parseRscriptsScriptDetailResponse(
     };
 }
 
+/**
+ * Coerces a value to a positive finite number, falling back if invalid.
+ *
+ * @param value - The value to check
+ * @param fallbackValue - Returned when the value is not a positive finite number
+ * @returns The validated number or the fallback
+ */
 export function toPositiveNumber(
     value: unknown,
     fallbackValue: number,
@@ -229,6 +252,14 @@ function normalizeCreator(script: RscriptsListScript) {
     };
 }
 
+/**
+ * Normalizes a raw rscripts list script into the internal ScriptLibraryEntry format.
+ *
+ * Fills in defaults for missing or empty fields and resolves the creator info from user/creator data.
+ *
+ * @param script - The raw rscripts list script to normalize
+ * @returns A cleaned-up script library entry
+ */
 export function normalizeScript(
     script: RscriptsListScript,
 ): ScriptLibraryEntry {
@@ -256,6 +287,12 @@ export function normalizeScript(
     };
 }
 
+/**
+ * Extracts the raw script URL from a script detail response, checking both success and script containers.
+ *
+ * @param data - The parsed detail response
+ * @returns The trimmed raw script URL, or null if none is available
+ */
 export function getDetailRawScriptUrl(data: {
     success?: {
         rawScript?: string | null;

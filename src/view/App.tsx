@@ -7,6 +7,13 @@ import { APP_TITLE } from "../constants/app/app";
 import { AppHotkeysProvider } from "../contexts/app/AppHotkeysProvider";
 import { useAppShellController } from "../hooks/app/shell/useAppShellController";
 
+/**
+ * Root application component that composes the shell layout: topbar, sidebar, main screen, command palette, and drag overlay.
+ *
+ * Delegates shell wiring to useAppShellController and renders the resulting layout.
+ *
+ * @returns The full application shell
+ */
 export function App(): ReactElement {
     const shell = useAppShellController();
 

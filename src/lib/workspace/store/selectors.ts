@@ -142,10 +142,24 @@ export const selectWorkspaceActiveTabIndex = (state: WorkspaceStore): number =>
         state.workspace?.activeTabId ?? null,
     );
 
+/**
+ * Returns the currently active workspace tab, or null if no workspace is loaded.
+ *
+ * @param state - The workspace store state
+ */
 export const selectWorkspaceActiveTab = (
     state: WorkspaceStore,
 ): WorkspaceTab | null => getActiveTabFromWorkspace(state.workspace);
 
+/**
+ * Derives the lightweight screen session snapshot from workspace state, returning a cached reference when unchanged.
+ *
+ * Performs shallow equality checks on tabs, split view, archived tabs, and execution history
+ * to avoid unnecessary re-renders in screen consumers.
+ *
+ * @param state - The workspace store state
+ * @returns A memoized WorkspaceScreenSession, or null if no workspace is loaded
+ */
 export const selectWorkspaceScreenSession = (
     state: WorkspaceStore,
 ): WorkspaceScreenSession | null => {
@@ -196,6 +210,11 @@ export const selectWorkspaceScreenSession = (
     return previousWorkspaceScreenSession;
 };
 
+/**
+ * Returns whether any workspace tab has unsaved changes.
+ *
+ * @param state - The workspace store state
+ */
 export const selectWorkspaceHasUnsavedChanges = (
     state: WorkspaceStore,
 ): boolean => state.dirtyTabCount > 0;
@@ -207,6 +226,11 @@ export const selectWorkspaceShouldGuardExit = (
     state: WorkspaceStore,
 ): boolean => selectWorkspaceHasUnsavedChanges(state);
 
+/**
+ * Returns the loaded workspace's directory path, or null if no workspace is loaded.
+ *
+ * @param state - The workspace store state
+ */
 export const selectWorkspacePath = (state: WorkspaceStore): string | null =>
     state.workspace?.workspacePath ?? null;
 
@@ -223,10 +247,20 @@ export const selectWorkspacePersistRevision = (
         ? state.persistRevision
         : null;
 
+/**
+ * Returns the current split view configuration, or null if no split is active.
+ *
+ * @param state - The workspace store state
+ */
 export const selectWorkspaceSplitView = (
     state: WorkspaceStore,
 ): WorkspaceSplitView | null => state.workspace?.splitView ?? null;
 
+/**
+ * Returns the focused pane ID within the active split view, or null if no split exists.
+ *
+ * @param state - The workspace store state
+ */
 export const selectWorkspaceSplitFocusedPane = (
     state: WorkspaceStore,
 ): WorkspacePaneId | null => state.workspace?.splitView?.focusedPane ?? null;

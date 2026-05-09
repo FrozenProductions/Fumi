@@ -20,6 +20,16 @@ type UseWorkspaceEditorLoadHandlerOptions = {
     toggleSearch: () => void;
 };
 
+/**
+ * Returns a stable callback that initializes an Ace editor instance when loaded for a tab.
+ *
+ * Binds editor shortcuts, registers cursor-change listeners with destroy cleanup,
+ * restores stored session state (undo history, scroll position, selection), and
+ * positions the cursor for new sessions.
+ *
+ * @param options - Refs and callbacks needed for editor initialization
+ * @returns A function that, given a tab ID, returns an editor load handler
+ */
 export function useWorkspaceEditorLoadHandler({
     activeTabIdRef,
     closeCompletionPopup,

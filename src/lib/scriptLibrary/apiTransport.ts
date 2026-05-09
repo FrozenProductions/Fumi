@@ -19,6 +19,16 @@ async function fetchResponse(
     }
 }
 
+/**
+ * Fetches a URL, validates the response, parses JSON, and passes it through a typed parser.
+ *
+ * @param url - The URL to fetch
+ * @param operation - Operation name for error context
+ * @param parseValue - Function that validates and transforms the raw JSON value
+ * @param options - Optional abort signal for cancellation
+ * @returns The parsed and typed result
+ * @throws {ScriptLibraryError} If the fetch fails, response is not OK, or JSON is invalid
+ */
 export async function fetchJsonResponse<T>(
     url: string,
     operation: string,
@@ -51,6 +61,15 @@ export async function fetchJsonResponse<T>(
     return parseValue(value, operation);
 }
 
+/**
+ * Fetches a URL and returns the response body as plain text.
+ *
+ * @param url - The URL to fetch
+ * @param operation - Operation name for error context
+ * @param options - Optional abort signal for cancellation
+ * @returns The response body as a string
+ * @throws {ScriptLibraryError} If the fetch fails, response is not OK, or text read fails
+ */
 export async function fetchTextResponse(
     url: string,
     operation: string,
