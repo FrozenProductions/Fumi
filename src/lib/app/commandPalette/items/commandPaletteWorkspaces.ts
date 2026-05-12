@@ -1,5 +1,5 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
-import type { UseWorkspaceSessionResult } from "../../../workspace/session.type";
+import type { UseWorkspaceSessionResult } from "../../../workspace/session/session.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 import {
     createWorkspaceCountLabel,

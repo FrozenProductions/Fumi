@@ -1,8 +1,8 @@
 import type { StateCreator } from "zustand";
 import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
+import type { WorkspaceSession } from "../session/session.type";
 import type { WorkspaceCursorState } from "../session/sessionCursor.type";
 import type { WorkspacePaneId } from "../session/sessionSplitView.type";
-import type { WorkspaceSession } from "../session.type";
 
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;

@@ -1,4 +1,4 @@
-import type { WorkspaceSession } from "./session.type";
+import type { WorkspaceSession } from "./session/session.type";
 
 /**
  * Reorders tabs by moving the dragged tab to the target position, returning a new array.

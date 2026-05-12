@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { WORKSPACE_UNAVAILABLE_ERROR_MESSAGE } from "../../../../constants/workspace/workspace";
 import type { WorkspaceSnapshot } from "../../persistence.type";
-import type { WorkspaceSession } from "../../session.type";
+import type { WorkspaceSession } from "../../session/session.type";
 import type { WorkspaceStore } from "../workspaceStore.type";
 
 const mocks = vi.hoisted(() => ({

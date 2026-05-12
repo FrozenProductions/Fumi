@@ -1,6 +1,6 @@
 import { FileCodeIcon, FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { splitWorkspaceFileName } from "../../../workspace/fileName";
-import type { UseWorkspaceSessionResult } from "../../../workspace/session.type";
+import type { UseWorkspaceSessionResult } from "../../../workspace/session/session.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 
 /** Builds command palette items for open workspace tabs or a prompt to open a workspace. */

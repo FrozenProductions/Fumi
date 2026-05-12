@@ -5,12 +5,12 @@ import type {
 } from "react";
 import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/tabBar/useWorkspaceTabRename.type";
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
+import type { WorkspaceScreenSession } from "../../../lib/workspace/session/session.type";
 import type {
     WorkspacePaneId,
     WorkspaceSplitView,
 } from "../../../lib/workspace/session/sessionSplitView.type";
 import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
-import type { WorkspaceScreenSession } from "../../../lib/workspace/session.type";
 
 export type WorkspaceTabBarProps = {
     workspace: WorkspaceScreenSession;

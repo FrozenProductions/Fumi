@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { WorkspaceSession } from "../session.type";
+import type { WorkspaceSession } from "../session/session.type";
 import { selectWorkspaceScreenSession } from "./selectors";
 import type { WorkspaceStore } from "./workspaceStore.type";
 

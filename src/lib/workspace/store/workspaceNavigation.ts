@@ -1,7 +1,7 @@
 import { confirmAction } from "../../platform/core/dialog";
+import type { WorkspaceSession } from "../session/session.type";
 import { hasWorkspaceDraftChanges } from "../session/tabs/sessionTabs";
 import type { WorkspaceTab } from "../session/tabs/sessionTabs.type";
-import type { WorkspaceSession } from "../session.type";
 
 /**
  * Returns whether the workspace path matches the given path string.

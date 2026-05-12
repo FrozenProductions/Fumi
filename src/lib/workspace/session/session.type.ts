@@ -1,11 +1,11 @@
-import type { WorkspaceExecutionHistoryEntry } from "./executionHistory/executionHistory.type";
-import type { WorkspaceSplitView } from "./session/sessionSplitView.type";
+import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
+import type { WorkspaceStore } from "../store/workspaceStore.type";
+import type { WorkspaceSplitView } from "./sessionSplitView.type";
 import type {
     WorkspaceScreenTab,
     WorkspaceTab,
     WorkspaceTabState,
-} from "./session/tabs/sessionTabs.type";
-import type { WorkspaceStore } from "./store/workspaceStore.type";
+} from "./tabs/sessionTabs.type";
 
 export type WorkspaceSession = {
     workspacePath: string;

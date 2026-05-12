@@ -1,5 +1,5 @@
 import type { WorkspaceSnapshot } from "../persistence.type";
-import type { WorkspaceSession } from "../session.type";
+import type { WorkspaceSession } from "./session.type";
 import type { WorkspaceCursorState } from "./sessionCursor.type";
 import type {
     WorkspaceTabSnapshot,

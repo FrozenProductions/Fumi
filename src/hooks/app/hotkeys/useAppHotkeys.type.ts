@@ -8,7 +8,7 @@ import type {
     WorkspaceSessionState,
     WorkspaceSessionTabActions,
     WorkspaceSessionWorkspaceActions,
-} from "../../../lib/workspace/session.type";
+} from "../../../lib/workspace/session/session.type";
 
 export type ResolvedAppHotkeyBindings = {
     hotkeyBindings: AppHotkeyBindings;

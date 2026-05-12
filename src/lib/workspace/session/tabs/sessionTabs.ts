@@ -1,5 +1,5 @@
 import type { WorkspaceSnapshot } from "../../persistence.type";
-import type { WorkspaceSession } from "../../session.type";
+import type { WorkspaceSession } from "../session.type";
 import { clampCursorToContent } from "../sessionCursor";
 import { normalizeSplitView } from "../sessionSplitView";
 import type {

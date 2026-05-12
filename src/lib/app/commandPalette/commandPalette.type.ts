@@ -1,7 +1,7 @@
 import type { KeyboardEvent, MouseEvent, RefObject } from "react";
 import type { UseWorkspaceExecutorResult } from "../../workspace/executor/executor.type";
+import type { UseWorkspaceSessionResult } from "../../workspace/session/session.type";
 import type { WorkspaceTab } from "../../workspace/session/tabs/sessionTabs.type";
-import type { UseWorkspaceSessionResult } from "../../workspace/session.type";
 import type { AppTheme } from "../app.type";
 import type { AppHotkeyBindings } from "../hotkeys/hotkeys.type";
 import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";

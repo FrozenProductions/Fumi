@@ -1,12 +1,12 @@
 import { WORKSPACE_UNAVAILABLE_ERROR_MESSAGE } from "../../../../constants/workspace/workspace";
 import { refreshWorkspace as refreshWorkspaceCommand } from "../../../platform/workspace/workspace";
 import { getErrorMessage } from "../../../shared/errorMessage";
+import type { WorkspaceSession } from "../../session/session.type";
 import {
     getWorkspaceDirtyTabCount,
     hasWorkspaceDraftChanges,
     mergeWorkspaceSession,
 } from "../../session/tabs/sessionTabs";
-import type { WorkspaceSession } from "../../session.type";
 import { isMatchingWorkspacePath } from "../workspaceNavigation";
 import type {
     WorkspaceStoreGet,

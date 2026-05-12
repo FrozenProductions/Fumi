@@ -12,7 +12,7 @@ import type {
     WorkspaceSessionState,
     WorkspaceSessionTabActions,
     WorkspaceSessionWorkspaceActions,
-} from "../../workspace/session.type";
+} from "../../workspace/session/session.type";
 import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";
 import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
 import type { getCommandCommandPaletteItems } from "./commands/commandPaletteCommands";

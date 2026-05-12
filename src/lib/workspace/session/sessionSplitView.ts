@@ -1,6 +1,6 @@
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../constants/workspace/workspace";
-import type { WorkspaceSession } from "../session.type";
 import { normalizeWorkspaceSplitRatio } from "../splitView";
+import type { WorkspaceSession } from "./session.type";
 import type {
     WorkspacePaneId,
     WorkspaceSplitView,
