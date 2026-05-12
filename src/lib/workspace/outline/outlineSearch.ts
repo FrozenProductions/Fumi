@@ -15,6 +15,7 @@ export function getWorkspaceOutlineGroups(
 ): WorkspaceOutlineGroup[] {
     const comments: LuauFileSymbol[] = [];
     const functions: LuauFileSymbol[] = [];
+    const loadstrings: LuauFileSymbol[] = [];
     const locals: LuauFileSymbol[] = [];
     const globals: LuauFileSymbol[] = [];
 
@@ -26,6 +27,11 @@ export function getWorkspaceOutlineGroups(
 
         if (symbol.kind === "function" || symbol.kind === "namespace") {
             functions.push(symbol);
+            continue;
+        }
+
+        if (symbol.kind === "loadstring") {
+            loadstrings.push(symbol);
             continue;
         }
 
@@ -45,6 +51,10 @@ export function getWorkspaceOutlineGroups(
 
     if (comments.length > 0) {
         groups.push({ title: "Comments", symbols: comments });
+    }
+
+    if (loadstrings.length > 0) {
+        groups.push({ title: "Loadstrings", symbols: loadstrings });
     }
 
     if (locals.length > 0) {

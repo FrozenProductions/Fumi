@@ -7,6 +7,7 @@ use super::models::{
 };
 
 const CURRENT_FILE_DOC_SOURCE: &str = "Current File";
+const LOADSTRING_IDENTIFIER: &str = "loadstring";
 
 type SharedScope = Rc<RefCell<ScopeFrame>>;
 type ScopeInitializer<'content> = Box<dyn FnOnce(&SharedScope, &mut LuauSymbolScanner<'content>)>;
@@ -183,12 +184,72 @@ impl<'content> LuauSymbolScanner<'content> {
         });
     }
 
+    fn add_loadstring_symbols_in_token_range(
+        &mut self,
+        start_index: usize,
+        end_index: usize,
+        scope: SharedScope,
+        current_function_scope: Option<SharedScope>,
+    ) {
+        if self.mode == LuauScanMode::Functions {
+            return;
+        }
+
+        for token_index in start_index..end_index.min(self.tokens.len()) {
+            let Some(token) = self.tokens.get(token_index).cloned() else {
+                continue;
+            };
+            let next_token = self.next_non_newline_token(token_index + 1);
+
+            if token.kind != TokenKind::Identifier
+                || token.value != LOADSTRING_IDENTIFIER
+                || !matches!(
+                    next_token,
+                    Some(value) if value.kind == TokenKind::Symbol && value.value == "("
+                )
+            {
+                continue;
+            }
+
+            self.add_symbol(LuauSymbolDraft {
+                declaration: TokenBoundary {
+                    start: token.start,
+                    end: token.end,
+                },
+                detail: "loadstring call".to_string(),
+                doc_summary: "Loadstring call in the current file.".to_string(),
+                is_lexical: false,
+                kind: LuauSymbolKind::Loadstring,
+                label: LOADSTRING_IDENTIFIER.to_string(),
+                owner_function: current_function_scope.clone(),
+                scope: scope.clone(),
+                signature: None,
+                insert_text: None,
+                visible_start: Some(token.start),
+            });
+        }
+    }
+
     fn current(&self) -> Option<&LuauToken> {
         self.tokens.get(self.index)
     }
 
     fn peek_non_newline(&self, offset: usize) -> Option<&LuauToken> {
         let mut token_index = self.index + offset;
+
+        while let Some(token) = self.tokens.get(token_index) {
+            if token.kind != TokenKind::Newline {
+                return Some(token);
+            }
+
+            token_index += 1;
+        }
+
+        None
+    }
+
+    fn next_non_newline_token(&self, start_index: usize) -> Option<&LuauToken> {
+        let mut token_index = start_index;
 
         while let Some(token) = self.tokens.get(token_index) {
             if token.kind != TokenKind::Newline {
@@ -302,7 +363,14 @@ impl<'content> LuauSymbolScanner<'content> {
             }
 
             if self.match_keyword("while") {
+                let condition_start_index = self.index;
                 self.skip_until_keyword("do");
+                self.add_loadstring_symbols_in_token_range(
+                    condition_start_index,
+                    self.index,
+                    scope.clone(),
+                    current_function_scope.clone(),
+                );
 
                 if self.match_keyword("do") {
                     self.parse_scoped_block(
@@ -317,17 +385,17 @@ impl<'content> LuauSymbolScanner<'content> {
             }
 
             if self.match_keyword("repeat") {
-                self.parse_repeat_block(current_function_scope.clone());
+                self.parse_repeat_block(scope.clone(), current_function_scope.clone());
                 continue;
             }
 
             if self.match_keyword("if") {
-                self.parse_if_statement(current_function_scope.clone());
+                self.parse_if_statement(scope.clone(), current_function_scope.clone());
                 continue;
             }
 
             if self.match_keyword("for") {
-                self.parse_for_statement(current_function_scope.clone());
+                self.parse_for_statement(scope.clone(), current_function_scope.clone());
                 continue;
             }
 
@@ -355,20 +423,38 @@ impl<'content> LuauSymbolScanner<'content> {
             }
 
             if self.match_keyword("export") {
+                let statement_start_index = self.index;
                 self.skip_simple_statement();
+                self.add_loadstring_symbols_in_token_range(
+                    statement_start_index,
+                    self.index,
+                    scope.clone(),
+                    current_function_scope.clone(),
+                );
                 continue;
             }
 
             if self.can_start_bare_assignment() {
-                self.parse_bare_assignment();
+                self.parse_bare_assignment(scope.clone(), current_function_scope.clone());
                 continue;
             }
 
+            let statement_start_index = self.index;
             self.skip_simple_statement();
+            self.add_loadstring_symbols_in_token_range(
+                statement_start_index,
+                self.index,
+                scope.clone(),
+                current_function_scope.clone(),
+            );
         }
     }
 
-    fn parse_bare_assignment(&mut self) {
+    fn parse_bare_assignment(
+        &mut self,
+        scope: SharedScope,
+        current_function_scope: Option<SharedScope>,
+    ) {
         if self.mode == LuauScanMode::Functions {
             self.skip_simple_statement();
             return;
@@ -412,7 +498,14 @@ impl<'content> LuauSymbolScanner<'content> {
             }
         }
 
+        let statement_start_index = self.index;
         self.skip_simple_statement();
+        self.add_loadstring_symbols_in_token_range(
+            statement_start_index,
+            self.index,
+            scope,
+            current_function_scope,
+        );
     }
 
     fn parse_bindings(&mut self) -> Vec<ParsedBinding> {
@@ -481,8 +574,13 @@ impl<'content> LuauSymbolScanner<'content> {
         bindings
     }
 
-    fn parse_for_statement(&mut self, current_function_scope: Option<SharedScope>) {
+    fn parse_for_statement(
+        &mut self,
+        scope: SharedScope,
+        current_function_scope: Option<SharedScope>,
+    ) {
         let bindings = self.parse_for_bindings();
+        let iterator_start_index = self.index;
 
         while let Some(token) = self.current() {
             if self.is_current_keyword("do") || token.kind == TokenKind::Newline {
@@ -491,6 +589,12 @@ impl<'content> LuauSymbolScanner<'content> {
 
             self.index += 1;
         }
+        self.add_loadstring_symbols_in_token_range(
+            iterator_start_index,
+            self.index,
+            scope,
+            current_function_scope.clone(),
+        );
 
         if !self.match_keyword("do") {
             return;
@@ -772,8 +876,19 @@ impl<'content> LuauSymbolScanner<'content> {
         parameters
     }
 
-    fn parse_if_statement(&mut self, current_function_scope: Option<SharedScope>) {
+    fn parse_if_statement(
+        &mut self,
+        scope: SharedScope,
+        current_function_scope: Option<SharedScope>,
+    ) {
+        let condition_start_index = self.index;
         self.skip_until_keyword("then");
+        self.add_loadstring_symbols_in_token_range(
+            condition_start_index,
+            self.index,
+            scope.clone(),
+            current_function_scope.clone(),
+        );
 
         if !self.match_keyword("then") {
             return;
@@ -787,7 +902,14 @@ impl<'content> LuauSymbolScanner<'content> {
         );
 
         while self.match_keyword("elseif") {
+            let elseif_condition_start_index = self.index;
             self.skip_until_keyword("then");
+            self.add_loadstring_symbols_in_token_range(
+                elseif_condition_start_index,
+                self.index,
+                scope.clone(),
+                current_function_scope.clone(),
+            );
 
             if !self.match_keyword("then") {
                 return;
@@ -823,7 +945,14 @@ impl<'content> LuauSymbolScanner<'content> {
             .current()
             .map_or(self.root_scope_end(), |token| token.start);
 
+        let statement_start_index = self.index;
         self.skip_simple_statement();
+        self.add_loadstring_symbols_in_token_range(
+            statement_start_index,
+            self.index,
+            scope.clone(),
+            current_function_scope.clone(),
+        );
 
         for binding in bindings {
             self.add_symbol(LuauSymbolDraft {
@@ -842,7 +971,11 @@ impl<'content> LuauSymbolScanner<'content> {
         }
     }
 
-    fn parse_repeat_block(&mut self, current_function_scope: Option<SharedScope>) {
+    fn parse_repeat_block(
+        &mut self,
+        scope: SharedScope,
+        current_function_scope: Option<SharedScope>,
+    ) {
         let repeat_scope = Rc::new(RefCell::new(ScopeFrame {
             start: self
                 .current()
@@ -853,7 +986,7 @@ impl<'content> LuauSymbolScanner<'content> {
         self.parse_block(
             repeat_scope.clone(),
             &hash_set(["until"]),
-            current_function_scope,
+            current_function_scope.clone(),
         );
 
         let until_token_start = self.current().map(|token| token.start);
@@ -865,7 +998,14 @@ impl<'content> LuauSymbolScanner<'content> {
             return;
         }
 
+        let condition_start_index = self.index;
         self.skip_simple_statement();
+        self.add_loadstring_symbols_in_token_range(
+            condition_start_index,
+            self.index,
+            scope,
+            current_function_scope,
+        );
         repeat_scope.borrow_mut().end = self.tokens.get(self.index.saturating_sub(1)).map_or_else(
             || until_token_start.unwrap_or(self.root_scope_end()),
             |token| token.end,
@@ -1599,6 +1739,29 @@ mod tests {
         assert!(local_symbol.is_lexical);
         assert!(!global_symbol.is_lexical);
         assert_eq!(global_symbol.detail, "global variable");
+    }
+
+    #[test]
+    fn scans_loadstring_calls() {
+        let analysis = scan(
+            "local run = loadstring(source)\nif loadstring(other_source) then\n    print('ready')\nend\nlocal text = 'loadstring(hidden)'\n",
+            LuauScanMode::Full,
+        );
+
+        let loadstrings = analysis
+            .symbols
+            .iter()
+            .filter(|symbol| symbol.kind == LuauSymbolKind::Loadstring)
+            .map(|symbol| (symbol.label.as_str(), symbol.detail.as_str()))
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            loadstrings,
+            vec![
+                ("loadstring", "loadstring call"),
+                ("loadstring", "loadstring call")
+            ]
+        );
     }
 
     #[test]

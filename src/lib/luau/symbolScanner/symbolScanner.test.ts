@@ -69,4 +69,34 @@ describe("scanLuauFileAnalysis", () => {
             },
         ]);
     });
+
+    it("extracts loadstring calls for the outline", () => {
+        const analysis = scanLuauFileAnalysis(
+            [
+                "local run = loadstring(source)",
+                "if loadstring(otherSource) then",
+                "    print('ready')",
+                "end",
+                "local text = 'loadstring(hidden)'",
+            ].join("\n"),
+        );
+
+        expect(
+            analysis.symbols
+                .filter((symbol) => symbol.kind === "loadstring")
+                .map((symbol) => ({
+                    detail: symbol.detail,
+                    label: symbol.label,
+                })),
+        ).toEqual([
+            {
+                detail: "loadstring call",
+                label: "loadstring",
+            },
+            {
+                detail: "loadstring call",
+                label: "loadstring",
+            },
+        ]);
+    });
 });

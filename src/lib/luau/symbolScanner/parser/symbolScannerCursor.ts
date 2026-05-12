@@ -1,7 +1,12 @@
-import type { LuauToken, TokenBoundary } from "../symbolScanner.type";
+import type {
+    LuauToken,
+    ScopeFrame,
+    TokenBoundary,
+} from "../symbolScanner.type";
 import { LuauSymbolScannerCore } from "./symbolScannerCore";
 
 const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
+const LOADSTRING_IDENTIFIER = "loadstring";
 
 export abstract class LuauSymbolScannerCursor extends LuauSymbolScannerCore {
     protected canStartBareAssignment(): boolean {
@@ -95,6 +100,70 @@ export abstract class LuauSymbolScannerCursor extends LuauSymbolScannerCore {
             const token = this.tokens[tokenIndex];
             if (!token || token.type !== "newline") {
                 return token ?? null;
+            }
+
+            tokenIndex += 1;
+        }
+
+        return null;
+    }
+
+    protected addLoadstringSymbolsInTokenRange(
+        startIndex: number,
+        endIndex: number,
+        scope: ScopeFrame,
+        currentFunctionScope: ScopeFrame | null,
+    ): void {
+        if (this.mode === "functions") {
+            return;
+        }
+
+        for (
+            let tokenIndex = startIndex;
+            tokenIndex < endIndex && tokenIndex < this.tokens.length;
+            tokenIndex += 1
+        ) {
+            const token = this.tokens[tokenIndex];
+            const nextToken = this.getNextNonNewlineToken(tokenIndex + 1);
+
+            if (
+                token?.type !== "identifier" ||
+                token.value !== LOADSTRING_IDENTIFIER ||
+                nextToken?.type !== "symbol" ||
+                nextToken.value !== "("
+            ) {
+                continue;
+            }
+
+            this.addSymbol({
+                label: LOADSTRING_IDENTIFIER,
+                kind: "loadstring",
+                detail: "loadstring call",
+                declaration: {
+                    start: token.start,
+                    end: token.end,
+                },
+                isLexical: false,
+                ownerFunction: currentFunctionScope,
+                scope,
+                docSummary: "Loadstring call in the current file.",
+                visibleStart: token.start,
+            });
+        }
+    }
+
+    private getNextNonNewlineToken(startIndex: number): LuauToken | null {
+        let tokenIndex = startIndex;
+
+        while (tokenIndex < this.tokens.length) {
+            const token = this.tokens[tokenIndex];
+
+            if (!token) {
+                return null;
+            }
+
+            if (token.type !== "newline") {
+                return token;
             }
 
             tokenIndex += 1;

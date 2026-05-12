@@ -71,7 +71,7 @@ function shouldIncludeFileSymbol(
     currentFunctionOwner: number | null,
     namespace: string | null,
 ): boolean {
-    if (symbol.kind === "comment") {
+    if (symbol.kind === "comment" || symbol.kind === "loadstring") {
         return false;
     }
 
@@ -105,7 +105,10 @@ function getFileCompletionIndex(
     }
 
     const index = analysis.symbols
-        .filter((symbol) => symbol.kind !== "comment")
+        .filter(
+            (symbol) =>
+                symbol.kind !== "comment" && symbol.kind !== "loadstring",
+        )
         .map(createIndexedCompletionItemFromFileSymbol)
         .sort((left, right) =>
             compareIndexedCompletionItems(left, right, "balanced"),

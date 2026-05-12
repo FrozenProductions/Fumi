@@ -32,13 +32,18 @@ function createSymbol(
 }
 
 describe("getWorkspaceOutlineGroups", () => {
-    it("groups symbols into functions, comments, locals, and globals", () => {
+    it("groups symbols into functions, comments, loadstrings, locals, and globals", () => {
         const groups = getWorkspaceOutlineGroups([
             createSymbol({ label: "renderNode", kind: "function" }),
             createSymbol({
                 label: "Utilities",
                 kind: "comment",
                 detail: "comment",
+            }),
+            createSymbol({
+                label: "loadstring",
+                kind: "loadstring",
+                detail: "loadstring call",
             }),
             createSymbol({
                 label: "localState",
@@ -59,6 +64,7 @@ describe("getWorkspaceOutlineGroups", () => {
         ).toEqual([
             { title: "Functions", labels: ["renderNode"] },
             { title: "Comments", labels: ["Utilities"] },
+            { title: "Loadstrings", labels: ["loadstring"] },
             { title: "Locals", labels: ["localState"] },
             { title: "Globals", labels: ["HttpService"] },
         ]);

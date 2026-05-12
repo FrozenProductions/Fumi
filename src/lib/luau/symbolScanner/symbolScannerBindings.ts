@@ -4,7 +4,10 @@ import type { ScopeFrame, TokenBoundary } from "./symbolScanner.type";
 const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
 
 export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor {
-    protected parseBareAssignment(): void {
+    protected parseBareAssignment(
+        scope: ScopeFrame,
+        currentFunctionScope: ScopeFrame | null,
+    ): void {
         if (this.mode === "functions") {
             this.skipSimpleStatement();
             return;
@@ -17,7 +20,11 @@ export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor 
         }
 
         if (identifierToken.value === GLOBAL_ENVIRONMENT_IDENTIFIER) {
-            this.parseGlobalEnvironmentAssignment(identifierToken.end);
+            this.parseGlobalEnvironmentAssignment(
+                identifierToken.end,
+                scope,
+                currentFunctionScope,
+            );
             return;
         }
 
@@ -39,14 +46,32 @@ export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor 
             });
         }
 
+        const statementStartIndex = this.index;
         this.skipSimpleStatement();
+        this.addLoadstringSymbolsInTokenRange(
+            statementStartIndex,
+            this.index,
+            scope,
+            currentFunctionScope,
+        );
     }
 
-    private parseGlobalEnvironmentAssignment(visibleStart: number): void {
+    private parseGlobalEnvironmentAssignment(
+        visibleStart: number,
+        scope: ScopeFrame,
+        currentFunctionScope: ScopeFrame | null,
+    ): void {
         this.index += 1;
 
         if (!this.matchSymbol(".")) {
+            const statementStartIndex = this.index;
             this.skipSimpleStatement();
+            this.addLoadstringSymbolsInTokenRange(
+                statementStartIndex,
+                this.index,
+                scope,
+                currentFunctionScope,
+            );
             return;
         }
 
@@ -75,7 +100,14 @@ export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor 
             });
         }
 
+        const statementStartIndex = this.index;
         this.skipSimpleStatement();
+        this.addLoadstringSymbolsInTokenRange(
+            statementStartIndex,
+            this.index,
+            scope,
+            currentFunctionScope,
+        );
     }
 
     protected parseBindings(): Array<{
@@ -162,7 +194,14 @@ export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor 
         const bindings = this.parseBindings();
         const visibleStart = this.current()?.start ?? this.content.length;
 
+        const statementStartIndex = this.index;
         this.skipSimpleStatement();
+        this.addLoadstringSymbolsInTokenRange(
+            statementStartIndex,
+            this.index,
+            scope,
+            currentFunctionScope,
+        );
 
         for (const binding of bindings) {
             this.addSymbol({

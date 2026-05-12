@@ -6,6 +6,7 @@ export type LuauSymbolKind =
     | "function"
     | "keyword"
     | "library"
+    | "loadstring"
     | "namespace"
     | "service";
 

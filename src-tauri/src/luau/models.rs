@@ -66,6 +66,7 @@ pub(crate) enum LuauSymbolKind {
     Function,
     Keyword,
     Library,
+    Loadstring,
     Namespace,
     Service,
 }

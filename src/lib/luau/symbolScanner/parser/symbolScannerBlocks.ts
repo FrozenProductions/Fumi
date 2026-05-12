@@ -22,7 +22,14 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
             }
 
             if (this.matchKeyword("while")) {
+                const conditionStartIndex = this.index;
                 this.skipUntilKeyword("do");
+                this.addLoadstringSymbolsInTokenRange(
+                    conditionStartIndex,
+                    this.index,
+                    scope,
+                    currentFunctionScope,
+                );
 
                 if (this.matchKeyword("do")) {
                     this.parseScopedBlock(
@@ -34,17 +41,17 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
             }
 
             if (this.matchKeyword("repeat")) {
-                this.parseRepeatBlock(currentFunctionScope);
+                this.parseRepeatBlock(scope, currentFunctionScope);
                 continue;
             }
 
             if (this.matchKeyword("if")) {
-                this.parseIfStatement(currentFunctionScope);
+                this.parseIfStatement(scope, currentFunctionScope);
                 continue;
             }
 
             if (this.matchKeyword("for")) {
-                this.parseForStatement(currentFunctionScope);
+                this.parseForStatement(scope, currentFunctionScope);
                 continue;
             }
 
@@ -71,21 +78,40 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
             }
 
             if (this.matchKeyword("export")) {
+                const statementStartIndex = this.index;
                 this.skipSimpleStatement();
+                this.addLoadstringSymbolsInTokenRange(
+                    statementStartIndex,
+                    this.index,
+                    scope,
+                    currentFunctionScope,
+                );
                 continue;
             }
 
             if (this.canStartBareAssignment()) {
-                this.parseBareAssignment();
+                this.parseBareAssignment(scope, currentFunctionScope);
                 continue;
             }
 
+            const statementStartIndex = this.index;
             this.skipSimpleStatement();
+            this.addLoadstringSymbolsInTokenRange(
+                statementStartIndex,
+                this.index,
+                scope,
+                currentFunctionScope,
+            );
         }
     }
 
-    protected parseForStatement(currentFunctionScope: ScopeFrame | null): void {
+    protected parseForStatement(
+        scope: ScopeFrame,
+        currentFunctionScope: ScopeFrame | null,
+    ): void {
         const bindings = this.parseForBindings();
+
+        const iteratorStartIndex = this.index;
 
         while (
             this.current() &&
@@ -94,6 +120,12 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
         ) {
             this.index += 1;
         }
+        this.addLoadstringSymbolsInTokenRange(
+            iteratorStartIndex,
+            this.index,
+            scope,
+            currentFunctionScope,
+        );
 
         if (!this.matchKeyword("do")) {
             return;
@@ -127,8 +159,18 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
         );
     }
 
-    protected parseIfStatement(currentFunctionScope: ScopeFrame | null): void {
+    protected parseIfStatement(
+        scope: ScopeFrame,
+        currentFunctionScope: ScopeFrame | null,
+    ): void {
+        const conditionStartIndex = this.index;
         this.skipUntilKeyword("then");
+        this.addLoadstringSymbolsInTokenRange(
+            conditionStartIndex,
+            this.index,
+            scope,
+            currentFunctionScope,
+        );
 
         if (!this.matchKeyword("then")) {
             return;
@@ -140,7 +182,14 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
         );
 
         while (this.matchKeyword("elseif")) {
+            const elseifConditionStartIndex = this.index;
             this.skipUntilKeyword("then");
+            this.addLoadstringSymbolsInTokenRange(
+                elseifConditionStartIndex,
+                this.index,
+                scope,
+                currentFunctionScope,
+            );
 
             if (!this.matchKeyword("then")) {
                 return;
@@ -159,7 +208,10 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
         this.matchKeyword("end");
     }
 
-    protected parseRepeatBlock(currentFunctionScope: ScopeFrame | null): void {
+    protected parseRepeatBlock(
+        scope: ScopeFrame,
+        currentFunctionScope: ScopeFrame | null,
+    ): void {
         const repeatScope: ScopeFrame = {
             start: this.current()?.start ?? this.content.length,
             end: this.content.length,
@@ -173,7 +225,14 @@ export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
             return;
         }
 
+        const conditionStartIndex = this.index;
         this.skipSimpleStatement();
+        this.addLoadstringSymbolsInTokenRange(
+            conditionStartIndex,
+            this.index,
+            scope,
+            currentFunctionScope,
+        );
         repeatScope.end =
             this.tokens[this.index - 1]?.end ??
             untilToken?.start ??

@@ -38,6 +38,8 @@ function getSymbolIcon(kind: LuauFileSymbol["kind"]): string {
             return "K";
         case "library":
             return "L";
+        case "loadstring":
+            return "LS";
         case "namespace":
             return "N";
         case "service":
@@ -55,6 +57,8 @@ function getSymbolColor(kind: LuauFileSymbol["kind"]): string {
             return "text-fumi-700";
         case "constant":
             return "text-fumi-500";
+        case "loadstring":
+            return "text-fumi-700";
         default:
             return "text-fumi-600";
     }
