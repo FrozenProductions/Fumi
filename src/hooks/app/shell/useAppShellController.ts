@@ -7,8 +7,8 @@ import {
     selectAutomaticExecutionHasUnsavedChanges,
     useAutomaticExecutionStore,
 } from "../../../hooks/automaticExecution/useAutomaticExecutionStore";
-import { useWorkspaceExecutor } from "../../../hooks/workspace/executor/useWorkspaceExecutor";
 import { useWorkspaceDroppedFiles } from "../../../hooks/workspace/useWorkspaceDroppedFiles";
+import { useWorkspaceExecutor } from "../../../hooks/workspace/useWorkspaceExecutor";
 import { useWorkspaceStore } from "../../../hooks/workspace/useWorkspaceStore";
 import { useWorkspaceStoreLifecycle } from "../../../hooks/workspace/useWorkspaceStoreLifecycle";
 import { showsWorkspaceContext } from "../../../lib/app/sidebar";

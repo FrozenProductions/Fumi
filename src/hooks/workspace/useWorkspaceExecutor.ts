@@ -2,38 +2,38 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
-} from "../../../constants/workspace/executor";
+} from "../../constants/workspace/executor";
 import {
     getExecutorStatus,
     subscribeToExecutorStatusChanged,
-} from "../../../lib/platform/roblox/executor";
-import { getErrorMessage } from "../../../lib/shared/errorMessage";
-import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/executionHistory/executionHistory.type";
+} from "../../lib/platform/roblox/executor";
+import { getErrorMessage } from "../../lib/shared/errorMessage";
+import type { WorkspaceExecutionHistoryEntry } from "../../lib/workspace/executionHistory/executionHistory.type";
 import {
     getExecutorPortsFromSummaries,
     normalizeExecutorPort,
     parseExecutorPort,
-} from "../../../lib/workspace/executor/executor";
+} from "../../lib/workspace/executor/executor";
 import type {
     ExecutorStatusPayload,
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
-} from "../../../lib/workspace/executor/executor.type";
+} from "../../lib/workspace/executor/executor.type";
 import {
     executeWorkspaceScript,
     toggleExecutorConnection,
-} from "../../../lib/workspace/executor/executorActions";
+} from "../../lib/workspace/executor/executorActions";
 import {
     persistExecutorPort,
     resolvePersistedExecutorPort,
-} from "../../../lib/workspace/executor/executorPersistence";
+} from "../../lib/workspace/executor/executorPersistence";
 import {
     createDefaultAvailablePortSummaries,
     manageAsyncSubscription,
-} from "../../../lib/workspace/executor/executorStatus";
-import { selectWorkspaceActiveTab } from "../../../lib/workspace/store/selectors";
-import { useWindowResume } from "../../shared/useWindowResume";
-import { useWorkspaceStore } from "../useWorkspaceStore";
+} from "../../lib/workspace/executor/executorStatus";
+import { selectWorkspaceActiveTab } from "../../lib/workspace/store/selectors";
+import { useWindowResume } from "../shared/useWindowResume";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 /**
  * Manages executor connection lifecycle including attach, detach, and script execution.
