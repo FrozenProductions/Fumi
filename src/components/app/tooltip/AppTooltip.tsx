@@ -4,7 +4,7 @@ import {
     DEFAULT_TOOLTIP_DELAY_MS,
     DEFAULT_TOOLTIP_OFFSET,
 } from "../../../constants/tooltip/tooltip";
-import { useTooltipStore } from "../../../hooks/tooltip/useTooltipStore";
+import { useTooltipStore } from "../../../hooks/app/useTooltipStore";
 import {
     assignRef,
     markTooltipWarm,

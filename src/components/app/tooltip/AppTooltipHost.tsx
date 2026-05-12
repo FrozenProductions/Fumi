@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { TOOLTIP_VIEWPORT_MARGIN } from "../../../constants/tooltip/tooltip";
-import { useTooltipStore } from "../../../hooks/tooltip/useTooltipStore";
+import { useTooltipStore } from "../../../hooks/app/useTooltipStore";
 import { clamp } from "../../../lib/shared/math";
 import type { TooltipSide } from "../../../lib/tooltip/tooltip.type";
 import type { TooltipPosition } from "../../../lib/tooltip/tooltipStore.type";
