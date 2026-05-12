@@ -1,9 +1,9 @@
+import type { DroppedWorkspaceScriptDraft } from "../../workspace/droppedFile.type";
+import type { WorkspaceCursorState } from "../../workspace/session/sessionCursor.type";
 import type {
-    DroppedWorkspaceScriptDraft,
-    WorkspaceCursorState,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../../workspace/workspace.type";
+} from "../../workspace/session/tabs/sessionTabs.type";
 import { isTauriEnvironment } from "../core/runtime";
 import {
     createDesktopShellRequiredError,

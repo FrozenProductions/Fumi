@@ -5,8 +5,8 @@ import type {
 } from "../../../lib/app/app.type";
 import type { LoadedAceRuntime } from "../../../lib/luau/ace/loadAceRuntime.type";
 import type { AceEditorComponent } from "../../../lib/workspace/editor/editor.type";
+import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/executionHistory/executionHistory.type";
 import type { WorkspaceExecutionHistoryFilterValue } from "../../../lib/workspace/executionHistory/executionHistorySearch.type";
-import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/workspace.type";
 
 export type WorkspaceExecutionHistoryToolbarProps = {
     filterValue: WorkspaceExecutionHistoryFilterValue;

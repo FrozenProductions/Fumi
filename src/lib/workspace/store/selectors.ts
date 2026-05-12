@@ -1,13 +1,15 @@
+import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
+import type {
+    WorkspacePaneId,
+    WorkspaceSplitView,
+} from "../session/sessionSplitView.type";
 import { getActiveTabIndex } from "../session/tabs/sessionTabs";
 import type {
-    WorkspaceExecutionHistoryEntry,
-    WorkspacePaneId,
-    WorkspaceScreenSession,
     WorkspaceScreenTab,
-    WorkspaceSplitView,
     WorkspaceTab,
     WorkspaceTabState,
-} from "../workspace.type";
+} from "../session/tabs/sessionTabs.type";
+import type { WorkspaceScreenSession } from "../session.type";
 import { getActiveTabFromWorkspace } from "./workspaceNavigation";
 import type { WorkspaceStore } from "./workspaceStore.type";
 

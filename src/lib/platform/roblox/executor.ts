@@ -16,7 +16,7 @@ import {
 import type {
     ExecutorPortSummary,
     ExecutorStatusPayload,
-} from "../../workspace/workspace.type";
+} from "../../workspace/executor/executor.type";
 import { ExecutorCommandError } from "../core/errors";
 import { isTauriEnvironment } from "../core/runtime";
 

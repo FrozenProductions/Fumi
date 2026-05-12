@@ -1,10 +1,10 @@
+import type { WorkspaceExecutionHistoryEntry } from "../../workspace/executionHistory/executionHistory.type";
 import type {
     WorkspaceBootstrapResponse,
-    WorkspaceExecutionHistoryEntry,
     WorkspaceSnapshot,
-    WorkspaceSplitView,
-    WorkspaceTabState,
-} from "../../workspace/workspace.type";
+} from "../../workspace/persistence.type";
+import type { WorkspaceSplitView } from "../../workspace/session/sessionSplitView.type";
+import type { WorkspaceTabState } from "../../workspace/session/tabs/sessionTabs.type";
 import { isTauriEnvironment } from "../core/runtime";
 import {
     createDesktopShellRequiredError,

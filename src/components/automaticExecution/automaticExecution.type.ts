@@ -4,7 +4,7 @@ import type {
     RefObject,
 } from "react";
 import type { AutomaticExecutionScript } from "../../lib/automaticExecution/automaticExecution.type";
-import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+import type { ExecutorKind } from "../../lib/workspace/executor/executor.type";
 
 export type AutomaticExecutionScreenProps = {
     executorKind: ExecutorKind;

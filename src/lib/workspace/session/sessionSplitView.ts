@@ -1,10 +1,10 @@
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../constants/workspace/workspace";
+import type { WorkspaceSession } from "../session.type";
 import { normalizeWorkspaceSplitRatio } from "../splitView";
 import type {
     WorkspacePaneId,
-    WorkspaceSession,
     WorkspaceSplitView,
-} from "../workspace.type";
+} from "./sessionSplitView.type";
 
 /**
  * Normalizes a split view configuration by filtering to valid open tabs.

@@ -1,8 +1,20 @@
-import type {
-    ExecutorKind,
-    ExecutorPortSummary,
-    WorkspaceExecutionHistoryEntry,
-} from "../workspace.type";
+import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
+
+export type ExecutorKind = "macsploit" | "opiumware" | "unsupported";
+
+export type ExecutorPortSummary = {
+    port: number;
+    boundAccountId: string | null;
+    boundAccountDisplayName: string | null;
+    isBoundToUnknownAccount: boolean;
+};
+
+export type ExecutorStatusPayload = {
+    executorKind: ExecutorKind;
+    availablePorts: readonly ExecutorPortSummary[];
+    port: number;
+    isAttached: boolean;
+};
 
 export type AsyncUnsubscribe = () => void;
 

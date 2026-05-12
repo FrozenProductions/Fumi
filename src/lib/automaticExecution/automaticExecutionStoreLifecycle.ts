@@ -4,7 +4,7 @@ import {
     refreshAutomaticExecution,
 } from "../platform/roblox/automaticExecution";
 import { getErrorMessage } from "../shared/errorMessage";
-import type { ExecutorKind } from "../workspace/workspace.type";
+import type { ExecutorKind } from "../workspace/executor/executor.type";
 import {
     buildAutomaticExecutionScripts,
     serializeAutomaticExecutionScriptState,

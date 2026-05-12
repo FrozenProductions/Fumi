@@ -1,4 +1,4 @@
-import type { ExecutorPortSummary } from "../workspace.type";
+import type { ExecutorPortSummary } from "./executor.type";
 
 /**
  * Extracts port numbers from executor port summaries.

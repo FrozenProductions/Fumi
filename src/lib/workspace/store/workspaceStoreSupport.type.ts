@@ -1,4 +1,4 @@
-import type { WorkspaceSession } from "../workspace.type";
+import type { WorkspaceSession } from "../session.type";
 import type { WorkspaceStoreUpdater } from "./workspaceStore.type";
 
 export type WorkspaceStoreSupport = {

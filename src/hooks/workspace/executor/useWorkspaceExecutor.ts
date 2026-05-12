@@ -8,12 +8,14 @@ import {
     subscribeToExecutorStatusChanged,
 } from "../../../lib/platform/roblox/executor";
 import { getErrorMessage } from "../../../lib/shared/errorMessage";
+import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/executionHistory/executionHistory.type";
 import {
     getExecutorPortsFromSummaries,
     normalizeExecutorPort,
     parseExecutorPort,
 } from "../../../lib/workspace/executor/executor";
 import type {
+    ExecutorStatusPayload,
     UseWorkspaceExecutorOptions,
     UseWorkspaceExecutorResult,
 } from "../../../lib/workspace/executor/executor.type";
@@ -30,10 +32,6 @@ import {
     manageAsyncSubscription,
 } from "../../../lib/workspace/executor/executorStatus";
 import { selectWorkspaceActiveTab } from "../../../lib/workspace/store/selectors";
-import type {
-    ExecutorStatusPayload,
-    WorkspaceExecutionHistoryEntry,
-} from "../../../lib/workspace/workspace.type";
 import { useWindowResume } from "../../shared/useWindowResume";
 import { useWorkspaceStore } from "../useWorkspaceStore";
 

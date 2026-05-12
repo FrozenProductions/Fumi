@@ -1,4 +1,4 @@
-import type { WorkspaceTabSnapshot } from "../../workspace/workspace.type";
+import type { WorkspaceTabSnapshot } from "../../workspace/session/tabs/sessionTabs.type";
 import { isTauriEnvironment } from "../core/runtime";
 import {
     createDesktopShellRequiredError,

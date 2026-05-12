@@ -1,7 +1,7 @@
 import { Calendar01Icon, Key01Icon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import { memo } from "react";
-import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/workspace.type";
+import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/executionHistory/executionHistory.type";
 import { AppIcon } from "../../app/common/AppIcon";
 import type { WorkspaceExecutionHistorySidebarProps } from "./workspaceExecutionHistory.type";
 

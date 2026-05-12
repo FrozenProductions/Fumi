@@ -17,7 +17,7 @@ import type {
     WorkspaceOutlineCacheEntry,
     WorkspaceOutlineChange,
 } from "../../lib/workspace/outline/outline.type";
-import type { WorkspaceTab } from "../../lib/workspace/workspace.type";
+import type { WorkspaceTab } from "../../lib/workspace/session/tabs/sessionTabs.type";
 import { useDebouncedValue } from "../shared/useDebouncedValue";
 import type { UseWorkspaceLuauAnalysisResult } from "./useWorkspaceLuauAnalysis.type";
 

@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import { useCallback } from "react";
 import { bindWorkspaceEditorShortcuts } from "../../../lib/workspace/codeCompletion/ace";
 import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
-import type { WorkspaceTab } from "../../../lib/workspace/workspace.type";
+import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import type {
     AceEditorDestroyEventTarget,
     AceSelectionEventTarget,

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
-import type { WorkspaceSession, WorkspaceTab } from "../../workspace.type";
+import type { WorkspaceTab } from "../../session/tabs/sessionTabs.type";
+import type { WorkspaceSession } from "../../session.type";
 import type { WorkspaceStore } from "../workspaceStore.type";
 
 vi.mock("../../../platform/core/dialog", () => ({

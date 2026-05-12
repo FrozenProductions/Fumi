@@ -1,5 +1,25 @@
+import type { WorkspaceExecutionHistoryEntry } from "./executionHistory/executionHistory.type";
+import type { WorkspaceSplitView } from "./session/sessionSplitView.type";
+import type {
+    WorkspaceScreenTab,
+    WorkspaceTab,
+    WorkspaceTabState,
+} from "./session/tabs/sessionTabs.type";
 import type { WorkspaceStore } from "./store/workspaceStore.type";
-import type { WorkspaceTab } from "./workspace.type";
+
+export type WorkspaceSession = {
+    workspacePath: string;
+    workspaceName: string;
+    activeTabId: string | null;
+    splitView: WorkspaceSplitView | null;
+    tabs: WorkspaceTab[];
+    archivedTabs: WorkspaceTabState[];
+    executionHistory: WorkspaceExecutionHistoryEntry[];
+};
+
+export type WorkspaceScreenSession = Omit<WorkspaceSession, "tabs"> & {
+    tabs: WorkspaceScreenTab[];
+};
 
 type UseWorkspaceSessionStoreFields = Pick<
     WorkspaceStore,

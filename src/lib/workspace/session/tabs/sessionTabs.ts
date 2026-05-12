@@ -1,12 +1,12 @@
+import type { WorkspaceSnapshot } from "../../persistence.type";
+import type { WorkspaceSession } from "../../session.type";
+import { clampCursorToContent } from "../sessionCursor";
+import { normalizeSplitView } from "../sessionSplitView";
 import type {
-    WorkspaceSession,
-    WorkspaceSnapshot,
     WorkspaceTab,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../../workspace.type";
-import { clampCursorToContent } from "../sessionCursor";
-import { normalizeSplitView } from "../sessionSplitView";
+} from "./sessionTabs.type";
 
 function createWorkspaceTab(tab: WorkspaceTabSnapshot): WorkspaceTab {
     return {

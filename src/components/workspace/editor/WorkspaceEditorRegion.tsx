@@ -6,8 +6,8 @@ import { useWorkspaceLuauAnalysis } from "../../../hooks/workspace/useWorkspaceL
 import { useWorkspaceStore } from "../../../hooks/workspace/useWorkspaceStore";
 import { getEditorModeForFileName } from "../../../lib/luau/fileType";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
+import type { WorkspaceSplitView } from "../../../lib/workspace/session/sessionSplitView.type";
 import { selectWorkspaceActiveTab } from "../../../lib/workspace/store/selectors";
-import type { WorkspaceSplitView } from "../../../lib/workspace/workspace.type";
 import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
 

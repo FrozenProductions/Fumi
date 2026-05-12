@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { ExecutorKind } from "../workspace/workspace.type";
+import type { ExecutorKind } from "../workspace/executor/executor.type";
 import type {
     AutomaticExecutionCursorState,
     AutomaticExecutionScript,

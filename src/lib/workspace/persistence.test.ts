@@ -12,7 +12,7 @@ import {
     readRecentWorkspacePaths,
     updateRecentWorkspacePaths,
 } from "./persistence";
-import type { WorkspaceSession } from "./workspace.type";
+import type { WorkspaceSession } from "./session.type";
 
 const RECENT_WORKSPACE_STORAGE_KEY = "fumi-recent-workspaces";
 

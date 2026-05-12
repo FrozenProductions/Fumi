@@ -5,15 +5,12 @@ import {
 } from "../../platform/roblox/executor";
 import { appendWorkspaceExecutionHistory } from "../../platform/workspace/workspace";
 import { getErrorMessage } from "../../shared/errorMessage";
-import type {
-    ExecutorKind,
-    ExecutorStatusPayload,
-    WorkspaceExecutionHistoryEntry,
-} from "../workspace.type";
+import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
 import {
     getExecutorPortRangeErrorMessage,
     parseExecutorPort,
 } from "./executor";
+import type { ExecutorKind, ExecutorStatusPayload } from "./executor.type";
 import {
     createExecutionHistoryEntry,
     findSelectedPortSummary,

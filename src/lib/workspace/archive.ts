@@ -1,7 +1,5 @@
-import type {
-    ArchivedTabsSortOption,
-    WorkspaceTabState,
-} from "./workspace.type";
+import type { ArchivedTabsSortOption } from "./archive.type";
+import type { WorkspaceTabState } from "./session/tabs/sessionTabs.type";
 
 /**
  * Filters archived tabs by search query and sorts by name or date.

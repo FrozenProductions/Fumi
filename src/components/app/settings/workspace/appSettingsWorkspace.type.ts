@@ -1,4 +1,4 @@
-import type { WorkspaceTabState } from "../../../../lib/workspace/workspace.type";
+import type { WorkspaceTabState } from "../../../../lib/workspace/session/tabs/sessionTabs.type";
 
 export type ArchivedTabActionButtonClassNames = {
     base: string;

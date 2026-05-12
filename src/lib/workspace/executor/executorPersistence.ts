@@ -3,8 +3,8 @@ import {
     OPIUMWARE_EXECUTOR_PORTS,
 } from "../../../constants/workspace/executor";
 import { isNumber, isRecord } from "../../shared/validation";
-import type { ExecutorKind, ExecutorPortSummary } from "../workspace.type";
 import { getExecutorPortsFromSummaries } from "./executor";
+import type { ExecutorKind, ExecutorPortSummary } from "./executor.type";
 import type { PersistedExecutorPorts } from "./executorPersistence.type";
 
 const EXECUTOR_PORTS_STORAGE_KEY = "fumi-executor-ports";

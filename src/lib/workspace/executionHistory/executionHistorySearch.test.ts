@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { WorkspaceExecutionHistoryEntry } from "../workspace.type";
+import type { WorkspaceExecutionHistoryEntry } from "./executionHistory.type";
 import {
     getVisibleWorkspaceExecutionHistoryEntries,
     getWorkspaceExecutionHistoryAccountLabel,

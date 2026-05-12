@@ -1,7 +1,7 @@
 import { WORKSPACE_EXECUTION_HISTORY_SEARCH_FIELD_WEIGHTS } from "../../../constants/workspace/executionHistory";
 import { searchItems } from "../../shared/search";
 import type { SearchField } from "../../shared/search.type";
-import type { WorkspaceExecutionHistoryEntry } from "../workspace.type";
+import type { WorkspaceExecutionHistoryEntry } from "./executionHistory.type";
 import type {
     WorkspaceExecutionHistoryFilterValue,
     WorkspaceExecutionHistorySearchFieldName,

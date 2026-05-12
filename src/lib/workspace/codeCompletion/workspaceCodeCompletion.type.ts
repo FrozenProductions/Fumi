@@ -5,7 +5,8 @@ import type {
 import type { LuauCompletionPopupState } from "../../luau/luau.type";
 import type { LuauFileAnalysis } from "../../luau/symbolScanner/symbolScanner.type";
 import type { WorkspaceEditorSearchController } from "../editor/editorSearch.type";
-import type { WorkspaceCursorState, WorkspaceTab } from "../workspace.type";
+import type { WorkspaceCursorState } from "../session/sessionCursor.type";
+import type { WorkspaceTab } from "../session/tabs/sessionTabs.type";
 import type { AceChangeDelta } from "./ace.type";
 
 export type UseWorkspaceCodeCompletionOptions = {

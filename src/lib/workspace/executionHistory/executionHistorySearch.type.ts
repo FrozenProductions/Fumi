@@ -1,4 +1,4 @@
-import type { ExecutorKind } from "../workspace.type";
+import type { ExecutorKind } from "../executor/executor.type";
 
 export type WorkspaceExecutionHistoryFilterValue =
     | "all"

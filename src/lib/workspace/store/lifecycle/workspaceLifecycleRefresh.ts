@@ -6,7 +6,7 @@ import {
     hasWorkspaceDraftChanges,
     mergeWorkspaceSession,
 } from "../../session/tabs/sessionTabs";
-import type { WorkspaceSession } from "../../workspace.type";
+import type { WorkspaceSession } from "../../session.type";
 import { isMatchingWorkspacePath } from "../workspaceNavigation";
 import type {
     WorkspaceStoreGet,

@@ -3,7 +3,7 @@ import type {
     KeyboardEvent as ReactKeyboardEvent,
     RefObject,
 } from "react";
-import type { WorkspaceScreenSession } from "../../../lib/workspace/workspace.type";
+import type { WorkspaceScreenSession } from "../../../lib/workspace/session.type";
 
 export type UseWorkspaceTabRenameOptions = {
     workspace: WorkspaceScreenSession | null;

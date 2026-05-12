@@ -1,14 +1,14 @@
 import type { DragDropEventHandlers } from "@dnd-kit/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SPLIT_DROP_IDS } from "../../../constants/workspace/workspace";
+import type {
+    WorkspacePaneId,
+    WorkspaceSplitView,
+} from "../../../lib/workspace/session/sessionSplitView.type";
 import {
     normalizeWorkspaceSplitRatio,
     shouldCloseWorkspaceSplitView,
 } from "../../../lib/workspace/splitView";
-import type {
-    WorkspacePaneId,
-    WorkspaceSplitView,
-} from "../../../lib/workspace/workspace.type";
 
 type UseWorkspaceTabDragDropOptions = {
     splitView: WorkspaceSplitView | null;

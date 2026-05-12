@@ -1,4 +1,4 @@
-import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+import type { ExecutorKind } from "../../lib/workspace/executor/executor.type";
 
 export const MACSPLOIT_EXECUTOR_PORTS = [
     5553, 5554, 5555, 5556, 5557, 5558, 5559, 5560, 5561, 5562,

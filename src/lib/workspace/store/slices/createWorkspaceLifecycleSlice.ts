@@ -1,6 +1,6 @@
 import { persistWorkspaceState as persistWorkspaceStateCommand } from "../../../platform/workspace/workspace";
 import { getErrorMessage } from "../../../shared/errorMessage";
-import type { WorkspaceSession } from "../../workspace.type";
+import type { WorkspaceSession } from "../../session.type";
 import { createBootstrapWorkspaceSessionAction } from "../lifecycle/workspaceLifecycleBootstrap";
 import {
     createOpenWorkspaceDirectoryAction,

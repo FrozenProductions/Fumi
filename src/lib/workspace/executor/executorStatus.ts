@@ -2,11 +2,9 @@ import {
     DEFAULT_EXECUTOR_KIND,
     getExecutorPorts,
 } from "../../../constants/workspace/executor";
-import type {
-    ExecutorStatusPayload,
-    WorkspaceExecutionHistoryEntry,
-} from "../workspace.type";
+import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
 import { parseExecutorPort } from "./executor";
+import type { ExecutorStatusPayload } from "./executor.type";
 
 export type AsyncUnsubscribe = () => void;
 

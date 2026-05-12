@@ -3,7 +3,7 @@ import type {
     WorkspaceEditorSearchController,
     WorkspaceEditorSearchState,
 } from "../../../lib/workspace/editor/editorSearch.type";
-import type { WorkspaceTab } from "../../../lib/workspace/workspace.type";
+import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 
 export type UseWorkspaceEditorSearchOptions = {
     activeTabId: string | null;

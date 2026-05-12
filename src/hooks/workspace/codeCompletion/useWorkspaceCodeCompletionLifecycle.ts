@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { useEffect } from "react";
 import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
-import type { WorkspaceTab } from "../../../lib/workspace/workspace.type";
+import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import { useAppStore } from "../../app/useAppStore";
 
 export type StoredAceSessionState = {

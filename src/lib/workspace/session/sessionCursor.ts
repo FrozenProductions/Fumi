@@ -1,5 +1,5 @@
 import { clamp } from "../../shared/math";
-import type { WorkspaceCursorState } from "../workspace.type";
+import type { WorkspaceCursorState } from "./sessionCursor.type";
 
 /**
  * Clamps a cursor position to valid coordinates within the given content.

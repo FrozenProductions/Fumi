@@ -1,4 +1,4 @@
-import type { ArchivedTabsSortOption } from "../../lib/workspace/workspace.type";
+import type { ArchivedTabsSortOption } from "../../lib/workspace/archive.type";
 
 export type ArchivedTabsSortOptionConfig = {
     value: ArchivedTabsSortOption;

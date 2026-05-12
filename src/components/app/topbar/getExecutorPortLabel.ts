@@ -1,5 +1,5 @@
 import { getExecutorBoundAccountLabel } from "../../../lib/accounts/accountPrivacy";
-import type { ExecutorPortSummary } from "../../../lib/workspace/workspace.type";
+import type { ExecutorPortSummary } from "../../../lib/workspace/executor/executor.type";
 
 type ExecutorPortLabelOptions = {
     isMasked?: boolean;

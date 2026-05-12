@@ -7,10 +7,10 @@ import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/tabBa
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type {
     WorkspacePaneId,
-    WorkspaceScreenSession,
-    WorkspaceScreenTab,
     WorkspaceSplitView,
-} from "../../../lib/workspace/workspace.type";
+} from "../../../lib/workspace/session/sessionSplitView.type";
+import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
+import type { WorkspaceScreenSession } from "../../../lib/workspace/session.type";
 
 export type WorkspaceTabBarProps = {
     workspace: WorkspaceScreenSession;

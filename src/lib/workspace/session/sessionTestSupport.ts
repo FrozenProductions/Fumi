@@ -1,10 +1,10 @@
+import type { WorkspaceSnapshot } from "../persistence.type";
+import type { WorkspaceSession } from "../session.type";
+import type { WorkspaceCursorState } from "./sessionCursor.type";
 import type {
-    WorkspaceCursorState,
-    WorkspaceSession,
-    WorkspaceSnapshot,
     WorkspaceTabSnapshot,
     WorkspaceTabState,
-} from "../workspace.type";
+} from "./tabs/sessionTabs.type";
 
 export function createCursor(
     overrides: Partial<WorkspaceCursorState> = {},

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { ExecutorKind } from "../../lib/workspace/workspace.type";
+import type { ExecutorKind } from "../../lib/workspace/executor/executor.type";
 import { useAutomaticExecutionStore } from "./useAutomaticExecutionStore";
 
 /**

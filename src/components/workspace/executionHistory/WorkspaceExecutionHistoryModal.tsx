@@ -7,9 +7,9 @@ import {
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { useDebouncedValue } from "../../../hooks/shared/useDebouncedValue";
 import { useWorkspaceExecutionHistoryPreview } from "../../../hooks/workspace/useWorkspaceExecutionHistoryPreview";
+import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/executionHistory/executionHistory.type";
 import { getVisibleWorkspaceExecutionHistoryEntries } from "../../../lib/workspace/executionHistory/executionHistorySearch";
 import type { WorkspaceExecutionHistoryFilterValue } from "../../../lib/workspace/executionHistory/executionHistorySearch.type";
-import type { WorkspaceExecutionHistoryEntry } from "../../../lib/workspace/workspace.type";
 import { WorkspaceExecutionHistoryPreview } from "./WorkspaceExecutionHistoryPreview";
 import { WorkspaceExecutionHistorySidebar } from "./WorkspaceExecutionHistorySidebar";
 import { WorkspaceExecutionHistoryToolbar } from "./WorkspaceExecutionHistoryToolbar";

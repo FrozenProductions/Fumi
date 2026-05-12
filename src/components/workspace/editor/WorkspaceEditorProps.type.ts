@@ -11,8 +11,8 @@ import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outl
 import type {
     WorkspacePaneId,
     WorkspaceSplitView,
-    WorkspaceTab,
-} from "../../../lib/workspace/workspace.type";
+} from "../../../lib/workspace/session/sessionSplitView.type";
+import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
 
 export type WorkspaceEditorPaneProps = {

@@ -18,7 +18,7 @@ import {
     createArchivedTabsDateFormatter,
     filterAndSortArchivedTabs,
 } from "../../../lib/workspace/archive";
-import type { ArchivedTabsSortOption } from "../../../lib/workspace/workspace.type";
+import type { ArchivedTabsSortOption } from "../../../lib/workspace/archive.type";
 import { AppIcon } from "../common/AppIcon";
 import { AppSelect } from "../form/AppSelect";
 import { AppSettingsArchivedTabsList } from "./workspace/AppSettingsArchivedTabsList";

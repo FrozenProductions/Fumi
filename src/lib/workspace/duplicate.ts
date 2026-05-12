@@ -4,7 +4,7 @@ import {
 } from "../../constants/workspace/workspace";
 import type { DuplicateWorkspaceTabDraft } from "./duplicate.type";
 import { buildWorkspaceFileName, splitWorkspaceFileName } from "./fileName";
-import type { WorkspaceTab } from "./workspace.type";
+import type { WorkspaceTab } from "./session/tabs/sessionTabs.type";
 
 /**
  * Builds a draft for duplicating a tab, incrementing the copy number in the file name.

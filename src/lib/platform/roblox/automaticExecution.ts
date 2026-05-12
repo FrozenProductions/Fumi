@@ -13,7 +13,7 @@ import {
     isRecord,
     isString,
 } from "../../shared/validation";
-import type { ExecutorKind } from "../../workspace/workspace.type";
+import type { ExecutorKind } from "../../workspace/executor/executor.type";
 import { AutomaticExecutionCommandError } from "../core/errors";
 import { isTauriEnvironment } from "../core/runtime";
 
