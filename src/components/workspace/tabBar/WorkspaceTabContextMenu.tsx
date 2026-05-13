@@ -6,6 +6,10 @@ import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransiti
 import { joinClassNames } from "../../../lib/shared/className";
 import type { WorkspaceTabContextMenuProps } from "./workspaceTabBar.type";
 
+function WorkspaceTabContextMenuDivider(): ReactElement {
+    return <hr className="mx-2 my-0.5 h-px shrink-0 border-0 bg-fumi-200" />;
+}
+
 /**
  * Context menu for workspace tab actions (rename, duplicate, archive, delete).
  *
@@ -97,15 +101,15 @@ export function WorkspaceTabContextMenu({
         ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[96%] motion-safe:-motion-translate-y-out-[4%] motion-safe:motion-duration-120 motion-safe:motion-ease-in-quad"
         : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:-motion-translate-y-in-[6%] motion-safe:motion-duration-150 motion-safe:motion-ease-spring-snappy";
     const menuItemClassName =
-        "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
+        "app-select-none flex h-7 w-full items-center justify-between gap-2 rounded-md px-2 text-left text-[10px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
     const disabledMenuItemClassName =
-        "app-select-none flex h-8 w-full cursor-not-allowed items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-300";
+        "app-select-none flex h-7 w-full cursor-not-allowed items-center justify-between gap-2 rounded-md px-2 text-left text-[10px] font-semibold tracking-wide text-fumi-300";
     const deleteButtonClassName =
         theme === "dark"
-            ? "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-200 transition-colors hover:bg-rose-950/70 hover:text-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
-            : "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
+            ? "app-select-none flex h-7 w-full items-center justify-between gap-2 rounded-md px-2 text-left text-[10px] font-semibold tracking-wide text-rose-200 transition-colors hover:bg-rose-950/70 hover:text-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+            : "app-select-none flex h-7 w-full items-center justify-between gap-2 rounded-md px-2 text-left text-[10px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
     const menuClassName = joinClassNames(
-        "absolute z-50 min-w-[160px] origin-top-left overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
+        "absolute z-50 min-w-[148px] origin-top-left overflow-hidden rounded-[0.7rem] border border-fumi-200 bg-fumi-50 p-1 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
         isClosing && "pointer-events-none",
         dropdownMotionClassName,
     );
@@ -141,6 +145,7 @@ export function WorkspaceTabContextMenu({
             >
                 Duplicate
             </button>
+            <WorkspaceTabContextMenuDivider />
             <button
                 type="button"
                 role="menuitem"
@@ -179,6 +184,7 @@ export function WorkspaceTabContextMenu({
             >
                 Archive other tabs
             </button>
+            <WorkspaceTabContextMenuDivider />
             <button
                 type="button"
                 role="menuitem"
@@ -214,6 +220,7 @@ export function WorkspaceTabContextMenu({
                     Close split view
                 </button>
             ) : null}
+            <WorkspaceTabContextMenuDivider />
             <button
                 type="button"
                 role="menuitem"
