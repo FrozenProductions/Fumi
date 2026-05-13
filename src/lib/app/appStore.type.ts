@@ -69,6 +69,7 @@ export type AppStoreActions = {
     setEditorCursorStyle: (cursorStyle: AppEditorCursorStyle) => void;
     setEditorSmoothCaretEnabled: (isEnabled: boolean) => void;
     setEditorScopeHighlightingEnabled: (isEnabled: boolean) => void;
+    setEditorRelativeLineNumbersEnabled: (isEnabled: boolean) => void;
     setEditorWordWrapEnabled: (isEnabled: boolean) => void;
     setEditorTabsToSpacesEnabled: (isEnabled: boolean) => void;
     setEditorTabSize: (tabSize: AppEditorTabSize) => void;

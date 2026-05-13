@@ -132,6 +132,7 @@ describe("useAppStore editorSettings", () => {
                 cursorStyle: "ace",
                 isSmoothCaretEnabled: false,
                 isScopeHighlightingEnabled: true,
+                isRelativeLineNumbersEnabled: false,
                 isWordWrapEnabled: false,
                 isTabsToSpacesEnabled: true,
                 tabSize: 4,
@@ -182,6 +183,21 @@ describe("useAppStore editorSettings", () => {
         expect(mergedState.editorSettings.isSmoothCaretEnabled).toBe(false);
         expect(mergedState.editorSettings.isScopeHighlightingEnabled).toBe(
             true,
+        );
+    });
+
+    it("defaults relative line numbers to disabled when old persisted state lacks the field", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                editorSettings: {
+                    fontSize: 16,
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(mergedState.editorSettings.isRelativeLineNumbersEnabled).toBe(
+            false,
         );
     });
 
@@ -246,6 +262,22 @@ describe("useAppStore editorSettings", () => {
             {
                 editorSettings: {
                     isWordWrapEnabled: true,
+                },
+            },
+        );
+    });
+
+    it("stores relative line number changes", () => {
+        useAppStore.getState().setEditorRelativeLineNumbersEnabled(true);
+
+        expect(
+            useAppStore.getState().editorSettings.isRelativeLineNumbersEnabled,
+        ).toBe(true);
+
+        expect(getPersistedAppStoreState(useAppStore.getState())).toMatchObject(
+            {
+                editorSettings: {
+                    isRelativeLineNumbersEnabled: true,
                 },
             },
         );

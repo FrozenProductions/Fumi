@@ -1,5 +1,5 @@
 import type { KeyboardEvent, ReactElement } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -10,7 +10,11 @@ import type {
     AceChangeDelta,
     AceEditorInstance,
 } from "../../../lib/workspace/codeCompletion/ace.type";
-import { applyAceEditorIndentSettings } from "../../../lib/workspace/editor/editor";
+import {
+    applyAceEditorIndentSettings,
+    isAceCursorRowVisible,
+    setAceRelativeLineNumbers,
+} from "../../../lib/workspace/editor/editor";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
 import { WorkspaceActionsButton } from "../actions/WorkspaceActionsButton";
 import { AppCodeCompletion } from "./AppCodeCompletion";
@@ -33,6 +37,7 @@ function WorkspaceAcePane({
     editorFontSize,
     isSmoothCaretEnabled,
     isScopeHighlightingEnabled,
+    isRelativeLineNumbersEnabled,
     isWordWrapEnabled,
     isTabsToSpacesEnabled,
     isActiveTab,
@@ -42,11 +47,14 @@ function WorkspaceAcePane({
     tabSize,
 }: WorkspaceAcePaneProps): ReactElement {
     const editorRef = useRef<AceEditorInstance | null>(null);
+    const [isEditorFocused, setIsEditorFocused] = useState(false);
+    const [isCursorRowVisible, setIsCursorRowVisible] = useState(false);
     const editorChangeHandler = createHandleEditorChange(tab.id);
     const editorOptions = {
         ...WORKSPACE_EDITOR_OPTIONS,
         animatedScroll: isSmoothCaretEnabled,
         cursorStyle,
+        relativeLineNumbers: false,
         useSoftTabs: isTabsToSpacesEnabled,
     } as const;
     const editorClassName = joinClassNames(
@@ -69,6 +77,48 @@ function WorkspaceAcePane({
         });
     }, [isTabsToSpacesEnabled, tabSize]);
 
+    useEffect(() => {
+        const editor = editorRef.current;
+
+        if (!editor) {
+            return;
+        }
+
+        setAceRelativeLineNumbers(
+            editor,
+            isRelativeLineNumbersEnabled &&
+                isEditorFocused &&
+                isCursorRowVisible &&
+                isVisible,
+        );
+    }, [
+        isCursorRowVisible,
+        isEditorFocused,
+        isRelativeLineNumbersEnabled,
+        isVisible,
+    ]);
+
+    useEffect(() => {
+        if (isVisible) {
+            return;
+        }
+
+        if (editorRef.current) {
+            setAceRelativeLineNumbers(editorRef.current, false);
+        }
+
+        setIsEditorFocused(false);
+        setIsCursorRowVisible(false);
+    }, [isVisible]);
+
+    useEffect(() => {
+        return () => {
+            if (editorRef.current) {
+                setAceRelativeLineNumbers(editorRef.current, false);
+            }
+        };
+    }, []);
+
     useEffect(
         () => createHandleEditorUnmount(tab.id),
         [createHandleEditorUnmount, tab.id],
@@ -86,6 +136,7 @@ function WorkspaceAcePane({
                 value={tab.content}
                 onLoad={(editor: AceEditorInstance) => {
                     editorRef.current = editor;
+                    setAceRelativeLineNumbers(editor, false);
                     applyAceEditorIndentSettings(editor, {
                         isTabsToSpacesEnabled,
                         tabSize,
@@ -99,7 +150,65 @@ function WorkspaceAcePane({
 
                     editorChangeHandler(value, delta);
                 }}
-                onScroll={createHandleScroll(tab.id)}
+                onScroll={(editor: AceEditorInstance) => {
+                    const isCursorVisible = isAceCursorRowVisible(editor);
+
+                    createHandleScroll(tab.id)(editor);
+                    setIsCursorRowVisible(isCursorVisible);
+                    setAceRelativeLineNumbers(
+                        editor,
+                        isRelativeLineNumbersEnabled &&
+                            isEditorFocused &&
+                            isCursorVisible &&
+                            isVisible,
+                    );
+                }}
+                onFocus={() => {
+                    const editor = editorRef.current;
+                    const isCursorVisible = editor
+                        ? isAceCursorRowVisible(editor)
+                        : false;
+
+                    setIsEditorFocused(true);
+                    setIsCursorRowVisible(isCursorVisible);
+
+                    if (editor) {
+                        setAceRelativeLineNumbers(
+                            editor,
+                            isRelativeLineNumbersEnabled &&
+                                isCursorVisible &&
+                                isVisible,
+                        );
+                    }
+                }}
+                onBlur={() => {
+                    const editor = editorRef.current;
+
+                    setIsEditorFocused(false);
+                    setIsCursorRowVisible(false);
+
+                    if (editor) {
+                        setAceRelativeLineNumbers(editor, false);
+                    }
+                }}
+                onCursorChange={() => {
+                    const editor = editorRef.current;
+                    const isCursorVisible = editor
+                        ? isAceCursorRowVisible(editor)
+                        : false;
+
+                    setIsCursorRowVisible(isCursorVisible);
+
+                    if (editor) {
+                        setAceRelativeLineNumbers(
+                            editor,
+                            isRelativeLineNumbersEnabled &&
+                                isEditorFocused &&
+                                isCursorVisible &&
+                                isVisible,
+                        );
+                    }
+                }}
                 enableBasicAutocompletion={false}
                 enableLiveAutocompletion={false}
                 enableSnippets={false}
@@ -168,6 +277,7 @@ export function WorkspaceEditorSurface({
         editorFontSize,
         isSmoothCaretEnabled,
         isScopeHighlightingEnabled,
+        isRelativeLineNumbersEnabled,
         isWordWrapEnabled,
         isTabsToSpacesEnabled,
         searchPanel,
@@ -311,6 +421,9 @@ export function WorkspaceEditorSurface({
                                       }
                                       isScopeHighlightingEnabled={
                                           isScopeHighlightingEnabled
+                                      }
+                                      isRelativeLineNumbersEnabled={
+                                          isRelativeLineNumbersEnabled
                                       }
                                       isWordWrapEnabled={isWordWrapEnabled}
                                       isTabsToSpacesEnabled={

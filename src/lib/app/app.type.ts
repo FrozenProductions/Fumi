@@ -15,6 +15,7 @@ export type AppEditorSettings = {
     cursorStyle: AppEditorCursorStyle;
     isSmoothCaretEnabled: boolean;
     isScopeHighlightingEnabled: boolean;
+    isRelativeLineNumbersEnabled: boolean;
     isWordWrapEnabled: boolean;
     isTabsToSpacesEnabled: boolean;
     tabSize: AppEditorTabSize;

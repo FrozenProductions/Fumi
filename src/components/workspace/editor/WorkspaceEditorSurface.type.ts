@@ -28,6 +28,7 @@ export type WorkspaceAcePaneProps = {
     editorFontSize: number;
     isSmoothCaretEnabled: boolean;
     isScopeHighlightingEnabled: boolean;
+    isRelativeLineNumbersEnabled: boolean;
     isWordWrapEnabled: boolean;
     isTabsToSpacesEnabled: boolean;
     isActiveTab: boolean;

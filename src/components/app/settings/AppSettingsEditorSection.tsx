@@ -35,6 +35,9 @@ export function AppSettingsEditorSection(): ReactElement {
     const setEditorScopeHighlightingEnabled = useAppStore(
         (state) => state.setEditorScopeHighlightingEnabled,
     );
+    const setEditorRelativeLineNumbersEnabled = useAppStore(
+        (state) => state.setEditorRelativeLineNumbersEnabled,
+    );
     const setEditorWordWrapEnabled = useAppStore(
         (state) => state.setEditorWordWrapEnabled,
     );
@@ -73,6 +76,12 @@ export function AppSettingsEditorSection(): ReactElement {
     const handleScopeHighlightingToggle = (): void => {
         setEditorScopeHighlightingEnabled(
             !editorSettings.isScopeHighlightingEnabled,
+        );
+    };
+
+    const handleRelativeLineNumbersToggle = (): void => {
+        setEditorRelativeLineNumbersEnabled(
+            !editorSettings.isRelativeLineNumbersEnabled,
         );
     };
 
@@ -177,6 +186,12 @@ export function AppSettingsEditorSection(): ReactElement {
                 description="Outline matching Luau scope pairs such as do/end and function/end."
                 isEnabled={editorSettings.isScopeHighlightingEnabled}
                 onChange={handleScopeHighlightingToggle}
+            />
+            <AppSettingsToggle
+                label="Relative line numbers"
+                description="Show line distances from the current cursor line in the editor gutter."
+                isEnabled={editorSettings.isRelativeLineNumbersEnabled}
+                onChange={handleRelativeLineNumbersToggle}
             />
             <AppSettingsToggle
                 label="Word wrap"

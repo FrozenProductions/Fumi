@@ -1,5 +1,8 @@
 import type { AppEditorTabSize } from "../../app/app.type";
-import type { AceEditorInstance } from "../codeCompletion/ace.type";
+import type {
+    AceEditorInstance,
+    AceRendererInstance,
+} from "../codeCompletion/ace.type";
 import type { AceEditorComponent } from "./editor.type";
 
 const FUMI_INDENT_COMMAND_NAME = "fumi-indent";
@@ -99,4 +102,25 @@ export function applyAceEditorIndentSettings(
     session.setTabSize(options.tabSize);
     session.setNavigateWithinSoftTabs(options.isTabsToSpacesEnabled);
     applyFumiIndentCommand(editor, options);
+}
+
+/**
+ * Enables or disables Ace's relative line number gutter renderer.
+ */
+export function setAceRelativeLineNumbers(
+    editor: AceEditorInstance,
+    isEnabled: boolean,
+): void {
+    editor.setOption("relativeLineNumbers", isEnabled);
+}
+
+/**
+ * Returns whether the cursor row is currently within Ace's rendered viewport.
+ */
+export function isAceCursorRowVisible(editor: AceEditorInstance): boolean {
+    const cursorRow = editor.getCursorPosition().row;
+    const { firstRow, lastRow } = (editor.renderer as AceRendererInstance)
+        .layerConfig;
+
+    return cursorRow >= firstRow && cursorRow <= lastRow;
 }

@@ -92,6 +92,7 @@ export const DEFAULT_APP_EDITOR_SETTINGS = {
     cursorStyle: DEFAULT_APP_EDITOR_CURSOR_STYLE,
     isSmoothCaretEnabled: false,
     isScopeHighlightingEnabled: true,
+    isRelativeLineNumbersEnabled: false,
     isWordWrapEnabled: false,
     isTabsToSpacesEnabled: true,
     tabSize: DEFAULT_APP_EDITOR_TAB_SIZE,

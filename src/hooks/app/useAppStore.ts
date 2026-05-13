@@ -224,6 +224,14 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setEditorRelativeLineNumbersEnabled: (isEnabled) => {
+                set((state) => ({
+                    editorSettings: {
+                        ...state.editorSettings,
+                        isRelativeLineNumbersEnabled: isEnabled,
+                    },
+                }));
+            },
             setEditorWordWrapEnabled: (isEnabled) => {
                 set((state) => ({
                     editorSettings: {

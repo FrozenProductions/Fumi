@@ -58,6 +58,11 @@ export function mergeAppStoreState(
         "boolean"
             ? persistedAppState.editorSettings.isScopeHighlightingEnabled
             : currentState.editorSettings.isScopeHighlightingEnabled;
+    const isRelativeLineNumbersEnabled =
+        typeof persistedAppState.editorSettings
+            ?.isRelativeLineNumbersEnabled === "boolean"
+            ? persistedAppState.editorSettings.isRelativeLineNumbersEnabled
+            : currentState.editorSettings.isRelativeLineNumbersEnabled;
     const isWordWrapEnabled =
         typeof persistedAppState.editorSettings?.isWordWrapEnabled === "boolean"
             ? persistedAppState.editorSettings.isWordWrapEnabled
@@ -105,6 +110,7 @@ export function mergeAppStoreState(
             cursorStyle,
             isSmoothCaretEnabled,
             isScopeHighlightingEnabled,
+            isRelativeLineNumbersEnabled,
             isWordWrapEnabled,
             isTabsToSpacesEnabled,
             tabSize,

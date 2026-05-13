@@ -22,6 +22,7 @@ export type WorkspaceEditorPaneProps = {
     editorFontSize: number;
     isSmoothCaretEnabled: boolean;
     isScopeHighlightingEnabled: boolean;
+    isRelativeLineNumbersEnabled: boolean;
     isWordWrapEnabled: boolean;
     isTabsToSpacesEnabled: boolean;
     tabSize: AppEditorTabSize;

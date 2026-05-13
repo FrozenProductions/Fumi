@@ -39,6 +39,9 @@ export function AutomaticExecutionScreen({
     const isScopeHighlightingEnabled = useAppStore(
         (state) => state.editorSettings.isScopeHighlightingEnabled,
     );
+    const isRelativeLineNumbersEnabled = useAppStore(
+        (state) => state.editorSettings.isRelativeLineNumbersEnabled,
+    );
     const isWordWrapEnabled = useAppStore(
         (state) => state.editorSettings.isWordWrapEnabled,
     );
@@ -291,6 +294,9 @@ export function AutomaticExecutionScreen({
                         editorFontSize={editorFontSize}
                         isSmoothCaretEnabled={isSmoothCaretEnabled}
                         isScopeHighlightingEnabled={isScopeHighlightingEnabled}
+                        isRelativeLineNumbersEnabled={
+                            isRelativeLineNumbersEnabled
+                        }
                         isWordWrapEnabled={isWordWrapEnabled}
                         isTabsToSpacesEnabled={isTabsToSpacesEnabled}
                         tabSize={tabSize}

@@ -159,6 +159,8 @@ export function WorkspaceEditorRegion({
         editorFontSize: editorSettings.fontSize,
         isSmoothCaretEnabled: editorSettings.isSmoothCaretEnabled,
         isScopeHighlightingEnabled: editorSettings.isScopeHighlightingEnabled,
+        isRelativeLineNumbersEnabled:
+            editorSettings.isRelativeLineNumbersEnabled,
         isWordWrapEnabled: editorSettings.isWordWrapEnabled,
         isTabsToSpacesEnabled: editorSettings.isTabsToSpacesEnabled,
         tabSize: editorSettings.tabSize,

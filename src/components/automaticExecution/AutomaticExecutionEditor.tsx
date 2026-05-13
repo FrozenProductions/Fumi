@@ -15,6 +15,8 @@ import { createMaskStyle } from "../../lib/shared/mask";
 import {
     applyAceEditorIndentSettings,
     getReactAceComponent,
+    isAceCursorRowVisible,
+    setAceRelativeLineNumbers,
 } from "../../lib/workspace/editor/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
 import { AppIcon } from "../app/common/AppIcon";
@@ -39,6 +41,7 @@ export function AutomaticExecutionEditor({
     editorFontSize,
     isSmoothCaretEnabled,
     isScopeHighlightingEnabled,
+    isRelativeLineNumbersEnabled,
     isWordWrapEnabled,
     isTabsToSpacesEnabled,
     tabSize,
@@ -52,10 +55,13 @@ export function AutomaticExecutionEditor({
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
     const editorRef = useRef<Ace.Editor | null>(null);
     const appliedScriptIdRef = useRef<string | null>(null);
+    const [isEditorFocused, setIsEditorFocused] = useState(false);
+    const [isCursorRowVisible, setIsCursorRowVisible] = useState(false);
     const editorOptions = {
         ...WORKSPACE_EDITOR_OPTIONS,
         animatedScroll: isSmoothCaretEnabled,
         cursorStyle,
+        relativeLineNumbers: false,
         useSoftTabs: isTabsToSpacesEnabled,
     } as const;
     const editorClassName = joinClassNames(
@@ -77,6 +83,29 @@ export function AutomaticExecutionEditor({
             tabSize,
         });
     }, [isTabsToSpacesEnabled, tabSize]);
+
+    useEffect(() => {
+        const editor = editorRef.current;
+
+        if (!editor) {
+            return;
+        }
+
+        setAceRelativeLineNumbers(
+            editor,
+            isRelativeLineNumbersEnabled &&
+                isEditorFocused &&
+                isCursorRowVisible,
+        );
+    }, [isCursorRowVisible, isEditorFocused, isRelativeLineNumbersEnabled]);
+
+    useEffect(() => {
+        return () => {
+            if (editorRef.current) {
+                setAceRelativeLineNumbers(editorRef.current, false);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -186,8 +215,35 @@ export function AutomaticExecutionEditor({
                 onChange={(value: string) => {
                     onChange(value);
                 }}
+                onFocus={() => {
+                    const editor = editorRef.current;
+                    const isCursorVisible = editor
+                        ? isAceCursorRowVisible(editor)
+                        : false;
+
+                    setIsEditorFocused(true);
+                    setIsCursorRowVisible(isCursorVisible);
+
+                    if (editor) {
+                        setAceRelativeLineNumbers(
+                            editor,
+                            isRelativeLineNumbersEnabled && isCursorVisible,
+                        );
+                    }
+                }}
+                onBlur={() => {
+                    const editor = editorRef.current;
+
+                    setIsEditorFocused(false);
+                    setIsCursorRowVisible(false);
+
+                    if (editor) {
+                        setAceRelativeLineNumbers(editor, false);
+                    }
+                }}
                 onLoad={(editor: Ace.Editor) => {
                     editorRef.current = editor;
+                    setAceRelativeLineNumbers(editor, false);
                     applyAceEditorIndentSettings(editor, {
                         isTabsToSpacesEnabled,
                         tabSize,
@@ -204,9 +260,19 @@ export function AutomaticExecutionEditor({
                     const editor = editorRef.current;
 
                     if (!editor) {
+                        setIsCursorRowVisible(false);
                         return;
                     }
 
+                    const isCursorVisible = isAceCursorRowVisible(editor);
+
+                    setIsCursorRowVisible(isCursorVisible);
+                    setAceRelativeLineNumbers(
+                        editor,
+                        isRelativeLineNumbersEnabled &&
+                            isEditorFocused &&
+                            isCursorVisible,
+                    );
                     const cursor = editor.getCursorPosition();
                     onCursorChange({
                         line: cursor.row,
@@ -218,9 +284,19 @@ export function AutomaticExecutionEditor({
                     const editor = editorRef.current;
 
                     if (!editor) {
+                        setIsCursorRowVisible(false);
                         return;
                     }
 
+                    const isCursorVisible = isAceCursorRowVisible(editor);
+
+                    setIsCursorRowVisible(isCursorVisible);
+                    setAceRelativeLineNumbers(
+                        editor,
+                        isRelativeLineNumbersEnabled &&
+                            isEditorFocused &&
+                            isCursorVisible,
+                    );
                     const cursor = editor.getCursorPosition();
                     onCursorChange({
                         line: cursor.row,
