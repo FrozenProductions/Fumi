@@ -58,6 +58,12 @@ export function WorkspaceReadyScreen({
     const archiveWorkspaceTab = useWorkspaceStore(
         (state) => state.archiveWorkspaceTab,
     );
+    const archiveAllWorkspaceTabs = useWorkspaceStore(
+        (state) => state.archiveAllWorkspaceTabs,
+    );
+    const archiveOtherWorkspaceTabs = useWorkspaceStore(
+        (state) => state.archiveOtherWorkspaceTabs,
+    );
     const deleteWorkspaceTab = useWorkspaceStore(
         (state) => state.deleteWorkspaceTab,
     );
@@ -165,6 +171,17 @@ export function WorkspaceReadyScreen({
         [archiveWorkspaceTab],
     );
 
+    const handleArchiveAllWorkspaceTabs = useCallback((): void => {
+        void archiveAllWorkspaceTabs();
+    }, [archiveAllWorkspaceTabs]);
+
+    const handleArchiveOtherWorkspaceTabs = useCallback(
+        (tabId: string): void => {
+            void archiveOtherWorkspaceTabs(tabId);
+        },
+        [archiveOtherWorkspaceTabs],
+    );
+
     const handleDuplicateWorkspaceTab = useCallback(
         (tabId: string): void => {
             void duplicateWorkspaceTab(tabId);
@@ -248,6 +265,8 @@ export function WorkspaceReadyScreen({
                         onSelectTab={selectWorkspaceTab}
                         onDuplicateTab={handleDuplicateWorkspaceTab}
                         onArchiveTab={handleArchiveWorkspaceTab}
+                        onArchiveAllTabs={handleArchiveAllWorkspaceTabs}
+                        onArchiveOtherTabs={handleArchiveOtherWorkspaceTabs}
                         onDeleteTab={handleDeleteWorkspaceTab}
                         onOpenTabInPane={openWorkspaceTabInPane}
                         onCloseSplitView={closeWorkspaceSplitView}

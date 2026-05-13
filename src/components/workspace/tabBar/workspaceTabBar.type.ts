@@ -20,6 +20,8 @@ export type WorkspaceTabBarProps = {
     onSelectTab: (tabId: string) => void;
     onDuplicateTab: (tabId: string) => void;
     onArchiveTab: (tabId: string) => void;
+    onArchiveAllTabs: () => void;
+    onArchiveOtherTabs: (tabId: string) => void;
     onDeleteTab: (tabId: string) => void;
     onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
     onCloseSplitView: () => void;
@@ -94,8 +96,11 @@ export type WorkspaceTabContextMenuProps = {
         y: number;
     };
     splitView: WorkspaceSplitView | null;
+    canArchiveOtherTabs: boolean;
     onDuplicate: () => void;
     onArchive: () => void;
+    onArchiveAll: () => void;
+    onArchiveOther: () => void;
     onClose: () => void;
     onDelete: () => void;
     onRename: () => void;

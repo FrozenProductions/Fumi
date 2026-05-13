@@ -32,6 +32,8 @@ export function WorkspaceTabBar({
     onSelectTab,
     onDuplicateTab,
     onArchiveTab,
+    onArchiveAllTabs,
+    onArchiveOtherTabs,
     onDeleteTab,
     onOpenTabInPane,
     onCloseSplitView,
@@ -141,6 +143,18 @@ export function WorkspaceTabBar({
         onArchiveTab(contextMenuState.tabId);
     };
 
+    const handleArchiveAllFromContextMenu = (): void => {
+        onArchiveAllTabs();
+    };
+
+    const handleArchiveOtherFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onArchiveOtherTabs(contextMenuState.tabId);
+    };
+
     const handleDuplicateFromContextMenu = (): void => {
         if (!contextMenuState) {
             return;
@@ -247,8 +261,11 @@ export function WorkspaceTabBar({
                 isOpen={contextMenuState !== null}
                 position={contextMenuPosition}
                 splitView={splitView}
+                canArchiveOtherTabs={workspace.tabs.length > 1}
                 onDuplicate={handleDuplicateFromContextMenu}
                 onArchive={handleArchiveFromContextMenu}
+                onArchiveAll={handleArchiveAllFromContextMenu}
+                onArchiveOther={handleArchiveOtherFromContextMenu}
                 onClose={closeContextMenu}
                 onDelete={handleDeleteFromContextMenu}
                 onRename={handleRenameFromContextMenu}

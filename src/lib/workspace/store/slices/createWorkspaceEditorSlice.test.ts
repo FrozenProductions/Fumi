@@ -60,6 +60,8 @@ function createWorkspaceStoreState(
         importDroppedWorkspaceFiles: vi.fn(),
         duplicateWorkspaceTab: vi.fn(),
         archiveWorkspaceTab: vi.fn(),
+        archiveAllWorkspaceTabs: vi.fn(),
+        archiveOtherWorkspaceTabs: vi.fn(),
         deleteWorkspaceTab: vi.fn(),
         restoreArchivedWorkspaceTab: vi.fn(),
         restoreAllArchivedWorkspaceTabs: vi.fn(),

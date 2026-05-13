@@ -74,6 +74,8 @@ function createWorkspaceStoreState(): WorkspaceStore {
         importDroppedWorkspaceFiles: vi.fn(),
         duplicateWorkspaceTab: vi.fn(),
         archiveWorkspaceTab: vi.fn(),
+        archiveAllWorkspaceTabs: vi.fn(),
+        archiveOtherWorkspaceTabs: vi.fn(),
         deleteWorkspaceTab: vi.fn(),
         restoreArchivedWorkspaceTab: vi.fn(),
         restoreAllArchivedWorkspaceTabs: vi.fn(),
@@ -173,5 +175,54 @@ describe("createWorkspaceArchiveSlice", () => {
         expect(
             store.getState().refreshWorkspaceFromFilesystem,
         ).toHaveBeenCalledTimes(1);
+    });
+
+    it("archives all open tabs in one persisted mutation", async () => {
+        const store = await createArchiveStore();
+
+        mocks.confirmAction.mockResolvedValue(true);
+
+        await store.getState().archiveAllWorkspaceTabs();
+
+        expect(store.getState().workspace?.activeTabId).toBeNull();
+        expect(store.getState().workspace?.tabs).toEqual([]);
+        expect(store.getState().workspace?.archivedTabs).toHaveLength(2);
+        expect(store.getState().persistWorkspaceState).toHaveBeenCalledTimes(1);
+        expect(mocks.confirmAction).toHaveBeenCalledTimes(1);
+    });
+
+    it("archives every tab except the selected tab", async () => {
+        const store = await createArchiveStore();
+        const workspace = store.getState().workspace;
+
+        if (!workspace) {
+            throw new Error("Expected workspace fixture.");
+        }
+
+        mocks.confirmAction.mockResolvedValue(true);
+
+        workspace.tabs = [
+            ...workspace.tabs,
+            {
+                id: "tab-2",
+                fileName: "beta.lua",
+                content: "print('beta')",
+                savedContent: "print('beta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+        ];
+
+        await store.getState().archiveOtherWorkspaceTabs("tab-2");
+
+        expect(store.getState().workspace?.activeTabId).toBe("tab-2");
+        expect(store.getState().workspace?.tabs).toHaveLength(1);
+        expect(store.getState().workspace?.archivedTabs).toHaveLength(2);
+        expect(store.getState().persistWorkspaceState).toHaveBeenCalledTimes(1);
+        expect(mocks.confirmAction).toHaveBeenCalledTimes(1);
     });
 });

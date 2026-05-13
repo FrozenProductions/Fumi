@@ -5,16 +5,31 @@ import {
     restoreAllArchivedWorkspaceTabs as restoreAllArchivedWorkspaceTabsCommand,
     restoreArchivedWorkspaceTab as restoreArchivedWorkspaceTabCommand,
 } from "../../../platform/workspace/workspace";
-import { removedTabFromSplitView } from "../../session/sessionSplitView";
+import {
+    normalizeSplitView,
+    removedTabFromSplitView,
+} from "../../session/sessionSplitView";
 import {
     getNextActiveTabId,
     serializeTabState,
 } from "../../session/tabs/sessionTabs";
+import type { WorkspaceTab } from "../../session/tabs/sessionTabs.type";
 import { createWorkspaceStoreSupport } from "../createWorkspaceStoreSupport";
 import type {
     WorkspaceArchiveSlice,
     WorkspaceStoreSliceCreator,
 } from "../workspaceStore.type";
+
+function getFirstArchivedTabIndex(
+    tabs: readonly WorkspaceTab[],
+    archivedTabIds: ReadonlySet<string>,
+): number {
+    const archivedTabIndex = tabs.findIndex((tab) =>
+        archivedTabIds.has(tab.id),
+    );
+
+    return Math.max(archivedTabIndex, 0);
+}
 
 /** Creates the workspace store slice responsible for archiving, restoring, and deleting archived workspace tabs. */
 export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
@@ -22,6 +37,101 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
 > = (set, get) => {
     const { setWorkspaceError, updateWorkspaceForPath } =
         createWorkspaceStoreSupport(set, get);
+    const archiveWorkspaceTabs = async (
+        tabIds: readonly string[],
+        confirmMessage: string,
+        fallbackActiveTabId: string | null,
+    ): Promise<void> => {
+        const { workspace, persistWorkspaceState } = get();
+
+        if (!workspace || tabIds.length === 0) {
+            return;
+        }
+
+        try {
+            const tabIdSet = new Set(tabIds);
+            const tabsToArchive = workspace.tabs.filter((tab) =>
+                tabIdSet.has(tab.id),
+            );
+
+            if (tabsToArchive.length === 0) {
+                return;
+            }
+
+            const hasDraftChanges = tabsToArchive.some(
+                (tab) => tab.content !== tab.savedContent,
+            );
+            const shouldDiscardChanges =
+                !hasDraftChanges || (await confirmAction(confirmMessage));
+
+            if (!shouldDiscardChanges) {
+                return;
+            }
+
+            const nextWorkspace = updateWorkspaceForPath(
+                workspace.workspacePath,
+                (currentWorkspace) => {
+                    const currentTabIdSet = new Set(tabIds);
+                    const nextTabs = currentWorkspace.tabs.filter(
+                        (tab) => !currentTabIdSet.has(tab.id),
+                    );
+                    const nextOpenTabIds = new Set(
+                        nextTabs.map((tab) => tab.id),
+                    );
+                    const archivedTabsById = new Map(
+                        currentWorkspace.archivedTabs.map(
+                            (tab) => [tab.id, tab] as const,
+                        ),
+                    );
+                    const archivedAt = Date.now();
+
+                    for (const tab of currentWorkspace.tabs) {
+                        if (!currentTabIdSet.has(tab.id)) {
+                            continue;
+                        }
+
+                        archivedTabsById.set(tab.id, {
+                            ...serializeTabState(tab),
+                            archivedAt,
+                        });
+                    }
+
+                    const nextActiveTabId =
+                        fallbackActiveTabId &&
+                        nextTabs.some((tab) => tab.id === fallbackActiveTabId)
+                            ? fallbackActiveTabId
+                            : getNextActiveTabId(
+                                  nextTabs,
+                                  getFirstArchivedTabIndex(
+                                      currentWorkspace.tabs,
+                                      currentTabIdSet,
+                                  ),
+                              );
+
+                    return {
+                        ...currentWorkspace,
+                        activeTabId: nextActiveTabId,
+                        splitView: normalizeSplitView(
+                            currentWorkspace.splitView,
+                            nextOpenTabIds,
+                        ),
+                        archivedTabs: [...archivedTabsById.values()],
+                        tabs: nextTabs,
+                    };
+                },
+            );
+
+            if (nextWorkspace) {
+                await persistWorkspaceState();
+            }
+        } catch (error) {
+            setWorkspaceError(
+                error,
+                "Failed to archive workspace tabs.",
+                "Could not archive the selected tabs.",
+            );
+        }
+    };
     const persistWorkspaceThenRun = async (
         callback: () => Promise<void>,
     ): Promise<boolean> => {
@@ -120,6 +230,36 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
                     "Could not archive the selected tab.",
                 );
             }
+        },
+        archiveAllWorkspaceTabs: async (): Promise<void> => {
+            const { workspace } = get();
+
+            if (!workspace || workspace.tabs.length === 0) {
+                return;
+            }
+
+            await archiveWorkspaceTabs(
+                workspace.tabs.map((tab) => tab.id),
+                "Archive all tabs? Unsaved changes will be discarded. You can restore them from Settings.",
+                null,
+            );
+        },
+        archiveOtherWorkspaceTabs: async (tabId: string): Promise<void> => {
+            const { workspace } = get();
+
+            if (!workspace?.tabs.some((tab) => tab.id === tabId)) {
+                return;
+            }
+
+            const otherTabIds = workspace.tabs
+                .filter((tab) => tab.id !== tabId)
+                .map((tab) => tab.id);
+
+            await archiveWorkspaceTabs(
+                otherTabIds,
+                "Archive other tabs? Unsaved changes will be discarded. You can restore them from Settings.",
+                tabId,
+            );
         },
         restoreArchivedWorkspaceTab: async (tabId: string): Promise<void> => {
             const { workspace } = get();

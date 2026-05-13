@@ -30,6 +30,8 @@ export type WorkspaceStoreActions = {
     importDroppedWorkspaceFiles: (filePaths: string[]) => Promise<boolean>;
     duplicateWorkspaceTab: (tabId: string) => Promise<void>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
+    archiveAllWorkspaceTabs: () => Promise<void>;
+    archiveOtherWorkspaceTabs: (tabId: string) => Promise<void>;
     deleteWorkspaceTab: (tabId: string) => Promise<void>;
     restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;
     restoreAllArchivedWorkspaceTabs: () => Promise<void>;
@@ -88,6 +90,8 @@ export type WorkspaceFileSlice = Pick<
 export type WorkspaceArchiveSlice = Pick<
     WorkspaceStoreActions,
     | "archiveWorkspaceTab"
+    | "archiveAllWorkspaceTabs"
+    | "archiveOtherWorkspaceTabs"
     | "restoreArchivedWorkspaceTab"
     | "restoreAllArchivedWorkspaceTabs"
     | "deleteArchivedWorkspaceTab"

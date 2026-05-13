@@ -13,8 +13,11 @@ import type { WorkspaceTabContextMenuProps } from "./workspaceTabBar.type";
  * @param props.isOpen - Whether the menu is visible
  * @param props.position - Menu position
  * @param props.splitView - Current split view if any
+ * @param props.canArchiveOtherTabs - Whether other open tabs can be archived
  * @param props.onDuplicate - Duplicate the tab
  * @param props.onArchive - Archive the tab
+ * @param props.onArchiveAll - Archive all open tabs
+ * @param props.onArchiveOther - Archive every open tab except this tab
  * @param props.onDelete - Delete the tab
  * @param props.onRename - Start rename
  * @returns A React component or null
@@ -23,8 +26,11 @@ export function WorkspaceTabContextMenu({
     isOpen,
     position,
     splitView,
+    canArchiveOtherTabs,
     onDuplicate,
     onArchive,
+    onArchiveAll,
+    onArchiveOther,
     onClose,
     onDelete,
     onRename,
@@ -90,12 +96,16 @@ export function WorkspaceTabContextMenu({
     const dropdownMotionClassName = isClosing
         ? "motion-safe:motion-opacity-out-0 motion-safe:motion-scale-out-[96%] motion-safe:-motion-translate-y-out-[4%] motion-safe:motion-duration-120 motion-safe:motion-ease-in-quad"
         : "motion-safe:motion-opacity-in-0 motion-safe:motion-scale-in-[96%] motion-safe:-motion-translate-y-in-[6%] motion-safe:motion-duration-150 motion-safe:motion-ease-spring-snappy";
+    const menuItemClassName =
+        "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
+    const disabledMenuItemClassName =
+        "app-select-none flex h-8 w-full cursor-not-allowed items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-300";
     const deleteButtonClassName =
         theme === "dark"
             ? "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-200 transition-colors hover:bg-rose-950/70 hover:text-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
             : "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50";
     const menuClassName = joinClassNames(
-        "absolute z-50 min-w-[132px] origin-top-left overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
+        "absolute z-50 min-w-[160px] origin-top-left overflow-hidden rounded-[0.85rem] border border-fumi-200 bg-fumi-50 p-1.5 shadow-[var(--shadow-app-floating)] motion-reduce:animate-none motion-reduce:transform-none",
         isClosing && "pointer-events-none",
         dropdownMotionClassName,
     );
@@ -116,7 +126,7 @@ export function WorkspaceTabContextMenu({
                     onRename();
                     onClose();
                 }}
-                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                className={menuItemClassName}
             >
                 Rename
             </button>
@@ -127,7 +137,7 @@ export function WorkspaceTabContextMenu({
                     onDuplicate();
                     onClose();
                 }}
-                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                className={menuItemClassName}
             >
                 Duplicate
             </button>
@@ -138,9 +148,36 @@ export function WorkspaceTabContextMenu({
                     onArchive();
                     onClose();
                 }}
-                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                className={menuItemClassName}
             >
                 Archive
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onArchiveAll();
+                    onClose();
+                }}
+                className={menuItemClassName}
+            >
+                Archive all
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onArchiveOther();
+                    onClose();
+                }}
+                disabled={!canArchiveOtherTabs}
+                className={
+                    canArchiveOtherTabs
+                        ? menuItemClassName
+                        : disabledMenuItemClassName
+                }
+            >
+                Archive other tabs
             </button>
             <button
                 type="button"
@@ -149,7 +186,7 @@ export function WorkspaceTabContextMenu({
                     onOpenInLeftPane();
                     onClose();
                 }}
-                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                className={menuItemClassName}
             >
                 Open in left pane
             </button>
@@ -160,7 +197,7 @@ export function WorkspaceTabContextMenu({
                     onOpenInRightPane();
                     onClose();
                 }}
-                className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                className={menuItemClassName}
             >
                 Open in right pane
             </button>
@@ -172,7 +209,7 @@ export function WorkspaceTabContextMenu({
                         onCloseSplitView();
                         onClose();
                     }}
-                    className="app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[0.5rem] px-2.5 text-left text-[11px] font-semibold tracking-wide text-fumi-500 transition-colors hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-50"
+                    className={menuItemClassName}
                 >
                     Close split view
                 </button>
