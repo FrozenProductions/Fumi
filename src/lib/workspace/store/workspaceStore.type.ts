@@ -4,6 +4,10 @@ import type { WorkspaceSession } from "../session/session.type";
 import type { WorkspaceCursorState } from "../session/sessionCursor.type";
 import type { WorkspacePaneId } from "../session/sessionSplitView.type";
 
+export type WorkspaceBulkArchiveOptions = {
+    scopeTabIds?: readonly string[];
+};
+
 export type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;
     dirtyTabCount: number;
@@ -30,8 +34,13 @@ export type WorkspaceStoreActions = {
     importDroppedWorkspaceFiles: (filePaths: string[]) => Promise<boolean>;
     duplicateWorkspaceTab: (tabId: string) => Promise<void>;
     archiveWorkspaceTab: (tabId: string) => Promise<void>;
-    archiveAllWorkspaceTabs: () => Promise<void>;
-    archiveOtherWorkspaceTabs: (tabId: string) => Promise<void>;
+    archiveAllWorkspaceTabs: (
+        options?: WorkspaceBulkArchiveOptions,
+    ) => Promise<void>;
+    archiveOtherWorkspaceTabs: (
+        tabId: string,
+        options?: WorkspaceBulkArchiveOptions,
+    ) => Promise<void>;
     deleteWorkspaceTab: (tabId: string) => Promise<void>;
     restoreArchivedWorkspaceTab: (tabId: string) => Promise<void>;
     restoreAllArchivedWorkspaceTabs: () => Promise<void>;

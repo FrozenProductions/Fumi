@@ -5,6 +5,7 @@ import type {
     WorkspacePaneId,
     WorkspaceSplitView,
 } from "./sessionSplitView.type";
+import type { WorkspaceTabState } from "./tabs/sessionTabs.type";
 
 /**
  * Normalizes a split view configuration by filtering to valid open tabs.
@@ -60,6 +61,35 @@ export function getFocusedPaneTabId(
     return splitView.focusedPane === "primary"
         ? splitView.primaryTabId
         : splitView.secondaryTabId;
+}
+
+/**
+ * Returns the tab IDs that share a split pane with the target tab.
+ */
+export function getWorkspaceSplitScopeTabIds(
+    splitView: WorkspaceSplitView | null,
+    tabs: readonly Pick<WorkspaceTabState, "id">[],
+    tabId: string,
+): string[] {
+    if (!splitView) {
+        return tabs.map((tab) => tab.id);
+    }
+
+    const tabIds = new Set(tabs.map((tab) => tab.id));
+
+    if (!tabIds.has(tabId)) {
+        return [];
+    }
+
+    const secondaryTabIdSet = new Set(splitView.secondaryTabIds);
+
+    if (secondaryTabIdSet.has(tabId)) {
+        return splitView.secondaryTabIds.filter((id) => tabIds.has(id));
+    }
+
+    return tabs
+        .filter((tab) => !secondaryTabIdSet.has(tab.id))
+        .map((tab) => tab.id);
 }
 
 /**

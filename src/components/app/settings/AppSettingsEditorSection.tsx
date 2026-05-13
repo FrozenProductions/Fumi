@@ -57,8 +57,14 @@ export function AppSettingsEditorSection(): ReactElement {
     const middleClickTabAction = useAppStore(
         (state) => state.workspaceSettings.middleClickTabAction,
     );
+    const isSplitViewArchiveScopeEnabled = useAppStore(
+        (state) => state.workspaceSettings.isSplitViewArchiveScopeEnabled,
+    );
     const setMiddleClickTabAction = useAppStore(
         (state) => state.setMiddleClickTabAction,
+    );
+    const setSplitViewArchiveScopeEnabled = useAppStore(
+        (state) => state.setSplitViewArchiveScopeEnabled,
     );
 
     const handleFontSizeChange = (value: string): void => {
@@ -119,6 +125,10 @@ export function AppSettingsEditorSection(): ReactElement {
         setMiddleClickTabAction(value);
     };
 
+    const handleSplitViewArchiveScopeToggle = (): void => {
+        setSplitViewArchiveScopeEnabled(!isSplitViewArchiveScopeEnabled);
+    };
+
     return (
         <div className="flex w-full flex-col divide-y divide-fumi-200/80">
             <div className="flex items-center justify-between gap-6 py-4">
@@ -175,6 +185,12 @@ export function AppSettingsEditorSection(): ReactElement {
                     className="shrink-0"
                 />
             </div>
+            <AppSettingsToggle
+                label="Scope split-view bulk archive"
+                description="Archive all and archive other tabs only affect the clicked split pane while split view is open."
+                isEnabled={isSplitViewArchiveScopeEnabled}
+                onChange={handleSplitViewArchiveScopeToggle}
+            />
             <AppSettingsToggle
                 label="Smooth caret movement"
                 description="Animate caret movement and editor scrolling while navigating code."

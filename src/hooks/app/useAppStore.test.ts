@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test";
-import { DEFAULT_APP_STREAMER_MODE_ENABLED } from "../../constants/app/settings";
+import {
+    DEFAULT_APP_STREAMER_MODE_ENABLED,
+    DEFAULT_APP_WORKSPACE_SETTINGS,
+} from "../../constants/app/settings";
 import {
     getPersistedAppStoreState,
     mergeAppStoreState,
@@ -10,6 +13,7 @@ beforeEach(() => {
     globalThis.localStorage?.clear();
     useAppStore.setState({
         isStreamerModeEnabled: DEFAULT_APP_STREAMER_MODE_ENABLED,
+        workspaceSettings: DEFAULT_APP_WORKSPACE_SETTINGS,
     });
 });
 
@@ -327,6 +331,40 @@ describe("useAppStore editorSettings", () => {
 
         expect(useAppStore.getState().editorSettings.outlinePanelWidth).toBe(
             200,
+        );
+    });
+});
+
+describe("useAppStore workspaceSettings", () => {
+    it("defaults split-view archive scope to enabled when old persisted state lacks the field", () => {
+        const mergedState = mergeAppStoreState(
+            {
+                workspaceSettings: {
+                    middleClickTabAction: "archive",
+                },
+            },
+            useAppStore.getState(),
+        );
+
+        expect(
+            mergedState.workspaceSettings.isSplitViewArchiveScopeEnabled,
+        ).toBe(true);
+    });
+
+    it("stores split-view archive scope changes", () => {
+        useAppStore.getState().setSplitViewArchiveScopeEnabled(false);
+
+        expect(
+            useAppStore.getState().workspaceSettings
+                .isSplitViewArchiveScopeEnabled,
+        ).toBe(false);
+
+        expect(getPersistedAppStoreState(useAppStore.getState())).toMatchObject(
+            {
+                workspaceSettings: {
+                    isSplitViewArchiveScopeEnabled: false,
+                },
+            },
         );
     });
 });

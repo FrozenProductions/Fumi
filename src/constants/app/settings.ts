@@ -116,6 +116,7 @@ export const DEFAULT_APP_UPDATER_SETTINGS = {
 
 export const DEFAULT_APP_WORKSPACE_SETTINGS = {
     middleClickTabAction: DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
+    isSplitViewArchiveScopeEnabled: true,
 } as const satisfies AppWorkspaceSettings;
 
 export const APP_EDITOR_FONT_SIZE_MIN = 10;

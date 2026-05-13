@@ -40,6 +40,9 @@ export function WorkspaceReadyScreen({
     const middleClickTabAction = useAppStore(
         (state) => state.workspaceSettings.middleClickTabAction,
     );
+    const isSplitViewArchiveScopeEnabled = useAppStore(
+        (state) => state.workspaceSettings.isSplitViewArchiveScopeEnabled,
+    );
     const renameCurrentTabRequest = useAppStore(
         (state) => state.renameCurrentTabRequest,
     );
@@ -171,13 +174,21 @@ export function WorkspaceReadyScreen({
         [archiveWorkspaceTab],
     );
 
-    const handleArchiveAllWorkspaceTabs = useCallback((): void => {
-        void archiveAllWorkspaceTabs();
-    }, [archiveAllWorkspaceTabs]);
+    const handleArchiveAllWorkspaceTabs = useCallback(
+        (scopeTabIds?: readonly string[]): void => {
+            void archiveAllWorkspaceTabs(
+                scopeTabIds ? { scopeTabIds } : undefined,
+            );
+        },
+        [archiveAllWorkspaceTabs],
+    );
 
     const handleArchiveOtherWorkspaceTabs = useCallback(
-        (tabId: string): void => {
-            void archiveOtherWorkspaceTabs(tabId);
+        (tabId: string, scopeTabIds?: readonly string[]): void => {
+            void archiveOtherWorkspaceTabs(
+                tabId,
+                scopeTabIds ? { scopeTabIds } : undefined,
+            );
         },
         [archiveOtherWorkspaceTabs],
     );
@@ -271,6 +282,9 @@ export function WorkspaceReadyScreen({
                         onOpenTabInPane={openWorkspaceTabInPane}
                         onCloseSplitView={closeWorkspaceSplitView}
                         middleClickTabAction={middleClickTabAction}
+                        isSplitViewArchiveScopeEnabled={
+                            isSplitViewArchiveScopeEnabled
+                        }
                     />
                 ) : null}
 

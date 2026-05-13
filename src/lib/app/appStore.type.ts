@@ -80,6 +80,7 @@ export type AppStoreActions = {
     setOutlineExpandedGroups: (patch: Record<string, boolean>) => void;
     setOutlineSearchQuery: (query: string) => void;
     setMiddleClickTabAction: (action: AppMiddleClickTabAction) => void;
+    setSplitViewArchiveScopeEnabled: (isEnabled: boolean) => void;
     setSidebarPosition: (position: AppSidebarPosition) => void;
     toggleOutlinePanel: () => void;
 };

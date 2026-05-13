@@ -34,6 +34,7 @@ export type AppUpdaterSettings = {
 
 export type AppWorkspaceSettings = {
     middleClickTabAction: AppMiddleClickTabAction;
+    isSplitViewArchiveScopeEnabled: boolean;
 };
 
 export type AppAccountPrivacySettings = {

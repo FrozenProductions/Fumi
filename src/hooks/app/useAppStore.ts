@@ -315,6 +315,14 @@ export const useAppStore = create<AppStore>()(
                     },
                 }));
             },
+            setSplitViewArchiveScopeEnabled: (isEnabled) => {
+                set((state) => ({
+                    workspaceSettings: {
+                        ...state.workspaceSettings,
+                        isSplitViewArchiveScopeEnabled: isEnabled,
+                    },
+                }));
+            },
             setSidebarPosition: (position) => {
                 set({ sidebarPosition: position });
             },

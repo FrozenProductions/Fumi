@@ -20,13 +20,17 @@ export type WorkspaceTabBarProps = {
     onSelectTab: (tabId: string) => void;
     onDuplicateTab: (tabId: string) => void;
     onArchiveTab: (tabId: string) => void;
-    onArchiveAllTabs: () => void;
-    onArchiveOtherTabs: (tabId: string) => void;
+    onArchiveAllTabs: (scopeTabIds?: readonly string[]) => void;
+    onArchiveOtherTabs: (
+        tabId: string,
+        scopeTabIds?: readonly string[],
+    ) => void;
     onDeleteTab: (tabId: string) => void;
     onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
     onCloseSplitView: () => void;
     splitDropTarget: WorkspacePaneId | null;
     middleClickTabAction: AppMiddleClickTabAction;
+    isSplitViewArchiveScopeEnabled: boolean;
 };
 
 export type WorkspaceTabContextMenuState = {

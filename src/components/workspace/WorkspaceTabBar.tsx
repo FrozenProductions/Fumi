@@ -3,6 +3,7 @@ import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceTabBarState } from "../../hooks/workspace/tabBar/useWorkspaceTabBarState";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys/hotkeys";
 import { joinClassNames } from "../../lib/shared/className";
+import { getWorkspaceSplitScopeTabIds } from "../../lib/workspace/session/sessionSplitView";
 import { WorkspaceTabBarControls } from "./tabBar/WorkspaceTabBarControls";
 import { WorkspaceTabBarTabs } from "./tabBar/WorkspaceTabBarTabs";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
@@ -38,6 +39,7 @@ export function WorkspaceTabBar({
     onOpenTabInPane,
     onCloseSplitView,
     middleClickTabAction,
+    isSplitViewArchiveScopeEnabled,
 }: WorkspaceTabBarInternalProps): ReactElement {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const activeTabId = workspace.activeTabId;
@@ -143,8 +145,24 @@ export function WorkspaceTabBar({
         onArchiveTab(contextMenuState.tabId);
     };
 
+    const getContextMenuArchiveScopeTabIds = (): string[] | undefined => {
+        if (
+            !isSplitViewArchiveScopeEnabled ||
+            !contextMenuState ||
+            !splitView
+        ) {
+            return undefined;
+        }
+
+        return getWorkspaceSplitScopeTabIds(
+            splitView,
+            workspace.tabs,
+            contextMenuState.tabId,
+        );
+    };
+
     const handleArchiveAllFromContextMenu = (): void => {
-        onArchiveAllTabs();
+        onArchiveAllTabs(getContextMenuArchiveScopeTabIds());
     };
 
     const handleArchiveOtherFromContextMenu = (): void => {
@@ -152,7 +170,10 @@ export function WorkspaceTabBar({
             return;
         }
 
-        onArchiveOtherTabs(contextMenuState.tabId);
+        onArchiveOtherTabs(
+            contextMenuState.tabId,
+            getContextMenuArchiveScopeTabIds(),
+        );
     };
 
     const handleDuplicateFromContextMenu = (): void => {
@@ -261,7 +282,10 @@ export function WorkspaceTabBar({
                 isOpen={contextMenuState !== null}
                 position={contextMenuPosition}
                 splitView={splitView}
-                canArchiveOtherTabs={workspace.tabs.length > 1}
+                canArchiveOtherTabs={
+                    (getContextMenuArchiveScopeTabIds()?.length ??
+                        workspace.tabs.length) > 1
+                }
                 onDuplicate={handleDuplicateFromContextMenu}
                 onArchive={handleArchiveFromContextMenu}
                 onArchiveAll={handleArchiveAllFromContextMenu}

@@ -225,4 +225,128 @@ describe("createWorkspaceArchiveSlice", () => {
         expect(store.getState().persistWorkspaceState).toHaveBeenCalledTimes(1);
         expect(mocks.confirmAction).toHaveBeenCalledTimes(1);
     });
+
+    it("archives only scoped tabs for archive all", async () => {
+        const store = await createArchiveStore();
+        const workspace = store.getState().workspace;
+
+        if (!workspace) {
+            throw new Error("Expected workspace fixture.");
+        }
+
+        workspace.tabs = [
+            {
+                id: "tab-1",
+                fileName: "alpha.lua",
+                content: "print('alpha')",
+                savedContent: "print('alpha')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+            {
+                id: "tab-2",
+                fileName: "beta.lua",
+                content: "print('beta')",
+                savedContent: "print('beta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+            {
+                id: "tab-3",
+                fileName: "gamma.lua",
+                content: "print('gamma')",
+                savedContent: "print('gamma')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+        ];
+
+        await store
+            .getState()
+            .archiveAllWorkspaceTabs({ scopeTabIds: ["tab-2", "tab-3"] });
+
+        expect(store.getState().workspace?.tabs.map((tab) => tab.id)).toEqual([
+            "tab-1",
+        ]);
+        expect(
+            store.getState().workspace?.archivedTabs.map((tab) => tab.id),
+        ).toEqual(["archived-1", "tab-2", "tab-3"]);
+        expect(store.getState().persistWorkspaceState).toHaveBeenCalledTimes(1);
+        expect(mocks.confirmAction).not.toHaveBeenCalled();
+    });
+
+    it("archives other tabs only inside the provided scope", async () => {
+        const store = await createArchiveStore();
+        const workspace = store.getState().workspace;
+
+        if (!workspace) {
+            throw new Error("Expected workspace fixture.");
+        }
+
+        workspace.tabs = [
+            {
+                id: "tab-1",
+                fileName: "alpha.lua",
+                content: "print('alpha')",
+                savedContent: "print('alpha')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+            {
+                id: "tab-2",
+                fileName: "beta.lua",
+                content: "print('beta')",
+                savedContent: "print('beta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+            {
+                id: "tab-3",
+                fileName: "gamma.lua",
+                content: "print('gamma')",
+                savedContent: "print('gamma')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+        ];
+
+        await store.getState().archiveOtherWorkspaceTabs("tab-2", {
+            scopeTabIds: ["tab-2", "tab-3"],
+        });
+
+        expect(store.getState().workspace?.tabs.map((tab) => tab.id)).toEqual([
+            "tab-1",
+            "tab-2",
+        ]);
+        expect(
+            store.getState().workspace?.archivedTabs.map((tab) => tab.id),
+        ).toEqual(["archived-1", "tab-3"]);
+        expect(store.getState().workspace?.activeTabId).toBe("tab-2");
+        expect(store.getState().persistWorkspaceState).toHaveBeenCalledTimes(1);
+        expect(mocks.confirmAction).not.toHaveBeenCalled();
+    });
 });

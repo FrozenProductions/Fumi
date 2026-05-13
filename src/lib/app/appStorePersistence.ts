@@ -81,6 +81,11 @@ export function mergeAppStoreState(
     const middleClickTabAction = normalizeAppMiddleClickTabAction(
         persistedAppState.workspaceSettings?.middleClickTabAction,
     );
+    const isSplitViewArchiveScopeEnabled =
+        typeof persistedAppState.workspaceSettings
+            ?.isSplitViewArchiveScopeEnabled === "boolean"
+            ? persistedAppState.workspaceSettings.isSplitViewArchiveScopeEnabled
+            : currentState.workspaceSettings.isSplitViewArchiveScopeEnabled;
     const sidebarPosition = isAppSidebarPosition(
         persistedAppState.sidebarPosition,
     )
@@ -121,6 +126,7 @@ export function mergeAppStoreState(
             ...currentState.workspaceSettings,
             ...persistedAppState.workspaceSettings,
             middleClickTabAction,
+            isSplitViewArchiveScopeEnabled,
         },
     };
 }

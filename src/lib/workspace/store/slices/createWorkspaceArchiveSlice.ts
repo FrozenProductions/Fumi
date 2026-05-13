@@ -231,35 +231,43 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
                 );
             }
         },
-        archiveAllWorkspaceTabs: async (): Promise<void> => {
+        archiveAllWorkspaceTabs: async (options): Promise<void> => {
             const { workspace } = get();
 
             if (!workspace || workspace.tabs.length === 0) {
                 return;
             }
 
-            await archiveWorkspaceTabs(
-                workspace.tabs.map((tab) => tab.id),
-                "Archive all tabs? Unsaved changes will be discarded. You can restore them from Settings.",
-                null,
-            );
+            const tabIds =
+                options?.scopeTabIds ?? workspace.tabs.map((tab) => tab.id);
+            const confirmMessage = options?.scopeTabIds
+                ? "Archive all tabs in this split pane? Unsaved changes will be discarded. You can restore them from Settings."
+                : "Archive all tabs? Unsaved changes will be discarded. You can restore them from Settings.";
+
+            await archiveWorkspaceTabs(tabIds, confirmMessage, null);
         },
-        archiveOtherWorkspaceTabs: async (tabId: string): Promise<void> => {
+        archiveOtherWorkspaceTabs: async (
+            tabId: string,
+            options,
+        ): Promise<void> => {
             const { workspace } = get();
 
             if (!workspace?.tabs.some((tab) => tab.id === tabId)) {
                 return;
             }
 
-            const otherTabIds = workspace.tabs
+            const scopedTabIds = options?.scopeTabIds;
+            const sourceTabs = scopedTabIds
+                ? workspace.tabs.filter((tab) => scopedTabIds.includes(tab.id))
+                : workspace.tabs;
+            const otherTabIds = sourceTabs
                 .filter((tab) => tab.id !== tabId)
                 .map((tab) => tab.id);
+            const confirmMessage = scopedTabIds
+                ? "Archive other tabs in this split pane? Unsaved changes will be discarded. You can restore them from Settings."
+                : "Archive other tabs? Unsaved changes will be discarded. You can restore them from Settings.";
 
-            await archiveWorkspaceTabs(
-                otherTabIds,
-                "Archive other tabs? Unsaved changes will be discarded. You can restore them from Settings.",
-                tabId,
-            );
+            await archiveWorkspaceTabs(otherTabIds, confirmMessage, tabId);
         },
         restoreArchivedWorkspaceTab: async (tabId: string): Promise<void> => {
             const { workspace } = get();
