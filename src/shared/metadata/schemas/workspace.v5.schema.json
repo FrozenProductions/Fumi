@@ -125,6 +125,10 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "isPinned": {
+                    "default": false,
+                    "type": "boolean"
                 }
             },
             "required": ["id", "fileName", "cursor"],

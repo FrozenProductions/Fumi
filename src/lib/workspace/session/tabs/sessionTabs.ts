@@ -11,6 +11,7 @@ import type {
 function createWorkspaceTab(tab: WorkspaceTabSnapshot): WorkspaceTab {
     return {
         ...tab,
+        isPinned: tab.isPinned === true,
         savedContent: tab.content,
         contentRevision: 0,
     };
@@ -88,7 +89,21 @@ export function serializeTabState(tab: WorkspaceTab): WorkspaceTabState {
         id: tab.id,
         fileName: tab.fileName,
         cursor: tab.cursor,
+        isPinned: tab.isPinned === true,
     };
+}
+
+/**
+ * Toggles whether a workspace tab is pinned.
+ */
+export function toggleWorkspaceTabPinned(
+    currentWorkspace: WorkspaceSession,
+    tabId: string,
+): WorkspaceSession {
+    return updateWorkspaceTab(currentWorkspace, tabId, (tab) => ({
+        ...tab,
+        isPinned: !tab.isPinned,
+    }));
 }
 
 /**

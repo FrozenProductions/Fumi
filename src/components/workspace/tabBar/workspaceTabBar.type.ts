@@ -25,6 +25,7 @@ export type WorkspaceTabBarProps = {
         tabId: string,
         scopeTabIds?: readonly string[],
     ) => void;
+    onToggleTabPinned: (tabId: string) => void;
     onDeleteTab: (tabId: string) => void;
     onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
     onCloseSplitView: () => void;
@@ -101,10 +102,12 @@ export type WorkspaceTabContextMenuProps = {
     };
     splitView: WorkspaceSplitView | null;
     canArchiveOtherTabs: boolean;
+    isPinned: boolean;
     onDuplicate: () => void;
     onArchive: () => void;
     onArchiveAll: () => void;
     onArchiveOther: () => void;
+    onTogglePinned: () => void;
     onClose: () => void;
     onDelete: () => void;
     onRename: () => void;

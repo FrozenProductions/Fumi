@@ -18,10 +18,12 @@ function WorkspaceTabContextMenuDivider(): ReactElement {
  * @param props.position - Menu position
  * @param props.splitView - Current split view if any
  * @param props.canArchiveOtherTabs - Whether other open tabs can be archived
+ * @param props.isPinned - Whether the tab is pinned
  * @param props.onDuplicate - Duplicate the tab
  * @param props.onArchive - Archive the tab
  * @param props.onArchiveAll - Archive all open tabs
  * @param props.onArchiveOther - Archive every open tab except this tab
+ * @param props.onTogglePinned - Pin or unpin the tab
  * @param props.onDelete - Delete the tab
  * @param props.onRename - Start rename
  * @returns A React component or null
@@ -31,10 +33,12 @@ export function WorkspaceTabContextMenu({
     position,
     splitView,
     canArchiveOtherTabs,
+    isPinned,
     onDuplicate,
     onArchive,
     onArchiveAll,
     onArchiveOther,
+    onTogglePinned,
     onClose,
     onDelete,
     onRename,
@@ -150,10 +154,15 @@ export function WorkspaceTabContextMenu({
                 type="button"
                 role="menuitem"
                 onClick={() => {
-                    onArchive();
+                    if (!isPinned) {
+                        onArchive();
+                    }
                     onClose();
                 }}
-                className={menuItemClassName}
+                disabled={isPinned}
+                className={
+                    isPinned ? disabledMenuItemClassName : menuItemClassName
+                }
             >
                 Archive
             </button>
@@ -183,6 +192,18 @@ export function WorkspaceTabContextMenu({
                 }
             >
                 Archive other tabs
+            </button>
+            <WorkspaceTabContextMenuDivider />
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onTogglePinned();
+                    onClose();
+                }}
+                className={menuItemClassName}
+            >
+                {isPinned ? "Unpin tab" : "Pin tab"}
             </button>
             <WorkspaceTabContextMenuDivider />
             <button

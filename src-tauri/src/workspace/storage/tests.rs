@@ -51,6 +51,7 @@ fn tab(
         id: id.to_string(),
         file_name: file_name.to_string(),
         cursor,
+        is_pinned: false,
         archived_at,
     }
 }

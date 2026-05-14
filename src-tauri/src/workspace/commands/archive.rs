@@ -69,6 +69,7 @@ pub fn restore_archived_workspace_tab(
             id: archived_tab.id,
             file_name: archived_tab.file_name,
             cursor: archived_tab.cursor,
+            is_pinned: archived_tab.is_pinned,
             content,
             is_dirty: false,
         })

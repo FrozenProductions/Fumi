@@ -67,6 +67,9 @@ export function WorkspaceReadyScreen({
     const archiveOtherWorkspaceTabs = useWorkspaceStore(
         (state) => state.archiveOtherWorkspaceTabs,
     );
+    const toggleWorkspaceTabPinned = useWorkspaceStore(
+        (state) => state.toggleWorkspaceTabPinned,
+    );
     const deleteWorkspaceTab = useWorkspaceStore(
         (state) => state.deleteWorkspaceTab,
     );
@@ -193,6 +196,13 @@ export function WorkspaceReadyScreen({
         [archiveOtherWorkspaceTabs],
     );
 
+    const handleToggleWorkspaceTabPinned = useCallback(
+        (tabId: string): void => {
+            toggleWorkspaceTabPinned(tabId);
+        },
+        [toggleWorkspaceTabPinned],
+    );
+
     const handleDuplicateWorkspaceTab = useCallback(
         (tabId: string): void => {
             void duplicateWorkspaceTab(tabId);
@@ -278,6 +288,7 @@ export function WorkspaceReadyScreen({
                         onArchiveTab={handleArchiveWorkspaceTab}
                         onArchiveAllTabs={handleArchiveAllWorkspaceTabs}
                         onArchiveOtherTabs={handleArchiveOtherWorkspaceTabs}
+                        onToggleTabPinned={handleToggleWorkspaceTabPinned}
                         onDeleteTab={handleDeleteWorkspaceTab}
                         onOpenTabInPane={openWorkspaceTabInPane}
                         onCloseSplitView={closeWorkspaceSplitView}

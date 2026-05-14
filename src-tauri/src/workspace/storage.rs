@@ -529,6 +529,7 @@ fn normalize_workspace_tab_state(
         id: normalized_id,
         file_name: normalized_file_name,
         cursor: normalize_cursor_state(&tab.cursor),
+        is_pinned: tab.is_pinned,
         archived_at: tab.archived_at,
     })
 }
@@ -1006,6 +1007,7 @@ fn read_tab_snapshot(
         id: tab.id.clone(),
         file_name: tab.file_name.clone(),
         cursor: tab.cursor.clone(),
+        is_pinned: tab.is_pinned,
         content,
         is_dirty: false,
     }))

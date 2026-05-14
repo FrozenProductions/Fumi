@@ -35,6 +35,7 @@ export function WorkspaceTabBar({
     onArchiveTab,
     onArchiveAllTabs,
     onArchiveOtherTabs,
+    onToggleTabPinned,
     onDeleteTab,
     onOpenTabInPane,
     onCloseSplitView,
@@ -112,6 +113,10 @@ export function WorkspaceTabBar({
                       tab !== undefined,
               )
         : [];
+    const contextMenuTab = contextMenuState
+        ? (workspace.tabs.find((tab) => tab.id === contextMenuState.tabId) ??
+          null)
+        : null;
 
     const handleRenameFromContextMenu = (): void => {
         if (!contextMenuState) {
@@ -143,6 +148,14 @@ export function WorkspaceTabBar({
         }
 
         onArchiveTab(contextMenuState.tabId);
+    };
+
+    const handleTogglePinnedFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onToggleTabPinned(contextMenuState.tabId);
     };
 
     const getContextMenuArchiveScopeTabIds = (): string[] | undefined => {
@@ -283,13 +296,21 @@ export function WorkspaceTabBar({
                 position={contextMenuPosition}
                 splitView={splitView}
                 canArchiveOtherTabs={
-                    (getContextMenuArchiveScopeTabIds()?.length ??
-                        workspace.tabs.length) > 1
+                    (
+                        getContextMenuArchiveScopeTabIds()
+                            ?.map((tabId) =>
+                                workspace.tabs.find((tab) => tab.id === tabId),
+                            )
+                            .filter((tab) => tab && !tab.isPinned) ??
+                        workspace.tabs.filter((tab) => !tab.isPinned)
+                    ).length > 1
                 }
+                isPinned={contextMenuTab?.isPinned === true}
                 onDuplicate={handleDuplicateFromContextMenu}
                 onArchive={handleArchiveFromContextMenu}
                 onArchiveAll={handleArchiveAllFromContextMenu}
                 onArchiveOther={handleArchiveOtherFromContextMenu}
+                onTogglePinned={handleTogglePinnedFromContextMenu}
                 onClose={closeContextMenu}
                 onDelete={handleDeleteFromContextMenu}
                 onRename={handleRenameFromContextMenu}

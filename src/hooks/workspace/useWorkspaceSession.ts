@@ -59,6 +59,9 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const renameWorkspaceTab = useWorkspaceStore(
         (state) => state.renameWorkspaceTab,
     );
+    const toggleWorkspaceTabPinned = useWorkspaceStore(
+        (state) => state.toggleWorkspaceTabPinned,
+    );
     const selectWorkspaceTab = useWorkspaceStore(
         (state) => state.selectWorkspaceTab,
     );
@@ -126,6 +129,7 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
             archiveWorkspaceTab,
             deleteWorkspaceTab,
             renameWorkspaceTab,
+            toggleWorkspaceTabPinned,
             selectWorkspaceTab,
             reorderWorkspaceTab,
             saveActiveWorkspaceTab,

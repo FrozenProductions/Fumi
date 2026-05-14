@@ -25,6 +25,7 @@ export function createSnapshotTab(
         id,
         fileName: `${id}.lua`,
         cursor: createCursor(),
+        isPinned: false,
         content: `${id}-content`,
         isDirty: false,
         ...overrides,
@@ -39,6 +40,7 @@ export function createTabState(
         id,
         fileName: `${id}.lua`,
         cursor: createCursor(),
+        isPinned: false,
         ...overrides,
     };
 }

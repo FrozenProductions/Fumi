@@ -36,6 +36,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
                         column: 0,
                         scrollTop: 0,
                     },
+                    isPinned: false,
                     archivedAt: 123,
                 },
             ],
@@ -52,6 +53,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
                         column: 0,
                         scrollTop: 0,
                     },
+                    isPinned: false,
                 },
             ],
         },
@@ -82,6 +84,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
         deleteArchivedWorkspaceTab: vi.fn(),
         deleteAllArchivedWorkspaceTabs: vi.fn(),
         renameWorkspaceTab: vi.fn(),
+        toggleWorkspaceTabPinned: vi.fn(),
         selectWorkspaceTab: vi.fn(),
         reorderWorkspaceTab: vi.fn(),
         openWorkspaceTabInPane: vi.fn(),
@@ -191,6 +194,77 @@ describe("createWorkspaceArchiveSlice", () => {
         expect(mocks.confirmAction).toHaveBeenCalledTimes(1);
     });
 
+    it("does not archive a pinned tab", async () => {
+        const store = await createArchiveStore();
+        const workspace = store.getState().workspace;
+
+        if (!workspace) {
+            throw new Error("Expected workspace fixture.");
+        }
+
+        workspace.tabs = workspace.tabs.map((tab) => ({
+            ...tab,
+            isPinned: true,
+        }));
+
+        await store.getState().archiveWorkspaceTab("tab-1");
+
+        expect(store.getState().workspace?.tabs.map((tab) => tab.id)).toEqual([
+            "tab-1",
+        ]);
+        expect(store.getState().workspace?.archivedTabs).toHaveLength(1);
+        expect(store.getState().persistWorkspaceState).not.toHaveBeenCalled();
+        expect(mocks.confirmAction).not.toHaveBeenCalled();
+    });
+
+    it("skips pinned tabs when archiving a group", async () => {
+        const store = await createArchiveStore();
+        const workspace = store.getState().workspace;
+
+        if (!workspace) {
+            throw new Error("Expected workspace fixture.");
+        }
+
+        workspace.tabs = [
+            {
+                id: "tab-1",
+                fileName: "alpha.lua",
+                content: "print('alpha')",
+                savedContent: "print('alpha')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+                isPinned: true,
+            },
+            {
+                id: "tab-2",
+                fileName: "beta.lua",
+                content: "print('beta')",
+                savedContent: "print('beta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+                isPinned: false,
+            },
+        ];
+
+        await store.getState().archiveAllWorkspaceTabs();
+
+        expect(store.getState().workspace?.tabs.map((tab) => tab.id)).toEqual([
+            "tab-1",
+        ]);
+        expect(
+            store.getState().workspace?.archivedTabs.map((tab) => tab.id),
+        ).toEqual(["archived-1", "tab-2"]);
+        expect(store.getState().persistWorkspaceState).toHaveBeenCalledTimes(1);
+    });
+
     it("archives every tab except the selected tab", async () => {
         const store = await createArchiveStore();
         const workspace = store.getState().workspace;
@@ -214,6 +288,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
         ];
 
@@ -246,6 +321,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
             {
                 id: "tab-2",
@@ -258,6 +334,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
             {
                 id: "tab-3",
@@ -270,6 +347,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
         ];
 
@@ -307,6 +385,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
             {
                 id: "tab-2",
@@ -319,6 +398,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
             {
                 id: "tab-3",
@@ -331,6 +411,7 @@ describe("createWorkspaceArchiveSlice", () => {
                     column: 0,
                     scrollTop: 0,
                 },
+                isPinned: false,
             },
         ];
 

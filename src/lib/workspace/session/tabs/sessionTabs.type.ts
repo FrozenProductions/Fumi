@@ -4,6 +4,7 @@ export type WorkspaceTabState = {
     id: string;
     fileName: string;
     cursor: WorkspaceCursorState;
+    isPinned?: boolean;
     archivedAt?: number;
 };
 
@@ -18,5 +19,6 @@ export type WorkspaceTab = WorkspaceTabSnapshot & {
 };
 
 export type WorkspaceScreenTab = Pick<WorkspaceTabState, "fileName" | "id"> & {
+    isPinned: boolean;
     isDirty: boolean;
 };

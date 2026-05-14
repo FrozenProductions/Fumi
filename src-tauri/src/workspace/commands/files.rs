@@ -117,6 +117,7 @@ pub async fn create_workspace_file(
             id: tab_id.clone(),
             file_name: workspace_file_name.clone(),
             cursor: cursor.clone(),
+            is_pinned: false,
             archived_at: None,
         });
 
@@ -137,6 +138,7 @@ pub async fn create_workspace_file(
             id: tab_id,
             file_name: workspace_file_name,
             cursor,
+            is_pinned: false,
             content: initial_content,
             is_dirty: false,
         })
@@ -179,6 +181,7 @@ pub async fn save_workspace_file(
                             id: item.id,
                             file_name: item.file_name,
                             cursor: normalize_cursor_state(&cursor),
+                            is_pinned: item.is_pinned,
                             archived_at: item.archived_at,
                         }
                     } else {
@@ -245,6 +248,7 @@ pub async fn rename_workspace_file(
             id: tab.id.clone(),
             file_name: normalized_file_name.clone(),
             cursor: tab.cursor.clone(),
+            is_pinned: tab.is_pinned,
             archived_at: tab.archived_at,
         };
         let next_metadata = WorkspaceMetadata {

@@ -33,6 +33,7 @@ function areWorkspaceScreenTabsEqual(
         return (
             tab.id === nextTab.id &&
             tab.fileName === nextTab.fileName &&
+            tab.isPinned === (nextTab.isPinned === true) &&
             tab.isDirty === (nextTab.content !== nextTab.savedContent)
         );
     });
@@ -42,6 +43,7 @@ function createWorkspaceScreenTab(tab: WorkspaceTab): WorkspaceScreenTab {
     return {
         id: tab.id,
         fileName: tab.fileName,
+        isPinned: tab.isPinned === true,
         isDirty: tab.content !== tab.savedContent,
     };
 }
@@ -64,6 +66,7 @@ function areWorkspaceTabStatesEqual(
         return (
             tab.id === nextTab.id &&
             tab.fileName === nextTab.fileName &&
+            (tab.isPinned === true) === (nextTab.isPinned === true) &&
             tab.archivedAt === nextTab.archivedAt &&
             tab.cursor.line === nextTab.cursor.line &&
             tab.cursor.column === nextTab.cursor.column &&

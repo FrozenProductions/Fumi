@@ -50,8 +50,8 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
 
         try {
             const tabIdSet = new Set(tabIds);
-            const tabsToArchive = workspace.tabs.filter((tab) =>
-                tabIdSet.has(tab.id),
+            const tabsToArchive = workspace.tabs.filter(
+                (tab) => tabIdSet.has(tab.id) && !tab.isPinned,
             );
 
             if (tabsToArchive.length === 0) {
@@ -71,7 +71,20 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
             const nextWorkspace = updateWorkspaceForPath(
                 workspace.workspacePath,
                 (currentWorkspace) => {
-                    const currentTabIdSet = new Set(tabIds);
+                    const requestedTabIdSet = new Set(
+                        tabsToArchive.map((tab) => tab.id),
+                    );
+                    const currentTabsToArchive = currentWorkspace.tabs.filter(
+                        (tab) => requestedTabIdSet.has(tab.id) && !tab.isPinned,
+                    );
+
+                    if (currentTabsToArchive.length === 0) {
+                        return currentWorkspace;
+                    }
+
+                    const currentTabIdSet = new Set(
+                        currentTabsToArchive.map((tab) => tab.id),
+                    );
                     const nextTabs = currentWorkspace.tabs.filter(
                         (tab) => !currentTabIdSet.has(tab.id),
                     );
@@ -165,6 +178,11 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
                 }
 
                 const tabToArchive = workspace.tabs[archivedTabIndex];
+
+                if (!tabToArchive || tabToArchive.isPinned) {
+                    return;
+                }
+
                 const shouldDiscardChanges =
                     tabToArchive.content === tabToArchive.savedContent ||
                     (await confirmAction(
@@ -189,6 +207,14 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
 
                         const currentTabToArchive =
                             currentWorkspace.tabs[currentArchivedTabIndex];
+
+                        if (
+                            !currentTabToArchive ||
+                            currentTabToArchive.isPinned
+                        ) {
+                            return currentWorkspace;
+                        }
+
                         const nextTabs = currentWorkspace.tabs.filter(
                             (tab) => tab.id !== tabId,
                         );

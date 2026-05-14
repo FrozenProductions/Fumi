@@ -35,6 +35,7 @@ export function getActiveTabCommandItems({
         openWorkspaceTabInPane,
         resetWorkspaceSplitView,
         saveActiveWorkspaceTab,
+        toggleWorkspaceTabPinned,
         toggleWorkspaceSplitView,
     } = workspaceSession.tabActions;
     const { executeActiveTab } = workspaceExecutor.actions;
@@ -103,12 +104,25 @@ export function getActiveTabCommandItems({
             },
         },
         {
+            id: "command-toggle-pin-tab",
+            label: activeTab.isPinned ? "Unpin current tab" : "Pin current tab",
+            description: activeTab.isPinned
+                ? `Allow ${activeTab.fileName} to be archived again.`
+                : `Keep ${activeTab.fileName} from being archived.`,
+            icon: CommandIcon,
+            keywords: `pin pinned unpin keep ${activeTab.fileName}`,
+            onSelect: () => {
+                toggleWorkspaceTabPinned(activeTab.id);
+            },
+        },
+        {
             id: "command-archive-tab",
             label: "Archive current tab",
             description: `Archive ${activeTab.fileName} from the tab bar.`,
             icon: CommandIcon,
             meta: hotkeyLabels.archiveWorkspaceTab,
             keywords: `archive close remove ${activeTab.fileName}`,
+            isDisabled: activeTab.isPinned,
             onSelect: () => {
                 void archiveWorkspaceTab(activeTab.id);
             },

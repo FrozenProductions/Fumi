@@ -17,6 +17,7 @@ import {
 import { removedTabFromSplitView } from "../../session/sessionSplitView";
 import {
     getNextActiveTabId,
+    toggleWorkspaceTabPinned,
     updateWorkspaceTab,
     upsertWorkspaceTab,
 } from "../../session/tabs/sessionTabs";
@@ -30,8 +31,11 @@ import type {
 export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
     WorkspaceFileSlice
 > = (set, get) => {
-    const { setWorkspaceError, updatePersistedWorkspaceForPath } =
-        createWorkspaceStoreSupport(set, get);
+    const {
+        setWorkspaceError,
+        updatePersistedWorkspaceForPath,
+        updateWorkspaceForPath,
+    } = createWorkspaceStoreSupport(set, get);
     const getDroppedFileName = (filePath: string): string => {
         const normalizedPath = filePath.replace(/\\/g, "/");
         return normalizedPath.split("/").pop() ?? normalizedPath;
@@ -342,6 +346,19 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                 );
                 return false;
             }
+        },
+        toggleWorkspaceTabPinned: (tabId: string): void => {
+            const { workspace } = get();
+
+            if (!workspace) {
+                return;
+            }
+
+            updateWorkspaceForPath(
+                workspace.workspacePath,
+                (currentWorkspace) =>
+                    toggleWorkspaceTabPinned(currentWorkspace, tabId),
+            );
         },
     };
 };

@@ -1,3 +1,4 @@
+import { PinIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import {
     WORKSPACE_TAB_LIST_DROPDOWN_STYLE,
@@ -5,6 +6,7 @@ import {
 } from "../../../constants/workspace/workspace";
 import { joinClassNames } from "../../../lib/shared/className";
 import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
+import { AppIcon } from "../../app/common/AppIcon";
 import type { WorkspaceTabListDropdownProps } from "./workspaceTabBar.type";
 
 /**
@@ -54,6 +56,15 @@ export function WorkspaceTabListDropdown({
                             <span className="min-w-0 flex-1 truncate text-left">
                                 {baseName}
                             </span>
+                            {tab.isPinned ? (
+                                <span className="shrink-0 text-fumi-400">
+                                    <AppIcon
+                                        icon={PinIcon}
+                                        size={10}
+                                        strokeWidth={2.2}
+                                    />
+                                </span>
+                            ) : null}
                             {isDirty ? (
                                 <span className="size-2 shrink-0 rounded-full bg-amber-500" />
                             ) : null}

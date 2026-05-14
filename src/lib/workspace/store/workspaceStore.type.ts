@@ -50,6 +50,7 @@ export type WorkspaceStoreActions = {
         tabId: string,
         nextBaseName: string,
     ) => Promise<boolean>;
+    toggleWorkspaceTabPinned: (tabId: string) => void;
     selectWorkspaceTab: (tabId: string) => void;
     reorderWorkspaceTab: (draggedTabId: string, targetTabId: string) => void;
     openWorkspaceTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
@@ -94,6 +95,7 @@ export type WorkspaceFileSlice = Pick<
     | "duplicateWorkspaceTab"
     | "deleteWorkspaceTab"
     | "renameWorkspaceTab"
+    | "toggleWorkspaceTabPinned"
 >;
 
 export type WorkspaceArchiveSlice = Pick<

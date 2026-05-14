@@ -80,6 +80,7 @@ function createWorkspaceStoreState(
         deleteArchivedWorkspaceTab: vi.fn(),
         deleteAllArchivedWorkspaceTabs: vi.fn(),
         renameWorkspaceTab: vi.fn(),
+        toggleWorkspaceTabPinned: vi.fn(),
         selectWorkspaceTab: vi.fn(),
         reorderWorkspaceTab: vi.fn(),
         openWorkspaceTabInPane: vi.fn(),
@@ -164,6 +165,16 @@ describe("createWorkspaceFileSlice", () => {
         expect(store.getState().workspace?.activeTabId).toBe("tab-2");
         expect(store.getState().persistRevision).toBe(1);
         expect(store.getState().lastPersistedRevision).toBe(1);
+    });
+
+    it("marks pinned tab changes for persistence", async () => {
+        const store = await createFileStore();
+
+        store.getState().toggleWorkspaceTabPinned("tab-1");
+
+        expect(store.getState().workspace?.tabs[0]?.isPinned).toBe(true);
+        expect(store.getState().persistRevision).toBe(1);
+        expect(store.getState().lastPersistedRevision).toBe(0);
     });
 
     it("imports dropped lua files in order and activates the last imported tab", async () => {

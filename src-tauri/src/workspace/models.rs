@@ -38,6 +38,8 @@ pub struct WorkspaceTabState {
     pub file_name: String,
     pub cursor: WorkspaceCursorState,
     #[serde(default)]
+    pub is_pinned: bool,
+    #[serde(default)]
     pub archived_at: Option<i64>,
 }
 
@@ -48,6 +50,8 @@ pub struct WorkspaceTabSnapshot {
     pub id: String,
     pub file_name: String,
     pub cursor: WorkspaceCursorState,
+    #[serde(default)]
+    pub is_pinned: bool,
     pub content: String,
     pub is_dirty: bool,
 }

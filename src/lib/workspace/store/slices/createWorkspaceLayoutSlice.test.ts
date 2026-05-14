@@ -65,6 +65,7 @@ function createWorkspaceStoreState(): WorkspaceStore {
         deleteArchivedWorkspaceTab: vi.fn(),
         deleteAllArchivedWorkspaceTabs: vi.fn(),
         renameWorkspaceTab: vi.fn(),
+        toggleWorkspaceTabPinned: vi.fn(),
         selectWorkspaceTab: vi.fn(),
         reorderWorkspaceTab: vi.fn(),
         openWorkspaceTabInPane: vi.fn(),

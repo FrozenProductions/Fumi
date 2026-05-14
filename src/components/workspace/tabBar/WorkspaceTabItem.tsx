@@ -1,5 +1,5 @@
 import { useSortable } from "@dnd-kit/react/sortable";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Cancel01Icon, PinIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement, MouseEvent as ReactMouseEvent } from "react";
 import { APP_TEXT_INPUT_PROPS } from "../../../constants/app/input";
 import { MAX_WORKSPACE_TAB_NAME_LENGTH } from "../../../constants/workspace/workspace";
@@ -52,6 +52,7 @@ export function WorkspaceTabItem({
     } = rename;
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const isDirty = tab.isDirty;
+    const isPinned = tab.isPinned;
     const isRenaming = tab.id === renamingTabId;
     const { baseName } = splitWorkspaceFileName(tab.fileName);
     const { handleRef, isDragging, isDropTarget, ref } = useSortable({
@@ -93,7 +94,7 @@ export function WorkspaceTabItem({
               : "text-fumi-500 hover:text-fumi-600",
     );
     const archiveButtonClassName = joinClassNames(
-        "app-select-none pointer-events-none absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[0.35rem] text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
+        "app-select-none pointer-events-none absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[0.35rem] text-fumi-400 scale-95 opacity-0 transition-[opacity,transform,background-color,color] duration-150 disabled:cursor-not-allowed disabled:text-fumi-300 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
         !isTabDragActive && "hover:bg-fumi-200 hover:text-fumi-600",
         !isTabDragActive &&
             "group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100",
@@ -111,6 +112,10 @@ export function WorkspaceTabItem({
 
         if (middleClickTabAction === "delete") {
             onDeleteTab(tab.id);
+            return;
+        }
+
+        if (isPinned) {
             return;
         }
 
@@ -172,6 +177,18 @@ export function WorkspaceTabItem({
                         aria-selected={isActive}
                         className={tabButtonClassName}
                     >
+                        {isPinned ? (
+                            <span
+                                aria-hidden="true"
+                                className="mr-1.5 inline-flex shrink-0 text-fumi-400"
+                            >
+                                <AppIcon
+                                    icon={PinIcon}
+                                    size={13}
+                                    strokeWidth={2.7}
+                                />
+                            </span>
+                        ) : null}
                         <span className="min-w-0 truncate">{baseName}</span>
                         <span
                             aria-hidden="true"
@@ -181,7 +198,7 @@ export function WorkspaceTabItem({
                         </span>
                     </button>
                     <AppTooltip
-                        content="Archive tab"
+                        content={isPinned ? "Pinned tab" : "Archive tab"}
                         side="bottom"
                         shortcut={getAppHotkeyShortcutLabel(
                             "ARCHIVE_WORKSPACE_TAB",
@@ -191,8 +208,12 @@ export function WorkspaceTabItem({
                         <button
                             type="button"
                             aria-label={`Archive ${tab.fileName}`}
+                            disabled={isPinned}
                             onClick={(event) => {
                                 event.stopPropagation();
+                                if (isPinned) {
+                                    return;
+                                }
                                 onArchiveTab(tab.id);
                             }}
                             onDoubleClick={(event) => {

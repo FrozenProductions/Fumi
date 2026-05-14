@@ -57,6 +57,7 @@ export function createWorkspaceSession(
             archiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
             deleteWorkspaceTab: vi.fn().mockResolvedValue(undefined),
             renameWorkspaceTab: vi.fn().mockResolvedValue(false),
+            toggleWorkspaceTabPinned: vi.fn(),
             selectWorkspaceTab: vi.fn(),
             reorderWorkspaceTab: vi.fn(),
             saveActiveWorkspaceTab: vi.fn().mockResolvedValue(undefined),
