@@ -361,9 +361,22 @@ function normalizeTreeNode(
         };
     }
 
-    const children = node.children
-        .map((child) => normalizeTreeNode(child, openTabIds, assignedTabIds))
-        .filter((child): child is WorkspaceSplitNode => child !== null);
+    const children = node.children.reduce<WorkspaceSplitNode[]>(
+        (normalizedChildren, child) => {
+            const normalizedChild = normalizeTreeNode(
+                child,
+                openTabIds,
+                assignedTabIds,
+            );
+
+            if (normalizedChild) {
+                normalizedChildren.push(normalizedChild);
+            }
+
+            return normalizedChildren;
+        },
+        [],
+    );
 
     return normalizeGroupNode({
         ...node,
@@ -732,9 +745,9 @@ function createInitialSplitView(
     const activeTabId = currentWorkspace.activeTabId;
 
     if (!activeTabId || activeTabId === tabId) {
-        const otherTabIds = currentWorkspace.tabs
-            .filter((tab) => tab.id !== tabId)
-            .map((tab) => tab.id);
+        const otherTabIds = currentWorkspace.tabs.flatMap((tab) =>
+            tab.id === tabId ? [] : [tab.id],
+        );
 
         if (otherTabIds.length === 0) {
             return null;
@@ -772,9 +785,9 @@ function createInitialSplitView(
         type: "pane",
         id: ROOT_PANE_ID,
         activeTabId,
-        tabIds: currentWorkspace.tabs
-            .filter((tab) => tab.id !== tabId)
-            .map((tab) => tab.id),
+        tabIds: currentWorkspace.tabs.flatMap((tab) =>
+            tab.id === tabId ? [] : [tab.id],
+        ),
     };
     const newPane: WorkspaceSplitPaneNode = {
         type: "pane",
@@ -1088,11 +1101,13 @@ export function closeWorkspaceFocusedSplitPaneState(
             return node;
         }
 
-        const children = node.children
-            .map((child, index) =>
-                index === targetIndex ? targetWithClosingTabs : child,
-            )
-            .filter((_, index) => index !== paneIndex);
+        const children = node.children.flatMap((child, index) => {
+            if (index === paneIndex) {
+                return [];
+            }
+
+            return [index === targetIndex ? targetWithClosingTabs : child];
+        });
         const ratios = node.ratios.filter((_, index) => index !== paneIndex);
 
         return normalizeGroupNode({

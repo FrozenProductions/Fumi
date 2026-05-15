@@ -17,13 +17,15 @@ import { AppIcon } from "../../app/common/AppIcon";
 import { AppTooltip } from "../../app/tooltip/AppTooltip";
 import type { WorkspaceExecutionHistoryPreviewProps } from "./workspaceExecutionHistory.type";
 
+const EXECUTION_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+});
+
 function formatExecutionTimestamp(executedAt: number): string {
-    return new Intl.DateTimeFormat(undefined, {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-    }).format(new Date(executedAt));
+    return EXECUTION_TIMESTAMP_FORMATTER.format(new Date(executedAt));
 }
 
 /**

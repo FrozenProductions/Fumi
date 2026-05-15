@@ -92,10 +92,11 @@ const ACTORS_ALIAS_DATA = [
 ] as const satisfies readonly AliasDataEntry[];
 
 export const ACTORS_GLOBAL_FUNCTION_NAMES = [
-    ...ACTORS_TOP_LEVEL_DATA.filter(
-        ([label]) =>
-            label !== "on_actor_added" && label !== "on_actor_state_created",
-    ).map(([label]) => label),
+    ...ACTORS_TOP_LEVEL_DATA.flatMap(([label]) =>
+        label === "on_actor_added" || label === "on_actor_state_created"
+            ? []
+            : [label],
+    ),
     ...ACTORS_ALIAS_DATA.map(([alias]) => alias),
 ];
 

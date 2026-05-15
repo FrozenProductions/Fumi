@@ -105,11 +105,11 @@ function getFileCompletionIndex(
     }
 
     const index = analysis.symbols
-        .filter(
-            (symbol) =>
-                symbol.kind !== "comment" && symbol.kind !== "loadstring",
+        .flatMap((symbol) =>
+            symbol.kind === "comment" || symbol.kind === "loadstring"
+                ? []
+                : [createIndexedCompletionItemFromFileSymbol(symbol)],
         )
-        .map(createIndexedCompletionItemFromFileSymbol)
         .sort((left, right) =>
             compareIndexedCompletionItems(left, right, "balanced"),
         );

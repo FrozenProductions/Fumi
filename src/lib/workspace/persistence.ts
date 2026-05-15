@@ -91,13 +91,23 @@ export function updateRecentWorkspacePaths(
 }
 
 function normalizeRecentWorkspacePaths(paths: string[]): string[] {
-    return paths
-        .map((workspacePath) => workspacePath.trim())
-        .filter((workspacePath, index, items) => {
-            return (
-                workspacePath.length > 0 &&
-                items.indexOf(workspacePath) === index
-            );
-        })
-        .slice(0, MAX_RECENT_WORKSPACES);
+    const normalizedPaths: string[] = [];
+    const seenPaths = new Set<string>();
+
+    for (const path of paths) {
+        const workspacePath = path.trim();
+
+        if (!workspacePath || seenPaths.has(workspacePath)) {
+            continue;
+        }
+
+        normalizedPaths.push(workspacePath);
+        seenPaths.add(workspacePath);
+
+        if (normalizedPaths.length >= MAX_RECENT_WORKSPACES) {
+            return normalizedPaths;
+        }
+    }
+
+    return normalizedPaths;
 }

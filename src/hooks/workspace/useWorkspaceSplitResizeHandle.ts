@@ -63,9 +63,11 @@ export function useWorkspaceSplitResizeHandle({
         event.stopPropagation();
 
         const pointerTarget = event.currentTarget;
+        const previousBodyStyle = document.body.style.cssText;
         pointerTarget.setPointerCapture(event.pointerId);
-        document.body.style.cursor = isHorizontal ? "col-resize" : "row-resize";
-        document.body.style.userSelect = "none";
+        document.body.style.cssText = `${previousBodyStyle}; cursor: ${
+            isHorizontal ? "col-resize" : "row-resize"
+        }; user-select: none;`;
 
         const updateRatio = (
             pointerEvent: PointerEvent | ReactPointerEvent<HTMLButtonElement>,
@@ -97,8 +99,7 @@ export function useWorkspaceSplitResizeHandle({
             window.removeEventListener("pointermove", handlePointerMove);
             window.removeEventListener("pointerup", handlePointerUp);
             window.removeEventListener("pointercancel", handlePointerCancel);
-            document.body.style.cursor = "";
-            document.body.style.userSelect = "";
+            document.body.style.cssText = previousBodyStyle;
         };
         const handlePointerMove = (moveEvent: PointerEvent): void => {
             updateRatio(moveEvent, false);

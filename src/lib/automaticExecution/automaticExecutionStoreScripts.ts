@@ -147,18 +147,15 @@ export function createAutomaticExecutionScriptActions(
                 return false;
             }
 
-            const dirtyScriptIds = get()
-                .scripts.filter(
-                    (script) => script.content !== script.savedContent,
-                )
-                .map((script) => script.id);
-
-            let didSaveAnyScript = false;
-
-            for (const scriptId of dirtyScriptIds) {
-                const didSave = await get().saveScript(executorKind, scriptId);
-                didSaveAnyScript = didSaveAnyScript || didSave;
-            }
+            const dirtyScriptIds = get().scripts.flatMap((script) =>
+                script.content !== script.savedContent ? [script.id] : [],
+            );
+            const saveResults = await Promise.all(
+                dirtyScriptIds.map((scriptId) =>
+                    get().saveScript(executorKind, scriptId),
+                ),
+            );
+            const didSaveAnyScript = saveResults.some(Boolean);
 
             await runRefreshAfterFlush(get, runtime, executorKind);
             return didSaveAnyScript;

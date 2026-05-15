@@ -81,19 +81,25 @@ export function searchWorkspaceOutlineGroups(
         return groups;
     }
 
-    return groups
-        .map((group) => ({
+    return groups.reduce<WorkspaceOutlineGroup[]>((matchingGroups, group) => {
+        const symbols = searchItems(
+            group.symbols,
+            searchValue,
+            group.symbols.length,
+            (symbol) => getWorkspaceOutlineSearchFields(symbol, group.title),
+            WORKSPACE_OUTLINE_SEARCH_FIELD_WEIGHTS,
+        );
+
+        if (symbols.length === 0) {
+            return matchingGroups;
+        }
+
+        matchingGroups.push({
             ...group,
-            symbols: searchItems(
-                group.symbols,
-                searchValue,
-                group.symbols.length,
-                (symbol) =>
-                    getWorkspaceOutlineSearchFields(symbol, group.title),
-                WORKSPACE_OUTLINE_SEARCH_FIELD_WEIGHTS,
-            ),
-        }))
-        .filter((group) => group.symbols.length > 0);
+            symbols,
+        });
+        return matchingGroups;
+    }, []);
 }
 
 function getWorkspaceOutlineSearchFields(

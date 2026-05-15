@@ -132,7 +132,7 @@ function createCompletionIndexByPriority(
     const indexByPriority = {} as CompletionIndexByPriority;
 
     for (const priority of LUAU_COMPLETION_INDEX_PRIORITIES) {
-        indexByPriority[priority] = [...indexedItems].sort((left, right) =>
+        indexByPriority[priority] = indexedItems.toSorted((left, right) =>
             compareIndexedCompletionItems(left, right, priority),
         );
     }

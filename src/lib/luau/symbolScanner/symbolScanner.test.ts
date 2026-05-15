@@ -13,14 +13,18 @@ describe("scanLuauFileAnalysis", () => {
         );
 
         expect(
-            analysis.symbols
-                .filter((symbol) => symbol.namespace === "_G")
-                .map((symbol) => ({
-                    detail: symbol.detail,
-                    kind: symbol.kind,
-                    label: symbol.label,
-                    namespace: symbol.namespace,
-                })),
+            analysis.symbols.flatMap((symbol) =>
+                symbol.namespace === "_G"
+                    ? [
+                          {
+                              detail: symbol.detail,
+                              kind: symbol.kind,
+                              label: symbol.label,
+                              namespace: symbol.namespace,
+                          },
+                      ]
+                    : [],
+            ),
         ).toEqual([
             {
                 detail: "global variable",
@@ -52,12 +56,16 @@ describe("scanLuauFileAnalysis", () => {
         );
 
         expect(
-            analysis.symbols
-                .filter((symbol) => symbol.kind === "comment")
-                .map((symbol) => ({
-                    detail: symbol.detail,
-                    label: symbol.label,
-                })),
+            analysis.symbols.flatMap((symbol) =>
+                symbol.kind === "comment"
+                    ? [
+                          {
+                              detail: symbol.detail,
+                              label: symbol.label,
+                          },
+                      ]
+                    : [],
+            ),
         ).toEqual([
             {
                 detail: "comment",
@@ -82,12 +90,16 @@ describe("scanLuauFileAnalysis", () => {
         );
 
         expect(
-            analysis.symbols
-                .filter((symbol) => symbol.kind === "loadstring")
-                .map((symbol) => ({
-                    detail: symbol.detail,
-                    label: symbol.label,
-                })),
+            analysis.symbols.flatMap((symbol) =>
+                symbol.kind === "loadstring"
+                    ? [
+                          {
+                              detail: symbol.detail,
+                              label: symbol.label,
+                          },
+                      ]
+                    : [],
+            ),
         ).toEqual([
             {
                 detail: "loadstring call",

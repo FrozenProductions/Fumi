@@ -19,9 +19,46 @@ export const UNC_GLOBAL_FUNCTION_NAMES = [
     ...UNC_ALIAS_DATA.map(([alias]) => alias),
 ] as const;
 
-export const UNC_NAMESPACE_NAMES = Array.from(
-    new Set(UNC_NAMESPACE_DATA.map(([namespace]) => namespace.split(".")[0])),
-);
+const uncNamespaceNames = new Set<string>();
+const uncNamespaceCompletionItemsByNamespace = new Map<
+    string,
+    LuauCompletionItem[]
+>();
+
+for (const [
+    namespace,
+    memberName,
+    category,
+    summary,
+    signature,
+    link,
+] of UNC_NAMESPACE_DATA) {
+    uncNamespaceNames.add(namespace.split(".")[0] ?? namespace);
+
+    const completionItems =
+        uncNamespaceCompletionItemsByNamespace.get(namespace) ?? [];
+    completionItems.push(
+        createLuauCompletionItem(memberName, summary, {
+            detail: `unc ${category}`,
+            kind: signature.startsWith("namespace ")
+                ? "namespace"
+                : memberName === "Fonts"
+                  ? "constant"
+                  : "function",
+            namespace,
+            score: signature.startsWith("namespace ") ? 1140 : 1130,
+            signature,
+            source: UNC_DOC_SOURCE,
+            sourceGroup: "executor",
+            sourceLink: link,
+            includeSourceLinkInSummary: true,
+            summaryNormalizer: normalizeLuauWhitespaceSummary,
+        }),
+    );
+    uncNamespaceCompletionItemsByNamespace.set(namespace, completionItems);
+}
+
+export const UNC_NAMESPACE_NAMES = Array.from(uncNamespaceNames);
 
 export const UNC_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
     ...UNC_NAMESPACE_SUMMARIES.map(
@@ -68,39 +105,6 @@ export const UNC_TOP_LEVEL_COMPLETIONS: LuauCompletionItem[] = [
 ];
 
 export const UNC_NAMESPACE_COMPLETIONS: LuauNamespaceCompletionGroup[] =
-    Array.from(new Set(UNC_NAMESPACE_DATA.map(([namespace]) => namespace))).map(
-        (namespace) =>
-            createLuauNamespaceCompletionGroup(
-                namespace,
-                UNC_NAMESPACE_DATA.filter(
-                    ([candidateNamespace]) => candidateNamespace === namespace,
-                ).map(
-                    ([
-                        candidateNamespace,
-                        memberName,
-                        category,
-                        summary,
-                        signature,
-                        link,
-                    ]) =>
-                        createLuauCompletionItem(memberName, summary, {
-                            detail: `unc ${category}`,
-                            kind: signature.startsWith("namespace ")
-                                ? "namespace"
-                                : memberName === "Fonts"
-                                  ? "constant"
-                                  : "function",
-                            namespace: candidateNamespace,
-                            score: signature.startsWith("namespace ")
-                                ? 1140
-                                : 1130,
-                            signature,
-                            source: UNC_DOC_SOURCE,
-                            sourceGroup: "executor",
-                            sourceLink: link,
-                            includeSourceLinkInSummary: true,
-                            summaryNormalizer: normalizeLuauWhitespaceSummary,
-                        }),
-                ),
-            ),
+    Array.from(uncNamespaceCompletionItemsByNamespace, ([namespace, items]) =>
+        createLuauNamespaceCompletionGroup(namespace, items),
     );

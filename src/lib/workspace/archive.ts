@@ -1,6 +1,11 @@
 import type { ArchivedTabsSortOption } from "./archive.type";
 import type { WorkspaceTabState } from "./session/tabs/sessionTabs.type";
 
+const ARCHIVED_TABS_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+});
+
 /**
  * Filters archived tabs by search query and sorts by name or date.
  */
@@ -39,8 +44,5 @@ export function filterAndSortArchivedTabs(
  * Creates a date formatter for archived tab timestamps.
  */
 export function createArchivedTabsDateFormatter(): Intl.DateTimeFormat {
-    return new Intl.DateTimeFormat(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-    });
+    return ARCHIVED_TABS_DATE_FORMATTER;
 }

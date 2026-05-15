@@ -27,20 +27,22 @@ export function buildWorkspaceSession(
         snapshot.tabs.map((tab) => [tab.id, createWorkspaceTab(tab)] as const),
     );
 
-    const tabs = snapshot.metadata.tabs
-        .map((tabState) => {
+    const tabs = snapshot.metadata.tabs.reduce<WorkspaceTab[]>(
+        (workspaceTabs, tabState) => {
             const tab = tabById.get(tabState.id);
 
             if (!tab) {
-                return null;
+                return workspaceTabs;
             }
 
-            return {
+            workspaceTabs.push({
                 ...tab,
                 cursor: clampCursorToContent(tab.content, tabState.cursor),
-            };
-        })
-        .filter((tab): tab is WorkspaceTab => tab !== null);
+            });
+            return workspaceTabs;
+        },
+        [],
+    );
 
     const openTabIds = new Set(tabs.map((tab) => tab.id));
     const normalizedSplitView = normalizeSplitView(
@@ -278,45 +280,49 @@ export function mergeWorkspaceSession(
     const snapshotTabIds = new Set(
         snapshot.metadata.tabs.map((tabState) => tabState.id),
     );
-    const refreshedTabs = snapshot.metadata.tabs
-        .map((tabState) => {
+    const refreshedTabs = snapshot.metadata.tabs.reduce<WorkspaceTab[]>(
+        (workspaceTabs, tabState) => {
             const snapshotTab = snapshotTabsById.get(tabState.id);
 
             if (!snapshotTab) {
-                return null;
+                return workspaceTabs;
             }
 
             const currentTab = currentTabsById.get(tabState.id);
 
             if (currentTab && currentTab.content !== currentTab.savedContent) {
-                return {
+                workspaceTabs.push({
                     ...currentTab,
                     cursor: clampCursorToContent(
                         currentTab.content,
                         currentTab.cursor,
                     ),
                     fileName: snapshotTab.fileName,
-                };
+                });
+                return workspaceTabs;
             }
 
-            return {
+            workspaceTabs.push({
                 ...createWorkspaceTab(snapshotTab),
                 cursor: clampCursorToContent(
                     snapshotTab.content,
                     tabState.cursor,
                 ),
-            };
-        })
-        .filter((tab): tab is WorkspaceTab => tab !== null);
-    const preservedDirtyTabs = currentWorkspace.tabs
-        .filter(
-            (tab) =>
-                !snapshotTabIds.has(tab.id) && tab.content !== tab.savedContent,
-        )
-        .map((tab) => ({
-            ...tab,
-            cursor: clampCursorToContent(tab.content, tab.cursor),
-        }));
+            });
+            return workspaceTabs;
+        },
+        [],
+    );
+    const preservedDirtyTabs = currentWorkspace.tabs.flatMap((tab) =>
+        !snapshotTabIds.has(tab.id) && tab.content !== tab.savedContent
+            ? [
+                  {
+                      ...tab,
+                      cursor: clampCursorToContent(tab.content, tab.cursor),
+                  },
+              ]
+            : [],
+    );
     const nextTabs = [...refreshedTabs, ...preservedDirtyTabs];
     const nextTabIds = new Set(nextTabs.map((tab) => tab.id));
 

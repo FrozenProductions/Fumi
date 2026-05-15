@@ -233,11 +233,18 @@ function WorkspaceSplitPane({
         tabs: workspaceTabs,
     } = surface.state;
     const tabById = new Map(workspaceTabs.map((tab) => [tab.id, tab] as const));
-    const paneTabs = node.tabIds
-        .map((tabId) => tabById.get(tabId))
-        .filter(
-            (tab): tab is (typeof workspaceTabs)[number] => tab !== undefined,
-        );
+    const paneTabs = node.tabIds.reduce<(typeof workspaceTabs)[number][]>(
+        (tabs, tabId) => {
+            const tab = tabById.get(tabId);
+
+            if (tab) {
+                tabs.push(tab);
+            }
+
+            return tabs;
+        },
+        [],
+    );
     const activeTab =
         (node.activeTabId ? tabById.get(node.activeTabId) : undefined) ??
         paneTabs[0] ??

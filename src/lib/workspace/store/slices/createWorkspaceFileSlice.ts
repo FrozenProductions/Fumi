@@ -110,7 +110,7 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
         importDroppedWorkspaceFiles: async (
             filePaths: string[],
         ): Promise<boolean> => {
-            const { addWorkspaceScriptTab, workspace } = get();
+            const { workspace } = get();
 
             if (!workspace) {
                 set({
@@ -132,27 +132,50 @@ export const createWorkspaceFileSlice: WorkspaceStoreSliceCreator<
                 return false;
             }
 
-            for (const filePath of validFilePaths) {
-                try {
-                    const droppedScript = await importWorkspaceFileCommand({
-                        filePath,
-                    });
-                    const didAdd = await addWorkspaceScriptTab(
-                        droppedScript.fileName,
-                        droppedScript.content,
-                    );
+            try {
+                const droppedScripts = await Promise.all(
+                    validFilePaths.map((filePath) =>
+                        importWorkspaceFileCommand({
+                            filePath,
+                        }),
+                    ),
+                );
+                const createdTabs = await Promise.all(
+                    droppedScripts.map((droppedScript) => {
+                        const { baseName, extension } = splitWorkspaceFileName(
+                            droppedScript.fileName,
+                        );
+                        const limitedFileName = buildWorkspaceFileName(
+                            clampWorkspaceTabBaseName(baseName.trim()),
+                            extension,
+                        );
 
-                    if (!didAdd) {
-                        return false;
-                    }
-                } catch (error) {
-                    setWorkspaceError(
-                        error,
-                        "Failed to import dropped workspace file.",
-                        `Could not import ${getDroppedFileName(filePath)} into the current workspace.`,
-                    );
-                    return false;
-                }
+                        return createWorkspaceFileCommand({
+                            workspacePath: workspace.workspacePath,
+                            fileName: limitedFileName,
+                            initialContent: droppedScript.content,
+                        });
+                    }),
+                );
+
+                updatePersistedWorkspaceForPath(
+                    workspace.workspacePath,
+                    (currentWorkspace) =>
+                        createdTabs.reduce(
+                            (nextWorkspace, createdTab) =>
+                                upsertWorkspaceTab(nextWorkspace, createdTab),
+                            currentWorkspace,
+                        ),
+                );
+            } catch (error) {
+                setWorkspaceError(
+                    error,
+                    "Failed to import dropped workspace file.",
+                    `Could not import ${validFilePaths
+                        .map(getDroppedFileName)
+                        .join(", ")} into the current workspace.`,
+                );
+                return false;
             }
 
             set({ errorMessage: null });

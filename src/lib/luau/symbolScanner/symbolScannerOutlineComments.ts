@@ -16,10 +16,10 @@ function getOutlineCommentMetadata(commentBody: string): {
     label: string;
     summary: string;
 } | null {
-    const cleanedLines = commentBody
-        .split("\n")
-        .map((line) => normalizeOutlineCommentLine(line))
-        .filter((line) => line.length > 0);
+    const cleanedLines = commentBody.split("\n").flatMap((line) => {
+        const normalizedLine = normalizeOutlineCommentLine(line);
+        return normalizedLine.length > 0 ? [normalizedLine] : [];
+    });
 
     const summary = cleanedLines.join(" ").trim();
 

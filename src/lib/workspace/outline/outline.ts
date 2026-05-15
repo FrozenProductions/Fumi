@@ -229,15 +229,20 @@ function getOffsetFromPoint(
     let currentRow = 0;
     let index = 0;
 
-    while (currentRow < point.row && index <= content.length) {
-        const nextNewlineIndex = content.indexOf("\n", index);
+    while (currentRow < point.row) {
+        while (index <= content.length) {
+            if (content[index] === "\n") {
+                index += 1;
+                currentRow += 1;
+                break;
+            }
 
-        if (nextNewlineIndex === -1) {
-            return null;
+            index += 1;
         }
 
-        index = nextNewlineIndex + 1;
-        currentRow += 1;
+        if (currentRow < point.row && index > content.length) {
+            return null;
+        }
     }
 
     return Math.min(index + point.column, content.length);

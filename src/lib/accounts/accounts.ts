@@ -29,7 +29,7 @@ function compareNullableNumbersDescending(
 export function sortAccounts(
     accounts: readonly AccountSummary[],
 ): AccountSummary[] {
-    return [...accounts].sort((left, right) => {
+    return accounts.toSorted((left, right) => {
         const leftIsActive = left.status === "active";
         const rightIsActive = right.status === "active";
 

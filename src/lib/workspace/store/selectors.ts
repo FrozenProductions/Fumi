@@ -135,31 +135,47 @@ function areWorkspaceSplitNodesEqual(
     if (currentNode.type === "pane" && nextNode.type === "pane") {
         return (
             currentNode.activeTabId === nextNode.activeTabId &&
-            currentNode.tabIds.length === nextNode.tabIds.length &&
-            currentNode.tabIds.every(
-                (tabId, index) => tabId === nextNode.tabIds[index],
-            )
+            areArraysEqual(currentNode.tabIds, nextNode.tabIds)
         );
     }
 
     if (currentNode.type === "split" && nextNode.type === "split") {
         return (
             currentNode.direction === nextNode.direction &&
-            currentNode.children.length === nextNode.children.length &&
-            currentNode.ratios.length === nextNode.ratios.length &&
-            currentNode.ratios.every(
-                (ratio, index) => ratio === nextNode.ratios[index],
-            ) &&
-            currentNode.children.every((child, index) => {
-                const nextChild = nextNode.children[index];
-                return nextChild
-                    ? areWorkspaceSplitNodesEqual(child, nextChild)
-                    : false;
-            })
+            areArraysEqual(currentNode.ratios, nextNode.ratios) &&
+            areWorkspaceSplitNodeArraysEqual(
+                currentNode.children,
+                nextNode.children,
+            )
         );
     }
 
     return false;
+}
+
+function areArraysEqual<TItem>(
+    currentItems: readonly TItem[],
+    nextItems: readonly TItem[],
+): boolean {
+    return (
+        currentItems.length === nextItems.length &&
+        currentItems.every((item, index) => item === nextItems[index])
+    );
+}
+
+function areWorkspaceSplitNodeArraysEqual(
+    currentItems: readonly WorkspaceSplitNode[],
+    nextItems: readonly WorkspaceSplitNode[],
+): boolean {
+    return (
+        currentItems.length === nextItems.length &&
+        currentItems.every((item, index) => {
+            const nextItem = nextItems[index];
+            return nextItem
+                ? areWorkspaceSplitNodesEqual(item, nextItem)
+                : false;
+        })
+    );
 }
 
 /**

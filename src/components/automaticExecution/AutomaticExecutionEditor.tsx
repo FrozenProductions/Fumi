@@ -19,6 +19,11 @@ import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.t
 
 const EMPTY_ADD_ICON_STYLE = createMaskStyle(emptyAddIcon);
 
+type AutomaticExecutionEditorLoaderState = {
+    AceEditor: AceEditorComponent;
+    aceRuntime: LoadedAceRuntime;
+};
+
 /**
  * The Ace editor for automatic execution scripts.
  *
@@ -45,9 +50,8 @@ export function AutomaticExecutionEditor({
     onChange,
     onCursorChange,
 }: AutomaticExecutionEditorProps): ReactElement {
-    const [AceEditorComponent, setAceEditorComponent] =
-        useState<AceEditorComponent | null>(null);
-    const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
+    const [editorLoaderState, setEditorLoaderState] =
+        useState<AutomaticExecutionEditorLoaderState | null>(null);
     const aceEditorHandlers = useAutomaticExecutionAceEditor({
         isRelativeLineNumbersEnabled,
         isTabsToSpacesEnabled,
@@ -74,16 +78,20 @@ export function AutomaticExecutionEditor({
         let isMounted = true;
 
         void (async () => {
-            const loadedAceRuntime = await loadAceRuntime();
-            const reactAceModule = await import("react-ace");
+            const [loadedAceRuntime, reactAceModule] = await Promise.all([
+                loadAceRuntime(),
+                import("react-ace"),
+            ]);
             const reactAceComponent = getReactAceComponent(reactAceModule);
 
             if (!isMounted) {
                 return;
             }
 
-            setAceRuntime(loadedAceRuntime);
-            setAceEditorComponent(() => reactAceComponent);
+            setEditorLoaderState({
+                AceEditor: reactAceComponent,
+                aceRuntime: loadedAceRuntime,
+            });
         })();
 
         return () => {
@@ -120,7 +128,7 @@ export function AutomaticExecutionEditor({
         );
     }
 
-    if (!AceEditorComponent || !aceRuntime) {
+    if (!editorLoaderState) {
         return (
             <div className="flex h-full items-center justify-center bg-fumi-50">
                 <div className="text-center">
@@ -136,9 +144,11 @@ export function AutomaticExecutionEditor({
         );
     }
 
+    const { AceEditor, aceRuntime } = editorLoaderState;
+
     return (
         <div className="h-full bg-fumi-50">
-            <AceEditorComponent
+            <AceEditor
                 className={editorClassName}
                 name={`automatic-execution-editor-${script.id}`}
                 value={script.content}

@@ -83,10 +83,10 @@ function getCanArchiveOtherTabs(
         return unpinnedTabCount > 1;
     }
 
+    const tabsById = new Map(workspace.tabs.map((tab) => [tab.id, tab]));
+
     for (const tabId of scopeTabIds) {
-        const tab = workspace.tabs.find(
-            (workspaceTab) => workspaceTab.id === tabId,
-        );
+        const tab = tabsById.get(tabId);
 
         if (tab && !tab.isPinned) {
             unpinnedTabCount += 1;

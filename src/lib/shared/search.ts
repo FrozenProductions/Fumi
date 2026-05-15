@@ -71,19 +71,24 @@ export function searchItems<TItem, TFieldName extends string>(
     }
 
     return items
-        .map(
-            (item, index): SearchResult<TItem> => ({
+        .reduce<SearchResult<TItem>[]>((results, item, index) => {
+            const score = scoreSearchFields(
+                getFields(item),
+                searchValue,
+                fieldWeights,
+            );
+
+            if (score === null) {
+                return results;
+            }
+
+            results.push({
                 item,
                 index,
-                score:
-                    scoreSearchFields(
-                        getFields(item),
-                        searchValue,
-                        fieldWeights,
-                    ) ?? -1,
-            }),
-        )
-        .filter((entry): entry is SearchResult<TItem> => entry.score !== -1)
+                score,
+            });
+            return results;
+        }, [])
         .sort((left, right) => {
             if (right.score !== left.score) {
                 return right.score - left.score;
@@ -250,10 +255,18 @@ function scoreFuzzySubsequenceMatch(
     let consecutiveMatchRunLength = 0;
 
     for (const character of searchValue) {
-        const matchIndex = fieldValue.indexOf(
-            character,
-            previousMatchIndex + 1,
-        );
+        let matchIndex = -1;
+
+        for (
+            let candidateIndex = previousMatchIndex + 1;
+            candidateIndex < fieldValue.length;
+            candidateIndex += 1
+        ) {
+            if (fieldValue[candidateIndex] === character) {
+                matchIndex = candidateIndex;
+                break;
+            }
+        }
 
         if (matchIndex < 0) {
             return null;

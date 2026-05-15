@@ -117,7 +117,7 @@ function sortScriptLibraryEntries(
     scripts: ScriptLibraryEntry[],
     orderBy: ScriptLibrarySort,
 ): ScriptLibraryEntry[] {
-    return [...scripts].sort((left, right) => {
+    return scripts.toSorted((left, right) => {
         if (orderBy === "views") {
             return (
                 right.views - left.views ||

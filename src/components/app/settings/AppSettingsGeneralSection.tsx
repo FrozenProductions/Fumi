@@ -114,11 +114,15 @@ export function AppSettingsGeneralSection({
     };
 
     const handleZoomOut = (): void => {
-        void setZoomPercent(zoomPercent - APP_ZOOM_STEP);
+        void setZoomPercent((currentZoomPercent) => {
+            return currentZoomPercent - APP_ZOOM_STEP;
+        });
     };
 
     const handleZoomIn = (): void => {
-        void setZoomPercent(zoomPercent + APP_ZOOM_STEP);
+        void setZoomPercent((currentZoomPercent) => {
+            return currentZoomPercent + APP_ZOOM_STEP;
+        });
     };
 
     const handleCheckForUpdatesAction = (): void => {

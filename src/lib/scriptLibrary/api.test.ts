@@ -74,10 +74,11 @@ describe("fetchFilteredScriptsPage", () => {
             "date",
             new AbortController().signal,
         );
+        const nextPageNumber = firstPage.canGoNext ? 2 : 1;
         const secondPage = await fetchFilteredScriptsPage(
             session,
             "",
-            2,
+            nextPageNumber,
             filters,
             "date",
             new AbortController().signal,

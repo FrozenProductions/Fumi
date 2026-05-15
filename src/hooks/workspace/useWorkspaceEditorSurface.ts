@@ -114,8 +114,10 @@ export function useWorkspaceEditorSurface(options: {
         let isMounted = true;
 
         void (async () => {
-            const loadedAceRuntime = await loadAceRuntime();
-            const reactAceModule = await import("react-ace");
+            const [loadedAceRuntime, reactAceModule] = await Promise.all([
+                loadAceRuntime(),
+                import("react-ace"),
+            ]);
             const reactAceComponent = getReactAceComponent(reactAceModule);
 
             if (isMounted) {
@@ -144,10 +146,10 @@ export function useWorkspaceEditorSurface(options: {
             const pointerTarget = event.currentTarget;
             const startX = event.clientX;
             const initialOutlineWidth = outlinePanelWidth;
+            const previousBodyStyle = document.body.style.cssText;
 
             pointerTarget.setPointerCapture(event.pointerId);
-            document.body.style.cursor = "col-resize";
-            document.body.style.userSelect = "none";
+            document.body.style.cssText = `${previousBodyStyle}; cursor: col-resize; user-select: none;`;
 
             const clampOutlineWidth = (width: number): number =>
                 Math.min(
@@ -164,8 +166,7 @@ export function useWorkspaceEditorSurface(options: {
             };
 
             const restoreBodyStyles = (): void => {
-                document.body.style.cursor = "";
-                document.body.style.userSelect = "";
+                document.body.style.cssText = previousBodyStyle;
             };
 
             const cleanup = (): void => {

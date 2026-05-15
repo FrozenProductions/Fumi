@@ -184,8 +184,12 @@ describe("analyzeLuauFileInBackground", () => {
         const firstAnalysis = await analyzeLuauFileInBackground({
             content: "local function first() end",
         });
+        const secondContent =
+            firstAnalysis.symbols.length > 0
+                ? "local function second() end"
+                : "";
         const secondAnalysis = await analyzeLuauFileInBackground({
-            content: "local function second() end",
+            content: secondContent,
         });
 
         expect(

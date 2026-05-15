@@ -219,11 +219,15 @@ export async function fetchFilteredScriptsPage(
     let maxSourcePages =
         cache.maxSourcePages ?? session.maxPages ?? Number.POSITIVE_INFINITY;
 
-    while (
-        !cache.isSourceExhausted &&
-        sourcePage <= maxSourcePages &&
-        cache.filteredScripts.length <= endIndex
-    ) {
+    const loadSourcePages = async (): Promise<void> => {
+        if (
+            cache.isSourceExhausted ||
+            sourcePage > maxSourcePages ||
+            cache.filteredScripts.length > endIndex
+        ) {
+            return;
+        }
+
         const currentPage = await fetchScriptsPage(
             session,
             query,
@@ -243,7 +247,11 @@ export async function fetchFilteredScriptsPage(
 
         sourcePage += 1;
         cache.nextSourcePage = sourcePage;
-    }
+
+        await loadSourcePages();
+    };
+
+    await loadSourcePages();
 
     cache.isSourceExhausted = sourcePage > maxSourcePages;
 

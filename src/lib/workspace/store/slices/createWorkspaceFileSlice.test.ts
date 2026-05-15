@@ -278,7 +278,7 @@ describe("createWorkspaceFileSlice", () => {
         expect(mocks.importWorkspaceFile).not.toHaveBeenCalled();
     });
 
-    it("stops importing after the first import command failure", async () => {
+    it("does not add tabs when a dropped script import fails", async () => {
         const store = await createFileStore();
 
         mocks.importWorkspaceFile
@@ -286,18 +286,11 @@ describe("createWorkspaceFileSlice", () => {
                 fileName: "beta.lua",
                 content: "print('beta')",
             })
-            .mockRejectedValueOnce(new Error("Could not read file."));
-        mocks.createWorkspaceFile.mockResolvedValueOnce({
-            id: "tab-2",
-            fileName: "beta.lua",
-            content: "print('beta')",
-            isDirty: false,
-            cursor: {
-                line: 0,
-                column: 0,
-                scrollTop: 0,
-            },
-        });
+            .mockRejectedValueOnce(new Error("Could not read file."))
+            .mockResolvedValueOnce({
+                fileName: "delta.lua",
+                content: "print('delta')",
+            });
 
         await expect(
             store
@@ -309,13 +302,13 @@ describe("createWorkspaceFileSlice", () => {
                 ]),
         ).resolves.toBe(false);
 
-        expect(mocks.importWorkspaceFile).toHaveBeenCalledTimes(2);
-        expect(mocks.createWorkspaceFile).toHaveBeenCalledTimes(1);
+        expect(mocks.importWorkspaceFile).toHaveBeenCalledTimes(3);
+        expect(mocks.createWorkspaceFile).not.toHaveBeenCalled();
         expect(store.getState().errorMessage).toBe("Could not read file.");
-        expect(store.getState().workspace?.activeTabId).toBe("tab-2");
+        expect(store.getState().workspace?.activeTabId).toBe("tab-1");
     });
 
-    it("stops importing after the first add-tab failure", async () => {
+    it("does not commit imported tabs when a tab creation fails", async () => {
         const store = await createFileStore();
 
         mocks.importWorkspaceFile
@@ -326,6 +319,10 @@ describe("createWorkspaceFileSlice", () => {
             .mockResolvedValueOnce({
                 fileName: "gamma.lua",
                 content: "print('gamma')",
+            })
+            .mockResolvedValueOnce({
+                fileName: "delta.lua",
+                content: "print('delta')",
             });
         mocks.createWorkspaceFile
             .mockResolvedValueOnce({
@@ -339,7 +336,18 @@ describe("createWorkspaceFileSlice", () => {
                     scrollTop: 0,
                 },
             })
-            .mockRejectedValueOnce(new Error("Create failed."));
+            .mockRejectedValueOnce(new Error("Create failed."))
+            .mockResolvedValueOnce({
+                id: "tab-4",
+                fileName: "delta.lua",
+                content: "print('delta')",
+                isDirty: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            });
 
         await expect(
             store
@@ -351,9 +359,9 @@ describe("createWorkspaceFileSlice", () => {
                 ]),
         ).resolves.toBe(false);
 
-        expect(mocks.importWorkspaceFile).toHaveBeenCalledTimes(2);
-        expect(mocks.createWorkspaceFile).toHaveBeenCalledTimes(2);
+        expect(mocks.importWorkspaceFile).toHaveBeenCalledTimes(3);
+        expect(mocks.createWorkspaceFile).toHaveBeenCalledTimes(3);
         expect(store.getState().errorMessage).toBe("Create failed.");
-        expect(store.getState().workspace?.activeTabId).toBe("tab-2");
+        expect(store.getState().workspace?.activeTabId).toBe("tab-1");
     });
 });

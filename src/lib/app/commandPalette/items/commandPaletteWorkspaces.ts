@@ -14,21 +14,26 @@ export function getWorkspaceCommandPaletteItems(
     const { recentWorkspacePaths, workspace } = workspaceSession.state;
     const { openWorkspaceDirectory, openWorkspacePath } =
         workspaceSession.workspaceActions;
-    const recentWorkspaceItems = recentWorkspacePaths
-        .filter((workspacePath) => workspacePath !== workspace?.workspacePath)
-        .map((workspacePath) => ({
-            id: `workspace-recent-${workspacePath}`,
-            label: getWorkspacePathLabel(workspacePath),
-            description: "Switch to this recent workspace.",
-            icon: FolderOpenIcon,
-            meta: formatWorkspacePath(workspacePath),
-            keywords: `${workspacePath} ${getWorkspacePathLabel(
-                workspacePath,
-            )} recent workspace switch open`,
-            onSelect: () => {
-                void openWorkspacePath(workspacePath);
-            },
-        }));
+    const recentWorkspaceItems = recentWorkspacePaths.flatMap(
+        (workspacePath) =>
+            workspacePath === workspace?.workspacePath
+                ? []
+                : [
+                      {
+                          id: `workspace-recent-${workspacePath}`,
+                          label: getWorkspacePathLabel(workspacePath),
+                          description: "Switch to this recent workspace.",
+                          icon: FolderOpenIcon,
+                          meta: formatWorkspacePath(workspacePath),
+                          keywords: `${workspacePath} ${getWorkspacePathLabel(
+                              workspacePath,
+                          )} recent workspace switch open`,
+                          onSelect: () => {
+                              void openWorkspacePath(workspacePath);
+                          },
+                      },
+                  ],
+    );
 
     return [
         {

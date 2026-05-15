@@ -286,9 +286,9 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
             const sourceTabs = scopedTabIds
                 ? workspace.tabs.filter((tab) => scopedTabIds.includes(tab.id))
                 : workspace.tabs;
-            const otherTabIds = sourceTabs
-                .filter((tab) => tab.id !== tabId)
-                .map((tab) => tab.id);
+            const otherTabIds = sourceTabs.flatMap((tab) =>
+                tab.id === tabId ? [] : [tab.id],
+            );
             const confirmMessage = scopedTabIds
                 ? "Archive other tabs in this split pane? Unsaved changes will be discarded. You can restore them from Settings."
                 : "Archive other tabs? Unsaved changes will be discarded. You can restore them from Settings.";
