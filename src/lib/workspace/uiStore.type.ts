@@ -6,7 +6,7 @@ export type WorkspaceUiStoreState = {
     hasRenameError: boolean;
 };
 
-export type WorkspaceUiStoreActions = {
+type WorkspaceUiStoreActions = {
     openTabList: (tabListScopeId: string) => void;
     closeTabList: (tabListScopeId: string) => void;
     toggleTabList: (tabListScopeId: string) => void;

@@ -5,7 +5,7 @@ import type {
     WorkspaceTabState,
 } from "./session/tabs/sessionTabs.type";
 
-export type WorkspaceMetadata = {
+type WorkspaceMetadata = {
     version: 2 | 3 | 4 | 5;
     activeTabId: string | null;
     splitView: WorkspaceSplitView | null;

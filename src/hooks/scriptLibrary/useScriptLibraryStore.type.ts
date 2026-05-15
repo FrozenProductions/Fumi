@@ -27,7 +27,7 @@ export type ScriptLibraryStoreState = {
     addedScriptId: string | null;
 };
 
-export type ScriptLibraryStoreActions = {
+type ScriptLibraryStoreActions = {
     setContentMode: (contentMode: ScriptLibraryContentMode) => void;
     setQuery: (query: string) => void;
     toggleFilter: (filterKey: keyof ScriptLibraryFilters) => void;

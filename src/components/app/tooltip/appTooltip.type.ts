@@ -17,7 +17,7 @@ export type AppTooltipProps = {
     disabled?: boolean;
 };
 
-export type TooltipTriggerProps = {
+type TooltipTriggerProps = {
     "aria-describedby"?: string;
     onPointerEnter?: (event: PointerEvent<HTMLElement>) => void;
     onPointerLeave?: (event: PointerEvent<HTMLElement>) => void;

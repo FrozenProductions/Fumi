@@ -9,7 +9,7 @@ import type {
     RobloxProcessInfo,
 } from "../../../lib/accounts/accounts.type";
 
-export type WorkspaceActionsDropdownMenuProps = {
+type WorkspaceActionsDropdownMenuProps = {
     dropdownStyle: CSSProperties & Record<string, string>;
     isDark: boolean;
     isOutlinePanelVisible: boolean;
@@ -19,7 +19,7 @@ export type WorkspaceActionsDropdownMenuProps = {
     killRobloxShortcutLabel: string | null;
 };
 
-export type WorkspaceActionsDropdownRobloxProps = {
+type WorkspaceActionsDropdownRobloxProps = {
     processes: readonly RobloxProcessInfo[];
     liveAccount: RobloxAccountIdentity | null;
     isDesktopShell: boolean;
@@ -32,11 +32,11 @@ export type WorkspaceActionsDropdownRobloxProps = {
     revealedProcessPid: number | null;
 };
 
-export type WorkspaceActionsDropdownConfirmProps = {
+type WorkspaceActionsDropdownConfirmProps = {
     confirmingAction: WorkspaceActionsConfirmAction | null;
 };
 
-export type WorkspaceActionsDropdownActionProps = {
+type WorkspaceActionsDropdownActionProps = {
     onLaunch: (event: ReactMouseEvent<HTMLButtonElement>) => void;
     onKillAll: () => void;
     onKillProcess: (pid: number) => void;

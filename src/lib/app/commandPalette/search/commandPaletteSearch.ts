@@ -1,9 +1,5 @@
 import { APP_COMMAND_PALETTE_SEARCH_FIELD_WEIGHTS } from "../../../../constants/app/commandPalette";
-import {
-    normalizeSearchValue,
-    scoreSearchFields,
-    searchItems,
-} from "../../../shared/search";
+import { normalizeSearchValue, searchItems } from "../../../shared/search";
 import type { SearchField } from "../../../shared/search.type";
 import type { AppCommandPaletteSearchFieldName } from "../commandPalette.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
@@ -13,20 +9,6 @@ import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
  */
 export function normalizeAppCommandPaletteSearchValue(value: string): string {
     return normalizeSearchValue(value);
-}
-
-/**
- * Scores a command palette item against the search value, returning null for no match.
- */
-export function scoreAppCommandPaletteItem(
-    item: AppCommandPaletteItem,
-    searchValue: string,
-): number | null {
-    return scoreSearchFields(
-        getAppCommandPaletteSearchFields(item),
-        searchValue,
-        APP_COMMAND_PALETTE_SEARCH_FIELD_WEIGHTS,
-    );
 }
 
 /**

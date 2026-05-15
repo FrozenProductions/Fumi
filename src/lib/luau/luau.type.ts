@@ -10,7 +10,7 @@ export type LuauSymbolKind =
     | "namespace"
     | "service";
 
-export type LuauDocEntry = {
+type LuauDocEntry = {
     summary: string;
     source: string;
     signature?: string;

@@ -11,14 +11,14 @@ import type {
 } from "../../../lib/app/sidebar.type";
 import type { UseWorkspaceExecutorResult } from "../../../lib/workspace/executor/executor.type";
 
-export type AppShellTopbarState = {
+type AppShellTopbarState = {
     workspaceName: string | null;
     workspacePath: string | null;
     onOpenWorkspace: (() => void) | undefined;
     executorControls: AppTopbarExecutorControlsProps | undefined;
 };
 
-export type AppShellSidebarState = {
+type AppShellSidebarState = {
     isOpen: boolean;
     position: AppSidebarPosition;
     activeItem: AppSidebarItem;
@@ -27,7 +27,7 @@ export type AppShellSidebarState = {
     onToggle: () => void;
 };
 
-export type AppShellCommandPaletteState = {
+type AppShellCommandPaletteState = {
     request: AppCommandPaletteRequestProps;
     context: AppCommandPaletteContextProps;
     actions: AppCommandPaletteActionProps;

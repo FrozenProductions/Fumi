@@ -1,6 +1,6 @@
-export type AceRequire = (name: string) => unknown;
+type AceRequire = (name: string) => unknown;
 
-export type AceModuleExports = Record<string, unknown>;
+type AceModuleExports = Record<string, unknown>;
 
 export type AceEditorRuntime = {
     define: (

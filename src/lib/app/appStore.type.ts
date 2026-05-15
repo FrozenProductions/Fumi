@@ -41,7 +41,7 @@ export type AppStoreState = AppAccountPrivacySettings & {
     sidebarPosition: AppSidebarPosition;
 };
 
-export type AppStoreActions = {
+type AppStoreActions = {
     openSidebar: () => void;
     closeSidebar: () => void;
     toggleSidebar: () => void;

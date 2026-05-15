@@ -27,5 +27,3 @@ export type WorkspaceActionsButtonProps = {
     onKillRobloxProcess: (pid: number) => Promise<void>;
     onOpenExecutionHistory: () => void;
 };
-
-export type ConfirmAction = "kill" | `kill-pid-${number}`;

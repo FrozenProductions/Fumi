@@ -7,8 +7,6 @@ import { PersistenceError } from "./errors";
 import type { WorkspaceSession } from "./session/session.type";
 import { serializeTabState } from "./session/tabs/sessionTabs";
 
-let lastPersistedWorkspaceSignature: string | null = null;
-
 function logWorkspacePersistenceFailure(
     action: "read" | "write",
     error: unknown,
@@ -34,22 +32,6 @@ export function getWorkspacePersistSignature(
         archivedTabs: workspace.archivedTabs,
         executionHistory: workspace.executionHistory,
     });
-}
-
-/**
- * Returns the last workspace signature that was successfully persisted.
- */
-export function getLastPersistedWorkspaceSignature(): string | null {
-    return lastPersistedWorkspaceSignature;
-}
-
-/**
- * Records that the workspace with the given signature was persisted.
- */
-export function markWorkspacePersistedSignature(
-    signature: string | null,
-): void {
-    lastPersistedWorkspaceSignature = signature;
 }
 
 /**

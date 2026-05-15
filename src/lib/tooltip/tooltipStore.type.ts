@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { TooltipSide } from "./tooltip.type";
 
-export type TooltipDefinition = {
+type TooltipDefinition = {
     id: string;
     content: ReactNode;
     shortcut?: ReactNode;
@@ -21,7 +21,7 @@ export type TooltipStoreState = {
     isVisible: boolean;
 };
 
-export type TooltipStoreActions = {
+type TooltipStoreActions = {
     showTooltip: (definition: TooltipDefinition) => void;
     hideTooltip: (id?: string) => void;
     clearTooltip: () => void;

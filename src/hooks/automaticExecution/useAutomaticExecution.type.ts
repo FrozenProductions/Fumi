@@ -22,7 +22,7 @@ type UseAutomaticExecutionStoreFields = Pick<
     | "updateActiveScriptCursor"
 >;
 
-export type AutomaticExecutionState = Pick<
+type AutomaticExecutionState = Pick<
     UseAutomaticExecutionStoreFields,
     | "activeScriptId"
     | "errorMessage"
@@ -37,7 +37,7 @@ export type AutomaticExecutionState = Pick<
     hasUnsavedChanges: boolean;
 };
 
-export type AutomaticExecutionActions = Pick<
+type AutomaticExecutionActions = Pick<
     UseAutomaticExecutionStoreFields,
     | "clearErrorMessage"
     | "createScript"

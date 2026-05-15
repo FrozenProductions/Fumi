@@ -16,8 +16,6 @@ export type ExecutorStatusPayload = {
     isAttached: boolean;
 };
 
-export type AsyncUnsubscribe = () => void;
-
 export type UseWorkspaceExecutorOptions = {
     workspacePath: string | null;
     onExecutionHistoryUpdated?: (

@@ -5,13 +5,6 @@ import type {
 } from "./automaticExecution.type";
 
 /**
- * Counts Unicode characters in a string (handles multi-byte chars correctly).
- */
-export function getAutomaticExecutionCharacterCount(value: string): number {
-    return Array.from(value).length;
-}
-
-/**
  * Truncates a string to a maximum number of Unicode characters.
  */
 export function clampAutomaticExecutionText(
@@ -24,7 +17,7 @@ export function clampAutomaticExecutionText(
 /**
  * Converts a script snapshot into a full script with savedContent initialized to content.
  */
-export function buildAutomaticExecutionScript(
+function buildAutomaticExecutionScript(
     script: AutomaticExecutionScriptSnapshot,
 ): AutomaticExecutionScript {
     return {
@@ -40,15 +33,6 @@ export function buildAutomaticExecutionScripts(
     scripts: readonly AutomaticExecutionScriptSnapshot[],
 ): AutomaticExecutionScript[] {
     return scripts.map(buildAutomaticExecutionScript);
-}
-
-/**
- * Checks if any script has unsaved content changes.
- */
-export function hasAutomaticExecutionDirtyScripts(
-    scripts: readonly AutomaticExecutionScript[],
-): boolean {
-    return scripts.some((script) => script.content !== script.savedContent);
 }
 
 /**

@@ -80,12 +80,6 @@ export type RscriptsScriptDetailResponse = {
     error?: string;
 };
 
-export type ScriptLibraryCreator = {
-    name: string;
-    image: string | null;
-    verified: boolean;
-};
-
 export type ScriptLibraryEntry = {
     _id: string;
     title: string;
@@ -100,7 +94,11 @@ export type ScriptLibraryEntry = {
     keySystem: boolean | null;
     mobileReady: boolean | null;
     unpatched: boolean;
-    creator: ScriptLibraryCreator;
+    creator: {
+        name: string;
+        image: string | null;
+        verified: boolean;
+    };
 };
 
 export type ScriptLibraryFavoriteEntry = ScriptLibraryEntry;

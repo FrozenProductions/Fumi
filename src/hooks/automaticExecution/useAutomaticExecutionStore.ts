@@ -34,16 +34,6 @@ export const useAutomaticExecutionStore = create<AutomaticExecutionStore>(
 );
 
 /**
- * Selects the currently active automatic execution script from the store state.
- *
- * @param state - The automatic execution store state
- * @returns The active script, or null if no script is active
- */
-export const selectAutomaticExecutionActiveScript = (
-    state: AutomaticExecutionStore,
-) => state.scripts.find((script) => script.id === state.activeScriptId) ?? null;
-
-/**
  * Checks whether any automatic execution script has unsaved local changes.
  *
  * @param state - The automatic execution store state

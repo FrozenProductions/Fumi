@@ -256,41 +256,6 @@ export function addMatchingCompletionItems(options: {
     }
 }
 
-/**
- * Filters a pre-sorted completion index by prefix, returning at most MAX_LUAU_COMPLETION_ITEMS results.
- *
- * @param indexByPriority - The completion index for the active priority
- * @param prefix - Raw typed prefix (case-insensitive)
- * @param priority - Active intellisense priority
- * @returns Filtered completion items sorted by relevance
- */
-export function filterCompletions(
-    indexByPriority: CompletionIndexByPriority,
-    prefix: string,
-    priority: AppIntellisensePriority,
-): LuauCompletionItem[] {
-    const normalizedPrefix = prefix.toLowerCase();
-    const items = indexByPriority[priority];
-
-    if (normalizedPrefix.length === 0) {
-        return items
-            .slice(0, MAX_LUAU_COMPLETION_ITEMS)
-            .map((indexedItem) => indexedItem.item);
-    }
-
-    const topItems: IndexedCompletionItem[] = [];
-
-    addMatchingCompletionItems({
-        items,
-        normalizedPrefix,
-        priority,
-        seen: new Set<string>(),
-        topItems,
-    });
-
-    return topItems.map((indexedItem) => indexedItem.item);
-}
-
 export const LUAU_NAMESPACE_INDEX = createNamespaceIndex();
 export const LUAU_ROOT_COMPLETION_INDEX = createCompletionIndexByPriority(
     LUAU_ROOT_COMPLETIONS,

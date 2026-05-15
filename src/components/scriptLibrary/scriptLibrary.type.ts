@@ -26,8 +26,6 @@ export type ScriptLibraryCardProps = {
     actions: ScriptLibraryCardActions;
 };
 
-export type ScriptLibraryScreenProps = Record<string, never>;
-
 export type ScriptLibraryToolbarProps = {
     contentMode: ScriptLibraryContentMode;
     favoriteCount: number;

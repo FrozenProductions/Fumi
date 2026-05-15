@@ -3,11 +3,10 @@ import type { ExecutorKind } from "../workspace/executor/executor.type";
 import type {
     AutomaticExecutionCursorState,
     AutomaticExecutionScript,
-    AutomaticExecutionScriptState,
     AutomaticExecutionSnapshot,
 } from "./automaticExecution.type";
 
-export type AutomaticExecutionStoreState = {
+type AutomaticExecutionStoreState = {
     executorKind: ExecutorKind;
     resolvedPath: string | null;
     scripts: AutomaticExecutionScript[];
@@ -18,7 +17,7 @@ export type AutomaticExecutionStoreState = {
     errorMessage: string | null;
 };
 
-export type AutomaticExecutionStoreActions = {
+type AutomaticExecutionStoreActions = {
     resetForExecutorKind: (executorKind: ExecutorKind) => void;
     hydrateFromSnapshot: (snapshot: AutomaticExecutionSnapshot) => void;
     bootstrapAutomaticExecution: (executorKind: ExecutorKind) => Promise<void>;
@@ -57,17 +56,3 @@ export type AutomaticExecutionStoreSet = Parameters<
 export type AutomaticExecutionStoreGet = Parameters<
     StateCreator<AutomaticExecutionStore>
 >[1];
-export type AutomaticExecutionStoreApi = Parameters<
-    StateCreator<AutomaticExecutionStore>
->[2];
-
-export type AutomaticExecutionStoreSliceCreator<TSlice> = (
-    set: AutomaticExecutionStoreSet,
-    get: AutomaticExecutionStoreGet,
-    store: AutomaticExecutionStoreApi,
-) => TSlice;
-
-export type AutomaticExecutionPersistPayload = {
-    activeScriptId: string | null;
-    scripts: AutomaticExecutionScriptState[];
-};

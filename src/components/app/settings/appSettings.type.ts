@@ -7,5 +7,3 @@ export type AppSettingsScreenProps = {
 export type AppSettingsGeneralSectionProps = {
     updater: UseAppUpdaterResult;
 };
-
-export type AppSettingsWorkspaceSectionProps = Record<string, never>;

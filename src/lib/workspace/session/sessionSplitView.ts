@@ -94,7 +94,7 @@ function collectSplitIds(
     return splitIds;
 }
 
-export function collectWorkspacePaneIds(
+function collectWorkspacePaneIds(
     node: WorkspaceSplitNode,
     paneIds = new Set<string>(),
 ): Set<string> {
@@ -109,7 +109,7 @@ export function collectWorkspacePaneIds(
     return paneIds;
 }
 
-export function getWorkspaceSplitPanes(
+function getWorkspaceSplitPanes(
     node: WorkspaceSplitNode,
 ): WorkspaceSplitPaneNode[] {
     if (isSplitPaneNode(node)) {
@@ -480,7 +480,7 @@ export function normalizeSplitView(
     };
 }
 
-export function getWorkspaceActivePane(
+function getWorkspaceActivePane(
     splitView: WorkspaceSplitView | null,
 ): WorkspaceSplitPaneNode | null {
     if (!splitView?.root || !splitView.activePaneId) {

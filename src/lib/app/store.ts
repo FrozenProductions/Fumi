@@ -14,7 +14,6 @@ import {
     DEFAULT_APP_EDITOR_SETTINGS,
     DEFAULT_APP_EDITOR_TAB_SIZE,
     DEFAULT_APP_MIDDLE_CLICK_TAB_ACTION,
-    DEFAULT_APP_SIDEBAR_POSITION,
 } from "../../constants/app/settings";
 import { APP_SIDEBAR_ITEM_IDS } from "../../constants/app/sidebar";
 import {
@@ -66,15 +65,6 @@ export function isAppSidebarPosition(
     value: unknown,
 ): value is AppSidebarPosition {
     return isStringLiteral(value, APP_SIDEBAR_POSITIONS);
-}
-
-/**
- * Normalizes a sidebar position value, falling back to the default if invalid.
- */
-export function normalizeAppSidebarPosition(
-    value: unknown,
-): AppSidebarPosition {
-    return isAppSidebarPosition(value) ? value : DEFAULT_APP_SIDEBAR_POSITION;
 }
 
 /**

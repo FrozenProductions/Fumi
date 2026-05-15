@@ -8,11 +8,11 @@ import type {
     WorkspaceSplitPlacement,
 } from "../session/sessionSplitView.type";
 
-export type WorkspaceBulkArchiveOptions = {
+type WorkspaceBulkArchiveOptions = {
     scopeTabIds?: readonly string[];
 };
 
-export type WorkspaceStoreState = {
+type WorkspaceStoreState = {
     workspace: WorkspaceSession | null;
     dirtyTabCount: number;
     transientTabCursorsById: Record<string, WorkspaceCursorState>;
@@ -24,7 +24,7 @@ export type WorkspaceStoreState = {
     errorMessage: string | null;
 };
 
-export type WorkspaceStoreActions = {
+type WorkspaceStoreActions = {
     bootstrapWorkspaceSession: () => Promise<void>;
     persistWorkspaceState: () => Promise<boolean>;
     refreshWorkspaceFromFilesystem: () => Promise<void>;
@@ -94,7 +94,7 @@ export type WorkspaceStore = WorkspaceStoreState & WorkspaceStoreActions;
 
 export type WorkspaceStoreSet = Parameters<StateCreator<WorkspaceStore>>[0];
 export type WorkspaceStoreGet = Parameters<StateCreator<WorkspaceStore>>[1];
-export type WorkspaceStoreApi = Parameters<StateCreator<WorkspaceStore>>[2];
+type WorkspaceStoreApi = Parameters<StateCreator<WorkspaceStore>>[2];
 
 export type WorkspaceLifecycleSlice = Pick<
     WorkspaceStoreActions,

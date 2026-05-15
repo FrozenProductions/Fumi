@@ -22,7 +22,7 @@ export function disableTextInputCorrections(
  *
  * @returns The clamped value as a string, or null if the input is not a valid number.
  */
-export function clampNumericTextInputValue(
+function clampNumericTextInputValue(
     rawValue: string,
     minValue?: number,
     maxValue?: number,

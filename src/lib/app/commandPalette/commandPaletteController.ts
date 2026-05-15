@@ -18,7 +18,7 @@ import { searchAppCommandPaletteItems } from "./search/commandPaletteSearch";
 /**
  * Builds shortcut labels for all command palette hotkey actions.
  */
-export function getAppCommandPaletteHotkeyLabels(
+function getAppCommandPaletteHotkeyLabels(
     hotkeyBindings: AppHotkeyBindings,
 ): AppCommandPaletteHotkeyLabels {
     return {

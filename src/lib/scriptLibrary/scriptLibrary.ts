@@ -92,7 +92,7 @@ export function matchesScriptLibraryFilters(
 /**
  * Checks if a script matches a search query against title, description, creator name, or slug.
  */
-export function matchesScriptLibraryQuery(
+function matchesScriptLibraryQuery(
     script: ScriptLibraryEntry,
     query: string,
 ): boolean {
@@ -113,7 +113,7 @@ export function matchesScriptLibraryQuery(
 /**
  * Sorts script entries by the specified order (views, likes, or date) with title as tiebreaker.
  */
-export function sortScriptLibraryEntries(
+function sortScriptLibraryEntries(
     scripts: ScriptLibraryEntry[],
     orderBy: ScriptLibrarySort,
 ): ScriptLibraryEntry[] {

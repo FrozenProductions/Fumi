@@ -8,7 +8,7 @@ import type {
 } from "../../../lib/workspace/session/sessionSplitView.type";
 import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 
-export type WorkspaceTabBarProps = {
+type WorkspaceTabBarProps = {
     workspace: WorkspaceScreenSession;
     splitView: WorkspaceSplitView | null;
     tabListScopeId: string;
@@ -46,19 +46,19 @@ export type WorkspaceTabBarInternalProps = WorkspaceTabBarProps & {
     isTabDragActive: boolean;
 };
 
-export type WorkspaceTabItemIdentityProps = {
+type WorkspaceTabItemIdentityProps = {
     index: number;
     sortableGroup: string;
     tab: WorkspaceScreenTab;
 };
 
-export type WorkspaceTabItemStateProps = {
+type WorkspaceTabItemStateProps = {
     isActive: boolean;
     isVisibleInSplit: boolean;
     isTabDragActive: boolean;
 };
 
-export type WorkspaceTabItemActionProps = {
+type WorkspaceTabItemActionProps = {
     middleClickTabAction: AppMiddleClickTabAction;
     onOpenContextMenu: (
         tabId: string,
@@ -69,7 +69,7 @@ export type WorkspaceTabItemActionProps = {
     onSelectTab: (tabId: string) => void;
 };
 
-export type WorkspaceTabItemRenameProps = Pick<
+type WorkspaceTabItemRenameProps = Pick<
     UseWorkspaceTabRenameResult,
     | "handleRenameInputBlur"
     | "handleRenameInputChange"

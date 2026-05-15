@@ -27,7 +27,7 @@ export function createDesktopShellRequiredError(
  * @param fallbackMessage - Message to use when the error cause is unknown
  * @returns A typed workspace command error
  */
-export function createWorkspaceCommandError(
+function createWorkspaceCommandError(
     operation: string,
     error: unknown,
     fallbackMessage: string,

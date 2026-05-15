@@ -7,7 +7,7 @@ export type WorkspaceOutlineCacheEntry = {
     fileName: string;
 };
 
-export type WorkspaceOutlinePoint = {
+type WorkspaceOutlinePoint = {
     column: number;
     row: number;
 };

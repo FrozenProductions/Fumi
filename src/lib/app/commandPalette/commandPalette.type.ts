@@ -73,7 +73,7 @@ export type AppCommandPaletteVisibilityState = {
     isClosing: boolean;
 };
 
-export type AppCommandPaletteInputState = {
+type AppCommandPaletteInputState = {
     panelRef: RefObject<HTMLDivElement | null>;
     inputRef: RefObject<HTMLInputElement | null>;
     mode: AppCommandPaletteViewMode;
@@ -81,12 +81,12 @@ export type AppCommandPaletteInputState = {
     scope: AppCommandPaletteScope;
 };
 
-export type AppCommandPaletteResultsState = {
+type AppCommandPaletteResultsState = {
     activeResultIndex: number;
     results: AppCommandPaletteItem[];
 };
 
-export type AppCommandPaletteHandlers = {
+type AppCommandPaletteHandlers = {
     commitSelection: (item: AppCommandPaletteItem) => void;
     handleBackdropMouseDown: (event: MouseEvent<HTMLDivElement>) => void;
     handleHoverItem: (index: number) => void;
@@ -181,16 +181,8 @@ export type GetThemeCommandPaletteItemsOptions = {
     onSetTheme: (theme: AppTheme) => void;
 };
 
-export type WorkspaceCommandPaletteItem = AppCommandPaletteItem;
-
 export type AppCommandPaletteSearchFieldName =
     | "label"
     | "keywords"
     | "meta"
     | "description";
-
-export type AppCommandPaletteSearchResult = {
-    item: AppCommandPaletteItem;
-    index: number;
-    score: number;
-};

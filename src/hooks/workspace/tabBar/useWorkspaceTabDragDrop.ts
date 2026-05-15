@@ -12,7 +12,7 @@ import type {
 } from "../../../lib/workspace/session/sessionSplitView.type";
 import { normalizeWorkspaceSplitRatio } from "../../../lib/workspace/splitView";
 
-export type WorkspaceSplitDropTarget = {
+type WorkspaceSplitDropTarget = {
     paneId: string | null;
     placement: WorkspaceSplitPlacement;
 };

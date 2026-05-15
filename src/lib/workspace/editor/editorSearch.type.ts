@@ -16,7 +16,7 @@ export type WorkspaceEditorSearchMatchState = Pick<
     "activeMatchOrdinal" | "matchCount"
 >;
 
-export type AceEditorSearchInstance = {
+type AceEditorSearchInstance = {
     set: (options: Partial<Ace.SearchOptions>) => AceEditorSearchInstance;
     findAll: (session: Ace.EditSession) => Ace.Range[];
 };

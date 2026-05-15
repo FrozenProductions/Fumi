@@ -24,11 +24,11 @@ import type {
     ResolvedAppHotkey,
 } from "./hotkeys.type";
 
-export function isAppHotkeyAction(value: unknown): value is AppHotkeyAction {
+function isAppHotkeyAction(value: unknown): value is AppHotkeyAction {
     return isStringLiteral(value, APP_HOTKEY_ACTIONS);
 }
 
-export function isAppHotkeyBinding(value: unknown): value is AppHotkeyBinding {
+function isAppHotkeyBinding(value: unknown): value is AppHotkeyBinding {
     return typeof value === "string" && hasNonModifierKey(value);
 }
 
@@ -111,7 +111,7 @@ export function getAppHotkeyShortcutLabel(
  * @param hotkeyBindings - Persisted user overrides
  * @returns True if the user has set a non-default binding for this action
  */
-export function isAppHotkeyCustomized(
+function isAppHotkeyCustomized(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
 ): boolean {

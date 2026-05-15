@@ -37,7 +37,7 @@ export function createAutomaticExecutionRuntime(): AutomaticExecutionRuntime {
  * @param set - Zustand state setter
  * @param snapshot - The snapshot returned by the backend
  */
-export function applyAutomaticExecutionSnapshot(
+function applyAutomaticExecutionSnapshot(
     set: AutomaticExecutionStoreSet,
     snapshot: AutomaticExecutionSnapshot,
 ): void {

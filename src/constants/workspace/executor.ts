@@ -6,7 +6,7 @@ export const MACSPLOIT_EXECUTOR_PORTS = [
 export const OPIUMWARE_EXECUTOR_PORTS = [
     8392, 8393, 8394, 8395, 8396, 8397,
 ] as const;
-export const UNSUPPORTED_EXECUTOR_PORTS = [] as const;
+const UNSUPPORTED_EXECUTOR_PORTS = [] as const;
 export const DEFAULT_EXECUTOR_KIND: ExecutorKind = "macsploit";
 export const DEFAULT_EXECUTOR_PORT = MACSPLOIT_EXECUTOR_PORTS[0];
 export const EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT = 5;

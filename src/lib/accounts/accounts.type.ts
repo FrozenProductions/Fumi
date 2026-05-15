@@ -1,4 +1,4 @@
-export type AccountStatus = "active" | "offline";
+type AccountStatus = "active" | "offline";
 
 export type AccountSummary = {
     id: string;

@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-export type AppInputSize = "sm" | "md" | "lg";
+type AppInputSize = "sm" | "md" | "lg";
 
 export type AppInputProps = {
     value: string;

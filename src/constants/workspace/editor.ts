@@ -1,4 +1,4 @@
-export const WORKSPACE_EDITOR_FONT_FAMILY =
+const WORKSPACE_EDITOR_FONT_FAMILY =
     '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace';
 
 export const WORKSPACE_EDITOR_OPTIONS = {

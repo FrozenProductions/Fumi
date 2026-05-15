@@ -282,21 +282,3 @@ export const selectWorkspacePersistRevision = (
     state.isHydrated && state.persistRevision !== state.lastPersistedRevision
         ? state.persistRevision
         : null;
-
-/**
- * Returns the current split view configuration, or null if no split is active.
- *
- * @param state - The workspace store state
- */
-export const selectWorkspaceSplitView = (
-    state: WorkspaceStore,
-): WorkspaceSplitView | null => state.workspace?.splitView ?? null;
-
-/**
- * Returns the focused pane ID within the active split view, or null if no split exists.
- *
- * @param state - The workspace store state
- */
-export const selectWorkspaceSplitFocusedPane = (
-    state: WorkspaceStore,
-): string | null => state.workspace?.splitView?.activePaneId ?? null;
