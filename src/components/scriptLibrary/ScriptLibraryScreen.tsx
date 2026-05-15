@@ -131,7 +131,7 @@ export function ScriptLibraryScreen(): ReactElement {
                                 style={SCRIPT_LIBRARY_SPINNER_MASK_STYLE}
                             />
                             <h3 className="animate-pulse text-sm font-semibold text-fumi-500">
-                                Loading scripts...
+                                Loading scripts…
                             </h3>
                         </div>
                     </div>
