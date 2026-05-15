@@ -6,7 +6,7 @@ import type {
     PointerEvent as ReactPointerEvent,
     RefObject,
 } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -16,17 +16,8 @@ import {
     PANE_DROP_ID_PREFIX,
     SPLIT_DROP_ID_PREFIX,
 } from "../../../constants/workspace/workspace";
+import { useWorkspaceAcePaneHandlers } from "../../../hooks/workspace/useWorkspaceAcePaneHandlers";
 import { joinClassNames } from "../../../lib/shared/className";
-import type {
-    AceChangeDelta,
-    AceEditorInstance,
-} from "../../../lib/workspace/codeCompletion/ace.type";
-import {
-    applyAceEditorIndentSettings,
-    isAceCursorRowVisible,
-    setAceRelativeLineNumbers,
-} from "../../../lib/workspace/editor/editor";
-import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
 import type {
     WorkspaceSplitNode,
     WorkspaceSplitPaneNode,
@@ -62,10 +53,19 @@ function WorkspaceAcePane({
     tab,
     tabSize,
 }: WorkspaceAcePaneProps): ReactElement {
-    const editorRef = useRef<AceEditorInstance | null>(null);
-    const [isEditorFocused, setIsEditorFocused] = useState(false);
-    const [isCursorRowVisible, setIsCursorRowVisible] = useState(false);
-    const editorChangeHandler = createHandleEditorChange(tab.id);
+    const acePaneHandlers = useWorkspaceAcePaneHandlers({
+        createHandleEditorChange,
+        createHandleEditorLoad,
+        createHandleEditorUnmount,
+        createHandleScroll,
+        isActiveTab,
+        isRelativeLineNumbersEnabled,
+        isTabsToSpacesEnabled,
+        isVisible,
+        onActiveTabLuauChange,
+        tab,
+        tabSize,
+    });
     const editorOptions = {
         ...WORKSPACE_EDITOR_OPTIONS,
         animatedScroll: isSmoothCaretEnabled,
@@ -80,66 +80,6 @@ function WorkspaceAcePane({
             "workspace-ace-editor-disable-scope-highlight",
     );
 
-    useEffect(() => {
-        const editor = editorRef.current;
-
-        if (!editor) {
-            return;
-        }
-
-        applyAceEditorIndentSettings(editor, {
-            isTabsToSpacesEnabled,
-            tabSize,
-        });
-    }, [isTabsToSpacesEnabled, tabSize]);
-
-    useEffect(() => {
-        const editor = editorRef.current;
-
-        if (!editor) {
-            return;
-        }
-
-        setAceRelativeLineNumbers(
-            editor,
-            isRelativeLineNumbersEnabled &&
-                isEditorFocused &&
-                isCursorRowVisible &&
-                isVisible,
-        );
-    }, [
-        isCursorRowVisible,
-        isEditorFocused,
-        isRelativeLineNumbersEnabled,
-        isVisible,
-    ]);
-
-    useEffect(() => {
-        if (isVisible) {
-            return;
-        }
-
-        if (editorRef.current) {
-            setAceRelativeLineNumbers(editorRef.current, false);
-        }
-
-        setIsEditorFocused(false);
-        setIsCursorRowVisible(false);
-    }, [isVisible]);
-
-    useEffect(() => {
-        return () => {
-            if (editorRef.current) {
-                setAceRelativeLineNumbers(editorRef.current, false);
-            }
-        };
-    }, []);
-
-    useEffect(
-        () => createHandleEditorUnmount(tab.id),
-        [createHandleEditorUnmount, tab.id],
-    );
-
     return (
         <div aria-hidden={!isVisible} className="absolute inset-0 z-10">
             <AceEditorComponent
@@ -150,81 +90,12 @@ function WorkspaceAcePane({
                 width="100%"
                 height="100%"
                 value={tab.content}
-                onLoad={(editor: AceEditorInstance) => {
-                    editorRef.current = editor;
-                    setAceRelativeLineNumbers(editor, false);
-                    applyAceEditorIndentSettings(editor, {
-                        isTabsToSpacesEnabled,
-                        tabSize,
-                    });
-                    createHandleEditorLoad(tab.id)(editor);
-                }}
-                onChange={(value: string, delta?: AceChangeDelta) => {
-                    if (isActiveTab) {
-                        onActiveTabLuauChange(normalizeOutlineChange(delta));
-                    }
-
-                    editorChangeHandler(value, delta);
-                }}
-                onScroll={(editor: AceEditorInstance) => {
-                    const isCursorVisible = isAceCursorRowVisible(editor);
-
-                    createHandleScroll(tab.id)(editor);
-                    setIsCursorRowVisible(isCursorVisible);
-                    setAceRelativeLineNumbers(
-                        editor,
-                        isRelativeLineNumbersEnabled &&
-                            isEditorFocused &&
-                            isCursorVisible &&
-                            isVisible,
-                    );
-                }}
-                onFocus={() => {
-                    const editor = editorRef.current;
-                    const isCursorVisible = editor
-                        ? isAceCursorRowVisible(editor)
-                        : false;
-
-                    setIsEditorFocused(true);
-                    setIsCursorRowVisible(isCursorVisible);
-
-                    if (editor) {
-                        setAceRelativeLineNumbers(
-                            editor,
-                            isRelativeLineNumbersEnabled &&
-                                isCursorVisible &&
-                                isVisible,
-                        );
-                    }
-                }}
-                onBlur={() => {
-                    const editor = editorRef.current;
-
-                    setIsEditorFocused(false);
-                    setIsCursorRowVisible(false);
-
-                    if (editor) {
-                        setAceRelativeLineNumbers(editor, false);
-                    }
-                }}
-                onCursorChange={() => {
-                    const editor = editorRef.current;
-                    const isCursorVisible = editor
-                        ? isAceCursorRowVisible(editor)
-                        : false;
-
-                    setIsCursorRowVisible(isCursorVisible);
-
-                    if (editor) {
-                        setAceRelativeLineNumbers(
-                            editor,
-                            isRelativeLineNumbersEnabled &&
-                                isEditorFocused &&
-                                isCursorVisible &&
-                                isVisible,
-                        );
-                    }
-                }}
+                onLoad={acePaneHandlers.onLoad}
+                onChange={acePaneHandlers.onChange}
+                onScroll={acePaneHandlers.onScroll}
+                onFocus={acePaneHandlers.onFocus}
+                onBlur={acePaneHandlers.onBlur}
+                onCursorChange={acePaneHandlers.onCursorChange}
                 enableBasicAutocompletion={false}
                 enableLiveAutocompletion={false}
                 enableSnippets={false}
@@ -741,24 +612,4 @@ export function WorkspaceEditorSurface({
             </div>
         </div>
     );
-}
-
-function normalizeOutlineChange(
-    delta?: AceChangeDelta,
-): WorkspaceOutlineChange | null {
-    if (
-        !delta?.action ||
-        !delta.start ||
-        !delta.end ||
-        !Array.isArray(delta.lines)
-    ) {
-        return null;
-    }
-
-    return {
-        action: delta.action,
-        end: delta.end,
-        lines: delta.lines,
-        start: delta.start,
-    };
 }
