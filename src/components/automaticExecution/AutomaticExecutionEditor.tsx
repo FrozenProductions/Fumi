@@ -1,23 +1,18 @@
 import { Add01Icon } from "@hugeicons/core-free-icons";
-import type { Ace } from "ace-builds";
 import type { ReactElement } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import emptyAddIcon from "../../assets/icons/empty_add.svg";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
     WORKSPACE_EDITOR_STYLE,
 } from "../../constants/workspace/editor";
+import { useAutomaticExecutionAceEditor } from "../../hooks/automaticExecution/useAutomaticExecutionAceEditor";
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
 import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { joinClassNames } from "../../lib/shared/className";
 import { createMaskStyle } from "../../lib/shared/mask";
-import {
-    applyAceEditorIndentSettings,
-    getReactAceComponent,
-    isAceCursorRowVisible,
-    setAceRelativeLineNumbers,
-} from "../../lib/workspace/editor/editor";
+import { getReactAceComponent } from "../../lib/workspace/editor/editor";
 import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
 import { AppIcon } from "../app/common/AppIcon";
 import type { AutomaticExecutionEditorProps } from "./AutomaticExecutionEditor.type";
@@ -53,10 +48,14 @@ export function AutomaticExecutionEditor({
     const [AceEditorComponent, setAceEditorComponent] =
         useState<AceEditorComponent | null>(null);
     const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
-    const editorRef = useRef<Ace.Editor | null>(null);
-    const appliedScriptIdRef = useRef<string | null>(null);
-    const [isEditorFocused, setIsEditorFocused] = useState(false);
-    const [isCursorRowVisible, setIsCursorRowVisible] = useState(false);
+    const aceEditorHandlers = useAutomaticExecutionAceEditor({
+        isRelativeLineNumbersEnabled,
+        isTabsToSpacesEnabled,
+        onChange,
+        onCursorChange,
+        script,
+        tabSize,
+    });
     const editorOptions = {
         ...WORKSPACE_EDITOR_OPTIONS,
         animatedScroll: isSmoothCaretEnabled,
@@ -70,42 +69,6 @@ export function AutomaticExecutionEditor({
         !isScopeHighlightingEnabled &&
             "workspace-ace-editor-disable-scope-highlight",
     );
-
-    useEffect(() => {
-        const editor = editorRef.current;
-
-        if (!editor) {
-            return;
-        }
-
-        applyAceEditorIndentSettings(editor, {
-            isTabsToSpacesEnabled,
-            tabSize,
-        });
-    }, [isTabsToSpacesEnabled, tabSize]);
-
-    useEffect(() => {
-        const editor = editorRef.current;
-
-        if (!editor) {
-            return;
-        }
-
-        setAceRelativeLineNumbers(
-            editor,
-            isRelativeLineNumbersEnabled &&
-                isEditorFocused &&
-                isCursorRowVisible,
-        );
-    }, [isCursorRowVisible, isEditorFocused, isRelativeLineNumbersEnabled]);
-
-    useEffect(() => {
-        return () => {
-            if (editorRef.current) {
-                setAceRelativeLineNumbers(editorRef.current, false);
-            }
-        };
-    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -127,24 +90,6 @@ export function AutomaticExecutionEditor({
             isMounted = false;
         };
     }, []);
-
-    useEffect(() => {
-        const editor = editorRef.current;
-
-        if (!editor || !script) {
-            appliedScriptIdRef.current = script?.id ?? null;
-            return;
-        }
-
-        if (appliedScriptIdRef.current === script.id) {
-            return;
-        }
-
-        appliedScriptIdRef.current = script.id;
-        editor.selection.moveCursorTo(script.cursor.line, script.cursor.column);
-        editor.clearSelection();
-        editor.renderer.scrollToY(script.cursor.scrollTop);
-    }, [script]);
 
     if (!script) {
         return (
@@ -212,98 +157,12 @@ export function AutomaticExecutionEditor({
                 wrapEnabled={isWordWrapEnabled}
                 setOptions={editorOptions}
                 style={WORKSPACE_EDITOR_STYLE}
-                onChange={(value: string) => {
-                    onChange(value);
-                }}
-                onFocus={() => {
-                    const editor = editorRef.current;
-                    const isCursorVisible = editor
-                        ? isAceCursorRowVisible(editor)
-                        : false;
-
-                    setIsEditorFocused(true);
-                    setIsCursorRowVisible(isCursorVisible);
-
-                    if (editor) {
-                        setAceRelativeLineNumbers(
-                            editor,
-                            isRelativeLineNumbersEnabled && isCursorVisible,
-                        );
-                    }
-                }}
-                onBlur={() => {
-                    const editor = editorRef.current;
-
-                    setIsEditorFocused(false);
-                    setIsCursorRowVisible(false);
-
-                    if (editor) {
-                        setAceRelativeLineNumbers(editor, false);
-                    }
-                }}
-                onLoad={(editor: Ace.Editor) => {
-                    editorRef.current = editor;
-                    setAceRelativeLineNumbers(editor, false);
-                    applyAceEditorIndentSettings(editor, {
-                        isTabsToSpacesEnabled,
-                        tabSize,
-                    });
-                    appliedScriptIdRef.current = script.id;
-                    editor.selection.moveCursorTo(
-                        script.cursor.line,
-                        script.cursor.column,
-                    );
-                    editor.clearSelection();
-                    editor.renderer.scrollToY(script.cursor.scrollTop);
-                }}
-                onCursorChange={() => {
-                    const editor = editorRef.current;
-
-                    if (!editor) {
-                        setIsCursorRowVisible(false);
-                        return;
-                    }
-
-                    const isCursorVisible = isAceCursorRowVisible(editor);
-
-                    setIsCursorRowVisible(isCursorVisible);
-                    setAceRelativeLineNumbers(
-                        editor,
-                        isRelativeLineNumbersEnabled &&
-                            isEditorFocused &&
-                            isCursorVisible,
-                    );
-                    const cursor = editor.getCursorPosition();
-                    onCursorChange({
-                        line: cursor.row,
-                        column: cursor.column,
-                        scrollTop: editor.session.getScrollTop(),
-                    });
-                }}
-                onScroll={() => {
-                    const editor = editorRef.current;
-
-                    if (!editor) {
-                        setIsCursorRowVisible(false);
-                        return;
-                    }
-
-                    const isCursorVisible = isAceCursorRowVisible(editor);
-
-                    setIsCursorRowVisible(isCursorVisible);
-                    setAceRelativeLineNumbers(
-                        editor,
-                        isRelativeLineNumbersEnabled &&
-                            isEditorFocused &&
-                            isCursorVisible,
-                    );
-                    const cursor = editor.getCursorPosition();
-                    onCursorChange({
-                        line: cursor.row,
-                        column: cursor.column,
-                        scrollTop: editor.session.getScrollTop(),
-                    });
-                }}
+                onChange={aceEditorHandlers.onChange}
+                onFocus={aceEditorHandlers.onFocus}
+                onBlur={aceEditorHandlers.onBlur}
+                onLoad={aceEditorHandlers.onLoad}
+                onCursorChange={aceEditorHandlers.onCursorChange}
+                onScroll={aceEditorHandlers.onScroll}
                 editorProps={WORKSPACE_EDITOR_PROPS}
             />
         </div>
