@@ -3,27 +3,13 @@ import nothingFoundIcon from "../../assets/icons/nothing_found.svg";
 import warningIcon from "../../assets/icons/warning.svg";
 import { SCRIPT_LIBRARY_SPINNER_MASK_STYLE } from "../../constants/scriptLibrary/screen";
 import { useScriptLibrary } from "../../hooks/scriptLibrary/useScriptLibrary";
+import { useScriptLibraryCardActions } from "../../hooks/scriptLibrary/useScriptLibraryCardActions";
 import { useWorkspaceSession } from "../../hooks/workspace/useWorkspaceSession";
-import { copyTextToClipboard } from "../../lib/platform/core/clipboard";
-import {
-    copyScriptToClipboard,
-    fetchScriptText,
-} from "../../lib/scriptLibrary/api";
-import {
-    getScriptLibraryPermalink,
-    getWorkspaceScriptFileName,
-} from "../../lib/scriptLibrary/scriptLibrary";
-import type {
-    ScriptLibraryContentMode,
-    ScriptLibraryEntry,
-} from "../../lib/scriptLibrary/scriptLibrary.type";
+import type { ScriptLibraryContentMode } from "../../lib/scriptLibrary/scriptLibrary.type";
 import { createMaskStyle } from "../../lib/shared/mask";
 import { ScriptLibraryCard } from "./ScriptLibraryCard";
 import { ScriptLibraryToolbar } from "./ScriptLibraryToolbar";
-import type {
-    ScriptLibraryCardActions,
-    ScriptLibraryEmptyState,
-} from "./scriptLibrary.type";
+import type { ScriptLibraryEmptyState } from "./scriptLibrary.type";
 
 function getScriptLibraryEmptyState(options: {
     contentMode: ScriptLibraryContentMode;
@@ -85,13 +71,6 @@ export function ScriptLibraryScreen(): ReactElement {
         maxPages,
     } = state;
     const {
-        copyingScriptFor,
-        addingScriptFor,
-        copiedLinkId,
-        copiedScriptId,
-        addedScriptId,
-    } = activity;
-    const {
         clearFavorites,
         setContentMode,
         setQuery,
@@ -107,88 +86,24 @@ export function ScriptLibraryScreen(): ReactElement {
         activateCopiedScript,
         activateAddedScript,
     } = actions;
+    const { createCardActions } = useScriptLibraryCardActions({
+        activity,
+        actions: {
+            activateAddedScript,
+            activateCopiedLink,
+            activateCopiedScript,
+            setAddingScriptFor,
+            setCopyingScriptFor,
+            toggleFavorite,
+        },
+        favoriteIds,
+        hasWorkspace,
+        workspaceSession,
+    });
     const emptyState = getScriptLibraryEmptyState({
         contentMode,
         favoriteCount,
     });
-
-    async function handleCopyLink(script: ScriptLibraryEntry): Promise<void> {
-        await copyTextToClipboard(getScriptLibraryPermalink(script));
-        activateCopiedLink(script._id);
-    }
-
-    async function handleCopyScript(script: ScriptLibraryEntry): Promise<void> {
-        if (copyingScriptFor === script._id) {
-            return;
-        }
-
-        setCopyingScriptFor(script._id);
-
-        try {
-            await copyScriptToClipboard(script);
-            activateCopiedScript(script._id);
-        } catch (error) {
-            console.error("Failed to copy script.", error);
-        } finally {
-            setCopyingScriptFor(null);
-        }
-    }
-
-    async function handleAddToWorkspace(
-        script: ScriptLibraryEntry,
-    ): Promise<void> {
-        if (
-            !workspaceSession.state.workspace ||
-            addingScriptFor === script._id
-        ) {
-            return;
-        }
-
-        setAddingScriptFor(script._id);
-
-        try {
-            const scriptText = await fetchScriptText(script);
-            const didAdd =
-                await workspaceSession.workspaceActions.addWorkspaceScriptTab(
-                    getWorkspaceScriptFileName(script),
-                    scriptText,
-                );
-
-            if (didAdd) {
-                activateAddedScript(script._id);
-            }
-        } catch (error) {
-            console.error("Failed to add script to workspace.", error);
-        } finally {
-            setAddingScriptFor(null);
-        }
-    }
-
-    function createCardActions(
-        script: ScriptLibraryEntry,
-    ): ScriptLibraryCardActions {
-        return {
-            hasWorkspace,
-            isAddingToWorkspace: addingScriptFor === script._id,
-            isAddedToWorkspace: addedScriptId === script._id,
-            isCopyingScript: copyingScriptFor === script._id,
-            isCopiedLink: copiedLinkId === script._id,
-            isCopiedScript: copiedScriptId === script._id,
-            isFavorite: favoriteIds.has(script._id),
-            onAddToWorkspace: () => {
-                void handleAddToWorkspace(script);
-            },
-            onCopyLink: () => {
-                void handleCopyLink(script);
-            },
-            onCopyScript: () => {
-                void handleCopyScript(script);
-            },
-            onToggleFavorite: () => {
-                toggleFavorite(script);
-            },
-        };
-    }
 
     return (
         <section className="flex h-full min-h-0 flex-col bg-fumi-50">
