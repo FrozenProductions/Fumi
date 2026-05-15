@@ -35,4 +35,5 @@ export type AppTooltipLayerProps = {
     top: number;
     left: number;
     isVisible: boolean;
+    ref?: Ref<HTMLDivElement>;
 };

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 
 export type AppIconButtonProps = Omit<
     ButtonHTMLAttributes<HTMLButtonElement>,
@@ -7,4 +7,5 @@ export type AppIconButtonProps = Omit<
     ariaLabel: string;
     children: ReactNode;
     isActive?: boolean;
+    ref?: Ref<HTMLButtonElement>;
 };
