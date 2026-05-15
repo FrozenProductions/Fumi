@@ -30,7 +30,7 @@ export function AppSearchField({
 }: AppSearchFieldProps): ReactElement {
     const shouldShowClearButton = isClearable && value.trim().length > 0;
 
-    const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const updateSearchValue = (event: ChangeEvent<HTMLInputElement>): void => {
         onChange(event.target.value);
     };
 
@@ -47,7 +47,7 @@ export function AppSearchField({
                 value={value}
                 placeholder={placeholder}
                 aria-label={ariaLabel}
-                onChange={handleChange}
+                onChange={updateSearchValue}
                 onKeyDown={onKeyDown}
                 {...APP_TEXT_INPUT_PROPS}
                 style={
