@@ -19,24 +19,23 @@ function areWorkspaceScreenTabsEqual(
     currentTabs: readonly WorkspaceScreenTab[],
     nextTabs: readonly WorkspaceTab[],
 ): boolean {
-    if (currentTabs.length !== nextTabs.length) {
-        return false;
-    }
+    return (
+        currentTabs.length === nextTabs.length &&
+        currentTabs.every((tab, index) => {
+            const nextTab = nextTabs[index];
 
-    return currentTabs.every((tab, index) => {
-        const nextTab = nextTabs[index];
+            if (!nextTab) {
+                return false;
+            }
 
-        if (!nextTab) {
-            return false;
-        }
-
-        return (
-            tab.id === nextTab.id &&
-            tab.fileName === nextTab.fileName &&
-            tab.isPinned === (nextTab.isPinned === true) &&
-            tab.isDirty === (nextTab.content !== nextTab.savedContent)
-        );
-    });
+            return (
+                tab.id === nextTab.id &&
+                tab.fileName === nextTab.fileName &&
+                tab.isPinned === (nextTab.isPinned === true) &&
+                tab.isDirty === (nextTab.content !== nextTab.savedContent)
+            );
+        })
+    );
 }
 
 function createWorkspaceScreenTab(tab: WorkspaceTab): WorkspaceScreenTab {
@@ -52,57 +51,55 @@ function areWorkspaceTabStatesEqual(
     currentTabs: readonly WorkspaceTabState[],
     nextTabs: readonly WorkspaceTabState[],
 ): boolean {
-    if (currentTabs.length !== nextTabs.length) {
-        return false;
-    }
+    return (
+        currentTabs.length === nextTabs.length &&
+        currentTabs.every((tab, index) => {
+            const nextTab = nextTabs[index];
 
-    return currentTabs.every((tab, index) => {
-        const nextTab = nextTabs[index];
+            if (!nextTab) {
+                return false;
+            }
 
-        if (!nextTab) {
-            return false;
-        }
-
-        return (
-            tab.id === nextTab.id &&
-            tab.fileName === nextTab.fileName &&
-            (tab.isPinned === true) === (nextTab.isPinned === true) &&
-            tab.archivedAt === nextTab.archivedAt &&
-            tab.cursor.line === nextTab.cursor.line &&
-            tab.cursor.column === nextTab.cursor.column &&
-            tab.cursor.scrollTop === nextTab.cursor.scrollTop
-        );
-    });
+            return (
+                tab.id === nextTab.id &&
+                tab.fileName === nextTab.fileName &&
+                (tab.isPinned === true) === (nextTab.isPinned === true) &&
+                tab.archivedAt === nextTab.archivedAt &&
+                tab.cursor.line === nextTab.cursor.line &&
+                tab.cursor.column === nextTab.cursor.column &&
+                tab.cursor.scrollTop === nextTab.cursor.scrollTop
+            );
+        })
+    );
 }
 
 function areWorkspaceExecutionHistoryEntriesEqual(
     currentEntries: readonly WorkspaceExecutionHistoryEntry[],
     nextEntries: readonly WorkspaceExecutionHistoryEntry[],
 ): boolean {
-    if (currentEntries.length !== nextEntries.length) {
-        return false;
-    }
+    return (
+        currentEntries.length === nextEntries.length &&
+        currentEntries.every((entry, index) => {
+            const nextEntry = nextEntries[index];
 
-    return currentEntries.every((entry, index) => {
-        const nextEntry = nextEntries[index];
+            if (!nextEntry) {
+                return false;
+            }
 
-        if (!nextEntry) {
-            return false;
-        }
-
-        return (
-            entry.id === nextEntry.id &&
-            entry.executedAt === nextEntry.executedAt &&
-            entry.executorKind === nextEntry.executorKind &&
-            entry.port === nextEntry.port &&
-            entry.accountId === nextEntry.accountId &&
-            entry.accountDisplayName === nextEntry.accountDisplayName &&
-            entry.isBoundToUnknownAccount ===
-                nextEntry.isBoundToUnknownAccount &&
-            entry.fileName === nextEntry.fileName &&
-            entry.scriptContent === nextEntry.scriptContent
-        );
-    });
+            return (
+                entry.id === nextEntry.id &&
+                entry.executedAt === nextEntry.executedAt &&
+                entry.executorKind === nextEntry.executorKind &&
+                entry.port === nextEntry.port &&
+                entry.accountId === nextEntry.accountId &&
+                entry.accountDisplayName === nextEntry.accountDisplayName &&
+                entry.isBoundToUnknownAccount ===
+                    nextEntry.isBoundToUnknownAccount &&
+                entry.fileName === nextEntry.fileName &&
+                entry.scriptContent === nextEntry.scriptContent
+            );
+        })
+    );
 }
 
 function areWorkspaceSplitViewsEqual(

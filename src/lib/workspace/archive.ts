@@ -17,7 +17,7 @@ export function filterAndSortArchivedTabs(
                   tab.fileName.toLowerCase().includes(normalizedQuery),
               );
 
-    return [...matchingTabs].sort((leftTab, rightTab) => {
+    return matchingTabs.slice().sort((leftTab, rightTab) => {
         if (sortBy.startsWith("name")) {
             const comparison = leftTab.fileName.localeCompare(
                 rightTab.fileName,

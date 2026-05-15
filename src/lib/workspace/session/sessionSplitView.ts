@@ -203,13 +203,18 @@ function updateNodeAtPath(
         return node;
     }
 
-    const nextChildren = node.children
-        .map((child, index) =>
+    const nextChildren: WorkspaceSplitNode[] = [];
+
+    for (const [index, child] of node.children.entries()) {
+        const nextChild =
             index === nextIndex
                 ? updateNodeAtPath(child, remainingPath, updateNode)
-                : child,
-        )
-        .filter((child): child is WorkspaceSplitNode => child !== null);
+                : child;
+
+        if (nextChild !== null) {
+            nextChildren.push(nextChild);
+        }
+    }
 
     return normalizeGroupNode({
         ...node,
@@ -233,9 +238,15 @@ function updateSplitGroupById(
         return normalizeGroupNode(updateGroup(node) ?? node);
     }
 
-    const children = node.children
-        .map((child) => updateSplitGroupById(child, splitId, updateGroup))
-        .filter((child): child is WorkspaceSplitNode => child !== null);
+    const children: WorkspaceSplitNode[] = [];
+
+    for (const child of node.children) {
+        const nextChild = updateSplitGroupById(child, splitId, updateGroup);
+
+        if (nextChild !== null) {
+            children.push(nextChild);
+        }
+    }
 
     return normalizeGroupNode({
         ...node,

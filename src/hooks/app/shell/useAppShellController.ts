@@ -48,7 +48,6 @@ export function useAppShellController(): UseAppShellControllerResult {
     const commandPaletteMode = useAppStore((state) => state.commandPaletteMode);
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
     const theme = useAppStore((state) => state.theme);
-    const zoomPercent = useAppStore((state) => state.zoomPercent);
     const closeCommandPalette = useAppStore(
         (state) => state.closeCommandPalette,
     );
@@ -65,7 +64,6 @@ export function useAppShellController(): UseAppShellControllerResult {
     const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
     const setTheme = useAppStore((state) => state.setTheme);
-    const setZoomPercent = useAppStore((state) => state.setZoomPercent);
     const updater = useAppUpdater();
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
@@ -124,13 +122,17 @@ export function useAppShellController(): UseAppShellControllerResult {
         void openWorkspaceDirectory();
     };
     const handleZoomIn = (): void => {
-        setZoomPercent(zoomPercent + APP_ZOOM_STEP);
+        const { zoomPercent, setZoomPercent } = useAppStore.getState();
+        const nextZoomPercent = zoomPercent + APP_ZOOM_STEP;
+        setZoomPercent(nextZoomPercent);
     };
     const handleZoomOut = (): void => {
-        setZoomPercent(zoomPercent - APP_ZOOM_STEP);
+        const { zoomPercent, setZoomPercent } = useAppStore.getState();
+        const nextZoomPercent = zoomPercent - APP_ZOOM_STEP;
+        setZoomPercent(nextZoomPercent);
     };
     const handleZoomReset = (): void => {
-        setZoomPercent(APP_ZOOM_DEFAULT);
+        useAppStore.getState().setZoomPercent(APP_ZOOM_DEFAULT);
     };
 
     const activeScreen = getAppScreen(
