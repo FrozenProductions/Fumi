@@ -95,11 +95,13 @@ function AppCommandPaletteContent({
 
     return (
         <div
+            role="presentation"
             className={backdropClassName}
             onMouseDown={handleBackdropMouseDown}
         >
             <div
                 ref={panelRef}
+                role="presentation"
                 className={shellClassName}
                 onMouseDown={(event) => {
                     event.stopPropagation();

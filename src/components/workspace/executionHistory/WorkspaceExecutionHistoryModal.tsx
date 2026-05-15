@@ -115,6 +115,7 @@ export function WorkspaceExecutionHistoryModal({
 
     return (
         <div
+            role="presentation"
             className="fixed inset-0 z-[70] flex items-center justify-center px-4 py-6"
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
