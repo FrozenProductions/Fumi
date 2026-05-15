@@ -66,6 +66,16 @@ export function useWorkspaceEditorSurface(options: {
     const resolvedOutlinePanelWidth =
         outlinePanelPreviewWidth ?? outlinePanelWidth;
     const isOutlineResizeActive = outlinePanelPreviewWidth !== null;
+    const editorSurfaceStyle =
+        isOutlinePanelSupported && isOutlinePanelVisible
+            ? sidebarPosition === "right"
+                ? ({
+                      paddingLeft: `${resolvedOutlinePanelWidth}px`,
+                  } satisfies CSSProperties)
+                : ({
+                      paddingRight: `${resolvedOutlinePanelWidth}px`,
+                  } satisfies CSSProperties)
+            : ({} satisfies CSSProperties);
     const workspaceActionsClassName = `pointer-events-none absolute bottom-5 z-40 ${
         sidebarPosition === "right"
             ? isOutlineResizeActive
@@ -205,6 +215,7 @@ export function useWorkspaceEditorSurface(options: {
             AceEditorComponent,
             aceRuntime,
             activeTab,
+            editorSurfaceStyle,
             isAceReady,
             isOutlinePanelSupported,
             outlinePanelClassName,

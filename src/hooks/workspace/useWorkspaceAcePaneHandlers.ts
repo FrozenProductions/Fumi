@@ -59,6 +59,7 @@ export function useWorkspaceAcePaneHandlers({
     tabSize,
 }: UseWorkspaceAcePaneHandlersOptions): UseWorkspaceAcePaneHandlersResult {
     const editorRef = useRef<AceEditorInstance | null>(null);
+    const editorHostRef = useRef<HTMLDivElement | null>(null);
     const [interactionState, setInteractionState] = useReducer(
         updateWorkspaceAcePaneInteractionState,
         {
@@ -139,6 +140,44 @@ export function useWorkspaceAcePaneHandlers({
         };
     }, []);
 
+    useEffect(() => {
+        const host = editorHostRef.current;
+
+        if (!host || typeof ResizeObserver === "undefined") {
+            return;
+        }
+
+        let animationFrameId: number | null = null;
+
+        const resizeEditor = (): void => {
+            if (animationFrameId !== null) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
+
+            animationFrameId = window.requestAnimationFrame(() => {
+                animationFrameId = null;
+
+                if (!isVisible) {
+                    return;
+                }
+
+                editorRef.current?.resize();
+            });
+        };
+        const resizeObserver = new ResizeObserver(resizeEditor);
+
+        resizeObserver.observe(host);
+        resizeEditor();
+
+        return () => {
+            if (animationFrameId !== null) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
+
+            resizeObserver.disconnect();
+        };
+    }, [isVisible]);
+
     useEffect(
         () => createHandleEditorUnmount(tab.id),
         [createHandleEditorUnmount, tab.id],
@@ -212,6 +251,7 @@ export function useWorkspaceAcePaneHandlers({
     }
 
     return {
+        editorHostRef,
         onBlur: handleBlur,
         onChange: handleChange,
         onCursorChange: handleCursorChange,

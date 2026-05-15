@@ -46,6 +46,25 @@ function isTabFullyVisible(
     );
 }
 
+function scrollTabIntoView(
+    scrollContainer: HTMLElement,
+    tabElement: HTMLElement,
+): void {
+    const tabLeft = tabElement.offsetLeft;
+    const tabRight = tabLeft + tabElement.offsetWidth;
+    const visibleLeft = scrollContainer.scrollLeft;
+    const visibleRight = visibleLeft + scrollContainer.clientWidth;
+
+    if (tabLeft < visibleLeft) {
+        scrollContainer.scrollLeft = tabLeft;
+        return;
+    }
+
+    if (tabRight > visibleRight) {
+        scrollContainer.scrollLeft = tabRight - scrollContainer.clientWidth;
+    }
+}
+
 /**
  * Owns tab bar UI state such as the tab list dropdown, context menu, and active-tab scrolling.
  *
@@ -130,11 +149,9 @@ export function useWorkspaceTabBarState({
                 return;
             }
 
-            tabElement.scrollIntoView({
-                behavior: "auto",
-                block: "nearest",
-                inline: "nearest",
-            });
+            if (tabElement.parentElement) {
+                scrollTabIntoView(tabElement.parentElement, tabElement);
+            }
         });
 
         return () => {

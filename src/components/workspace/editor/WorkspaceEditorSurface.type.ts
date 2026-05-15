@@ -57,6 +57,7 @@ export type WorkspaceEditorSurfaceProps = {
         state: {
             AceEditorComponent: AceEditorComponent | null;
             aceRuntime: LoadedAceRuntime | null;
+            editorSurfaceStyle: CSSProperties;
             isAceReady: boolean;
             isOutlinePanelSupported: boolean;
             outlinePanelClassName: string;

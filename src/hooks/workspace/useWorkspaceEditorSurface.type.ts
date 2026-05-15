@@ -15,6 +15,7 @@ export type UseWorkspaceEditorSurfaceResult = {
         AceEditorComponent: AceEditorComponent | null;
         aceRuntime: LoadedAceRuntime | null;
         activeTab: WorkspaceEditorPaneProps["tabs"][number] | null;
+        editorSurfaceStyle: CSSProperties;
         isAceReady: boolean;
         isOutlinePanelSupported: boolean;
         outlinePanelClassName: string;

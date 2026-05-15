@@ -76,7 +76,11 @@ function WorkspaceAcePane({
     );
 
     return (
-        <div aria-hidden={!isVisible} className="absolute inset-0 z-10">
+        <div
+            ref={acePaneHandlers.editorHostRef}
+            aria-hidden={!isVisible}
+            className="absolute inset-0 z-10"
+        >
             <AceEditorComponent
                 className={editorClassName}
                 name={`workspace-editor-${tab.id}`}
@@ -461,13 +465,18 @@ export function WorkspaceEditorSurface({
     const { searchPanel, workspaceActionsButton } = pane;
     const { splitView } = splitViewState;
     const { editorContainerRef } = surface.refs;
-    const { isAceReady, workspaceActionsClassName, workspaceActionsStyle } =
-        surface.state;
+    const {
+        editorSurfaceStyle,
+        isAceReady,
+        workspaceActionsClassName,
+        workspaceActionsStyle,
+    } = surface.state;
 
     return (
         <div
             ref={editorContainerRef}
-            className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden"
+            className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden transition-[padding] duration-300 ease-in-out"
+            style={editorSurfaceStyle}
         >
             {!isAceReady ? (
                 <div className="flex h-full w-full items-center justify-center bg-fumi-50 text-xs font-semibold uppercase tracking-[0.16em] text-fumi-400">

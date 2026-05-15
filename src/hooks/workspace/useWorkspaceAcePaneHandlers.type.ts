@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { WorkspaceAcePaneProps } from "../../components/workspace/editor/WorkspaceEditorSurface.type";
 import type {
     AceChangeDelta,
@@ -20,6 +21,7 @@ export type UseWorkspaceAcePaneHandlersOptions = Pick<
 >;
 
 export type UseWorkspaceAcePaneHandlersResult = {
+    editorHostRef: RefObject<HTMLDivElement | null>;
     onBlur: () => void;
     onChange: (value: string, delta?: AceChangeDelta) => void;
     onCursorChange: () => void;
