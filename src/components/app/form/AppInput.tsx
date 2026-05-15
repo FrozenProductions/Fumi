@@ -1,19 +1,9 @@
-import type {
-    ChangeEvent,
-    FocusEvent,
-    KeyboardEvent,
-    MouseEvent,
-    ReactElement,
-} from "react";
-import { useRef, useState } from "react";
+import type { ReactElement } from "react";
 import {
     APP_INPUT_SIZE_MIN_WIDTH_MAP,
     APP_TEXT_INPUT_PROPS,
 } from "../../../constants/app/input";
-import {
-    getSteppedTextInputValue,
-    resolveCommittedTextInputValue,
-} from "../../../lib/app/textInput";
+import { useAppInputController } from "../../../hooks/app/useAppInputController";
 import type { AppInputProps } from "./AppInput.type";
 
 /**
@@ -51,88 +41,17 @@ export function AppInput({
     size,
     className = "",
 }: AppInputProps): ReactElement {
-    const [draftValue, setDraftValue] = useState(value);
-    const [isEditing, setIsEditing] = useState(false);
-    const displayedValue = isEditing ? draftValue : value;
-    const latestDisplayedValueRef = useRef(displayedValue);
-
-    latestDisplayedValueRef.current = displayedValue;
-
-    const commitValue = (
-        currentDraftValue = latestDisplayedValueRef.current,
-    ): void => {
-        const resolvedValue = resolveCommittedTextInputValue({
-            draftValue: currentDraftValue,
-            value,
-            minValue,
-            maxValue,
-        });
-
-        setDraftValue(resolvedValue.nextDraftValue);
-        setIsEditing(false);
-
-        if (
-            resolvedValue.nextValue !== null &&
-            resolvedValue.nextValue !== value
-        ) {
-            onChange(resolvedValue.nextValue);
-        }
-    };
-
-    const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
-        setIsEditing(true);
-        setDraftValue(event.target.value);
-    };
-
-    const handleFocus = (event: FocusEvent<HTMLInputElement>): void => {
-        setDraftValue(value);
-        setIsEditing(true);
-        event.currentTarget.select();
-    };
-
-    const handleClick = (event: MouseEvent<HTMLInputElement>): void => {
-        event.currentTarget.select();
-    };
-
-    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
-        if (event.key === "Enter") {
-            commitValue(event.currentTarget.value);
-            event.currentTarget.blur();
-            return;
-        }
-
-        if (event.key === "Escape") {
-            setDraftValue(value);
-            setIsEditing(false);
-            latestDisplayedValueRef.current = value;
-            event.currentTarget.blur();
-            return;
-        }
-
-        if (
-            step !== undefined &&
-            (event.key === "ArrowUp" || event.key === "ArrowDown")
-        ) {
-            event.preventDefault();
-            const next = getSteppedTextInputValue({
-                draftValue,
-                minValue,
-                maxValue,
-                step,
-                direction: event.key === "ArrowUp" ? 1 : -1,
-            });
-
-            if (next !== null) {
-                setIsEditing(true);
-                setDraftValue(next);
-                latestDisplayedValueRef.current = next;
-                onChange(next);
-            }
-        }
-    };
+    const inputController = useAppInputController({
+        maxValue,
+        minValue,
+        onChange,
+        step,
+        value,
+    });
 
     const sizeClass = size ? APP_INPUT_SIZE_MIN_WIDTH_MAP[size] : "min-w-[1ch]";
-    const measuredValue = displayedValue || placeholder || value || " ";
+    const measuredValue =
+        inputController.displayedValue || placeholder || value || " ";
 
     return (
         <label
@@ -149,19 +68,19 @@ export function AppInput({
                 </span>
                 <input
                     type="text"
-                    value={displayedValue}
+                    value={inputController.displayedValue}
                     aria-label={ariaLabel}
                     inputMode={inputMode}
                     maxLength={maxLength}
                     placeholder={placeholder}
                     readOnly={isReadOnly}
-                    onChange={handleChange}
+                    onChange={inputController.handleChange}
                     onBlur={(event) => {
-                        commitValue(event.currentTarget.value);
+                        inputController.commitValue(event.currentTarget.value);
                     }}
-                    onFocus={handleFocus}
-                    onClick={handleClick}
-                    onKeyDown={handleKeyDown}
+                    onFocus={inputController.handleFocus}
+                    onClick={inputController.handleClick}
+                    onKeyDown={inputController.handleKeyDown}
                     {...APP_TEXT_INPUT_PROPS}
                     className="absolute inset-0 w-full min-w-0 border-none bg-transparent px-px text-right text-xs font-semibold text-fumi-800 outline-none placeholder:text-fumi-400"
                 />
