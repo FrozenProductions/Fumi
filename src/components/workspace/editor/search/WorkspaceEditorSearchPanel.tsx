@@ -111,7 +111,7 @@ export function WorkspaceEditorSearchPanel({
                             event.preventDefault();
                         }}
                         aria-label="Toggle replace mode"
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.5rem] text-fumi-400 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
+                        className="flex size-7 shrink-0 items-center justify-center rounded-[0.5rem] text-fumi-400 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
                     >
                         <AppIcon
                             icon={
@@ -154,7 +154,7 @@ export function WorkspaceEditorSearchPanel({
                             event.preventDefault();
                         }}
                         onClick={searchPanel.onClose}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.5rem] text-fumi-400 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
+                        className="flex size-7 shrink-0 items-center justify-center rounded-[0.5rem] text-fumi-400 transition-[background-color,color] hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
                     >
                         <AppIcon
                             icon={Cancel01Icon}

@@ -32,7 +32,7 @@ export function WorkspaceErrorBanner({
                         type="button"
                         aria-label="Dismiss workspace error"
                         onClick={onClose}
-                        className="app-select-none inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[0.55rem] text-amber-700 transition-[background-color,color] duration-150 ease-out hover:bg-amber-100 hover:text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-amber-50"
+                        className="app-select-none inline-flex size-6 shrink-0 items-center justify-center rounded-[0.55rem] text-amber-700 transition-[background-color,color] duration-150 ease-out hover:bg-amber-100 hover:text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-amber-50"
                     >
                         <AppIcon
                             icon={Cancel01Icon}

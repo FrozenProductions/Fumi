@@ -140,7 +140,7 @@ export function ScriptLibraryScreen(): ReactElement {
                         <div className="mx-auto flex max-w-lg flex-col items-center text-center">
                             <div
                                 aria-hidden="true"
-                                className="mx-auto h-24 w-24 bg-fumi-600"
+                                className="mx-auto size-24 bg-fumi-600"
                                 style={WARNING_ICON_STYLE}
                             />
                             <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">
@@ -158,7 +158,7 @@ export function ScriptLibraryScreen(): ReactElement {
                         <div className="mx-auto flex max-w-lg flex-col items-center text-center">
                             <div
                                 aria-hidden="true"
-                                className="mx-auto h-24 w-24 bg-fumi-600"
+                                className="mx-auto size-24 bg-fumi-600"
                                 style={NOTHING_FOUND_ICON_STYLE}
                             />
                             <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">

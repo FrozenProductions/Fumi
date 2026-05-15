@@ -27,7 +27,7 @@ export function AppDragDropOverlay({
             <div className="mx-auto flex max-w-lg flex-col items-center text-center motion-safe:motion-opacity-in-0 motion-safe:-motion-translate-y-in-[8%] motion-safe:motion-scale-in-[97%] motion-safe:motion-duration-200 motion-safe:motion-delay-[40ms] motion-safe:motion-ease-spring-smooth motion-reduce:animate-none motion-reduce:transform-none">
                 <div
                     aria-hidden="true"
-                    className="mx-auto h-24 w-24 bg-fumi-600"
+                    className="mx-auto size-24 bg-fumi-600"
                     style={FILE_ICON_STYLE}
                 />
                 <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.32em] text-fumi-500">

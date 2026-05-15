@@ -286,13 +286,13 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                     placeholder="Filter symbols"
                     ariaLabel="Filter symbols in outline"
                     inputClassName="h-7 w-full min-w-0 rounded-[0.45rem] border border-fumi-200 bg-fumi-100 px-2 text-[11px] font-medium text-fumi-800 placeholder:text-fumi-400 outline-none transition-[border-color,box-shadow] focus:border-fumi-600 focus:bg-fumi-50 focus:ring-1 focus:ring-fumi-600"
-                    clearButtonClassName="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-fumi-400 transition-colors hover:text-fumi-700 focus-visible:outline-none"
+                    clearButtonClassName="absolute right-1.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded text-fumi-400 transition-colors hover:text-fumi-700 focus-visible:outline-none"
                 />
                 <div className="flex shrink-0 items-center gap-0.5">
                     <AppTooltip content="Expand all" side="top">
                         <button
                             type="button"
-                            className="flex h-6 w-6 items-center justify-center rounded text-fumi-500 transition-colors duration-150 ease-out hover:bg-fumi-100 hover:text-fumi-700 focus-visible:bg-fumi-100 focus-visible:outline-none"
+                            className="flex size-6 items-center justify-center rounded text-fumi-500 transition-colors duration-150 ease-out hover:bg-fumi-100 hover:text-fumi-700 focus-visible:bg-fumi-100 focus-visible:outline-none"
                             aria-label="Expand all groups"
                             onClick={() => {
                                 onExpandAllGroups(groupTitles);
@@ -308,7 +308,7 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
                     <AppTooltip content="Collapse all" side="top">
                         <button
                             type="button"
-                            className="flex h-6 w-6 items-center justify-center rounded text-fumi-500 transition-colors duration-150 ease-out hover:bg-fumi-100 hover:text-fumi-700 focus-visible:bg-fumi-100 focus-visible:outline-none"
+                            className="flex size-6 items-center justify-center rounded text-fumi-500 transition-colors duration-150 ease-out hover:bg-fumi-100 hover:text-fumi-700 focus-visible:bg-fumi-100 focus-visible:outline-none"
                             aria-label="Collapse all groups"
                             onClick={() => {
                                 onCollapseAllGroups(groupTitles);
