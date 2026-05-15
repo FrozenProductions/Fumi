@@ -1,17 +1,11 @@
 import type { FocusEvent, PointerEvent, ReactElement } from "react";
-import { cloneElement, useEffect, useId, useRef, useState } from "react";
+import { cloneElement, useId } from "react";
 import {
     DEFAULT_TOOLTIP_DELAY_MS,
     DEFAULT_TOOLTIP_OFFSET,
 } from "../../../constants/tooltip/tooltip";
-import { useTooltipStore } from "../../../hooks/app/useTooltipStore";
-import {
-    assignRef,
-    markTooltipWarm,
-    mergeAriaDescribedBy,
-    scheduleTooltipCooldown,
-    shouldSkipTooltipDelay,
-} from "../../../lib/tooltip/tooltip";
+import { useAppTooltipTrigger } from "../../../hooks/app/useAppTooltipTrigger";
+import { assignRef, mergeAriaDescribedBy } from "../../../lib/tooltip/tooltip";
 import type { AppTooltipProps } from "./appTooltip.type";
 
 /**
@@ -36,112 +30,18 @@ export function AppTooltip({
     delayMs = DEFAULT_TOOLTIP_DELAY_MS,
     disabled = false,
 }: AppTooltipProps): ReactElement {
-    const hideTooltip = useTooltipStore((state) => state.hideTooltip);
-    const showTooltip = useTooltipStore((state) => state.showTooltip);
     const tooltipId = useId();
-    const openTimerRef = useRef<number | null>(null);
-    const triggerElementRef = useRef<HTMLElement | null>(null);
-    const [isVisible, setIsVisible] = useState(false);
-    const childElement = children;
-
-    const clearOpenTimer = (): void => {
-        if (openTimerRef.current === null) {
-            return;
-        }
-
-        window.clearTimeout(openTimerRef.current);
-        openTimerRef.current = null;
-    };
-
-    const openTooltip = (useDelay: boolean): void => {
-        if (disabled || !triggerElementRef.current) {
-            return;
-        }
-
-        clearOpenTimer();
-
-        const show = (): void => {
-            if (!triggerElementRef.current) {
-                return;
-            }
-
-            markTooltipWarm();
-            setIsVisible(true);
-
-            showTooltip({
-                id: tooltipId,
-                content,
-                shortcut,
-                side,
-                offset,
-                triggerElement: triggerElementRef.current,
-            });
-        };
-
-        if (!useDelay || shouldSkipTooltipDelay()) {
-            show();
-            return;
-        }
-
-        openTimerRef.current = window.setTimeout(() => {
-            show();
-            openTimerRef.current = null;
-        }, delayMs);
-    };
-
-    const closeTooltip = (): void => {
-        clearOpenTimer();
-        setIsVisible(false);
-        hideTooltip(tooltipId);
-        scheduleTooltipCooldown();
-    };
-
-    useEffect(() => {
-        return () => {
-            if (openTimerRef.current !== null) {
-                window.clearTimeout(openTimerRef.current);
-            }
-
-            setIsVisible(false);
-            hideTooltip(tooltipId);
-        };
-    }, [hideTooltip, tooltipId]);
-
-    useEffect(() => {
-        if (!disabled || !isVisible) {
-            return;
-        }
-
-        setIsVisible(false);
-        hideTooltip(tooltipId);
-    }, [disabled, hideTooltip, isVisible, tooltipId]);
-
-    useEffect(() => {
-        if (!isVisible || !triggerElementRef.current) {
-            return;
-        }
-
-        showTooltip({
-            id: tooltipId,
+    const { closeTooltip, isVisible, openTooltip, triggerElementRef } =
+        useAppTooltipTrigger({
             content,
+            delayMs,
+            disabled,
+            offset,
             shortcut,
             side,
-            offset,
-            triggerElement: triggerElementRef.current,
+            tooltipId,
         });
-    }, [content, shortcut, isVisible, offset, showTooltip, side, tooltipId]);
-
-    useEffect(() => {
-        if (!isVisible) {
-            return;
-        }
-
-        return useTooltipStore.subscribe((state) => {
-            if (state.activeTooltip?.id !== tooltipId) {
-                setIsVisible(false);
-            }
-        });
-    }, [isVisible, tooltipId]);
+    const childElement = children;
 
     if (disabled) {
         return children;
