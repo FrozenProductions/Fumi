@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
     DEFAULT_WORKSPACE_EXECUTION_HISTORY_FILTER,
     WORKSPACE_EXECUTION_HISTORY_SEARCH_DEBOUNCE_MS,
@@ -61,6 +61,7 @@ export function WorkspaceExecutionHistoryModal({
         (state) => state.editorSettings.isWordWrapEnabled,
     );
     const tabSize = useAppStore((state) => state.editorSettings.tabSize);
+    const closeExecutionHistory = useEffectEvent(onClose);
 
     const visibleEntries = useMemo(
         () =>
@@ -95,7 +96,7 @@ export function WorkspaceExecutionHistoryModal({
 
         function handleKeyDown(event: KeyboardEvent): void {
             if (event.key === "Escape") {
-                onClose();
+                closeExecutionHistory();
             }
         }
 
@@ -103,7 +104,7 @@ export function WorkspaceExecutionHistoryModal({
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
     const hasActiveSearch =
         debouncedQuery.trim().length > 0 || filterValue !== "all";

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactElement } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS } from "../../../constants/workspace/workspace";
 import { useAppStore } from "../../../hooks/app/useAppStore";
 import { usePresenceTransition } from "../../../hooks/shared/usePresenceTransition";
@@ -51,6 +51,7 @@ export function WorkspaceTabContextMenu({
     const theme = useAppStore((state) => state.theme);
     const menuRef = useRef<HTMLDivElement | null>(null);
     const lastPositionRef = useRef(position);
+    const closeContextMenu = useEffectEvent(onClose);
     const { isPresent, isClosing } = usePresenceTransition({
         isOpen,
         exitDurationMs: WORKSPACE_TAB_CONTEXT_MENU_EXIT_DURATION_MS,
@@ -74,7 +75,7 @@ export function WorkspaceTabContextMenu({
                 return;
             }
 
-            onClose();
+            closeContextMenu();
         };
 
         const handleKeyDown = (event: KeyboardEvent): void => {
@@ -82,7 +83,7 @@ export function WorkspaceTabContextMenu({
                 return;
             }
 
-            onClose();
+            closeContextMenu();
         };
 
         document.addEventListener("mousedown", handlePointerDown);
@@ -92,7 +93,7 @@ export function WorkspaceTabContextMenu({
             document.removeEventListener("mousedown", handlePointerDown);
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [isPresent, onClose]);
+    }, [isPresent]);
 
     if (!isPresent) {
         return null;
