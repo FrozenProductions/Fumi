@@ -61,7 +61,7 @@ export function WorkspaceEditor({
     );
 
     return (
-        <div className="relative flex min-h-0 flex-1 bg-fumi-50">
+        <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-fumi-50">
             <WorkspaceEditorSurface
                 completion={completion}
                 outline={outline}

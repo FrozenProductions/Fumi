@@ -68,8 +68,17 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const reorderWorkspaceTab = useWorkspaceStore(
         (state) => state.reorderWorkspaceTab,
     );
+    const splitWorkspaceTab = useWorkspaceStore(
+        (state) => state.splitWorkspaceTab,
+    );
     const openWorkspaceTabInPane = useWorkspaceStore(
         (state) => state.openWorkspaceTabInPane,
+    );
+    const moveWorkspaceTabToPane = useWorkspaceStore(
+        (state) => state.moveWorkspaceTabToPane,
+    );
+    const setWorkspaceSplitDirection = useWorkspaceStore(
+        (state) => state.setWorkspaceSplitDirection,
     );
     const setWorkspaceSplitRatio = useWorkspaceStore(
         (state) => state.setWorkspaceSplitRatio,
@@ -133,7 +142,10 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
             selectWorkspaceTab,
             reorderWorkspaceTab,
             saveActiveWorkspaceTab,
+            splitWorkspaceTab,
             openWorkspaceTabInPane,
+            moveWorkspaceTabToPane,
+            setWorkspaceSplitDirection,
             setWorkspaceSplitRatio,
             resetWorkspaceSplitView,
             toggleWorkspaceSplitView,

@@ -1,13 +1,9 @@
-import type {
-    CSSProperties,
-    MouseEvent as ReactMouseEvent,
-    RefObject,
-} from "react";
+import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 import type { UseWorkspaceTabRenameResult } from "../../../hooks/workspace/tabBar/useWorkspaceTabRename.type";
 import type { AppMiddleClickTabAction } from "../../../lib/app/app.type";
 import type { WorkspaceScreenSession } from "../../../lib/workspace/session/session.type";
 import type {
-    WorkspacePaneId,
+    WorkspaceSplitPlacement,
     WorkspaceSplitView,
 } from "../../../lib/workspace/session/sessionSplitView.type";
 import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
@@ -27,9 +23,13 @@ export type WorkspaceTabBarProps = {
     ) => void;
     onToggleTabPinned: (tabId: string) => void;
     onDeleteTab: (tabId: string) => void;
-    onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
+    onSplitTab: (
+        tabId: string,
+        targetPaneId: string | null,
+        placement: WorkspaceSplitPlacement,
+    ) => void;
     onCloseSplitView: () => void;
-    splitDropTarget: WorkspacePaneId | null;
+    splitDropTarget: null;
     middleClickTabAction: AppMiddleClickTabAction;
     isSplitViewArchiveScopeEnabled: boolean;
 };
@@ -111,26 +111,18 @@ export type WorkspaceTabContextMenuProps = {
     onClose: () => void;
     onDelete: () => void;
     onRename: () => void;
-    onOpenInLeftPane: () => void;
-    onOpenInRightPane: () => void;
+    onSplitLeft: () => void;
+    onSplitRight: () => void;
+    onSplitTop: () => void;
+    onSplitBottom: () => void;
     onCloseSplitView: () => void;
 };
 
 export type WorkspaceTabBarTabsProps = {
     layout: {
         activeTabId: string | null;
-        dividerStyle: CSSProperties;
-        isSplit: boolean;
-        primarySectionStyle: CSSProperties;
         primaryTabs: readonly WorkspaceScreenTab[];
-        secondarySectionStyle: CSSProperties;
-        secondaryTabId: string | null;
-        secondaryTabs: readonly WorkspaceScreenTab[];
-        secondaryTabsClassName: string;
         singlePaneTabsClassName: string;
-        splitDividerClassName: string;
-        splitDropTarget: WorkspacePaneId | null;
-        splitView: WorkspaceSplitView | null;
     };
     items: {
         isTabDragActive: boolean;
@@ -141,7 +133,6 @@ export type WorkspaceTabBarTabsProps = {
             tabId: string,
             event: ReactMouseEvent<HTMLDivElement>,
         ) => void;
-        onOpenTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
         onSelectTab: (tabId: string) => void;
         rename: WorkspaceTabItemRenameProps;
     };

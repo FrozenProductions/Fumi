@@ -24,12 +24,14 @@ export const STRUCTURAL_TEXT_PATTERN =
     /\b(local|function|export|for|while|repeat|until|if|elseif|else|do|end)\b|[={}()[\]]/u;
 export const TAB_BAR_MODIFIERS: never[] = [];
 export const TAB_BAR_SORTABLE_GROUP = "workspace-tabs";
-export const SPLIT_DROP_LEFT_ID = "workspace-split-left";
-export const SPLIT_DROP_RIGHT_ID = "workspace-split-right";
-export const SPLIT_DROP_IDS = new Set([
-    "workspace-split-left",
-    "workspace-split-right",
-]);
+export const SPLIT_DROP_ID_PREFIX = "workspace-split";
+export const PANE_DROP_ID_PREFIX = "workspace-pane";
+export const SPLIT_DROP_PLACEMENTS = [
+    "left",
+    "right",
+    "top",
+    "bottom",
+] as const;
 export const WORKSPACE_TAB_LIST_DROPDOWN_STYLE = {
     "--workspace-menu-radius": `${WORKSPACE_MENU_RADIUS_REM}rem`,
     "--workspace-menu-inset": `${WORKSPACE_MENU_INSET_REM}rem`,

@@ -1,11 +1,13 @@
-import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
 import {
-    openWorkspaceTabInPaneState,
+    closeWorkspaceFocusedSplitPaneState,
+    focusWorkspacePaneState,
+    moveWorkspaceTabToPaneState,
+    resizeWorkspaceSplitGroupState,
     selectWorkspaceTabState,
+    splitWorkspaceTabState,
 } from "../../session/sessionSplitView";
-import type { WorkspacePaneId } from "../../session/sessionSplitView.type";
+import type { WorkspaceSplitPlacement } from "../../session/sessionSplitView.type";
 import { reorderWorkspaceTabs } from "../../session/tabs/sessionTabs";
-import { normalizeWorkspaceSplitRatio } from "../../splitView";
 import { createWorkspaceStoreSupport } from "../createWorkspaceStoreSupport";
 import type {
     WorkspaceLayoutSlice,
@@ -60,9 +62,10 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                 void get().persistWorkspaceState();
             }
         },
-        openWorkspaceTabInPane: (
+        splitWorkspaceTab: (
             tabId: string,
-            pane: WorkspacePaneId,
+            targetPaneId: string | null,
+            placement: WorkspaceSplitPlacement,
         ): void => {
             const { workspace } = get();
 
@@ -73,62 +76,117 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
             const nextWorkspace = updateWorkspaceForPath(
                 workspace.workspacePath,
                 (currentWorkspace) =>
-                    openWorkspaceTabInPaneState(currentWorkspace, tabId, pane),
+                    splitWorkspaceTabState(
+                        currentWorkspace,
+                        tabId,
+                        targetPaneId,
+                        placement,
+                    ),
             );
 
             if (nextWorkspace && nextWorkspace !== workspace) {
                 void get().persistWorkspaceState();
             }
         },
-        setWorkspaceSplitRatio: (splitRatio: number): void => {
+        openWorkspaceTabInPane: (tabId, pane, direction): void => {
+            const placement =
+                direction === "vertical"
+                    ? pane === "primary"
+                        ? "top"
+                        : "bottom"
+                    : pane === "primary"
+                      ? "left"
+                      : "right";
+            get().splitWorkspaceTab(
+                tabId,
+                get().workspace?.splitView?.activePaneId ?? null,
+                placement,
+            );
+        },
+        moveWorkspaceTabToPane: (tabId: string, paneId: string): void => {
+            const { workspace } = get();
+
+            if (!workspace) {
+                return;
+            }
+
+            const nextWorkspace = updateWorkspaceForPath(
+                workspace.workspacePath,
+                (currentWorkspace) =>
+                    moveWorkspaceTabToPaneState(
+                        currentWorkspace,
+                        tabId,
+                        paneId,
+                    ),
+            );
+
+            if (nextWorkspace && nextWorkspace !== workspace) {
+                void get().persistWorkspaceState();
+            }
+        },
+        setWorkspaceSplitDirection: (): void => {
+            get().resetWorkspaceSplitView();
+        },
+        setWorkspaceSplitRatio: (
+            splitRatio: number,
+            splitId?: string,
+            dividerIndex?: number,
+        ): void => {
             set((state) => {
-                if (!state.workspace?.splitView) {
+                if (!state.workspace?.splitView?.root) {
                     return {};
                 }
 
-                const nextSplitRatio = normalizeWorkspaceSplitRatio(splitRatio);
+                const nextWorkspace = resizeWorkspaceSplitGroupState(
+                    state.workspace,
+                    splitRatio,
+                    splitId,
+                    dividerIndex,
+                );
 
-                if (state.workspace.splitView.splitRatio === nextSplitRatio) {
-                    return {};
-                }
-
-                return {
-                    workspace: {
-                        ...state.workspace,
-                        splitView: {
-                            ...state.workspace.splitView,
-                            splitRatio: nextSplitRatio,
-                        },
-                    },
-                    persistRevision: state.persistRevision + 1,
-                };
+                return nextWorkspace === state.workspace
+                    ? {}
+                    : {
+                          workspace: nextWorkspace,
+                          persistRevision: state.persistRevision + 1,
+                      };
             });
         },
         resetWorkspaceSplitView: (): void => {
             const { workspace } = get();
 
-            if (!workspace?.splitView) {
+            if (
+                !workspace?.splitView?.root ||
+                workspace.splitView.root.type !== "split"
+            ) {
                 return;
             }
 
             set((state) => {
-                if (!state.workspace?.splitView) {
+                if (!state.workspace?.splitView?.root) {
                     return {};
                 }
 
-                if (
-                    state.workspace.splitView.splitRatio ===
-                    DEFAULT_WORKSPACE_SPLIT_RATIO
-                ) {
+                if (state.workspace.splitView.root.type !== "split") {
                     return {};
                 }
+
+                const childCount =
+                    state.workspace.splitView.root.children.length;
+                const ratios = Array.from(
+                    { length: childCount },
+                    () => 1 / childCount,
+                );
 
                 return {
                     workspace: {
                         ...state.workspace,
                         splitView: {
                             ...state.workspace.splitView,
-                            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                            root: {
+                                ...state.workspace.splitView.root,
+                                ratios,
+                            },
                         },
                     },
                     persistRevision: state.persistRevision + 1,
@@ -151,45 +209,22 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                 return;
             }
 
-            get().openWorkspaceTabInPane(workspace.activeTabId, "secondary");
+            get().splitWorkspaceTab(workspace.activeTabId, null, "right");
         },
-        focusWorkspacePane: (pane: WorkspacePaneId): void => {
+        focusWorkspacePane: (paneId: string): void => {
             const { workspace } = get();
 
             if (!workspace?.splitView) {
                 return;
             }
 
-            set((state) => {
-                if (!state.workspace?.splitView) {
-                    return {};
-                }
+            const nextWorkspace = updateWorkspaceForPath(
+                workspace.workspacePath,
+                (currentWorkspace) =>
+                    focusWorkspacePaneState(currentWorkspace, paneId),
+            );
 
-                const { splitView } = state.workspace;
-
-                if (splitView.focusedPane === pane) {
-                    return {};
-                }
-
-                const focusedTabId =
-                    pane === "primary"
-                        ? splitView.primaryTabId
-                        : splitView.secondaryTabId;
-
-                return {
-                    workspace: {
-                        ...state.workspace,
-                        activeTabId: focusedTabId,
-                        splitView: {
-                            ...splitView,
-                            focusedPane: pane,
-                        },
-                    },
-                    persistRevision: state.persistRevision + 1,
-                };
-            });
-
-            if (get().workspace !== workspace) {
+            if (nextWorkspace && nextWorkspace !== workspace) {
                 void get().persistWorkspaceState();
             }
         },
@@ -205,20 +240,16 @@ export const createWorkspaceLayoutSlice: WorkspaceStoreSliceCreator<
                     return {};
                 }
 
-                const { splitView } = state.workspace;
-                const keepTabId =
-                    splitView.focusedPane === "primary"
-                        ? splitView.primaryTabId
-                        : splitView.secondaryTabId;
+                const nextWorkspace = closeWorkspaceFocusedSplitPaneState(
+                    state.workspace,
+                );
 
-                return {
-                    workspace: {
-                        ...state.workspace,
-                        activeTabId: keepTabId,
-                        splitView: null,
-                    },
-                    persistRevision: state.persistRevision + 1,
-                };
+                return nextWorkspace === state.workspace
+                    ? {}
+                    : {
+                          workspace: nextWorkspace,
+                          persistRevision: state.persistRevision + 1,
+                      };
             });
 
             if (get().workspace !== workspace) {

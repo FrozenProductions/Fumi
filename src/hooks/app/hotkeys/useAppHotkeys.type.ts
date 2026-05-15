@@ -68,7 +68,7 @@ export type UseAppScopedHotkeysOptions = {
     createWorkspaceFile: WorkspaceSessionWorkspaceActions["createWorkspaceFile"];
     openWorkspaceDirectory: WorkspaceSessionWorkspaceActions["openWorkspaceDirectory"];
     archiveWorkspaceTab: WorkspaceSessionTabActions["archiveWorkspaceTab"];
-    openWorkspaceTabInPane: WorkspaceSessionTabActions["openWorkspaceTabInPane"];
+    splitWorkspaceTab: WorkspaceSessionTabActions["splitWorkspaceTab"];
     resetWorkspaceSplitView: WorkspaceSessionTabActions["resetWorkspaceSplitView"];
     toggleWorkspaceSplitView: WorkspaceSessionTabActions["toggleWorkspaceSplitView"];
     focusWorkspacePane: WorkspaceSessionTabActions["focusWorkspacePane"];

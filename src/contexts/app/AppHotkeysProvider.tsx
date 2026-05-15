@@ -25,7 +25,7 @@ export function AppHotkeysProvider({
     const {
         archiveWorkspaceTab,
         focusWorkspacePane,
-        openWorkspaceTabInPane,
+        splitWorkspaceTab,
         resetWorkspaceSplitView,
         toggleWorkspaceSplitView,
     } = workspaceSession.tabActions;
@@ -89,7 +89,7 @@ export function AppHotkeysProvider({
         createWorkspaceFile,
         openWorkspaceDirectory,
         archiveWorkspaceTab,
-        openWorkspaceTabInPane,
+        splitWorkspaceTab,
         resetWorkspaceSplitView,
         toggleWorkspaceSplitView,
         focusWorkspacePane,

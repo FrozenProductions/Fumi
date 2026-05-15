@@ -32,9 +32,9 @@ export function getActiveTabCommandItems({
         deleteWorkspaceTab,
         duplicateWorkspaceTab,
         focusWorkspacePane,
-        openWorkspaceTabInPane,
         resetWorkspaceSplitView,
         saveActiveWorkspaceTab,
+        splitWorkspaceTab,
         toggleWorkspaceTabPinned,
         toggleWorkspaceSplitView,
     } = workspaceSession.tabActions;
@@ -153,26 +153,64 @@ export function getActiveTabCommandItems({
         },
         {
             id: "command-split-open-left",
-            label: "Move current tab to left pane",
-            description: `Place ${activeTab.fileName} in the left editor pane.`,
+            label: "Split current tab left",
+            description: `Split ${activeTab.fileName} to the left.`,
             icon: CommandIcon,
             meta: hotkeyLabels.moveWorkspaceTabToLeftPane,
             keywords: `split left pane editor view ${activeTab.fileName}`,
             onSelect: () => {
                 onOpenWorkspaceScreen();
-                openWorkspaceTabInPane(activeTab.id, "primary");
+                splitWorkspaceTab(
+                    activeTab.id,
+                    splitView?.activePaneId ?? null,
+                    "left",
+                );
             },
         },
         {
             id: "command-split-open-right",
-            label: "Move current tab to right pane",
-            description: `Place ${activeTab.fileName} in the right editor pane.`,
+            label: "Split current tab right",
+            description: `Split ${activeTab.fileName} to the right.`,
             icon: CommandIcon,
             meta: hotkeyLabels.moveWorkspaceTabToRightPane,
             keywords: `split right pane editor view ${activeTab.fileName}`,
             onSelect: () => {
                 onOpenWorkspaceScreen();
-                openWorkspaceTabInPane(activeTab.id, "secondary");
+                splitWorkspaceTab(
+                    activeTab.id,
+                    splitView?.activePaneId ?? null,
+                    "right",
+                );
+            },
+        },
+        {
+            id: "command-split-open-top",
+            label: "Split current tab top",
+            description: `Split ${activeTab.fileName} to the top.`,
+            icon: CommandIcon,
+            keywords: `split top pane editor view ${activeTab.fileName}`,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                splitWorkspaceTab(
+                    activeTab.id,
+                    splitView?.activePaneId ?? null,
+                    "top",
+                );
+            },
+        },
+        {
+            id: "command-split-open-bottom",
+            label: "Split current tab bottom",
+            description: `Split ${activeTab.fileName} to the bottom.`,
+            icon: CommandIcon,
+            keywords: `split bottom pane editor view ${activeTab.fileName}`,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                splitWorkspaceTab(
+                    activeTab.id,
+                    splitView?.activePaneId ?? null,
+                    "bottom",
+                );
             },
         },
     ];
@@ -185,34 +223,16 @@ export function getActiveTabCommandItems({
         ...items,
         {
             id: "command-split-focus-left",
-            label: "Focus left pane",
-            description: "Move focus to the left editor pane.",
+            label: "Focus current split",
+            description: "Move focus to the active split pane.",
             icon: CommandIcon,
-            keywords: "split left pane focus editor",
-            isDisabled: splitView.focusedPane === "primary",
-            meta:
-                splitView.focusedPane === "primary"
-                    ? "Current"
-                    : hotkeyLabels.focusWorkspaceLeftPane,
+            keywords: "split left top pane focus editor",
+            meta: hotkeyLabels.focusWorkspaceLeftPane,
             onSelect: () => {
                 onOpenWorkspaceScreen();
-                focusWorkspacePane("primary");
-            },
-        },
-        {
-            id: "command-split-focus-right",
-            label: "Focus right pane",
-            description: "Move focus to the right editor pane.",
-            icon: CommandIcon,
-            keywords: "split right pane focus editor",
-            isDisabled: splitView.focusedPane === "secondary",
-            meta:
-                splitView.focusedPane === "secondary"
-                    ? "Current"
-                    : hotkeyLabels.focusWorkspaceRightPane,
-            onSelect: () => {
-                onOpenWorkspaceScreen();
-                focusWorkspacePane("secondary");
+                if (splitView.activePaneId) {
+                    focusWorkspacePane(splitView.activePaneId);
+                }
             },
         },
         {

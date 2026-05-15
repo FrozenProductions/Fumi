@@ -1,6 +1,6 @@
 use super::*;
 use crate::executor::ExecutorKind;
-use serde_json::Map;
+use serde_json::{json, Map};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 struct TestWorkspaceDir {
@@ -123,22 +123,33 @@ fn normalize_workspace_metadata_repairs_invalid_entries_and_conflicts() {
 }
 
 #[test]
-fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
+fn normalize_workspace_metadata_preserves_split_view_json() {
     let metadata = normalize_workspace_metadata(Some(StoredWorkspaceMetadata {
         version: WORKSPACE_METADATA_VERSION,
         active_tab_id: Some("tab-3".to_string()),
-        split_view: Some(WorkspaceSplitView {
-            direction: "vertical".to_string(),
-            primary_tab_id: "tab-3".to_string(),
-            secondary_tab_id: "tab-1".to_string(),
-            secondary_tab_ids: vec![
-                "tab-1".to_string(),
-                "tab-2".to_string(),
-                "missing-tab".to_string(),
-            ],
-            split_ratio: 0.68,
-            focused_pane: WorkspacePaneId::Primary,
-        }),
+        split_view: Some(json!({
+            "root": {
+                "type": "split",
+                "id": "split-root",
+                "direction": "horizontal",
+                "children": [
+                    {
+                        "type": "pane",
+                        "id": "pane-primary",
+                        "activeTabId": "tab-3",
+                        "tabIds": ["tab-3"]
+                    },
+                    {
+                        "type": "pane",
+                        "id": "pane-secondary",
+                        "activeTabId": "tab-1",
+                        "tabIds": ["tab-1", "tab-2", "missing-tab"]
+                    }
+                ],
+                "ratios": [0.68, 0.32]
+            },
+            "activePaneId": "pane-primary"
+        })),
         tabs: Some(vec![
             tab("tab-1", "one.lua", create_empty_cursor_state(), None),
             tab("tab-2", "two.lua", create_empty_cursor_state(), None),
@@ -155,26 +166,9 @@ fn normalize_workspace_metadata_preserves_secondary_tab_ids_for_split_view() {
         metadata
             .split_view
             .as_ref()
-            .map(|split| split.primary_tab_id.as_str()),
-        Some("tab-3")
-    );
-    assert_eq!(
-        metadata
-            .split_view
-            .as_ref()
-            .map(|split| split.secondary_tab_id.as_str()),
-        Some("tab-1")
-    );
-    assert_eq!(
-        metadata
-            .split_view
-            .as_ref()
-            .map(|split| split.secondary_tab_ids.clone()),
-        Some(vec!["tab-1".to_string(), "tab-2".to_string()])
-    );
-    assert_eq!(
-        metadata.split_view.as_ref().map(|split| split.split_ratio),
-        Some(0.68)
+            .and_then(|split| split.get("activePaneId"))
+            .and_then(|value| value.as_str()),
+        Some("pane-primary")
     );
     assert_eq!(
         metadata.execution_history,
@@ -216,14 +210,14 @@ fn read_workspace_metadata_migrates_v4_documents_without_dropping_saved_state() 
     let legacy_document = PersistedWorkspaceDocumentV4 {
         version: 4,
         active_tab_id: Some("tab-2".to_string()),
-        split_view: Some(WorkspaceSplitView {
-            direction: "vertical".to_string(),
-            primary_tab_id: "tab-2".to_string(),
-            secondary_tab_id: "tab-1".to_string(),
-            secondary_tab_ids: vec!["tab-1".to_string()],
-            split_ratio: 0.61,
-            focused_pane: WorkspacePaneId::Primary,
-        }),
+        split_view: Some(json!({
+            "direction": "vertical",
+            "primaryTabId": "tab-2",
+            "secondaryTabId": "tab-1",
+            "secondaryTabIds": ["tab-1"],
+            "splitRatio": 0.61,
+            "focusedPane": "primary"
+        })),
         tabs: Some(vec![
             tab("tab-1", "one.lua", create_empty_cursor_state(), None),
             tab("tab-2", "two.lua", create_empty_cursor_state(), None),
@@ -252,14 +246,16 @@ fn read_workspace_metadata_migrates_v4_documents_without_dropping_saved_state() 
         metadata
             .split_view
             .as_ref()
-            .map(|split| split.primary_tab_id.as_str()),
+            .and_then(|split| split.get("primaryTabId"))
+            .and_then(|value| value.as_str()),
         Some("tab-2")
     );
     assert_eq!(
         metadata
             .split_view
             .as_ref()
-            .map(|split| split.secondary_tab_id.as_str()),
+            .and_then(|split| split.get("secondaryTabId"))
+            .and_then(|value| value.as_str()),
         Some("tab-1")
     );
     assert_eq!(
@@ -456,14 +452,29 @@ fn read_workspace_snapshot_preserves_split_membership() -> anyhow::Result<()> {
         &WorkspaceMetadata {
             version: WORKSPACE_METADATA_VERSION,
             active_tab_id: Some("tab-3".to_string()),
-            split_view: Some(WorkspaceSplitView {
-                direction: "vertical".to_string(),
-                primary_tab_id: "tab-3".to_string(),
-                secondary_tab_id: "tab-1".to_string(),
-                secondary_tab_ids: vec!["tab-1".to_string(), "tab-2".to_string()],
-                split_ratio: 0.64,
-                focused_pane: WorkspacePaneId::Primary,
-            }),
+            split_view: Some(json!({
+                "root": {
+                    "type": "split",
+                    "id": "split-root",
+                    "direction": "horizontal",
+                    "children": [
+                        {
+                            "type": "pane",
+                            "id": "pane-primary",
+                            "activeTabId": "tab-3",
+                            "tabIds": ["tab-3"]
+                        },
+                        {
+                            "type": "pane",
+                            "id": "pane-secondary",
+                            "activeTabId": "tab-1",
+                            "tabIds": ["tab-1", "tab-2"]
+                        }
+                    ],
+                    "ratios": [0.64, 0.36]
+                },
+                "activePaneId": "pane-primary"
+            })),
             tabs: vec![
                 tab("tab-1", "one.lua", create_empty_cursor_state(), None),
                 tab("tab-2", "two.lua", create_empty_cursor_state(), None),
@@ -480,13 +491,12 @@ fn read_workspace_snapshot_preserves_split_membership() -> anyhow::Result<()> {
         .split_view
         .expect("split view should survive snapshot normalization");
 
-    assert_eq!(split_view.primary_tab_id, "tab-3");
-    assert_eq!(split_view.secondary_tab_id, "tab-1");
     assert_eq!(
-        split_view.secondary_tab_ids,
-        vec!["tab-1".to_string(), "tab-2".to_string()]
+        split_view
+            .get("activePaneId")
+            .and_then(|value| value.as_str()),
+        Some("pane-primary")
     );
-    assert_eq!(split_view.split_ratio, 0.64);
     assert_eq!(
         snapshot.metadata.execution_history,
         vec![history_entry("history-1", 50)]
@@ -506,14 +516,29 @@ fn append_workspace_execution_history_preserves_metadata_and_caps_to_100_entries
         &WorkspaceMetadata {
             version: WORKSPACE_METADATA_VERSION,
             active_tab_id: Some("tab-1".to_string()),
-            split_view: Some(WorkspaceSplitView {
-                direction: "vertical".to_string(),
-                primary_tab_id: "tab-1".to_string(),
-                secondary_tab_id: "tab-2".to_string(),
-                secondary_tab_ids: vec!["tab-2".to_string()],
-                split_ratio: 0.5,
-                focused_pane: WorkspacePaneId::Primary,
-            }),
+            split_view: Some(json!({
+                "root": {
+                    "type": "split",
+                    "id": "split-root",
+                    "direction": "horizontal",
+                    "children": [
+                        {
+                            "type": "pane",
+                            "id": "pane-primary",
+                            "activeTabId": "tab-1",
+                            "tabIds": ["tab-1"]
+                        },
+                        {
+                            "type": "pane",
+                            "id": "pane-secondary",
+                            "activeTabId": "tab-2",
+                            "tabIds": ["tab-2"]
+                        }
+                    ],
+                    "ratios": [0.5, 0.5]
+                },
+                "activePaneId": "pane-primary"
+            })),
             tabs: vec![
                 tab("tab-1", "one.lua", create_empty_cursor_state(), None),
                 tab("tab-2", "two.lua", create_empty_cursor_state(), None),

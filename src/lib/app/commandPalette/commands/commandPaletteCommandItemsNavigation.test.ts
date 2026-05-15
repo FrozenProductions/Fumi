@@ -212,11 +212,13 @@ describe("getCommandCommandPaletteItems", () => {
             1,
             "tab-1",
             "primary",
+            "vertical",
         );
         expect(openWorkspaceTabInPane).toHaveBeenNthCalledWith(
             2,
             "tab-1",
             "secondary",
+            "vertical",
         );
         expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(4);
         expect(getCommand("command-goto-line")).toMatchObject({

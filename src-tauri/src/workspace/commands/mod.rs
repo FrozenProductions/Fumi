@@ -99,30 +99,9 @@ fn get_next_active_tab_id_after_delete(
 
 fn get_next_split_view_after_delete(
     split_view: Option<WorkspaceSplitView>,
-    deleted_tab_id: &str,
+    _deleted_tab_id: &str,
 ) -> Option<WorkspaceSplitView> {
-    match split_view {
-        Some(split) if split.primary_tab_id == deleted_tab_id => None,
-        Some(mut split)
-            if split
-                .secondary_tab_ids
-                .iter()
-                .any(|id| id == deleted_tab_id) =>
-        {
-            split.secondary_tab_ids.retain(|id| id != deleted_tab_id);
-
-            if split.secondary_tab_ids.is_empty() {
-                return None;
-            }
-
-            if split.secondary_tab_id == deleted_tab_id {
-                split.secondary_tab_id = split.secondary_tab_ids.first()?.clone();
-            }
-
-            Some(split)
-        }
-        other => other,
-    }
+    split_view
 }
 
 pub(super) fn delete_workspace_tab_by_id(
@@ -197,31 +176,27 @@ pub fn set_workspace_unsaved_changes(state: State<AppRuntimeState>, has_unsaved_
 #[cfg(test)]
 mod tests {
     use super::get_next_split_view_after_delete;
-    use crate::workspace::{models::WorkspacePaneId, WorkspaceSplitView};
+    use crate::workspace::WorkspaceSplitView;
+    use serde_json::json;
 
     fn split_view() -> WorkspaceSplitView {
-        WorkspaceSplitView {
-            direction: "vertical".to_string(),
-            primary_tab_id: "tab-1".to_string(),
-            secondary_tab_id: "tab-2".to_string(),
-            secondary_tab_ids: vec!["tab-2".to_string(), "tab-3".to_string()],
-            split_ratio: 0.5,
-            focused_pane: WorkspacePaneId::Secondary,
-        }
+        json!({
+            "direction": "vertical",
+            "primaryTabId": "tab-1",
+            "secondaryTabId": "tab-2",
+            "secondaryTabIds": ["tab-2", "tab-3"],
+            "splitRatio": 0.5,
+            "focusedPane": "secondary"
+        })
     }
 
     #[test]
-    fn deleting_active_secondary_tab_promotes_next_secondary_tab() {
+    fn deleting_tab_preserves_split_view_for_frontend_normalization() {
         let next_split =
             get_next_split_view_after_delete(Some(split_view()), "tab-2").expect("split remains");
 
-        assert_eq!(next_split.primary_tab_id, "tab-1");
-        assert_eq!(next_split.secondary_tab_id, "tab-3");
-        assert_eq!(next_split.secondary_tab_ids, vec!["tab-3".to_string()]);
-    }
-
-    #[test]
-    fn deleting_primary_tab_collapses_split_view() {
-        assert!(get_next_split_view_after_delete(Some(split_view()), "tab-1").is_none());
+        assert_eq!(next_split["primaryTabId"], "tab-1");
+        assert_eq!(next_split["secondaryTabId"], "tab-2");
+        assert_eq!(next_split["secondaryTabIds"], json!(["tab-2", "tab-3"]));
     }
 }

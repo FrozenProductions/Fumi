@@ -1,7 +1,7 @@
 import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
 import type { WorkspaceScreenSession } from "../session/session.type";
 import type {
-    WorkspacePaneId,
+    WorkspaceSplitNode,
     WorkspaceSplitView,
 } from "../session/sessionSplitView.type";
 import { getActiveTabIndex } from "../session/tabs/sessionTabs";
@@ -117,21 +117,52 @@ function areWorkspaceSplitViewsEqual(
         return false;
     }
 
-    if (
-        currentSplitView.direction !== nextSplitView.direction ||
-        currentSplitView.primaryTabId !== nextSplitView.primaryTabId ||
-        currentSplitView.secondaryTabId !== nextSplitView.secondaryTabId ||
-        currentSplitView.splitRatio !== nextSplitView.splitRatio ||
-        currentSplitView.focusedPane !== nextSplitView.focusedPane ||
-        currentSplitView.secondaryTabIds.length !==
-            nextSplitView.secondaryTabIds.length
-    ) {
+    if (!currentSplitView.root || !nextSplitView.root) {
+        return currentSplitView === nextSplitView;
+    }
+
+    return (
+        currentSplitView.activePaneId === nextSplitView.activePaneId &&
+        areWorkspaceSplitNodesEqual(currentSplitView.root, nextSplitView.root)
+    );
+}
+
+function areWorkspaceSplitNodesEqual(
+    currentNode: WorkspaceSplitNode,
+    nextNode: WorkspaceSplitNode,
+): boolean {
+    if (currentNode.type !== nextNode.type || currentNode.id !== nextNode.id) {
         return false;
     }
 
-    return currentSplitView.secondaryTabIds.every((tabId, index) => {
-        return tabId === nextSplitView.secondaryTabIds[index];
-    });
+    if (currentNode.type === "pane" && nextNode.type === "pane") {
+        return (
+            currentNode.activeTabId === nextNode.activeTabId &&
+            currentNode.tabIds.length === nextNode.tabIds.length &&
+            currentNode.tabIds.every(
+                (tabId, index) => tabId === nextNode.tabIds[index],
+            )
+        );
+    }
+
+    if (currentNode.type === "split" && nextNode.type === "split") {
+        return (
+            currentNode.direction === nextNode.direction &&
+            currentNode.children.length === nextNode.children.length &&
+            currentNode.ratios.length === nextNode.ratios.length &&
+            currentNode.ratios.every(
+                (ratio, index) => ratio === nextNode.ratios[index],
+            ) &&
+            currentNode.children.every((child, index) => {
+                const nextChild = nextNode.children[index];
+                return nextChild
+                    ? areWorkspaceSplitNodesEqual(child, nextChild)
+                    : false;
+            })
+        );
+    }
+
+    return false;
 }
 
 /**
@@ -268,4 +299,4 @@ export const selectWorkspaceSplitView = (
  */
 export const selectWorkspaceSplitFocusedPane = (
     state: WorkspaceStore,
-): WorkspacePaneId | null => state.workspace?.splitView?.focusedPane ?? null;
+): string | null => state.workspace?.splitView?.activePaneId ?? null;

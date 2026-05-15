@@ -10,15 +10,25 @@ import type { WorkspaceSplitView } from "../../../lib/workspace/session/sessionS
 import { selectWorkspaceActiveTab } from "../../../lib/workspace/store/selectors";
 import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
 import { WorkspaceEditor } from "./WorkspaceEditor";
+import type { WorkspaceEditorPaneTabBarProps } from "./WorkspaceEditorProps.type";
 
 const EMPTY_WORKSPACE_TABS = [] as const;
 
 type WorkspaceEditorRegionProps = {
     splitView: WorkspaceSplitView | null;
-    onResizeSplitPreview: (splitRatio: number) => void;
-    onResizeSplitCommit: (splitRatio: number) => void;
+    onResizeSplitPreview: (
+        splitRatio: number,
+        splitId: string,
+        dividerIndex: number,
+    ) => void;
+    onResizeSplitCommit: (
+        splitRatio: number,
+        splitId: string,
+        dividerIndex: number,
+    ) => void;
     onResizeSplitCancel: () => void;
     workspaceActionsButton: WorkspaceActionsButtonProps;
+    tabBar: WorkspaceEditorPaneTabBarProps;
 };
 
 /**
@@ -32,6 +42,7 @@ export function WorkspaceEditorRegion({
     onResizeSplitCommit,
     onResizeSplitCancel,
     workspaceActionsButton,
+    tabBar,
 }: WorkspaceEditorRegionProps): ReactElement | null {
     const appTheme = useAppStore((state) => state.theme);
     const editorSettings = useAppStore((state) => state.editorSettings);
@@ -61,6 +72,9 @@ export function WorkspaceEditorRegion({
     );
     const focusWorkspacePane = useWorkspaceStore(
         (state) => state.focusWorkspacePane,
+    );
+    const selectWorkspaceTab = useWorkspaceStore(
+        (state) => state.selectWorkspaceTab,
     );
     const tabs = workspace?.tabs ?? EMPTY_WORKSPACE_TABS;
     const activeTabId = activeTab?.id ?? null;
@@ -166,7 +180,9 @@ export function WorkspaceEditorRegion({
         tabSize: editorSettings.tabSize,
         tabs: resolvedTabs,
         searchPanel,
+        tabBar,
         workspaceActionsButton,
+        onSelectTab: selectWorkspaceTab,
     } as const;
     const completion = {
         acceptCompletion,

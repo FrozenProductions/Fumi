@@ -199,6 +199,50 @@ describe("createWorkspaceTabSlice", () => {
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
 
+    it("creates a top and bottom split when requested", async () => {
+        const store = await createTabStore(createWorkspaceSession());
+
+        store
+            .getState()
+            .openWorkspaceTabInPane("tab-4", "secondary", "horizontal");
+
+        expect(store.getState().workspace?.activeTabId).toBe("tab-4");
+        expect(store.getState().workspace?.splitView).toEqual({
+            direction: "horizontal",
+            primaryTabId: "tab-1",
+            secondaryTabId: "tab-4",
+            secondaryTabIds: ["tab-4"],
+            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+            focusedPane: "secondary",
+        });
+        expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
+    });
+
+    it("preserves the current split direction when selecting a pane tab", async () => {
+        const store = await createTabStore(
+            createWorkspaceSession({
+                splitView: {
+                    direction: "horizontal",
+                    primaryTabId: "tab-1",
+                    secondaryTabId: "tab-3",
+                    secondaryTabIds: ["tab-3", "tab-4"],
+                    splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                    focusedPane: "secondary",
+                },
+            }),
+        );
+
+        store.getState().openWorkspaceTabInPane("tab-4", "secondary");
+
+        expect(store.getState().workspace?.splitView?.direction).toBe(
+            "horizontal",
+        );
+        expect(store.getState().workspace?.splitView?.secondaryTabId).toBe(
+            "tab-4",
+        );
+        expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
+    });
+
     it("updates split ratio in memory without persisting immediately", async () => {
         const store = await createTabStore(
             createWorkspaceSession({
@@ -225,6 +269,33 @@ describe("createWorkspaceTabSlice", () => {
             focusedPane: "primary",
         });
         expect(store.persistWorkspaceState).not.toHaveBeenCalled();
+    });
+
+    it("changes split direction and resets the split ratio", async () => {
+        const store = await createTabStore(
+            createWorkspaceSession({
+                splitView: {
+                    direction: "vertical",
+                    primaryTabId: "tab-1",
+                    secondaryTabId: "tab-3",
+                    secondaryTabIds: ["tab-3", "tab-4"],
+                    splitRatio: 0.68,
+                    focusedPane: "primary",
+                },
+            }),
+        );
+
+        store.getState().setWorkspaceSplitDirection("horizontal");
+
+        expect(store.getState().workspace?.splitView).toEqual({
+            direction: "horizontal",
+            primaryTabId: "tab-1",
+            secondaryTabId: "tab-3",
+            secondaryTabIds: ["tab-3", "tab-4"],
+            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+            focusedPane: "primary",
+        });
+        expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
 
     it("swaps panes instead of collapsing when moving the only left tab right", async () => {

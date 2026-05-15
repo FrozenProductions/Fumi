@@ -8,12 +8,20 @@ import type { LuauFileSymbol } from "../../../lib/luau/luau.type";
 import type { UseWorkspaceCodeCompletionResult } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import type { WorkspaceEditorSearchController } from "../../../lib/workspace/editor/editorSearch.type";
 import type { WorkspaceOutlineChange } from "../../../lib/workspace/outline/outline.type";
-import type {
-    WorkspacePaneId,
-    WorkspaceSplitView,
-} from "../../../lib/workspace/session/sessionSplitView.type";
+import type { WorkspaceScreenSession } from "../../../lib/workspace/session/session.type";
+import type { WorkspaceSplitView } from "../../../lib/workspace/session/sessionSplitView.type";
 import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
+import type { WorkspaceTabBarInternalProps } from "../tabBar/workspaceTabBar.type";
 import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
+
+export type WorkspaceEditorPaneTabBarProps = Omit<
+    WorkspaceTabBarInternalProps,
+    "workspace" | "previewTabs" | "splitView" | "splitDropTarget"
+> & {
+    workspaceBase: Omit<WorkspaceScreenSession, "activeTabId" | "tabs"> & {
+        splitView: WorkspaceSplitView | null;
+    };
+};
 
 export type WorkspaceEditorPaneProps = {
     activeTabId: string;
@@ -28,7 +36,9 @@ export type WorkspaceEditorPaneProps = {
     tabSize: AppEditorTabSize;
     tabs: WorkspaceTab[];
     searchPanel: WorkspaceEditorSearchController;
+    tabBar: WorkspaceEditorPaneTabBarProps;
     workspaceActionsButton: WorkspaceActionsButtonProps;
+    onSelectTab: (tabId: string) => void;
 };
 
 export type WorkspaceEditorCompletionProps = Pick<
@@ -60,9 +70,17 @@ export type WorkspaceEditorOutlineProps = {
 
 export type WorkspaceEditorSplitViewProps = {
     splitView: WorkspaceSplitView | null;
-    onFocusPane: (pane: WorkspacePaneId) => void;
-    onResizeSplitPreview: (splitRatio: number) => void;
-    onResizeSplitCommit: (splitRatio: number) => void;
+    onFocusPane: (paneId: string) => void;
+    onResizeSplitPreview: (
+        splitRatio: number,
+        splitId: string,
+        dividerIndex: number,
+    ) => void;
+    onResizeSplitCommit: (
+        splitRatio: number,
+        splitId: string,
+        dividerIndex: number,
+    ) => void;
     onResizeSplitCancel: () => void;
 };
 

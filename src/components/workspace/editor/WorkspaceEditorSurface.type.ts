@@ -42,42 +42,33 @@ export type WorkspaceEditorSurfaceProps = {
     completion: WorkspaceEditorCompletionProps;
     outline: Pick<WorkspaceEditorOutlineProps, "onActiveTabLuauChange">;
     pane: WorkspaceEditorPaneProps;
-    splitViewState: Pick<WorkspaceEditorSplitViewProps, "onFocusPane">;
+    splitViewState: Pick<
+        WorkspaceEditorSplitViewProps,
+        | "onFocusPane"
+        | "onResizeSplitCancel"
+        | "onResizeSplitCommit"
+        | "onResizeSplitPreview"
+        | "splitView"
+    >;
     surface: {
         refs: {
             editorContainerRef: RefObject<HTMLDivElement | null>;
-            leftDropRef: (element: HTMLDivElement | null) => void;
-            rightDropRef: (element: HTMLDivElement | null) => void;
         };
         state: {
             AceEditorComponent: AceEditorComponent | null;
             aceRuntime: LoadedAceRuntime | null;
             isAceReady: boolean;
-            isDropTarget: {
-                left: boolean;
-                right: boolean;
-            };
-            isSplit: boolean;
-            primaryTabId: string | null;
-            secondaryTabId: string | null;
-            splitDividerStyle: CSSProperties;
+            isOutlinePanelSupported: boolean;
+            outlinePanelClassName: string;
+            outlinePanelStyle: CSSProperties;
             tabs: WorkspaceEditorPaneProps["tabs"];
-            visibleTabIds: Set<string | null>;
             workspaceActionsClassName: string;
             workspaceActionsStyle: CSSProperties;
         };
         actions: {
-            getTabLayoutClass: (tabId: string) => string;
-            getTabLayoutStyle: (tabId: string) => CSSProperties | undefined;
-            handleSplitResizePointerDown: (
+            handleOutlineResizePointerDown: (
                 event: ReactPointerEvent<HTMLButtonElement>,
             ) => void;
         };
     };
-};
-
-export type WorkspaceSplitDropZoneProps = {
-    alignment: "left" | "right";
-    dropRef: (element: HTMLDivElement | null) => void;
-    isDropTarget: boolean;
 };

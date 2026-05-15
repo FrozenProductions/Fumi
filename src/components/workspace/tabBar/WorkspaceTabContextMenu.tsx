@@ -42,8 +42,10 @@ export function WorkspaceTabContextMenu({
     onClose,
     onDelete,
     onRename,
-    onOpenInLeftPane,
-    onOpenInRightPane,
+    onSplitLeft,
+    onSplitRight,
+    onSplitTop,
+    onSplitBottom,
     onCloseSplitView,
 }: WorkspaceTabContextMenuProps): ReactElement | null {
     const theme = useAppStore((state) => state.theme);
@@ -210,23 +212,45 @@ export function WorkspaceTabContextMenu({
                 type="button"
                 role="menuitem"
                 onClick={() => {
-                    onOpenInLeftPane();
+                    onSplitLeft();
                     onClose();
                 }}
                 className={menuItemClassName}
             >
-                Open in left pane
+                Split left
             </button>
             <button
                 type="button"
                 role="menuitem"
                 onClick={() => {
-                    onOpenInRightPane();
+                    onSplitRight();
                     onClose();
                 }}
                 className={menuItemClassName}
             >
-                Open in right pane
+                Split right
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onSplitTop();
+                    onClose();
+                }}
+                className={menuItemClassName}
+            >
+                Split top
+            </button>
+            <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                    onSplitBottom();
+                    onClose();
+                }}
+                className={menuItemClassName}
+            >
+                Split bottom
             </button>
             {splitView ? (
                 <button

@@ -1,7 +1,7 @@
 import type { WorkspaceSnapshot } from "../../persistence.type";
 import type { WorkspaceSession } from "../session.type";
 import { clampCursorToContent } from "../sessionCursor";
-import { normalizeSplitView } from "../sessionSplitView";
+import { getFocusedPaneTabId, normalizeSplitView } from "../sessionSplitView";
 import type {
     WorkspaceTab,
     WorkspaceTabSnapshot,
@@ -49,9 +49,7 @@ export function buildWorkspaceSession(
     );
 
     const activeTabId = normalizedSplitView
-        ? normalizedSplitView.focusedPane === "primary"
-            ? normalizedSplitView.primaryTabId
-            : normalizedSplitView.secondaryTabId
+        ? getFocusedPaneTabId(normalizedSplitView, null)
         : tabs.some((tab) => tab.id === snapshot.metadata.activeTabId)
           ? snapshot.metadata.activeTabId
           : (tabs[0]?.id ?? null);
@@ -208,20 +206,8 @@ export function reorderWorkspaceTabs(
 
     nextTabs.splice(targetTabIndex, 0, draggedTab);
 
-    const nextSplitView = currentWorkspace.splitView
-        ? {
-              ...currentWorkspace.splitView,
-              secondaryTabIds: nextTabs
-                  .map((tab) => tab.id)
-                  .filter((id) =>
-                      currentWorkspace.splitView?.secondaryTabIds.includes(id),
-                  ),
-          }
-        : null;
-
     return {
         ...currentWorkspace,
-        splitView: nextSplitView,
         tabs: nextTabs,
     };
 }
@@ -340,9 +326,7 @@ export function mergeWorkspaceSession(
     );
 
     const nextActiveTabId = normalizedSplitView
-        ? normalizedSplitView.focusedPane === "primary"
-            ? normalizedSplitView.primaryTabId
-            : normalizedSplitView.secondaryTabId
+        ? getFocusedPaneTabId(normalizedSplitView, null)
         : nextTabs.some((tab) => tab.id === snapshot.metadata.activeTabId)
           ? snapshot.metadata.activeTabId
           : nextTabs.some((tab) => tab.id === currentWorkspace.activeTabId)

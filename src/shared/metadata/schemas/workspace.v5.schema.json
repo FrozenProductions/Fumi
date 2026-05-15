@@ -71,43 +71,8 @@
             ],
             "type": "object"
         },
-        "WorkspacePaneId": {
-            "enum": ["primary", "secondary"],
-            "type": "string"
-        },
         "WorkspaceSplitView": {
-            "properties": {
-                "direction": {
-                    "type": "string"
-                },
-                "focusedPane": {
-                    "$ref": "#/$defs/WorkspacePaneId"
-                },
-                "primaryTabId": {
-                    "type": "string"
-                },
-                "secondaryTabId": {
-                    "type": "string"
-                },
-                "secondaryTabIds": {
-                    "default": [],
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "splitRatio": {
-                    "default": 0.5,
-                    "format": "double",
-                    "type": "number"
-                }
-            },
-            "required": [
-                "direction",
-                "primaryTabId",
-                "secondaryTabId",
-                "focusedPane"
-            ],
+            "additionalProperties": true,
             "type": "object"
         },
         "WorkspaceTabState": {

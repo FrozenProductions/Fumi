@@ -85,8 +85,11 @@ export function WorkspaceReadyScreen({
     const selectWorkspaceTab = useWorkspaceStore(
         (state) => state.selectWorkspaceTab,
     );
-    const openWorkspaceTabInPane = useWorkspaceStore(
-        (state) => state.openWorkspaceTabInPane,
+    const splitWorkspaceTab = useWorkspaceStore(
+        (state) => state.splitWorkspaceTab,
+    );
+    const moveWorkspaceTabToPane = useWorkspaceStore(
+        (state) => state.moveWorkspaceTabToPane,
     );
     const setWorkspaceSplitRatio = useWorkspaceStore(
         (state) => state.setWorkspaceSplitRatio,
@@ -123,7 +126,6 @@ export function WorkspaceReadyScreen({
     } = useWorkspaceRobloxControls();
     const {
         isTabDragActive,
-        splitDropTarget,
         resolvedSplitView,
         handleDragStart,
         handleDragOver,
@@ -133,9 +135,9 @@ export function WorkspaceReadyScreen({
         handleResizeSplitCommit,
     } = useWorkspaceTabDragDrop({
         splitView,
-        openWorkspaceTabInPane,
+        splitWorkspaceTab,
+        moveWorkspaceTabToPane,
         reorderWorkspaceTab,
-        closeWorkspaceSplitView,
         setWorkspaceSplitRatio,
         persistWorkspaceState,
     });
@@ -266,7 +268,7 @@ export function WorkspaceReadyScreen({
     }
 
     return (
-        <section className="flex h-full min-h-0 flex-col bg-fumi-50">
+        <section className="flex h-full w-full min-w-0 min-h-0 flex-col overflow-hidden bg-fumi-50">
             <DragDropProvider
                 modifiers={TAB_BAR_MODIFIERS}
                 sensors={TAB_BAR_SENSORS}
@@ -274,14 +276,14 @@ export function WorkspaceReadyScreen({
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                {workspace.tabs.length > 0 ? (
+                {workspace.tabs.length > 0 && !resolvedSplitView ? (
                     <WorkspaceTabBar
                         workspace={workspace}
-                        splitView={resolvedSplitView}
+                        splitView={null}
                         renameState={renameState}
                         previewTabs={workspace.tabs}
                         isTabDragActive={isTabDragActive}
-                        splitDropTarget={splitDropTarget}
+                        splitDropTarget={null}
                         onCreateFile={handleCreateWorkspaceFile}
                         onSelectTab={selectWorkspaceTab}
                         onDuplicateTab={handleDuplicateWorkspaceTab}
@@ -290,7 +292,7 @@ export function WorkspaceReadyScreen({
                         onArchiveOtherTabs={handleArchiveOtherWorkspaceTabs}
                         onToggleTabPinned={handleToggleWorkspaceTabPinned}
                         onDeleteTab={handleDeleteWorkspaceTab}
-                        onOpenTabInPane={openWorkspaceTabInPane}
+                        onSplitTab={splitWorkspaceTab}
                         onCloseSplitView={closeWorkspaceSplitView}
                         middleClickTabAction={middleClickTabAction}
                         isSplitViewArchiveScopeEnabled={
@@ -299,7 +301,7 @@ export function WorkspaceReadyScreen({
                     />
                 ) : null}
 
-                <div className="flex min-h-0 flex-1 flex-col">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                     {workspace.tabs.length === 0 ? (
                         <WorkspaceMessageState
                             eyebrow={
@@ -317,8 +319,8 @@ export function WorkspaceReadyScreen({
                             action={createFileAction}
                         />
                     ) : activeTab ? (
-                        <div className="flex min-h-0 flex-1 flex-col">
-                            <div className="relative flex min-h-0 flex-1">
+                        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                            <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
                                 <WorkspaceEditorRegion
                                     splitView={resolvedSplitView}
                                     onResizeSplitPreview={
@@ -333,6 +335,38 @@ export function WorkspaceReadyScreen({
                                     workspaceActionsButton={
                                         workspaceActionsButton
                                     }
+                                    tabBar={{
+                                        workspaceBase: {
+                                            workspacePath:
+                                                workspace.workspacePath,
+                                            workspaceName:
+                                                workspace.workspaceName,
+                                            archivedTabs:
+                                                workspace.archivedTabs,
+                                            executionHistory:
+                                                workspace.executionHistory,
+                                            splitView: resolvedSplitView,
+                                        },
+                                        renameState,
+                                        isTabDragActive,
+                                        onCreateFile: handleCreateWorkspaceFile,
+                                        onSelectTab: selectWorkspaceTab,
+                                        onDuplicateTab:
+                                            handleDuplicateWorkspaceTab,
+                                        onArchiveTab: handleArchiveWorkspaceTab,
+                                        onArchiveAllTabs:
+                                            handleArchiveAllWorkspaceTabs,
+                                        onArchiveOtherTabs:
+                                            handleArchiveOtherWorkspaceTabs,
+                                        onToggleTabPinned:
+                                            handleToggleWorkspaceTabPinned,
+                                        onDeleteTab: handleDeleteWorkspaceTab,
+                                        onSplitTab: splitWorkspaceTab,
+                                        onCloseSplitView:
+                                            closeWorkspaceSplitView,
+                                        middleClickTabAction,
+                                        isSplitViewArchiveScopeEnabled,
+                                    }}
                                 />
                             </div>
                         </div>

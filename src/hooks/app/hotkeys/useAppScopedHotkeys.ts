@@ -24,7 +24,7 @@ export function useAppScopedHotkeys({
     createWorkspaceFile,
     openWorkspaceDirectory,
     archiveWorkspaceTab,
-    openWorkspaceTabInPane,
+    splitWorkspaceTab,
     resetWorkspaceSplitView,
     toggleWorkspaceSplitView,
     focusWorkspacePane,
@@ -221,7 +221,11 @@ export function useAppScopedHotkeys({
             }
 
             selectSidebarItem("workspace");
-            openWorkspaceTabInPane(activeTabId, "primary");
+            splitWorkspaceTab(
+                activeTabId,
+                workspace?.splitView?.activePaneId ?? null,
+                "left",
+            );
         },
         {
             enabled: canToggleSplitView,
@@ -238,7 +242,11 @@ export function useAppScopedHotkeys({
             }
 
             selectSidebarItem("workspace");
-            openWorkspaceTabInPane(activeTabId, "secondary");
+            splitWorkspaceTab(
+                activeTabId,
+                workspace?.splitView?.activePaneId ?? null,
+                "right",
+            );
         },
         {
             enabled: canToggleSplitView,
@@ -260,7 +268,11 @@ export function useAppScopedHotkeys({
         hotkeys.focusWorkspaceLeftPane,
         () => {
             selectSidebarItem("workspace");
-            focusWorkspacePane("primary");
+            const activePaneId = workspace?.splitView?.activePaneId;
+
+            if (activePaneId) {
+                focusWorkspacePane(activePaneId);
+            }
         },
         {
             enabled: canUseSplitViewHotkeys,
@@ -271,7 +283,11 @@ export function useAppScopedHotkeys({
         hotkeys.focusWorkspaceRightPane,
         () => {
             selectSidebarItem("workspace");
-            focusWorkspacePane("secondary");
+            const activePaneId = workspace?.splitView?.activePaneId;
+
+            if (activePaneId) {
+                focusWorkspacePane(activePaneId);
+            }
         },
         {
             enabled: canUseSplitViewHotkeys,

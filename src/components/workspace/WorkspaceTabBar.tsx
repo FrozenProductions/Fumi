@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceTabBarState } from "../../hooks/workspace/tabBar/useWorkspaceTabBarState";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys/hotkeys";
@@ -11,16 +11,6 @@ import type { WorkspaceTabBarInternalProps } from "./tabBar/workspaceTabBar.type
 
 /**
  * The tab bar for workspace files with drag-and-drop reordering.
- *
- * @param props - Component props
- * @param props.workspace - The workspace data
- * @param props.splitView - Current split view if any
- * @param props.renameState - Current rename state
- * @param props.onCreateFile - Create new file
- * @param props.onSelectTab - Select a tab
- * @param props.onArchiveTab - Archive a tab
- * @param props.onDeleteTab - Delete a tab
- * @returns A React component
  */
 export function WorkspaceTabBar({
     workspace,
@@ -28,7 +18,6 @@ export function WorkspaceTabBar({
     renameState,
     previewTabs,
     isTabDragActive,
-    splitDropTarget,
     onCreateFile,
     onSelectTab,
     onDuplicateTab,
@@ -37,7 +26,7 @@ export function WorkspaceTabBar({
     onArchiveOtherTabs,
     onToggleTabPinned,
     onDeleteTab,
-    onOpenTabInPane,
+    onSplitTab,
     onCloseSplitView,
     middleClickTabAction,
     isSplitViewArchiveScopeEnabled,
@@ -66,28 +55,7 @@ export function WorkspaceTabBar({
     } = renameState;
 
     const isSplit = splitView !== null;
-    const secondaryTabId = splitView?.secondaryTabId ?? null;
-    const secondaryTabIds = splitView?.secondaryTabIds ?? [];
-    const splitRatio = splitView?.splitRatio ?? 0.5;
-    const primarySectionStyle = {
-        width: `${splitRatio * 100}%`,
-    } satisfies CSSProperties;
-    const secondarySectionStyle = {
-        width: `${(1 - splitRatio) * 100}%`,
-    } satisfies CSSProperties;
-    const dividerStyle = {
-        left: `${splitRatio * 100}%`,
-    } satisfies CSSProperties;
     const controlsClearanceClass = isSplit ? "pr-32" : "pr-24";
-    const splitDividerClassName = joinClassNames(
-        "pointer-events-none absolute bottom-0 top-0 z-10 w-px -translate-x-1/2 transition-colors duration-150",
-        splitDropTarget === "secondary" ? "bg-fumi-400/60" : "bg-fumi-200",
-    );
-    const secondaryTabsClassName = joinClassNames(
-        "min-w-0 flex items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        controlsClearanceClass,
-        splitDropTarget === "secondary" && "bg-fumi-200/40",
-    );
     const singlePaneTabsClassName = joinClassNames(
         "min-w-0 flex items-center gap-2 px-2 py-1.5 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         controlsClearanceClass,
@@ -98,21 +66,6 @@ export function WorkspaceTabBar({
             ? "border-fumi-300 bg-fumi-50 text-fumi-600"
             : "border-fumi-200 bg-fumi-50 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-600",
     );
-    const previewTabsById = new Map(
-        previewTabs.map((tab) => [tab.id, tab] as const),
-    );
-    const secondaryTabIdSet = new Set(secondaryTabIds);
-    const primaryTabs = isSplit
-        ? previewTabs.filter((tab) => !secondaryTabIdSet.has(tab.id))
-        : previewTabs;
-    const secondaryTabs = isSplit
-        ? secondaryTabIds
-              .map((id) => previewTabsById.get(id))
-              .filter(
-                  (tab): tab is (typeof previewTabs)[number] =>
-                      tab !== undefined,
-              )
-        : [];
     const contextMenuTab = contextMenuState
         ? (workspace.tabs.find((tab) => tab.id === contextMenuState.tabId) ??
           null)
@@ -197,21 +150,38 @@ export function WorkspaceTabBar({
         onDuplicateTab(contextMenuState.tabId);
     };
 
-    const handleOpenInLeftPaneFromContextMenu = (): void => {
+    const handleSplitLeftFromContextMenu = (): void => {
         if (!contextMenuState) {
             return;
         }
 
-        onOpenTabInPane(contextMenuState.tabId, "primary");
+        onSplitTab(contextMenuState.tabId, null, "left");
     };
 
-    const handleOpenInRightPaneFromContextMenu = (): void => {
+    const handleSplitRightFromContextMenu = (): void => {
         if (!contextMenuState) {
             return;
         }
 
-        onOpenTabInPane(contextMenuState.tabId, "secondary");
+        onSplitTab(contextMenuState.tabId, null, "right");
     };
+
+    const handleSplitTopFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onSplitTab(contextMenuState.tabId, null, "top");
+    };
+
+    const handleSplitBottomFromContextMenu = (): void => {
+        if (!contextMenuState) {
+            return;
+        }
+
+        onSplitTab(contextMenuState.tabId, null, "bottom");
+    };
+
     const closeSplitViewShortcutLabel = getAppHotkeyShortcutLabel(
         "TOGGLE_WORKSPACE_SPLIT_VIEW",
         hotkeyBindings,
@@ -222,18 +192,8 @@ export function WorkspaceTabBar({
     );
     const tabsLayout = {
         activeTabId,
-        dividerStyle,
-        isSplit,
-        primarySectionStyle,
-        primaryTabs,
-        secondarySectionStyle,
-        secondaryTabId,
-        secondaryTabs,
-        secondaryTabsClassName,
+        primaryTabs: previewTabs,
         singlePaneTabsClassName,
-        splitDividerClassName,
-        splitDropTarget,
-        splitView,
     };
     const tabItemRename = {
         handleRenameInputBlur,
@@ -252,7 +212,6 @@ export function WorkspaceTabBar({
         onArchiveTab,
         onDeleteTab,
         onOpenContextMenu: openContextMenu,
-        onOpenTabInPane,
         onSelectTab,
         rename: tabItemRename,
     };
@@ -278,7 +237,7 @@ export function WorkspaceTabBar({
     return (
         <div
             ref={tabBarRef}
-            className="relative shrink-0 border-b border-fumi-200 bg-fumi-100"
+            className="relative w-full min-w-0 shrink-0 overflow-hidden border-b border-fumi-200 bg-fumi-100"
         >
             <div className="relative flex items-stretch">
                 <div
@@ -314,8 +273,10 @@ export function WorkspaceTabBar({
                 onClose={closeContextMenu}
                 onDelete={handleDeleteFromContextMenu}
                 onRename={handleRenameFromContextMenu}
-                onOpenInLeftPane={handleOpenInLeftPaneFromContextMenu}
-                onOpenInRightPane={handleOpenInRightPaneFromContextMenu}
+                onSplitLeft={handleSplitLeftFromContextMenu}
+                onSplitRight={handleSplitRightFromContextMenu}
+                onSplitTop={handleSplitTopFromContextMenu}
+                onSplitBottom={handleSplitBottomFromContextMenu}
                 onCloseSplitView={onCloseSplitView}
             />
 

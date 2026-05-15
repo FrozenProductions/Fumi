@@ -2,7 +2,11 @@ import type { StateCreator } from "zustand";
 import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
 import type { WorkspaceSession } from "../session/session.type";
 import type { WorkspaceCursorState } from "../session/sessionCursor.type";
-import type { WorkspacePaneId } from "../session/sessionSplitView.type";
+import type {
+    WorkspaceLegacyPaneId,
+    WorkspaceSplitDirection,
+    WorkspaceSplitPlacement,
+} from "../session/sessionSplitView.type";
 
 export type WorkspaceBulkArchiveOptions = {
     scopeTabIds?: readonly string[];
@@ -53,11 +57,26 @@ export type WorkspaceStoreActions = {
     toggleWorkspaceTabPinned: (tabId: string) => void;
     selectWorkspaceTab: (tabId: string) => void;
     reorderWorkspaceTab: (draggedTabId: string, targetTabId: string) => void;
-    openWorkspaceTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
-    setWorkspaceSplitRatio: (splitRatio: number) => void;
+    splitWorkspaceTab: (
+        tabId: string,
+        targetPaneId: string | null,
+        placement: WorkspaceSplitPlacement,
+    ) => void;
+    openWorkspaceTabInPane: (
+        tabId: string,
+        pane: WorkspaceLegacyPaneId,
+        direction?: WorkspaceSplitDirection,
+    ) => void;
+    moveWorkspaceTabToPane: (tabId: string, paneId: string) => void;
+    setWorkspaceSplitDirection: (direction: WorkspaceSplitDirection) => void;
+    setWorkspaceSplitRatio: (
+        splitRatio: number,
+        splitId?: string,
+        dividerIndex?: number,
+    ) => void;
     resetWorkspaceSplitView: () => void;
     toggleWorkspaceSplitView: () => void;
-    focusWorkspacePane: (pane: WorkspacePaneId) => void;
+    focusWorkspacePane: (paneId: string) => void;
     closeWorkspaceSplitView: () => void;
     saveActiveWorkspaceTab: () => Promise<void>;
     updateActiveTabContent: (content: string) => void;
@@ -113,7 +132,10 @@ export type WorkspaceLayoutSlice = Pick<
     WorkspaceStoreActions,
     | "selectWorkspaceTab"
     | "reorderWorkspaceTab"
+    | "splitWorkspaceTab"
     | "openWorkspaceTabInPane"
+    | "moveWorkspaceTabToPane"
+    | "setWorkspaceSplitDirection"
     | "setWorkspaceSplitRatio"
     | "resetWorkspaceSplitView"
     | "toggleWorkspaceSplitView"

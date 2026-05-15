@@ -15,9 +15,6 @@ pub(super) const DEFAULT_WORKSPACE_FILE_EXTENSION: &str = ".lua";
 pub(super) const MAX_WORKSPACE_TAB_NAME_LENGTH: usize = 20;
 pub(super) const WORKSPACE_MISSING_ERROR_MESSAGE: &str = "Workspace not found.";
 pub(super) const LEGACY_STATE_DIRECTORIES: [&str; 2] = ["Fumi", "frozenproductions.fumi"];
-pub(super) const DEFAULT_WORKSPACE_SPLIT_RATIO: f64 = 0.5;
-pub(super) const MIN_WORKSPACE_SPLIT_RATIO: f64 = 0.12;
-pub(super) const MAX_WORKSPACE_SPLIT_RATIO: f64 = 0.88;
 pub(super) const WORKSPACE_METADATA_VERSION: u8 = CURRENT_WORKSPACE_METADATA_VERSION;
 pub(super) const MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES: usize = 100;
 
@@ -57,30 +54,7 @@ pub struct WorkspaceTabSnapshot {
 }
 
 /// Identifies which pane (primary or secondary) is focused in a split view.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum WorkspacePaneId {
-    Primary,
-    Secondary,
-}
-
-/// Configuration for a split editor view with primary and secondary panes.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct WorkspaceSplitView {
-    pub direction: String,
-    pub primary_tab_id: String,
-    pub secondary_tab_id: String,
-    #[serde(default)]
-    pub secondary_tab_ids: Vec<String>,
-    #[serde(default = "default_workspace_split_ratio")]
-    pub split_ratio: f64,
-    pub focused_pane: WorkspacePaneId,
-}
-
-fn default_workspace_split_ratio() -> f64 {
-    DEFAULT_WORKSPACE_SPLIT_RATIO
-}
+pub type WorkspaceSplitView = Value;
 
 /// Full workspace metadata including tabs, archived tabs, and execution history.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]

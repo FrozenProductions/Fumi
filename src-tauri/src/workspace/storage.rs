@@ -26,12 +26,12 @@ use super::models::{
     PersistedWorkspaceDocumentV1, PersistedWorkspaceDocumentV2, PersistedWorkspaceDocumentV3,
     PersistedWorkspaceDocumentV4, PersistedWorkspaceDocumentV5, StoredAppState,
     StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceExecutionHistoryEntry,
-    WorkspaceMetadata, WorkspacePaneId, WorkspaceSnapshot, WorkspaceSplitView,
+    WorkspaceMetadata, WorkspaceSnapshot, WorkspaceSplitView,
     WorkspaceTabSnapshot, WorkspaceTabState, APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME,
-    DEFAULT_WORKSPACE_FILE_EXTENSION, DEFAULT_WORKSPACE_SPLIT_RATIO, LEGACY_STATE_DIRECTORIES,
-    MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES, MAX_WORKSPACE_SPLIT_RATIO,
-    MAX_WORKSPACE_TAB_NAME_LENGTH, MIN_WORKSPACE_SPLIT_RATIO, WORKSPACE_METADATA_DIR_NAME,
-    WORKSPACE_METADATA_FILE_NAME, WORKSPACE_METADATA_VERSION, WORKSPACE_MISSING_ERROR_MESSAGE,
+    DEFAULT_WORKSPACE_FILE_EXTENSION, LEGACY_STATE_DIRECTORIES,
+    MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES, MAX_WORKSPACE_TAB_NAME_LENGTH,
+    WORKSPACE_METADATA_DIR_NAME, WORKSPACE_METADATA_FILE_NAME, WORKSPACE_METADATA_VERSION,
+    WORKSPACE_MISSING_ERROR_MESSAGE,
 };
 
 #[derive(Debug)]
@@ -463,37 +463,12 @@ fn normalize_split_view(
 ) -> Option<WorkspaceSplitView> {
     let split = split_view?;
 
-    let primary_valid = open_tab_ids.contains(&split.primary_tab_id);
-    let secondary_valid = open_tab_ids.contains(&split.secondary_tab_id);
-    let not_same = split.primary_tab_id != split.secondary_tab_id;
-
-    if !primary_valid || !secondary_valid || !not_same {
+    if open_tab_ids.len() < 2 {
         return None;
     }
 
-    let mut normalized_secondary_tab_ids = split
-        .secondary_tab_ids
-        .into_iter()
-        .filter(|id| open_tab_ids.contains(id) && id != &split.primary_tab_id)
-        .collect::<Vec<_>>();
-
-    if !normalized_secondary_tab_ids.contains(&split.secondary_tab_id) {
-        normalized_secondary_tab_ids.insert(0, split.secondary_tab_id.clone());
-    }
-
-    let normalized_split_ratio = if split.split_ratio.is_finite() {
-        split
-            .split_ratio
-            .clamp(MIN_WORKSPACE_SPLIT_RATIO, MAX_WORKSPACE_SPLIT_RATIO)
-    } else {
-        DEFAULT_WORKSPACE_SPLIT_RATIO
-    };
-
-    Some(WorkspaceSplitView {
-        secondary_tab_ids: normalized_secondary_tab_ids,
-        split_ratio: normalized_split_ratio,
-        ..split
-    })
+    split.as_object()?;
+    Some(split)
 }
 
 pub(super) fn normalize_cursor_state(cursor: &WorkspaceCursorState) -> WorkspaceCursorState {
@@ -601,19 +576,10 @@ pub(super) fn normalize_workspace_metadata(
         Vec::new()
     };
 
-    let active_tab_id = match &normalized_split_view {
-        Some(split) => {
-            let focused_id = match split.focused_pane {
-                WorkspacePaneId::Primary => &split.primary_tab_id,
-                WorkspacePaneId::Secondary => &split.secondary_tab_id,
-            };
-            Some(focused_id.clone())
-        }
-        None => metadata
-            .active_tab_id
-            .filter(|id| open_tab_ids.contains(id.as_str()))
-            .or_else(|| normalized_tabs.first().map(|tab| tab.id.clone())),
-    };
+    let active_tab_id = metadata
+        .active_tab_id
+        .filter(|id| open_tab_ids.contains(id.as_str()))
+        .or_else(|| normalized_tabs.first().map(|tab| tab.id.clone()));
 
     WorkspaceMetadata {
         version: WORKSPACE_METADATA_VERSION,
@@ -1039,19 +1005,10 @@ pub(super) fn read_workspace_snapshot(workspace_path: &Path) -> Result<Workspace
         existing_tab_states.iter().map(|t| t.id.clone()).collect();
     let normalized_split_view = normalize_split_view(metadata.split_view, &existing_tab_id_set);
 
-    let active_tab_id = match &normalized_split_view {
-        Some(split) => {
-            let focused_id = match split.focused_pane {
-                WorkspacePaneId::Primary => &split.primary_tab_id,
-                WorkspacePaneId::Secondary => &split.secondary_tab_id,
-            };
-            Some(focused_id.clone())
-        }
-        None => metadata
-            .active_tab_id
-            .filter(|id| existing_tab_id_set.contains(id.as_str()))
-            .or_else(|| existing_tab_states.first().map(|tab| tab.id.clone())),
-    };
+    let active_tab_id = metadata
+        .active_tab_id
+        .filter(|id| existing_tab_id_set.contains(id.as_str()))
+        .or_else(|| existing_tab_states.first().map(|tab| tab.id.clone()));
 
     let normalized_metadata = WorkspaceMetadata {
         version: WORKSPACE_METADATA_VERSION,

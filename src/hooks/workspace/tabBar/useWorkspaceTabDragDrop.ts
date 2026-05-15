@@ -1,78 +1,114 @@
 import type { DragDropEventHandlers } from "@dnd-kit/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SPLIT_DROP_IDS } from "../../../constants/workspace/workspace";
+import {
+    PANE_DROP_ID_PREFIX,
+    SPLIT_DROP_ID_PREFIX,
+    SPLIT_DROP_PLACEMENTS,
+} from "../../../constants/workspace/workspace";
+import { getWorkspaceSplitPaneIdForTab } from "../../../lib/workspace/session/sessionSplitView";
 import type {
-    WorkspacePaneId,
+    WorkspaceSplitPlacement,
     WorkspaceSplitView,
 } from "../../../lib/workspace/session/sessionSplitView.type";
-import {
-    normalizeWorkspaceSplitRatio,
-    shouldCloseWorkspaceSplitView,
-} from "../../../lib/workspace/splitView";
+import { normalizeWorkspaceSplitRatio } from "../../../lib/workspace/splitView";
+
+export type WorkspaceSplitDropTarget = {
+    paneId: string | null;
+    placement: WorkspaceSplitPlacement;
+};
 
 type UseWorkspaceTabDragDropOptions = {
     splitView: WorkspaceSplitView | null;
-    openWorkspaceTabInPane: (tabId: string, pane: WorkspacePaneId) => void;
+    splitWorkspaceTab: (
+        tabId: string,
+        paneId: string | null,
+        placement: WorkspaceSplitPlacement,
+    ) => void;
+    moveWorkspaceTabToPane: (tabId: string, paneId: string) => void;
     reorderWorkspaceTab: (draggedTabId: string, targetTabId: string) => void;
-    closeWorkspaceSplitView: () => void;
-    setWorkspaceSplitRatio: (splitRatio: number) => void;
+    setWorkspaceSplitRatio: (
+        splitRatio: number,
+        splitId?: string,
+        dividerIndex?: number,
+    ) => void;
     persistWorkspaceState: () => Promise<boolean>;
 };
 
 type UseWorkspaceTabDragDropResult = {
     isTabDragActive: boolean;
-    splitDropTarget: WorkspacePaneId | null;
+    splitDropTarget: WorkspaceSplitDropTarget | null;
     resolvedSplitView: WorkspaceSplitView | null;
     handleDragStart: DragDropEventHandlers["onDragStart"];
     handleDragOver: DragDropEventHandlers["onDragOver"];
     handleDragEnd: DragDropEventHandlers["onDragEnd"];
-    handleResizeSplitPreview: (splitRatio: number) => void;
+    handleResizeSplitPreview: (
+        splitRatio: number,
+        splitId: string,
+        dividerIndex: number,
+    ) => void;
     handleResizeSplitCancel: () => void;
-    handleResizeSplitCommit: (splitRatio: number) => void;
+    handleResizeSplitCommit: (
+        splitRatio: number,
+        splitId: string,
+        dividerIndex: number,
+    ) => void;
 };
+
+function parseSplitDropTarget(
+    targetId: string | null | undefined,
+): WorkspaceSplitDropTarget | null {
+    if (!targetId?.startsWith(`${SPLIT_DROP_ID_PREFIX}:`)) {
+        return null;
+    }
+
+    const [, paneId, placement] = targetId.split(":");
+
+    if (
+        !paneId ||
+        !SPLIT_DROP_PLACEMENTS.includes(placement as WorkspaceSplitPlacement)
+    ) {
+        return null;
+    }
+
+    return {
+        paneId,
+        placement: placement as WorkspaceSplitPlacement,
+    };
+}
+
+function parsePaneDropTarget(
+    targetId: string | null | undefined,
+): string | null {
+    if (!targetId?.startsWith(`${PANE_DROP_ID_PREFIX}:`)) {
+        return null;
+    }
+
+    return targetId.slice(PANE_DROP_ID_PREFIX.length + 1) || null;
+}
 
 /**
  * Manages tab drag-and-drop interactions including reordering, split-view drops, and split resize.
- *
- * @remarks
- * Tracks a `lastDropTargetTabIdRef` during drag-over because `@dnd-kit` may not
- * provide `operation.target.id` on drag-end. Cleans up all transient drag state
- * when a drag completes or is cancelled. Split resize uses a preview-then-commit
- * pattern to avoid flickering during drag.
- *
- * @param options - Split view state and workspace action callbacks
- * @returns Drag/drop event handlers and derived split-view state
  */
 export function useWorkspaceTabDragDrop({
     splitView,
-    openWorkspaceTabInPane,
+    splitWorkspaceTab,
+    moveWorkspaceTabToPane,
     reorderWorkspaceTab,
-    closeWorkspaceSplitView,
     setWorkspaceSplitRatio,
     persistWorkspaceState,
 }: UseWorkspaceTabDragDropOptions): UseWorkspaceTabDragDropResult {
     const [isTabDragActive, setIsTabDragActive] = useState(false);
-    const [splitRatioPreview, setSplitRatioPreview] = useState<number | null>(
-        null,
-    );
     const [splitDropTarget, setSplitDropTarget] =
-        useState<WorkspacePaneId | null>(null);
+        useState<WorkspaceSplitDropTarget | null>(null);
     const lastDropTargetTabIdRef = useRef<string | null>(null);
+    const paneDropTargetRef = useRef<string | null>(null);
     const draggedTabIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!splitView) {
-            setSplitRatioPreview(null);
+            setSplitDropTarget(null);
         }
     }, [splitView]);
-
-    const resolvedSplitView =
-        splitView && splitRatioPreview !== null
-            ? {
-                  ...splitView,
-                  splitRatio: splitRatioPreview,
-              }
-            : splitView;
 
     const handleDragOver: DragDropEventHandlers["onDragOver"] = useCallback(
         ({ operation }): void => {
@@ -83,17 +119,30 @@ export function useWorkspaceTabDragDrop({
                 return;
             }
 
-            if (targetId === "workspace-split-left") {
-                setSplitDropTarget("primary");
-                return;
-            }
+            const nextSplitDropTarget =
+                typeof targetId === "string"
+                    ? parseSplitDropTarget(targetId)
+                    : null;
 
-            if (targetId === "workspace-split-right") {
-                setSplitDropTarget("secondary");
+            if (nextSplitDropTarget) {
+                setSplitDropTarget(nextSplitDropTarget);
+                paneDropTargetRef.current = null;
                 return;
             }
 
             setSplitDropTarget(null);
+
+            const nextPaneDropTarget =
+                typeof targetId === "string"
+                    ? parsePaneDropTarget(targetId)
+                    : null;
+
+            if (nextPaneDropTarget) {
+                paneDropTargetRef.current = nextPaneDropTarget;
+                return;
+            }
+
+            paneDropTargetRef.current = null;
 
             if (typeof targetId !== "string" || draggedTabId === targetId) {
                 return;
@@ -112,6 +161,7 @@ export function useWorkspaceTabDragDrop({
             setIsTabDragActive(true);
             setSplitDropTarget(null);
             lastDropTargetTabIdRef.current = null;
+            paneDropTargetRef.current = null;
         },
         [],
     );
@@ -124,7 +174,9 @@ export function useWorkspaceTabDragDrop({
             setIsTabDragActive(false);
 
             const resolvedSplitTarget = splitDropTarget;
+            const resolvedPaneTarget = paneDropTargetRef.current;
             setSplitDropTarget(null);
+            paneDropTargetRef.current = null;
 
             if (canceled || !draggedTabId) {
                 lastDropTargetTabIdRef.current = null;
@@ -133,7 +185,17 @@ export function useWorkspaceTabDragDrop({
 
             if (resolvedSplitTarget) {
                 lastDropTargetTabIdRef.current = null;
-                openWorkspaceTabInPane(draggedTabId, resolvedSplitTarget);
+                splitWorkspaceTab(
+                    draggedTabId,
+                    resolvedSplitTarget.paneId,
+                    resolvedSplitTarget.placement,
+                );
+                return;
+            }
+
+            if (resolvedPaneTarget) {
+                lastDropTargetTabIdRef.current = null;
+                moveWorkspaceTabToPane(draggedTabId, resolvedPaneTarget);
                 return;
             }
 
@@ -141,7 +203,8 @@ export function useWorkspaceTabDragDrop({
             const targetTabId =
                 typeof rawTargetTabId === "string" &&
                 rawTargetTabId !== draggedTabId &&
-                !SPLIT_DROP_IDS.has(rawTargetTabId)
+                parseSplitDropTarget(rawTargetTabId) === null &&
+                parsePaneDropTarget(rawTargetTabId) === null
                     ? rawTargetTabId
                     : lastDropTargetTabIdRef.current;
 
@@ -154,68 +217,60 @@ export function useWorkspaceTabDragDrop({
                 return;
             }
 
-            if (splitView) {
-                const secondaryTabIdSet = new Set(splitView.secondaryTabIds);
-                const draggedIsSecondary = secondaryTabIdSet.has(draggedTabId);
-                const targetIsSecondary = secondaryTabIdSet.has(targetTabId);
+            const draggedPaneId = getWorkspaceSplitPaneIdForTab(
+                splitView,
+                draggedTabId,
+            );
+            const targetPaneId = getWorkspaceSplitPaneIdForTab(
+                splitView,
+                targetTabId,
+            );
 
-                if (draggedIsSecondary && !targetIsSecondary) {
-                    openWorkspaceTabInPane(draggedTabId, "primary");
-                    return;
-                }
-
-                if (!draggedIsSecondary && targetIsSecondary) {
-                    openWorkspaceTabInPane(draggedTabId, "secondary");
-                    return;
-                }
+            if (targetPaneId && draggedPaneId !== targetPaneId) {
+                moveWorkspaceTabToPane(draggedTabId, targetPaneId);
+                return;
             }
 
             reorderWorkspaceTab(draggedTabId, targetTabId);
         },
         [
-            openWorkspaceTabInPane,
+            moveWorkspaceTabToPane,
             reorderWorkspaceTab,
             splitDropTarget,
             splitView,
+            splitWorkspaceTab,
         ],
     );
 
-    const handleResizeSplitPreview = useCallback((splitRatio: number): void => {
-        setSplitRatioPreview(normalizeWorkspaceSplitRatio(splitRatio));
-    }, []);
+    const handleResizeSplitPreview = useCallback(
+        (splitRatio: number, splitId: string, dividerIndex: number): void => {
+            setWorkspaceSplitRatio(
+                normalizeWorkspaceSplitRatio(splitRatio),
+                splitId,
+                dividerIndex,
+            );
+        },
+        [setWorkspaceSplitRatio],
+    );
 
-    const handleResizeSplitCancel = useCallback((): void => {
-        setSplitRatioPreview(null);
-    }, []);
+    const handleResizeSplitCancel = useCallback((): void => undefined, []);
 
     const handleResizeSplitCommit = useCallback(
-        (splitRatio: number): void => {
-            setSplitRatioPreview(null);
-
-            if (!splitView) {
-                return;
-            }
-
-            if (shouldCloseWorkspaceSplitView(splitRatio)) {
-                closeWorkspaceSplitView();
-                return;
-            }
-
-            setWorkspaceSplitRatio(normalizeWorkspaceSplitRatio(splitRatio));
+        (splitRatio: number, splitId: string, dividerIndex: number): void => {
+            setWorkspaceSplitRatio(
+                normalizeWorkspaceSplitRatio(splitRatio),
+                splitId,
+                dividerIndex,
+            );
             void persistWorkspaceState();
         },
-        [
-            closeWorkspaceSplitView,
-            persistWorkspaceState,
-            setWorkspaceSplitRatio,
-            splitView,
-        ],
+        [persistWorkspaceState, setWorkspaceSplitRatio],
     );
 
     return {
         isTabDragActive,
         splitDropTarget,
-        resolvedSplitView,
+        resolvedSplitView: splitView,
         handleDragStart,
         handleDragOver,
         handleDragEnd,
