@@ -5,6 +5,7 @@ import { useWorkspaceUiStore } from "../useWorkspaceUiStore";
 
 type UseWorkspaceTabBarStateOptions = {
     activeTabId: string | null;
+    tabListScopeId: string;
 };
 
 type UseWorkspaceTabBarStateResult = {
@@ -54,13 +55,16 @@ function isTabFullyVisible(
  */
 export function useWorkspaceTabBarState({
     activeTabId,
+    tabListScopeId,
 }: UseWorkspaceTabBarStateOptions): UseWorkspaceTabBarStateResult {
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabListContainerRef = useRef<HTMLDivElement | null>(null);
     const tabListDropdownRef = useRef<HTMLDivElement | null>(null);
     const [contextMenuState, setContextMenuState] =
         useState<WorkspaceTabContextMenuState | null>(null);
-    const isTabListOpen = useWorkspaceUiStore((state) => state.isTabListOpen);
+    const isTabListOpen = useWorkspaceUiStore(
+        (state) => state.tabListScopeId === tabListScopeId,
+    );
     const closeTabList = useWorkspaceUiStore((state) => state.closeTabList);
     const toggleTabList = useWorkspaceUiStore((state) => state.toggleTabList);
 
@@ -77,7 +81,7 @@ export function useWorkspaceTabBarState({
                 return;
             }
 
-            closeTabList();
+            closeTabList(tabListScopeId);
         };
 
         document.addEventListener("mousedown", handleClickOutside);
@@ -85,7 +89,7 @@ export function useWorkspaceTabBarState({
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [closeTabList, isTabListOpen]);
+    }, [closeTabList, isTabListOpen, tabListScopeId]);
 
     useEffect(() => {
         if (!contextMenuState) {
@@ -148,7 +152,7 @@ export function useWorkspaceTabBarState({
         const offsetLeft = tabBarRect?.left ?? 0;
         const offsetTop = tabBarRect?.top ?? 0;
 
-        closeTabList();
+        closeTabList(tabListScopeId);
         setContextMenuState({
             tabId,
             x: tabRect.left - offsetLeft - 2,
@@ -176,9 +180,13 @@ export function useWorkspaceTabBarState({
         },
         actions: {
             closeContextMenu,
-            closeTabList,
+            closeTabList: () => {
+                closeTabList(tabListScopeId);
+            },
             openContextMenu,
-            toggleTabList,
+            toggleTabList: () => {
+                toggleTabList(tabListScopeId);
+            },
         },
     };
 }

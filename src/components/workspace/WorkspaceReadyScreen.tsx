@@ -280,6 +280,7 @@ export function WorkspaceReadyScreen({
                     <WorkspaceTabBar
                         workspace={workspace}
                         splitView={null}
+                        tabListScopeId="workspace-root"
                         renameState={renameState}
                         previewTabs={workspace.tabs}
                         isTabDragActive={isTabDragActive}

@@ -184,6 +184,7 @@ function WorkspacePaneTabBar({
                     splitView: splitViewState.splitView,
                 }}
                 splitView={splitViewState.splitView}
+                tabListScopeId={paneId}
                 renameState={pane.tabBar.renameState}
                 previewTabs={screenTabs}
                 isTabDragActive={pane.tabBar.isTabDragActive}

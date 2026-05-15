@@ -14,14 +14,25 @@ import type {
  */
 export const useWorkspaceUiStore = create<WorkspaceUiStore>((set) => ({
     ...(INITIAL_WORKSPACE_UI_STATE satisfies WorkspaceUiStoreState),
-    openTabList: () => {
-        set({ isTabListOpen: true });
+    openTabList: (tabListScopeId) => {
+        set({ tabListScopeId });
     },
-    closeTabList: () => {
-        set({ isTabListOpen: false });
+    closeTabList: (tabListScopeId) => {
+        set((state) =>
+            state.tabListScopeId === tabListScopeId
+                ? { tabListScopeId: null }
+                : {},
+        );
     },
-    toggleTabList: () => {
-        set((state) => ({ isTabListOpen: !state.isTabListOpen }));
+    toggleTabList: (tabListScopeId) => {
+        set((state) => {
+            const nextTabListScopeId =
+                state.tabListScopeId === tabListScopeId ? null : tabListScopeId;
+
+            return {
+                tabListScopeId: nextTabListScopeId,
+            };
+        });
     },
     startTabRename: (tabId, renameValue) => {
         set({

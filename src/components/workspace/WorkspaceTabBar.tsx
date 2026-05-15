@@ -15,6 +15,7 @@ import type { WorkspaceTabBarInternalProps } from "./tabBar/workspaceTabBar.type
 export function WorkspaceTabBar({
     workspace,
     splitView,
+    tabListScopeId,
     renameState,
     previewTabs,
     isTabDragActive,
@@ -35,6 +36,7 @@ export function WorkspaceTabBar({
     const activeTabId = workspace.activeTabId;
     const workspaceTabBarState = useWorkspaceTabBarState({
         activeTabId,
+        tabListScopeId,
     });
     const { tabBarRef, tabListContainerRef, tabListDropdownRef } =
         workspaceTabBarState.refs;

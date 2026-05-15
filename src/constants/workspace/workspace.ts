@@ -59,7 +59,7 @@ export const TAB_BAR_SENSORS = [
     }),
 ];
 export const INITIAL_WORKSPACE_UI_STATE = {
-    isTabListOpen: false,
+    tabListScopeId: null,
     renamingTabId: null,
     renameValue: "",
     isRenameSubmitting: false,

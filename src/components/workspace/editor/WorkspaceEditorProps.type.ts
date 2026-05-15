@@ -16,7 +16,11 @@ import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
 
 export type WorkspaceEditorPaneTabBarProps = Omit<
     WorkspaceTabBarInternalProps,
-    "workspace" | "previewTabs" | "splitView" | "splitDropTarget"
+    | "workspace"
+    | "previewTabs"
+    | "splitView"
+    | "splitDropTarget"
+    | "tabListScopeId"
 > & {
     workspaceBase: Omit<WorkspaceScreenSession, "activeTabId" | "tabs"> & {
         splitView: WorkspaceSplitView | null;

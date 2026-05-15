@@ -11,6 +11,7 @@ import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/ses
 export type WorkspaceTabBarProps = {
     workspace: WorkspaceScreenSession;
     splitView: WorkspaceSplitView | null;
+    tabListScopeId: string;
     renameState: UseWorkspaceTabRenameResult;
     onCreateFile: () => void;
     onSelectTab: (tabId: string) => void;
