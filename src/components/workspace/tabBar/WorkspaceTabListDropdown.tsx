@@ -1,12 +1,9 @@
-import { PinIcon } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
 import {
     WORKSPACE_TAB_LIST_DROPDOWN_STYLE,
     WORKSPACE_TAB_LIST_DROPDOWN_VIEWPORT_STYLE,
 } from "../../../constants/workspace/workspace";
-import { joinClassNames } from "../../../lib/shared/className";
-import { splitWorkspaceFileName } from "../../../lib/workspace/fileName";
-import { AppIcon } from "../../app/common/AppIcon";
+import { WorkspaceTabListDropdownItem } from "./WorkspaceTabListDropdownItem";
 import type { WorkspaceTabListDropdownProps } from "./workspaceTabBar.type";
 
 /**
@@ -32,45 +29,15 @@ export function WorkspaceTabListDropdown({
                 style={WORKSPACE_TAB_LIST_DROPDOWN_VIEWPORT_STYLE}
                 className="overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-                {workspace.tabs.map((tab) => {
-                    const { baseName } = splitWorkspaceFileName(tab.fileName);
-                    const isActive = tab.id === workspace.activeTabId;
-                    const isDirty = tab.isDirty;
-                    const tabClassName = joinClassNames(
-                        "app-select-none flex h-8 w-full items-center justify-between gap-3 rounded-[var(--workspace-menu-item-radius)] px-2.5 text-left text-[11px] font-semibold tracking-wide transition-colors",
-                        isActive
-                            ? "bg-fumi-100 text-fumi-800"
-                            : "text-fumi-500 hover:bg-fumi-50 hover:text-fumi-800",
-                    );
-
-                    return (
-                        <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => {
-                                onSelectTab(tab.id);
-                                onClose();
-                            }}
-                            className={tabClassName}
-                        >
-                            <span className="min-w-0 flex-1 truncate text-left">
-                                {baseName}
-                            </span>
-                            {tab.isPinned ? (
-                                <span className="shrink-0 text-fumi-400">
-                                    <AppIcon
-                                        icon={PinIcon}
-                                        size={10}
-                                        strokeWidth={2.2}
-                                    />
-                                </span>
-                            ) : null}
-                            {isDirty ? (
-                                <span className="size-2 shrink-0 rounded-full bg-amber-500" />
-                            ) : null}
-                        </button>
-                    );
-                })}
+                {workspace.tabs.map((tab) => (
+                    <WorkspaceTabListDropdownItem
+                        key={tab.id}
+                        activeTabId={workspace.activeTabId}
+                        tab={tab}
+                        onClose={onClose}
+                        onSelectTab={onSelectTab}
+                    />
+                ))}
             </div>
         </div>
     );
