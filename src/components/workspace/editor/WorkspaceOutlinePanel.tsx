@@ -3,6 +3,7 @@ import {
     CollapseIcon,
     ExpandIcon,
 } from "@hugeicons/core-free-icons";
+import type { VirtualItem } from "@tanstack/react-virtual";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CSSProperties, ReactElement } from "react";
 import { memo, useMemo, useRef } from "react";
@@ -143,6 +144,53 @@ const OutlineGroupRow = memo(function OutlineGroupRow({
     );
 });
 
+type WorkspaceOutlineVirtualRowProps = {
+    entry: OutlineEntry | undefined;
+    expandedGroups: WorkspaceOutlinePanelProps["expandedGroups"];
+    virtualItem: VirtualItem;
+    onSelectSymbol: WorkspaceOutlinePanelProps["onSelectSymbol"];
+    onToggleExpandedGroup: WorkspaceOutlinePanelProps["onToggleExpandedGroup"];
+};
+
+function WorkspaceOutlineVirtualRow({
+    entry,
+    expandedGroups,
+    virtualItem,
+    onSelectSymbol,
+    onToggleExpandedGroup,
+}: WorkspaceOutlineVirtualRowProps): ReactElement | null {
+    if (!entry) {
+        return null;
+    }
+
+    const itemStyle = {
+        height: `${virtualItem.size}px`,
+        transform: `translateY(${virtualItem.start}px)`,
+    } satisfies CSSProperties;
+
+    return (
+        <div
+            data-index={virtualItem.index}
+            className="absolute left-0 top-0 w-full px-2"
+            style={itemStyle}
+        >
+            {entry.type === "group" ? (
+                <OutlineGroupRow
+                    count={entry.count}
+                    isExpanded={expandedGroups[entry.title] ?? true}
+                    onToggleExpandedGroup={onToggleExpandedGroup}
+                    title={entry.title}
+                />
+            ) : (
+                <OutlineSymbolRow
+                    symbol={entry.symbol}
+                    onSelectSymbol={onSelectSymbol}
+                />
+            )}
+        </div>
+    );
+}
+
 /**
  * The outline panel showing Luau symbols (functions, constants, etc).
  *
@@ -281,46 +329,16 @@ export const WorkspaceOutlinePanel = memo(function WorkspaceOutlinePanel({
             >
                 {entries.length > 0 ? (
                     <div className="relative w-full" style={viewportStyle}>
-                        {virtualItems.map((virtualItem) => {
-                            const entry = entries[virtualItem.index];
-
-                            if (!entry) {
-                                return null;
-                            }
-
-                            const itemStyle = {
-                                height: `${virtualItem.size}px`,
-                                transform: `translateY(${virtualItem.start}px)`,
-                            } satisfies CSSProperties;
-
-                            return (
-                                <div
-                                    key={virtualItem.key}
-                                    data-index={virtualItem.index}
-                                    className="absolute left-0 top-0 w-full px-2"
-                                    style={itemStyle}
-                                >
-                                    {entry.type === "group" ? (
-                                        <OutlineGroupRow
-                                            count={entry.count}
-                                            isExpanded={
-                                                expandedGroups[entry.title] ??
-                                                true
-                                            }
-                                            onToggleExpandedGroup={
-                                                onToggleExpandedGroup
-                                            }
-                                            title={entry.title}
-                                        />
-                                    ) : (
-                                        <OutlineSymbolRow
-                                            symbol={entry.symbol}
-                                            onSelectSymbol={onSelectSymbol}
-                                        />
-                                    )}
-                                </div>
-                            );
-                        })}
+                        {virtualItems.map((virtualItem) => (
+                            <WorkspaceOutlineVirtualRow
+                                key={virtualItem.key}
+                                entry={entries[virtualItem.index]}
+                                expandedGroups={expandedGroups}
+                                virtualItem={virtualItem}
+                                onSelectSymbol={onSelectSymbol}
+                                onToggleExpandedGroup={onToggleExpandedGroup}
+                            />
+                        ))}
                     </div>
                 ) : (
                     <div className="flex h-full items-center justify-center px-4 text-center">
