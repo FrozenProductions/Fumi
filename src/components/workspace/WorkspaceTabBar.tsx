@@ -140,7 +140,7 @@ export function WorkspaceTabBar({
     return (
         <div
             ref={tabBarRef}
-            className="relative w-full min-w-0 shrink-0 overflow-hidden border-b border-fumi-200 bg-fumi-100"
+            className="relative z-20 w-full min-w-0 shrink-0 overflow-visible border-b border-fumi-200 bg-fumi-100"
         >
             <div className="relative flex items-stretch">
                 <div
