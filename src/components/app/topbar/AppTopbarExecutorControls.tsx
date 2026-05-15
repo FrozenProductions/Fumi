@@ -1,5 +1,5 @@
 import { ArrowDown01Icon, ConnectIcon } from "@hugeicons/core-free-icons";
-import type { CSSProperties, FocusEvent, ReactElement } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
     EXECUTOR_PORT_DROPDOWN_ITEM_GAP_REM,
@@ -14,8 +14,8 @@ import { useAppStore } from "../../../hooks/app/useAppStore";
 import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
 import { AppIcon } from "../common/AppIcon";
 import { AppTooltip } from "../tooltip/AppTooltip";
+import { AppTopbarExecutorPortOption } from "./AppTopbarExecutorPortOption";
 import type { AppTopbarExecutorControlsProps } from "./appTopbar.type";
-import { getExecutorPortLabel } from "./getExecutorPortLabel";
 
 /**
  * Executor connection controls displayed in the topbar.
@@ -61,6 +61,22 @@ export function AppTopbarExecutorControls({
     const dropdownViewportStyle = {
         maxHeight: `calc(${EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT} * ${EXECUTOR_PORT_DROPDOWN_ITEM_HEIGHT_REM}rem + (${EXECUTOR_PORT_DROPDOWN_VISIBLE_COUNT} - 1) * ${EXECUTOR_PORT_DROPDOWN_ITEM_GAP_REM}rem)`,
     } satisfies CSSProperties;
+
+    function handleClearRevealedPort(nextPort: number): void {
+        setRevealedPort((currentPort) =>
+            currentPort === nextPort ? null : currentPort,
+        );
+    }
+
+    function handleRevealPort(nextPort: number): void {
+        setRevealedPort(nextPort);
+    }
+
+    function handleSelectPort(nextPort: string): void {
+        updatePort(nextPort);
+        setIsDropdownOpen(false);
+        setRevealedPort(null);
+    }
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -196,123 +212,22 @@ export function AppTopbarExecutorControls({
                         className="overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     >
                         <div className="flex flex-col gap-0.5">
-                            {availablePortSummaries.map(
-                                (availablePortSummary) => {
-                                    const portValue = String(
-                                        availablePortSummary.port,
-                                    );
-                                    const isSelected = port === portValue;
-                                    const isMasked =
-                                        isStreamerModeEnabled &&
-                                        revealedPort !==
-                                            availablePortSummary.port;
-                                    const label = getExecutorPortLabel(
-                                        availablePortSummary,
-                                        {
-                                            isMasked,
-                                        },
-                                    );
-                                    const shouldBlurPortLabel =
-                                        isMasked &&
-                                        availablePortSummary.boundAccountDisplayName !==
-                                            null;
-
-                                    function handleRevealExecutorPort(): void {
-                                        setRevealedPort(
-                                            availablePortSummary.port,
-                                        );
+                            {availablePortSummaries.map((portSummary) => (
+                                <AppTopbarExecutorPortOption
+                                    key={portSummary.port}
+                                    port={port}
+                                    portSummary={portSummary}
+                                    revealedPort={revealedPort}
+                                    isStreamerModeEnabled={
+                                        isStreamerModeEnabled
                                     }
-
-                                    function handleHideExecutorPort(
-                                        currentTarget: HTMLButtonElement,
-                                        relatedTarget: EventTarget | null = null,
-                                    ): void {
-                                        if (
-                                            relatedTarget instanceof Node &&
-                                            currentTarget.contains(
-                                                relatedTarget,
-                                            )
-                                        ) {
-                                            return;
-                                        }
-
-                                        if (
-                                            currentTarget.contains(
-                                                document.activeElement,
-                                            )
-                                        ) {
-                                            return;
-                                        }
-
-                                        if (currentTarget.matches(":hover")) {
-                                            return;
-                                        }
-
-                                        setRevealedPort((currentPort) =>
-                                            currentPort ===
-                                            availablePortSummary.port
-                                                ? null
-                                                : currentPort,
-                                        );
+                                    onClearRevealedPort={
+                                        handleClearRevealedPort
                                     }
-
-                                    function handleExecutorPortBlur(
-                                        event: FocusEvent<HTMLButtonElement>,
-                                    ): void {
-                                        handleHideExecutorPort(
-                                            event.currentTarget,
-                                            event.relatedTarget,
-                                        );
-                                    }
-
-                                    return (
-                                        <button
-                                            key={availablePortSummary.port}
-                                            type="button"
-                                            onPointerEnter={
-                                                handleRevealExecutorPort
-                                            }
-                                            onPointerLeave={(event) =>
-                                                handleHideExecutorPort(
-                                                    event.currentTarget,
-                                                )
-                                            }
-                                            onFocus={handleRevealExecutorPort}
-                                            onBlur={handleExecutorPortBlur}
-                                            onClick={() => {
-                                                updatePort(portValue);
-                                                setIsDropdownOpen(false);
-                                                setRevealedPort(null);
-                                            }}
-                                            className={`app-select-none flex h-10 w-full items-center justify-between gap-3 rounded-[calc(var(--executor-port-menu-radius)-var(--executor-port-menu-inset))] px-2.5 text-left transition-colors ${
-                                                isSelected
-                                                    ? "bg-fumi-100 font-semibold text-fumi-800"
-                                                    : "font-medium text-fumi-500 hover:bg-fumi-100 hover:text-fumi-800"
-                                            }`}
-                                        >
-                                            <div className="min-w-0">
-                                                <span className="block text-xs">
-                                                    {availablePortSummary.port}
-                                                </span>
-                                                <span
-                                                    className={`mt-0.5 block truncate text-[10px] font-medium text-fumi-400 transition-[filter] duration-150 ${
-                                                        shouldBlurPortLabel
-                                                            ? "blur-[0.20rem]"
-                                                            : "blur-0"
-                                                    }`}
-                                                >
-                                                    {label}
-                                                </span>
-                                            </div>
-                                            <div className="shrink-0">
-                                                {isSelected ? (
-                                                    <span className="block size-1.5 rounded-full bg-fumi-600" />
-                                                ) : null}
-                                            </div>
-                                        </button>
-                                    );
-                                },
-                            )}
+                                    onRevealPort={handleRevealPort}
+                                    onSelectPort={handleSelectPort}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
