@@ -12,6 +12,48 @@ import { WorkspaceEditorSearchActions } from "./WorkspaceEditorSearchActions";
 import { WorkspaceEditorSearchReplaceControls } from "./WorkspaceEditorSearchReplaceControls";
 import type { WorkspaceEditorSearchPanelProps } from "./workspaceEditorSearchPanel.type";
 
+function handleSearchQueryKeyDown(
+    event: KeyboardEvent<HTMLInputElement>,
+    searchPanel: WorkspaceEditorSearchPanelProps["searchPanel"],
+): void {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        searchPanel.onClose();
+        return;
+    }
+
+    if (event.key !== "Enter") {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (event.shiftKey) {
+        searchPanel.onFindPrevious();
+        return;
+    }
+
+    searchPanel.onFindNext();
+}
+
+function handleSearchReplaceKeyDown(
+    event: KeyboardEvent<HTMLInputElement>,
+    searchPanel: WorkspaceEditorSearchPanelProps["searchPanel"],
+): void {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        searchPanel.onClose();
+        return;
+    }
+
+    if (event.key !== "Enter") {
+        return;
+    }
+
+    event.preventDefault();
+    searchPanel.onReplaceNext();
+}
+
 /**
  * Floating search panel for the workspace editor with find/replace.
  *
@@ -43,46 +85,6 @@ export function WorkspaceEditorSearchPanel({
         event: ChangeEvent<HTMLInputElement>,
     ): void => {
         searchPanel.onReplaceValueChange(event.target.value);
-    };
-
-    const handleQueryKeyDown = (
-        event: KeyboardEvent<HTMLInputElement>,
-    ): void => {
-        if (event.key === "Escape") {
-            event.preventDefault();
-            searchPanel.onClose();
-            return;
-        }
-
-        if (event.key !== "Enter") {
-            return;
-        }
-
-        event.preventDefault();
-
-        if (event.shiftKey) {
-            searchPanel.onFindPrevious();
-            return;
-        }
-
-        searchPanel.onFindNext();
-    };
-
-    const handleReplaceKeyDown = (
-        event: KeyboardEvent<HTMLInputElement>,
-    ): void => {
-        if (event.key === "Escape") {
-            event.preventDefault();
-            searchPanel.onClose();
-            return;
-        }
-
-        if (event.key !== "Enter") {
-            return;
-        }
-
-        event.preventDefault();
-        searchPanel.onReplaceNext();
     };
 
     const panelMotionClassName = isClosing
@@ -130,7 +132,9 @@ export function WorkspaceEditorSearchPanel({
                         placeholder="Find"
                         aria-label="Find in editor"
                         onChange={handleQueryChange}
-                        onKeyDown={handleQueryKeyDown}
+                        onKeyDown={(event) =>
+                            handleSearchQueryKeyDown(event, searchPanel)
+                        }
                         {...APP_TEXT_INPUT_PROPS}
                         className={queryInputClassName}
                     />
@@ -167,7 +171,9 @@ export function WorkspaceEditorSearchPanel({
                     replaceDropdownRef={replaceDropdownRef}
                     searchPanel={searchPanel}
                     onReplaceChange={handleReplaceChange}
-                    onReplaceKeyDown={handleReplaceKeyDown}
+                    onReplaceKeyDown={(event) =>
+                        handleSearchReplaceKeyDown(event, searchPanel)
+                    }
                     onReplaceAll={handleReplaceAll}
                     onToggleReplaceDropdown={toggleReplaceDropdown}
                 />
