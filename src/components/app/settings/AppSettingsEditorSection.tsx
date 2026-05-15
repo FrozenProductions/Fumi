@@ -221,7 +221,7 @@ export function AppSettingsEditorSection(): ReactElement {
                 isEnabled={editorSettings.isTabsToSpacesEnabled}
                 onChange={handleTabsToSpacesToggle}
             >
-                <div className="flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 px-3.5 py-3.5">
+                <div className="flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 p-3.5">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <span className="mt-px size-1.5 shrink-0 rounded-full bg-fumi-500" />
@@ -248,7 +248,7 @@ export function AppSettingsEditorSection(): ReactElement {
                 isEnabled={editorSettings.isIntellisenseEnabled}
                 onChange={handleIntellisenseToggle}
             >
-                <div className="flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 px-3.5 py-3.5">
+                <div className="flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 p-3.5">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <span className="mt-px size-1.5 shrink-0 rounded-full bg-fumi-500" />
@@ -268,7 +268,7 @@ export function AppSettingsEditorSection(): ReactElement {
                         className="mt-0.5 shrink-0"
                     />
                 </div>
-                <div className="mt-3 flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 px-3.5 py-3.5">
+                <div className="mt-3 flex items-start justify-between gap-4 rounded-[0.95rem] border border-fumi-200/80 bg-fumi-100/70 p-3.5">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <span className="mt-px size-1.5 shrink-0 rounded-full bg-fumi-500" />
