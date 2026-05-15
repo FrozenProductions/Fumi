@@ -21,6 +21,8 @@ import { WorkspaceMessageState } from "./feedback/WorkspaceMessageState";
 import { WorkspaceTabBar } from "./WorkspaceTabBar";
 import type {
     WorkspaceActionsButtonProps,
+    WorkspaceActiveTabStatusProps,
+    WorkspaceReadyContentProps,
     WorkspaceScreenProps,
 } from "./workspaceScreen.type";
 
@@ -276,121 +278,40 @@ export function WorkspaceReadyScreen({
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                {workspace.tabs.length > 0 && !resolvedSplitView ? (
-                    <WorkspaceTabBar
-                        workspace={workspace}
-                        splitView={null}
-                        tabListScopeId="workspace-root"
-                        renameState={renameState}
-                        previewTabs={workspace.tabs}
-                        isTabDragActive={isTabDragActive}
-                        splitDropTarget={null}
-                        onCreateFile={handleCreateWorkspaceFile}
-                        onSelectTab={selectWorkspaceTab}
-                        onDuplicateTab={handleDuplicateWorkspaceTab}
-                        onArchiveTab={handleArchiveWorkspaceTab}
-                        onArchiveAllTabs={handleArchiveAllWorkspaceTabs}
-                        onArchiveOtherTabs={handleArchiveOtherWorkspaceTabs}
-                        onToggleTabPinned={handleToggleWorkspaceTabPinned}
-                        onDeleteTab={handleDeleteWorkspaceTab}
-                        onSplitTab={splitWorkspaceTab}
-                        onCloseSplitView={closeWorkspaceSplitView}
-                        middleClickTabAction={middleClickTabAction}
-                        isSplitViewArchiveScopeEnabled={
-                            isSplitViewArchiveScopeEnabled
-                        }
-                    />
-                ) : null}
-
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-                    {workspace.tabs.length === 0 ? (
-                        <WorkspaceMessageState
-                            eyebrow={
-                                workspace.archivedTabs.length > 0
-                                    ? "Archived tabs"
-                                    : "Empty workspace"
-                            }
-                            title={undefined}
-                            description={
-                                workspace.archivedTabs.length > 0
-                                    ? "Restore archived tabs from Settings, or create a new file to keep working."
-                                    : "Scripts are stored directly in this workspace directory. Create a file, then edit it in the editor."
-                            }
-                            illustrationUrl={emptyTabIcon}
-                            action={createFileAction}
-                        />
-                    ) : activeTab ? (
-                        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-                            <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
-                                <WorkspaceEditorRegion
-                                    splitView={resolvedSplitView}
-                                    onResizeSplitPreview={
-                                        handleResizeSplitPreview
-                                    }
-                                    onResizeSplitCommit={
-                                        handleResizeSplitCommit
-                                    }
-                                    onResizeSplitCancel={
-                                        handleResizeSplitCancel
-                                    }
-                                    workspaceActionsButton={
-                                        workspaceActionsButton
-                                    }
-                                    tabBar={{
-                                        workspaceBase: {
-                                            workspacePath:
-                                                workspace.workspacePath,
-                                            workspaceName:
-                                                workspace.workspaceName,
-                                            archivedTabs:
-                                                workspace.archivedTabs,
-                                            executionHistory:
-                                                workspace.executionHistory,
-                                            splitView: resolvedSplitView,
-                                        },
-                                        renameState,
-                                        isTabDragActive,
-                                        onCreateFile: handleCreateWorkspaceFile,
-                                        onSelectTab: selectWorkspaceTab,
-                                        onDuplicateTab:
-                                            handleDuplicateWorkspaceTab,
-                                        onArchiveTab: handleArchiveWorkspaceTab,
-                                        onArchiveAllTabs:
-                                            handleArchiveAllWorkspaceTabs,
-                                        onArchiveOtherTabs:
-                                            handleArchiveOtherWorkspaceTabs,
-                                        onToggleTabPinned:
-                                            handleToggleWorkspaceTabPinned,
-                                        onDeleteTab: handleDeleteWorkspaceTab,
-                                        onSplitTab: splitWorkspaceTab,
-                                        onCloseSplitView:
-                                            closeWorkspaceSplitView,
-                                        middleClickTabAction,
-                                        isSplitViewArchiveScopeEnabled,
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <WorkspaceMessageState
-                            eyebrow="Workspace ready"
-                            title="Select a tab to start editing"
-                            description={`${workspace.workspaceName} contains ${workspace.tabs.length} registered file${workspace.tabs.length === 1 ? "" : "s"}.`}
-                        />
-                    )}
-                </div>
+                <WorkspaceReadyContent
+                    activeTab={activeTab}
+                    createFileAction={createFileAction}
+                    isSplitViewArchiveScopeEnabled={
+                        isSplitViewArchiveScopeEnabled
+                    }
+                    isTabDragActive={isTabDragActive}
+                    middleClickTabAction={middleClickTabAction}
+                    renameState={renameState}
+                    resolvedSplitView={resolvedSplitView}
+                    workspace={workspace}
+                    workspaceActionsButton={workspaceActionsButton}
+                    onArchiveAllWorkspaceTabs={handleArchiveAllWorkspaceTabs}
+                    onArchiveOtherWorkspaceTabs={
+                        handleArchiveOtherWorkspaceTabs
+                    }
+                    onArchiveWorkspaceTab={handleArchiveWorkspaceTab}
+                    onCloseWorkspaceSplitView={closeWorkspaceSplitView}
+                    onCreateWorkspaceFile={handleCreateWorkspaceFile}
+                    onDeleteWorkspaceTab={handleDeleteWorkspaceTab}
+                    onDuplicateWorkspaceTab={handleDuplicateWorkspaceTab}
+                    onResizeSplitCancel={handleResizeSplitCancel}
+                    onResizeSplitCommit={handleResizeSplitCommit}
+                    onResizeSplitPreview={handleResizeSplitPreview}
+                    onSelectWorkspaceTab={selectWorkspaceTab}
+                    onSplitWorkspaceTab={splitWorkspaceTab}
+                    onToggleWorkspaceTabPinned={handleToggleWorkspaceTabPinned}
+                />
             </DragDropProvider>
-            {workspace.tabs.length === 0 ? (
-                <div className="sr-only" aria-live="polite">
-                    No active tab
-                </div>
-            ) : (
-                <div className="sr-only" aria-live="polite">
-                    {activeTabIndex >= 0 && activeTab
-                        ? `${activeTab.fileName} open`
-                        : "No active tab"}
-                </div>
-            )}
+            <WorkspaceActiveTabStatus
+                activeTab={activeTab}
+                activeTabIndex={activeTabIndex}
+                tabCount={workspace.tabs.length}
+            />
             <WorkspaceExecutionHistoryModal
                 isOpen={executionHistoryModal.isOpen}
                 entries={workspace.executionHistory}
@@ -398,5 +319,140 @@ export function WorkspaceReadyScreen({
                 onReRun={executeHistoryEntry}
             />
         </section>
+    );
+}
+
+function WorkspaceReadyContent({
+    activeTab,
+    createFileAction,
+    isSplitViewArchiveScopeEnabled,
+    isTabDragActive,
+    middleClickTabAction,
+    renameState,
+    resolvedSplitView,
+    workspace,
+    workspaceActionsButton,
+    onArchiveAllWorkspaceTabs,
+    onArchiveOtherWorkspaceTabs,
+    onArchiveWorkspaceTab,
+    onCloseWorkspaceSplitView,
+    onCreateWorkspaceFile,
+    onDeleteWorkspaceTab,
+    onDuplicateWorkspaceTab,
+    onResizeSplitCancel,
+    onResizeSplitCommit,
+    onResizeSplitPreview,
+    onSelectWorkspaceTab,
+    onSplitWorkspaceTab,
+    onToggleWorkspaceTabPinned,
+}: WorkspaceReadyContentProps): ReactElement {
+    return (
+        <>
+            {workspace.tabs.length > 0 && !resolvedSplitView ? (
+                <WorkspaceTabBar
+                    workspace={workspace}
+                    splitView={null}
+                    tabListScopeId="workspace-root"
+                    renameState={renameState}
+                    previewTabs={workspace.tabs}
+                    isTabDragActive={isTabDragActive}
+                    splitDropTarget={null}
+                    onCreateFile={onCreateWorkspaceFile}
+                    onSelectTab={onSelectWorkspaceTab}
+                    onDuplicateTab={onDuplicateWorkspaceTab}
+                    onArchiveTab={onArchiveWorkspaceTab}
+                    onArchiveAllTabs={onArchiveAllWorkspaceTabs}
+                    onArchiveOtherTabs={onArchiveOtherWorkspaceTabs}
+                    onToggleTabPinned={onToggleWorkspaceTabPinned}
+                    onDeleteTab={onDeleteWorkspaceTab}
+                    onSplitTab={onSplitWorkspaceTab}
+                    onCloseSplitView={onCloseWorkspaceSplitView}
+                    middleClickTabAction={middleClickTabAction}
+                    isSplitViewArchiveScopeEnabled={
+                        isSplitViewArchiveScopeEnabled
+                    }
+                />
+            ) : null}
+
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                {workspace.tabs.length === 0 ? (
+                    <WorkspaceMessageState
+                        eyebrow={
+                            workspace.archivedTabs.length > 0
+                                ? "Archived tabs"
+                                : "Empty workspace"
+                        }
+                        title={undefined}
+                        description={
+                            workspace.archivedTabs.length > 0
+                                ? "Restore archived tabs from Settings, or create a new file to keep working."
+                                : "Scripts are stored directly in this workspace directory. Create a file, then edit it in the editor."
+                        }
+                        illustrationUrl={emptyTabIcon}
+                        action={createFileAction}
+                    />
+                ) : activeTab ? (
+                    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                        <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
+                            <WorkspaceEditorRegion
+                                splitView={resolvedSplitView}
+                                onResizeSplitPreview={onResizeSplitPreview}
+                                onResizeSplitCommit={onResizeSplitCommit}
+                                onResizeSplitCancel={onResizeSplitCancel}
+                                workspaceActionsButton={workspaceActionsButton}
+                                tabBar={{
+                                    workspaceBase: {
+                                        workspacePath: workspace.workspacePath,
+                                        workspaceName: workspace.workspaceName,
+                                        archivedTabs: workspace.archivedTabs,
+                                        executionHistory:
+                                            workspace.executionHistory,
+                                        splitView: resolvedSplitView,
+                                    },
+                                    renameState,
+                                    isTabDragActive,
+                                    onCreateFile: onCreateWorkspaceFile,
+                                    onSelectTab: onSelectWorkspaceTab,
+                                    onDuplicateTab: onDuplicateWorkspaceTab,
+                                    onArchiveTab: onArchiveWorkspaceTab,
+                                    onArchiveAllTabs: onArchiveAllWorkspaceTabs,
+                                    onArchiveOtherTabs:
+                                        onArchiveOtherWorkspaceTabs,
+                                    onToggleTabPinned:
+                                        onToggleWorkspaceTabPinned,
+                                    onDeleteTab: onDeleteWorkspaceTab,
+                                    onSplitTab: onSplitWorkspaceTab,
+                                    onCloseSplitView: onCloseWorkspaceSplitView,
+                                    middleClickTabAction,
+                                    isSplitViewArchiveScopeEnabled,
+                                }}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <WorkspaceMessageState
+                        eyebrow="Workspace ready"
+                        title="Select a tab to start editing"
+                        description={`${workspace.workspaceName} contains ${workspace.tabs.length} registered file${workspace.tabs.length === 1 ? "" : "s"}.`}
+                    />
+                )}
+            </div>
+        </>
+    );
+}
+
+function WorkspaceActiveTabStatus({
+    activeTab,
+    activeTabIndex,
+    tabCount,
+}: WorkspaceActiveTabStatusProps): ReactElement {
+    return (
+        <div className="sr-only" aria-live="polite">
+            {tabCount === 0
+                ? "No active tab"
+                : activeTabIndex >= 0 && activeTab
+                  ? `${activeTab.fileName} open`
+                  : "No active tab"}
+        </div>
     );
 }

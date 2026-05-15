@@ -30,7 +30,11 @@ import { AppIcon } from "../common/AppIcon";
 import { AppInput } from "../form/AppInput";
 import { AppSelect } from "../form/AppSelect";
 import { AppSettingsToggle } from "../form/AppSettingsToggle";
-import type { AppSettingsGeneralSectionProps } from "./appSettings.type";
+import type {
+    AppInfoUpdateCardProps,
+    AppSettingsGeneralSectionProps,
+    AppZoomSettingProps,
+} from "./appSettings.type";
 
 /**
  * The general settings section with theme, zoom, and updater controls.
@@ -105,10 +109,6 @@ export function AppSettingsGeneralSection({
               ? `${updaterButtonBaseClassName} border border-fumi-300 bg-fumi-100 text-fumi-800 shadow-[0_1px_2px_rgb(0_0_0_/_0.18)] hover:border-fumi-400 hover:bg-fumi-200 hover:text-fumi-900`
               : `${updaterButtonBaseClassName} border border-fumi-200 bg-fumi-100 text-fumi-700 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.55)] hover:border-fumi-300 hover:bg-fumi-200 hover:text-fumi-900`;
     const restartButtonClassName = `${updaterButtonBaseClassName} border border-fumi-700 bg-fumi-900 text-fumi-50 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08),0_1px_2px_rgb(15_23_42_/_0.12)] hover:border-fumi-800 hover:bg-fumi-800`;
-    const downloadProgressBarStyle = {
-        width: `${displayedDownloadProgress?.progressPercent ?? 10}%`,
-    };
-
     const handleZoomPercentChange = (value: string): void => {
         void setZoomPercent(Number(value));
     };
@@ -159,6 +159,10 @@ export function AppSettingsGeneralSection({
         void openExternalUrl(APP_AUTHOR_URL);
     };
 
+    const handleRelaunchToApplyUpdate = (): void => {
+        void relaunchToApplyUpdate();
+    };
+
     useEffect(() => {
         if (displayedUpdaterStatus === previousUpdaterStatusRef.current) {
             return;
@@ -177,116 +181,20 @@ export function AppSettingsGeneralSection({
 
     return (
         <div className="flex w-full flex-col divide-y divide-fumi-200/80">
-            <div className="py-4">
-                <div className="overflow-hidden rounded-[1rem] border border-fumi-200 bg-fumi-100/80">
-                    <div className="flex items-start gap-4 p-4">
-                        <img
-                            src={fumiIcon}
-                            alt={`${APP_TITLE} icon`}
-                            className="size-12 shrink-0"
-                        />
-                        <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                    <p className="text-[15px] font-semibold tracking-[-0.02em] text-fumi-900">
-                                        {APP_TITLE}
-                                    </p>
-                                    <span className="inline-flex h-5 items-center rounded-full border border-fumi-200 bg-fumi-50 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-fumi-500">
-                                        v{APP_VERSION}
-                                    </span>
-                                </div>
-                            </div>
-                            <p className="mt-1.5 text-xs leading-[1.6] text-fumi-500">
-                                {APP_DESCRIPTION}
-                            </p>
-                            <p className="mt-3 text-xs font-medium text-fumi-500">
-                                Made by{" "}
-                                <button
-                                    type="button"
-                                    onClick={handleOpenAuthorUrl}
-                                    className="font-semibold text-fumi-700 underline decoration-fumi-300 underline-offset-2 transition-colors hover:text-fumi-900"
-                                >
-                                    {APP_AUTHOR_NAME}
-                                </button>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-3 border-t border-fumi-200/60 bg-fumi-50/50 pl-4 pr-3 py-3">
-                        <p className="min-w-0 flex-1 whitespace-nowrap text-xs font-medium text-fumi-600">
-                            <AppAnimatedText text={updaterPhrase} />
-                        </p>
-                        <div className="flex shrink-0 items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={handleCheckForUpdatesAction}
-                                disabled={shouldDisableCheckButton}
-                                className={checkForUpdatesButtonClassName}
-                            >
-                                {checkForUpdatesButtonLabel}
-                            </button>
-                            {displayedUpdaterStatus === "readyToRestart" ? (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        void relaunchToApplyUpdate();
-                                    }}
-                                    className={restartButtonClassName}
-                                >
-                                    Restart now
-                                </button>
-                            ) : null}
-                        </div>
-                    </div>
-
-                    {(progressSummary ||
-                        errorMessage ||
-                        displayedUpdaterStatus === "unsupported") && (
-                        <div className="border-t border-fumi-200/60 bg-fumi-50/30 px-4 py-3">
-                            <div className="space-y-3">
-                                {progressSummary ? (
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between gap-3 text-xs text-fumi-500">
-                                            <span>{progressSummary}</span>
-                                            {displayedDownloadProgress?.progressPercent !==
-                                                null &&
-                                            displayedDownloadProgress?.progressPercent !==
-                                                undefined ? (
-                                                <span className="font-semibold text-fumi-800">
-                                                    {
-                                                        displayedDownloadProgress?.progressPercent
-                                                    }
-                                                    %
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                        <div className="h-1.5 overflow-hidden rounded-full bg-fumi-200">
-                                            <div
-                                                className="h-full rounded-full bg-fumi-700 transition-[width] duration-200 ease-out"
-                                                style={downloadProgressBarStyle}
-                                            />
-                                        </div>
-                                    </div>
-                                ) : null}
-
-                                {errorMessage ? (
-                                    <p className="rounded-[0.6rem] border border-rose-200 bg-rose-50 px-3 py-2 text-xs leading-[1.6] text-rose-700">
-                                        {errorMessage}
-                                    </p>
-                                ) : null}
-
-                                {displayedUpdaterStatus === "unsupported" ? (
-                                    <p className="text-xs leading-[1.6] text-fumi-500">
-                                        Web-only mode keeps the updater disabled
-                                        so local UI work can run without the
-                                        Tauri desktop shell.
-                                    </p>
-                                ) : null}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+            <AppInfoUpdateCard
+                checkForUpdatesButtonClassName={checkForUpdatesButtonClassName}
+                checkForUpdatesButtonLabel={checkForUpdatesButtonLabel}
+                displayedDownloadProgress={displayedDownloadProgress}
+                displayedUpdaterStatus={displayedUpdaterStatus}
+                errorMessage={errorMessage}
+                progressSummary={progressSummary}
+                restartButtonClassName={restartButtonClassName}
+                shouldDisableCheckButton={shouldDisableCheckButton}
+                updaterPhrase={updaterPhrase}
+                onCheckForUpdates={handleCheckForUpdatesAction}
+                onOpenAuthorUrl={handleOpenAuthorUrl}
+                onRelaunchToApplyUpdate={handleRelaunchToApplyUpdate}
+            />
             <div className="flex items-center justify-between gap-6 py-4">
                 <div className="min-w-0">
                     <p className="text-xs font-semibold text-fumi-900">Theme</p>
@@ -329,50 +237,190 @@ export function AppSettingsGeneralSection({
                 isEnabled={isStreamerModeEnabled}
                 onChange={handleStreamerModeToggle}
             />
-            <div className="flex items-center justify-between gap-6 py-4">
-                <div className="min-w-0">
-                    <p className="text-xs font-semibold text-fumi-900">
-                        App zoom
-                    </p>
-                    <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
-                        Scale the full app interface for the current window.
-                    </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                    <button
-                        type="button"
-                        aria-label="Zoom out"
-                        onClick={handleZoomOut}
-                        className="app-select-none flex size-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 text-fumi-500 transition-[background-color,color,border-color] hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
-                    >
-                        <AppIcon
-                            icon={MinusSignIcon}
-                            size={14}
-                            strokeWidth={2.5}
-                        />
-                    </button>
-                    <AppInput
-                        value={String(zoomPercent)}
-                        ariaLabel="App zoom percentage"
-                        onChange={handleZoomPercentChange}
-                        minValue={APP_ZOOM_MIN}
-                        maxValue={APP_ZOOM_MAX}
-                        maxLength={3}
-                        inputMode="numeric"
-                        suffix="%"
-                        step={APP_ZOOM_STEP}
-                        size="sm"
-                        className="shrink-0"
+            <AppZoomSetting
+                zoomPercent={zoomPercent}
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onZoomPercentChange={handleZoomPercentChange}
+            />
+        </div>
+    );
+}
+
+function AppInfoUpdateCard({
+    checkForUpdatesButtonClassName,
+    checkForUpdatesButtonLabel,
+    displayedDownloadProgress,
+    displayedUpdaterStatus,
+    errorMessage,
+    progressSummary,
+    restartButtonClassName,
+    shouldDisableCheckButton,
+    updaterPhrase,
+    onCheckForUpdates,
+    onOpenAuthorUrl,
+    onRelaunchToApplyUpdate,
+}: AppInfoUpdateCardProps): ReactElement {
+    const downloadProgressBarStyle = {
+        width: `${displayedDownloadProgress?.progressPercent ?? 10}%`,
+    };
+
+    return (
+        <div className="py-4">
+            <div className="overflow-hidden rounded-[1rem] border border-fumi-200 bg-fumi-100/80">
+                <div className="flex items-start gap-4 p-4">
+                    <img
+                        src={fumiIcon}
+                        alt={`${APP_TITLE} icon`}
+                        className="size-12 shrink-0"
                     />
-                    <button
-                        type="button"
-                        aria-label="Zoom in"
-                        onClick={handleZoomIn}
-                        className="app-select-none flex size-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 text-fumi-500 transition-[background-color,color,border-color] hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
-                    >
-                        <AppIcon icon={Add01Icon} size={14} strokeWidth={2.5} />
-                    </button>
+                    <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                                <p className="text-[15px] font-semibold tracking-[-0.02em] text-fumi-900">
+                                    {APP_TITLE}
+                                </p>
+                                <span className="inline-flex h-5 items-center rounded-full border border-fumi-200 bg-fumi-50 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-fumi-500">
+                                    v{APP_VERSION}
+                                </span>
+                            </div>
+                        </div>
+                        <p className="mt-1.5 text-xs leading-[1.6] text-fumi-500">
+                            {APP_DESCRIPTION}
+                        </p>
+                        <p className="mt-3 text-xs font-medium text-fumi-500">
+                            Made by{" "}
+                            <button
+                                type="button"
+                                onClick={onOpenAuthorUrl}
+                                className="font-semibold text-fumi-700 underline decoration-fumi-300 underline-offset-2 transition-colors hover:text-fumi-900"
+                            >
+                                {APP_AUTHOR_NAME}
+                            </button>
+                        </p>
+                    </div>
                 </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-fumi-200/60 bg-fumi-50/50 pl-4 pr-3 py-3">
+                    <p className="min-w-0 flex-1 whitespace-nowrap text-xs font-medium text-fumi-600">
+                        <AppAnimatedText text={updaterPhrase} />
+                    </p>
+                    <div className="flex shrink-0 items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={onCheckForUpdates}
+                            disabled={shouldDisableCheckButton}
+                            className={checkForUpdatesButtonClassName}
+                        >
+                            {checkForUpdatesButtonLabel}
+                        </button>
+                        {displayedUpdaterStatus === "readyToRestart" ? (
+                            <button
+                                type="button"
+                                onClick={onRelaunchToApplyUpdate}
+                                className={restartButtonClassName}
+                            >
+                                Restart now
+                            </button>
+                        ) : null}
+                    </div>
+                </div>
+
+                {progressSummary ||
+                errorMessage ||
+                displayedUpdaterStatus === "unsupported" ? (
+                    <div className="border-t border-fumi-200/60 bg-fumi-50/30 px-4 py-3">
+                        <div className="space-y-3">
+                            {progressSummary ? (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between gap-3 text-xs text-fumi-500">
+                                        <span>{progressSummary}</span>
+                                        {displayedDownloadProgress?.progressPercent !==
+                                            null &&
+                                        displayedDownloadProgress?.progressPercent !==
+                                            undefined ? (
+                                            <span className="font-semibold text-fumi-800">
+                                                {
+                                                    displayedDownloadProgress?.progressPercent
+                                                }
+                                                %
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                    <div className="h-1.5 overflow-hidden rounded-full bg-fumi-200">
+                                        <div
+                                            className="h-full rounded-full bg-fumi-700 transition-[width] duration-200 ease-out"
+                                            style={downloadProgressBarStyle}
+                                        />
+                                    </div>
+                                </div>
+                            ) : null}
+
+                            {errorMessage ? (
+                                <p className="rounded-[0.6rem] border border-rose-200 bg-rose-50 px-3 py-2 text-xs leading-[1.6] text-rose-700">
+                                    {errorMessage}
+                                </p>
+                            ) : null}
+
+                            {displayedUpdaterStatus === "unsupported" ? (
+                                <p className="text-xs leading-[1.6] text-fumi-500">
+                                    Web-only mode keeps the updater disabled so
+                                    local UI work can run without the Tauri
+                                    desktop shell.
+                                </p>
+                            ) : null}
+                        </div>
+                    </div>
+                ) : null}
+            </div>
+        </div>
+    );
+}
+
+function AppZoomSetting({
+    zoomPercent,
+    onZoomIn,
+    onZoomOut,
+    onZoomPercentChange,
+}: AppZoomSettingProps): ReactElement {
+    return (
+        <div className="flex items-center justify-between gap-6 py-4">
+            <div className="min-w-0">
+                <p className="text-xs font-semibold text-fumi-900">App zoom</p>
+                <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
+                    Scale the full app interface for the current window.
+                </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                    type="button"
+                    aria-label="Zoom out"
+                    onClick={onZoomOut}
+                    className="app-select-none flex size-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 text-fumi-500 transition-[background-color,color,border-color] hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
+                >
+                    <AppIcon icon={MinusSignIcon} size={14} strokeWidth={2.5} />
+                </button>
+                <AppInput
+                    value={String(zoomPercent)}
+                    ariaLabel="App zoom percentage"
+                    onChange={onZoomPercentChange}
+                    minValue={APP_ZOOM_MIN}
+                    maxValue={APP_ZOOM_MAX}
+                    maxLength={3}
+                    inputMode="numeric"
+                    suffix="%"
+                    step={APP_ZOOM_STEP}
+                    size="sm"
+                    className="shrink-0"
+                />
+                <button
+                    type="button"
+                    aria-label="Zoom in"
+                    onClick={onZoomIn}
+                    className="app-select-none flex size-8 items-center justify-center rounded-[0.65rem] border border-fumi-200 bg-fumi-50 text-fumi-500 transition-[background-color,color,border-color] hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600"
+                >
+                    <AppIcon icon={Add01Icon} size={14} strokeWidth={2.5} />
+                </button>
             </div>
         </div>
     );

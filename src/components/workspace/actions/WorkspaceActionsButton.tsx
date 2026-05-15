@@ -3,6 +3,7 @@ import type {
     CSSProperties,
     ReactElement,
     MouseEvent as ReactMouseEvent,
+    ReactNode,
 } from "react";
 import { useEffect, useMemo } from "react";
 import {
@@ -15,8 +16,15 @@ import { getAppHotkeyShortcutLabel } from "../../../lib/app/hotkeys/hotkeys";
 import { isTauriEnvironment } from "../../../lib/platform/core/runtime";
 import { AppIcon } from "../../app/common/AppIcon";
 import { AppTooltip } from "../../app/tooltip/AppTooltip";
-import type { WorkspaceActionsButtonProps } from "../workspaceScreen.type";
+import type {
+    WorkspaceActionsButtonProps,
+    WorkspaceActionsMainButtonsProps,
+} from "../workspaceScreen.type";
 import { WorkspaceActionsDropdown } from "./WorkspaceActionsDropdown";
+import {
+    getWorkspaceActionsExecuteTooltip,
+    getWorkspaceActionsMenuTooltip,
+} from "./workspaceActionsTooltip";
 
 /**
  * Floating action button for execute, Roblox controls, and workspace actions.
@@ -184,27 +192,6 @@ export function WorkspaceActionsButton({
         [],
     );
 
-    function getExecuteTooltip(): string {
-        if (!hasSupportedExecutor) {
-            return "No supported executor detected";
-        }
-        if (!isAttached) {
-            return "Attach to an executor port before executing";
-        }
-        if (isBusy) {
-            return "Executing…";
-        }
-        return "Execute the current tab through the executor";
-    }
-
-    function getMenuTooltip(): string {
-        if (!isDesktopShell) {
-            return "Roblox controls require the Tauri desktop shell";
-        }
-
-        return "More actions";
-    }
-
     const dropdownMenu = useMemo(
         () => ({
             dropdownStyle,
@@ -271,54 +258,27 @@ export function WorkspaceActionsButton({
     return (
         <div className="relative inline-flex items-center" ref={containerRef}>
             <div className={`app-select-none ${containerClass}`}>
-                <AppTooltip
-                    content={getExecuteTooltip()}
-                    shortcut={
+                <WorkspaceActionsMainButtons
+                    canExecute={canExecute}
+                    canOpenMenu={canOpenMenu}
+                    executeTooltip={getWorkspaceActionsExecuteTooltip({
+                        hasSupportedExecutor,
+                        isAttached,
+                        isBusy,
+                    })}
+                    menuTooltip={getWorkspaceActionsMenuTooltip({
+                        isDesktopShell,
+                    })}
+                    executeActiveTabShortcutLabel={
                         canExecute ? executeActiveTabShortcutLabel : undefined
                     }
-                    side="top"
-                >
-                    <button
-                        type="button"
-                        onClick={handleExecuteClick}
-                        disabled={!canExecute}
-                        className={`${leftButtonClass} ${!canExecute ? "cursor-not-allowed opacity-60 hover:bg-transparent" : ""}`}
-                        aria-label="Execute"
-                    >
-                        <AppIcon
-                            icon={PlayIcon}
-                            className="size-3.5 shrink-0"
-                            strokeWidth={2.5}
-                        />
-                        <span className="translate-y-[0.5px]">
-                            {isBusy ? "Executing…" : "Execute"}
-                        </span>
-                    </button>
-                </AppTooltip>
-
-                <AppTooltip content={getMenuTooltip()} side="top">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            if (!canOpenMenu) {
-                                return;
-                            }
-
-                            toggleMenu();
-                        }}
-                        disabled={!canOpenMenu}
-                        className={`${rightButtonClass} ${!canOpenMenu ? "cursor-not-allowed opacity-60 hover:bg-transparent" : ""}`}
-                        aria-haspopup="menu"
-                        aria-expanded={isDropdownOpen}
-                        aria-label="Workspace actions menu"
-                    >
-                        <AppIcon
-                            icon={ArrowDown01Icon}
-                            className={`size-3.5 shrink-0 text-fumi-50 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-                            strokeWidth={2.5}
-                        />
-                    </button>
-                </AppTooltip>
+                    isBusy={isBusy}
+                    isDropdownOpen={isDropdownOpen}
+                    leftButtonClass={leftButtonClass}
+                    rightButtonClass={rightButtonClass}
+                    onExecute={handleExecuteClick}
+                    onToggleMenu={toggleMenu}
+                />
             </div>
 
             {isDropdownOpen ? (
@@ -330,5 +290,70 @@ export function WorkspaceActionsButton({
                 />
             ) : null}
         </div>
+    );
+}
+
+function WorkspaceActionsMainButtons({
+    canExecute,
+    canOpenMenu,
+    executeTooltip,
+    menuTooltip,
+    executeActiveTabShortcutLabel,
+    isBusy,
+    isDropdownOpen,
+    leftButtonClass,
+    rightButtonClass,
+    onExecute,
+    onToggleMenu,
+}: WorkspaceActionsMainButtonsProps): ReactNode {
+    return (
+        <>
+            <AppTooltip
+                content={executeTooltip}
+                shortcut={executeActiveTabShortcutLabel}
+                side="top"
+            >
+                <button
+                    type="button"
+                    onClick={onExecute}
+                    disabled={!canExecute}
+                    className={`${leftButtonClass} ${!canExecute ? "cursor-not-allowed opacity-60 hover:bg-transparent" : ""}`}
+                    aria-label="Execute"
+                >
+                    <AppIcon
+                        icon={PlayIcon}
+                        className="size-3.5 shrink-0"
+                        strokeWidth={2.5}
+                    />
+                    <span className="translate-y-[0.5px]">
+                        {isBusy ? "Executing…" : "Execute"}
+                    </span>
+                </button>
+            </AppTooltip>
+
+            <AppTooltip content={menuTooltip} side="top">
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (!canOpenMenu) {
+                            return;
+                        }
+
+                        onToggleMenu();
+                    }}
+                    disabled={!canOpenMenu}
+                    className={`${rightButtonClass} ${!canOpenMenu ? "cursor-not-allowed opacity-60 hover:bg-transparent" : ""}`}
+                    aria-haspopup="menu"
+                    aria-expanded={isDropdownOpen}
+                    aria-label="Workspace actions menu"
+                >
+                    <AppIcon
+                        icon={ArrowDown01Icon}
+                        className={`size-3.5 shrink-0 text-fumi-50 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                        strokeWidth={2.5}
+                    />
+                </button>
+            </AppTooltip>
+        </>
     );
 }
