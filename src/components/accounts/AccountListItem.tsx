@@ -53,8 +53,7 @@ export function AccountListItem({
 }: AccountListItemProps): ReactElement {
     const isLaunching = launchingAccountId === account.id;
     const isDeleting = deletingAccountId === account.id;
-    const isMasked =
-        isStreamerModeEnabled && revealedAccountId !== account.id;
+    const isMasked = isStreamerModeEnabled && revealedAccountId !== account.id;
     const accountDisplayName = getAccountRowDisplayName(account, {
         isMasked,
     });
