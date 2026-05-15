@@ -5,8 +5,8 @@ import {
     useDeferredValue,
     useEffect,
     useLayoutEffect,
+    useReducer,
     useRef,
-    useState,
 } from "react";
 import { getAppCommandPaletteResults } from "../../lib/app/commandPalette/commandPaletteController";
 import type {
@@ -18,12 +18,27 @@ import type {
 import { parseGoToLineQuery } from "../../lib/app/commandPalette/commandPaletteShared";
 import { normalizeAppCommandPaletteSearchValue } from "../../lib/app/commandPalette/search/commandPaletteSearch";
 import type {
+    AppCommandPaletteState,
+    AppCommandPaletteStateUpdate,
     UseAppCommandPaletteOptions,
     UseAppCommandPaletteResult,
 } from "./useAppCommandPalette.type";
 import { useAppStore } from "./useAppStore";
 
 const COMMAND_PALETTE_FOCUS_ATTEMPT_COUNT = 3;
+
+function updateAppCommandPaletteState(
+    currentState: AppCommandPaletteState,
+    update: AppCommandPaletteStateUpdate,
+): AppCommandPaletteState {
+    const nextState =
+        typeof update === "function" ? update(currentState) : update;
+
+    return {
+        ...currentState,
+        ...nextState,
+    };
+}
 
 /**
  * Manages command palette state, input handling, scope switching, and result filtering.
@@ -61,10 +76,13 @@ export function useAppCommandPalette({
     onZoomReset,
     onRequestRenameCurrentTab,
 }: UseAppCommandPaletteOptions): UseAppCommandPaletteResult {
-    const [query, setQuery] = useState("");
-    const [scope, setScope] = useState<AppCommandPaletteScope>("tabs");
-    const [mode, setMode] = useState<AppCommandPaletteViewMode>("default");
-    const [activeResultIndex, setActiveResultIndex] = useState(0);
+    const [state, setState] = useReducer(updateAppCommandPaletteState, {
+        query: "",
+        scope: "tabs",
+        mode: "default",
+        activeResultIndex: 0,
+    });
+    const { query, scope, mode, activeResultIndex } = state;
     const panelRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const focusAnimationFrameRef = useRef<number | null>(null);
@@ -165,10 +183,12 @@ export function useAppCommandPalette({
 
     const activateGoToLineMode = useCallback((): void => {
         startTransition(() => {
-            setMode("goto-line");
-            setScope("commands");
-            setQuery(String(currentLineNumber ?? ""));
-            setActiveResultIndex(0);
+            setState({
+                mode: "goto-line",
+                scope: "commands",
+                query: String(currentLineNumber ?? ""),
+                activeResultIndex: 0,
+            });
         });
 
         scheduleInputFocus({ shouldSelect: true });
@@ -176,10 +196,12 @@ export function useAppCommandPalette({
 
     const activateThemeMode = useCallback((): void => {
         startTransition(() => {
-            setMode("theme");
-            setScope("commands");
-            setQuery("");
-            setActiveResultIndex(0);
+            setState({
+                mode: "theme",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
         });
 
         scheduleInputFocus({ shouldSelect: true });
@@ -187,10 +209,12 @@ export function useAppCommandPalette({
 
     const activateAttachMode = useCallback((): void => {
         startTransition(() => {
-            setMode("attach");
-            setScope("commands");
-            setQuery("");
-            setActiveResultIndex(0);
+            setState({
+                mode: "attach",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
         });
 
         scheduleInputFocus({ shouldSelect: true });
@@ -274,10 +298,12 @@ export function useAppCommandPalette({
             return;
         }
 
-        setMode("default");
-        setScope(requestedScope ?? "tabs");
-        setActiveResultIndex(0);
-        setQuery("");
+        setState({
+            mode: "default",
+            scope: requestedScope ?? "tabs",
+            activeResultIndex: 0,
+            query: "",
+        });
 
         scheduleInputFocus({ shouldSelect: true });
     }, [
@@ -335,26 +361,33 @@ export function useAppCommandPalette({
     );
 
     const handleInputChange = useCallback((nextQuery: string): void => {
-        setQuery(nextQuery);
+        setState({ query: nextQuery });
     }, []);
 
     const handleInputKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>): void => {
             if (event.key === "ArrowDown") {
                 event.preventDefault();
-                setActiveResultIndex((currentIndex) =>
-                    results.length === 0
-                        ? 0
-                        : Math.min(currentIndex + 1, results.length - 1),
-                );
+                setState((currentState) => ({
+                    activeResultIndex:
+                        results.length === 0
+                            ? 0
+                            : Math.min(
+                                  currentState.activeResultIndex + 1,
+                                  results.length - 1,
+                              ),
+                }));
                 return;
             }
 
             if (event.key === "ArrowUp") {
                 event.preventDefault();
-                setActiveResultIndex((currentIndex) =>
-                    results.length === 0 ? 0 : Math.max(currentIndex - 1, 0),
-                );
+                setState((currentState) => ({
+                    activeResultIndex:
+                        results.length === 0
+                            ? 0
+                            : Math.max(currentState.activeResultIndex - 1, 0),
+                }));
                 return;
             }
 
@@ -385,7 +418,7 @@ export function useAppCommandPalette({
                 event.preventDefault();
 
                 if (query) {
-                    setQuery("");
+                    setState({ query: "" });
                     return;
                 }
 
@@ -394,9 +427,11 @@ export function useAppCommandPalette({
                     mode === "goto-line" ||
                     mode === "theme"
                 ) {
-                    setMode("default");
-                    setScope("commands");
-                    setActiveResultIndex(0);
+                    setState({
+                        mode: "default",
+                        scope: "commands",
+                        activeResultIndex: 0,
+                    });
                     return;
                 }
 
@@ -418,11 +453,12 @@ export function useAppCommandPalette({
     const handleScopeSelect = useCallback(
         (nextScope: Exclude<AppCommandPaletteScope, "tabs">): void => {
             startTransition(() => {
-                setMode("default");
-                setScope((currentScope) =>
-                    currentScope === nextScope ? "tabs" : nextScope,
-                );
-                setActiveResultIndex(0);
+                setState((currentState) => ({
+                    mode: "default",
+                    scope:
+                        currentState.scope === nextScope ? "tabs" : nextScope,
+                    activeResultIndex: 0,
+                }));
             });
 
             scheduleInputFocus();
@@ -431,7 +467,7 @@ export function useAppCommandPalette({
     );
 
     const handleHoverItem = useCallback((index: number): void => {
-        setActiveResultIndex(index);
+        setState({ activeResultIndex: index });
     }, []);
 
     return {

@@ -3,7 +3,7 @@ import type {
     FocusEvent,
     MouseEvent as ReactMouseEvent,
 } from "react";
-import type { WorkspaceActionsConfirmAction } from "../../../hooks/workspace/useWorkspaceActionsMenu";
+import type { WorkspaceActionsConfirmAction } from "../../../hooks/workspace/useWorkspaceActionsMenu.type";
 import type {
     RobloxAccountIdentity,
     RobloxProcessInfo,

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import type {
+    PresenceTransitionState,
     UsePresenceTransitionOptions,
     UsePresenceTransitionResult,
 } from "./usePresenceTransition.type";
@@ -15,8 +16,19 @@ export function usePresenceTransition({
     isOpen,
     exitDurationMs,
 }: UsePresenceTransitionOptions): UsePresenceTransitionResult {
-    const [isPresent, setIsPresent] = useState(isOpen);
-    const [isClosing, setIsClosing] = useState(false);
+    const [state, dispatchTransitionState] = useReducer(
+        (
+            currentState: PresenceTransitionState,
+            nextState: Partial<PresenceTransitionState>,
+        ): PresenceTransitionState => ({
+            ...currentState,
+            ...nextState,
+        }),
+        {
+            isPresent: isOpen,
+            isClosing: false,
+        },
+    );
     const closeTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -26,22 +38,26 @@ export function usePresenceTransition({
         }
 
         if (isOpen) {
-            setIsPresent(true);
-            setIsClosing(false);
+            dispatchTransitionState({
+                isPresent: true,
+                isClosing: false,
+            });
             return;
         }
 
-        if (!isPresent) {
+        if (!state.isPresent) {
             return;
         }
 
-        setIsClosing(true);
+        dispatchTransitionState({ isClosing: true });
         closeTimeoutRef.current = window.setTimeout(() => {
-            setIsPresent(false);
-            setIsClosing(false);
+            dispatchTransitionState({
+                isPresent: false,
+                isClosing: false,
+            });
             closeTimeoutRef.current = null;
         }, exitDurationMs);
-    }, [exitDurationMs, isOpen, isPresent]);
+    }, [exitDurationMs, isOpen, state.isPresent]);
 
     useEffect(() => {
         return () => {
@@ -51,8 +67,5 @@ export function usePresenceTransition({
         };
     }, []);
 
-    return {
-        isPresent,
-        isClosing,
-    };
+    return state;
 }

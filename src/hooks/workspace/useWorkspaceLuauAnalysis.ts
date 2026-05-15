@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useReducer, useRef } from "react";
 import {
     WORKSPACE_OUTLINE_LARGE_FILE_THRESHOLD,
     WORKSPACE_OUTLINE_SCAN_IDLE_TIMEOUT_MS,
@@ -35,7 +35,13 @@ export function useWorkspaceLuauAnalysis(
     isEnabled: boolean,
     change: WorkspaceOutlineChange | null,
 ): UseWorkspaceLuauAnalysisResult {
-    const [analysis, setAnalysis] = useState<LuauFileAnalysis | null>(null);
+    const [analysis, dispatchAnalysis] = useReducer(
+        (
+            _currentAnalysis: LuauFileAnalysis | null,
+            nextAnalysis: LuauFileAnalysis | null,
+        ): LuauFileAnalysis | null => nextAnalysis,
+        null,
+    );
     const cacheRef = useRef<Map<string, WorkspaceOutlineCacheEntry>>(new Map());
     const previousActiveTabIdRef = useRef<string | null>(null);
     const previousAnalysisRef = useRef<{
@@ -90,7 +96,7 @@ export function useWorkspaceLuauAnalysis(
         if (!activeTabId || !activeFileName) {
             previousAnalysisRef.current = null;
             latestScanTargetRef.current = null;
-            setAnalysis(null);
+            dispatchAnalysis(null);
             return;
         }
 
@@ -99,7 +105,7 @@ export function useWorkspaceLuauAnalysis(
         if (!isEnabled || editorMode !== "luau") {
             previousAnalysisRef.current = null;
             latestScanTargetRef.current = null;
-            setAnalysis(null);
+            dispatchAnalysis(null);
             return;
         }
 
@@ -123,7 +129,7 @@ export function useWorkspaceLuauAnalysis(
                 tabId: activeTabId,
             };
             startTransition(() => {
-                setAnalysis(cachedEntry.analysis);
+                dispatchAnalysis(cachedEntry.analysis);
             });
             return;
         }
@@ -167,7 +173,7 @@ export function useWorkspaceLuauAnalysis(
                     tabId: activeTabId,
                 };
                 startTransition(() => {
-                    setAnalysis(nextAnalysis);
+                    dispatchAnalysis(nextAnalysis);
                 });
                 return;
             }
@@ -231,7 +237,7 @@ export function useWorkspaceLuauAnalysis(
                     };
 
                     startTransition(() => {
-                        setAnalysis(nextAnalysis);
+                        dispatchAnalysis(nextAnalysis);
                     });
                 })
                 .catch(() => {
@@ -245,7 +251,7 @@ export function useWorkspaceLuauAnalysis(
                     previousAnalysisRef.current = null;
                     latestScanTargetRef.current = null;
                     startTransition(() => {
-                        setAnalysis(null);
+                        dispatchAnalysis(null);
                     });
                 });
         };

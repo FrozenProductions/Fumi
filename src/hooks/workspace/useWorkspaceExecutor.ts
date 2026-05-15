@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useReducer, useRef } from "react";
 import {
     DEFAULT_EXECUTOR_KIND,
     DEFAULT_EXECUTOR_PORT,
@@ -33,7 +33,24 @@ import {
 } from "../../lib/workspace/executor/executorStatus";
 import { selectWorkspaceActiveTab } from "../../lib/workspace/store/selectors";
 import { useWindowResume } from "../shared/useWindowResume";
+import type {
+    WorkspaceExecutorLocalState,
+    WorkspaceExecutorLocalStateUpdate,
+} from "./useWorkspaceExecutor.type";
 import { useWorkspaceStore } from "./useWorkspaceStore";
+
+function updateWorkspaceExecutorLocalState(
+    currentState: WorkspaceExecutorLocalState,
+    update: WorkspaceExecutorLocalStateUpdate,
+): WorkspaceExecutorLocalState {
+    const nextState =
+        typeof update === "function" ? update(currentState) : update;
+
+    return {
+        ...currentState,
+        ...nextState,
+    };
+}
 
 /**
  * Manages executor connection lifecycle including attach, detach, and script execution.
@@ -47,15 +64,24 @@ export function useWorkspaceExecutor({
     workspacePath,
     onExecutionHistoryUpdated,
 }: UseWorkspaceExecutorOptions): UseWorkspaceExecutorResult {
-    const [executorKind, setExecutorKind] = useState(DEFAULT_EXECUTOR_KIND);
-    const [availablePortSummaries, setAvailablePortSummaries] = useState<
-        ExecutorStatusPayload["availablePorts"]
-    >(createDefaultAvailablePortSummaries);
-    const [port, setPort] = useState(String(DEFAULT_EXECUTOR_PORT));
-    const [isAttached, setIsAttached] = useState(false);
-    const [didRecentAttachFail, setDidRecentAttachFail] = useState(false);
-    const [isBusy, setIsBusy] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [state, setState] = useReducer(updateWorkspaceExecutorLocalState, {
+        executorKind: DEFAULT_EXECUTOR_KIND,
+        availablePortSummaries: createDefaultAvailablePortSummaries(),
+        port: String(DEFAULT_EXECUTOR_PORT),
+        isAttached: false,
+        didRecentAttachFail: false,
+        isBusy: false,
+        errorMessage: null,
+    });
+    const {
+        executorKind,
+        availablePortSummaries,
+        port,
+        isAttached,
+        didRecentAttachFail,
+        isBusy,
+        errorMessage,
+    } = state;
     const availablePorts = useMemo(
         () => getExecutorPortsFromSummaries(availablePortSummaries),
         [availablePortSummaries],
@@ -87,13 +113,16 @@ export function useWorkspaceExecutor({
                 availablePorts: status.availablePorts,
                 fallbackPort: status.port,
             });
-            setExecutorKind(status.executorKind);
-            setAvailablePortSummaries(status.availablePorts);
-            setPort(
-                normalizeExecutorPort(String(nextPort), nextAvailablePorts),
-            );
-            setIsAttached(status.isAttached);
-            setDidRecentAttachFail(false);
+            setState({
+                executorKind: status.executorKind,
+                availablePortSummaries: status.availablePorts,
+                port: normalizeExecutorPort(
+                    String(nextPort),
+                    nextAvailablePorts,
+                ),
+                isAttached: status.isAttached,
+                didRecentAttachFail: false,
+            });
             wasAttachedRef.current = status.isAttached;
             persistExecutorPort(status.executorKind, nextPort);
         },
@@ -104,9 +133,11 @@ export function useWorkspaceExecutor({
             try {
                 const status = await getExecutorStatus();
                 applyExecutorStatus(status);
-                setErrorMessage(null);
+                setState({ errorMessage: null });
             } catch (error) {
-                setErrorMessage(getErrorMessage(error, failureMessage));
+                setState({
+                    errorMessage: getErrorMessage(error, failureMessage),
+                });
             }
         },
     );
@@ -119,33 +150,40 @@ export function useWorkspaceExecutor({
         void refreshExecutorStatus("Could not refresh the executor status.");
     });
 
+    const handleExecutorStatusChanged = useEffectEvent(
+        (status: ExecutorStatusPayload): void => {
+            const wasAttached = wasAttachedRef.current;
+            applyExecutorStatus(status);
+
+            if (wasAttached && !status.isAttached) {
+                setState({
+                    errorMessage: "Executor connection closed.",
+                });
+            } else if (status.isAttached) {
+                setState({ errorMessage: null });
+            }
+
+            if (status.isAttached) {
+                setState({ didRecentAttachFail: false });
+            }
+        },
+    );
+
+    const handleExecutorStatusSubscribeError = useEffectEvent(
+        (error: unknown): void => {
+            setState({
+                errorMessage: getErrorMessage(
+                    error,
+                    "Could not subscribe to executor status changes.",
+                ),
+            });
+        },
+    );
+
     useEffect(() => {
         return manageAsyncSubscription(
-            () =>
-                subscribeToExecutorStatusChanged(
-                    (status: ExecutorStatusPayload) => {
-                        const wasAttached = wasAttachedRef.current;
-                        applyExecutorStatus(status);
-
-                        if (wasAttached && !status.isAttached) {
-                            setErrorMessage("Executor connection closed.");
-                        } else if (status.isAttached) {
-                            setErrorMessage(null);
-                        }
-
-                        if (status.isAttached) {
-                            setDidRecentAttachFail(false);
-                        }
-                    },
-                ),
-            (error) => {
-                setErrorMessage(
-                    getErrorMessage(
-                        error,
-                        "Could not subscribe to executor status changes.",
-                    ),
-                );
-            },
+            () => subscribeToExecutorStatusChanged(handleExecutorStatusChanged),
+            handleExecutorStatusSubscribeError,
         );
     }, []);
 
@@ -155,7 +193,7 @@ export function useWorkspaceExecutor({
         }
 
         const timeoutId = window.setTimeout(() => {
-            setDidRecentAttachFail(false);
+            setState({ didRecentAttachFail: false });
         }, 3_000);
 
         return () => {
@@ -165,9 +203,11 @@ export function useWorkspaceExecutor({
 
     const updatePort = (value: string): void => {
         const nextPort = normalizeExecutorPort(value, availablePorts);
-        setPort(nextPort);
-        setDidRecentAttachFail(false);
-        setErrorMessage(null);
+        setState({
+            port: nextPort,
+            didRecentAttachFail: false,
+            errorMessage: null,
+        });
         const parsedPort = parseExecutorPort(nextPort, availablePorts);
         if (parsedPort !== null) {
             persistExecutorPort(executorKind, parsedPort);
@@ -175,10 +215,19 @@ export function useWorkspaceExecutor({
     };
 
     const clearErrorMessage = (): void => {
-        setErrorMessage(null);
+        setState({ errorMessage: null });
     };
 
     const hasSupportedExecutor = executorKind !== "unsupported";
+    const setDidRecentAttachFail = (value: boolean): void => {
+        setState({ didRecentAttachFail: value });
+    };
+    const setErrorMessage = (value: string | null): void => {
+        setState({ errorMessage: value });
+    };
+    const setIsBusy = (value: boolean): void => {
+        setState({ isBusy: value });
+    };
 
     const toggleConnection = async (): Promise<void> => {
         await toggleExecutorConnection({
@@ -199,9 +248,11 @@ export function useWorkspaceExecutor({
             String(nextPort),
             availablePorts,
         );
-        setPort(normalizedPort);
-        setDidRecentAttachFail(false);
-        setErrorMessage(null);
+        setState({
+            port: normalizedPort,
+            didRecentAttachFail: false,
+            errorMessage: null,
+        });
         const parsedPort = parseExecutorPort(normalizedPort, availablePorts);
 
         if (parsedPort !== null) {

@@ -1,18 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import {
     ARCHIVED_TABS_HEADER_EXIT_DURATION_MS,
     ARCHIVED_TABS_MINIFY_REMAINING_SCROLL_RANGE_PX,
 } from "../../constants/workspace/archive";
 import { usePresenceTransition } from "../shared/usePresenceTransition";
+import type {
+    ArchivedTabsSearchMinifierState,
+    UseArchivedTabsSearchMinifierResult,
+} from "./useArchivedTabsSearchMinifier.type";
 
-type UseArchivedTabsSearchMinifierResult = {
-    handleSearchContainerRef: (element: HTMLDivElement | null) => void;
-    isClosing: boolean;
-    isExpandedFully: boolean;
-    isMinified: boolean;
-    isPresent: boolean;
-    sentinelRef: React.RefObject<HTMLDivElement | null>;
-};
+function updateArchivedTabsSearchMinifierState(
+    currentState: ArchivedTabsSearchMinifierState,
+    nextState: Partial<ArchivedTabsSearchMinifierState>,
+): ArchivedTabsSearchMinifierState {
+    return {
+        ...currentState,
+        ...nextState,
+    };
+}
 
 function getScrollableAncestor(element: HTMLElement): HTMLElement | null {
     let parent = element.parentElement;
@@ -51,8 +56,14 @@ function canMinifyArchiveSearch(
 export function useArchivedTabsSearchMinifier(): UseArchivedTabsSearchMinifierResult {
     const sentinelRef = useRef<HTMLDivElement>(null);
     const searchContainerHeightRef = useRef(0);
-    const [isMinified, setIsMinified] = useState(false);
-    const [isExpandedFully, setIsExpandedFully] = useState(true);
+    const [state, dispatchMinifierState] = useReducer(
+        updateArchivedTabsSearchMinifierState,
+        {
+            isMinified: false,
+            isExpandedFully: true,
+        },
+    );
+    const { isExpandedFully, isMinified } = state;
 
     useEffect(() => {
         const element = sentinelRef.current;
@@ -72,11 +83,11 @@ export function useArchivedTabsSearchMinifier(): UseArchivedTabsSearchMinifierRe
                         searchContainerHeightRef.current,
                     )
                 ) {
-                    setIsMinified(false);
+                    dispatchMinifierState({ isMinified: false });
                     return;
                 }
 
-                setIsMinified(!entry.isIntersecting);
+                dispatchMinifierState({ isMinified: !entry.isIntersecting });
             },
             {
                 root: scrollRoot,
@@ -92,11 +103,14 @@ export function useArchivedTabsSearchMinifier(): UseArchivedTabsSearchMinifierRe
 
     useEffect(() => {
         if (!isMinified) {
-            const timer = setTimeout(() => setIsExpandedFully(true), 150);
+            const timer = setTimeout(
+                () => dispatchMinifierState({ isExpandedFully: true }),
+                150,
+            );
             return () => clearTimeout(timer);
         }
 
-        setIsExpandedFully(false);
+        dispatchMinifierState({ isExpandedFully: false });
     }, [isMinified]);
 
     const { isPresent, isClosing } = usePresenceTransition({

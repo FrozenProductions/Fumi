@@ -2,18 +2,9 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { TOOLTIP_VIEWPORT_MARGIN } from "../../constants/tooltip/tooltip";
 import { clamp } from "../../lib/shared/math";
 import type { TooltipSide } from "../../lib/tooltip/tooltip.type";
-import type {
-    TooltipPosition,
-    TooltipStoreState,
-} from "../../lib/tooltip/tooltipStore.type";
+import type { TooltipPosition } from "../../lib/tooltip/tooltipStore.type";
+import type { AppTooltipHostState } from "./useAppTooltipHost.type";
 import { useTooltipStore } from "./useTooltipStore";
-
-type AppTooltipHostState = {
-    activeTooltip: TooltipStoreState["activeTooltip"];
-    isVisible: boolean;
-    position: TooltipPosition;
-    tooltipMeasureRef: React.RefObject<HTMLDivElement | null>;
-};
 
 function calculateTooltipPosition(
     triggerRect: DOMRect,
@@ -99,11 +90,8 @@ export function useAppTooltipHost(): AppTooltipHostState {
     const position = useTooltipStore((state) => state.position);
     const isVisible = useTooltipStore((state) => state.isVisible);
     const clearTooltip = useTooltipStore((state) => state.clearTooltip);
-    const setTooltipPosition = useTooltipStore(
-        (state) => state.setTooltipPosition,
-    );
-    const setTooltipVisibility = useTooltipStore(
-        (state) => state.setTooltipVisibility,
+    const updateTooltipView = useTooltipStore(
+        (state) => state.updateTooltipView,
     );
     const tooltipMeasureRef = useRef<HTMLDivElement | null>(null);
     const activeTooltipIdRef = useRef<string | null>(null);
@@ -112,7 +100,7 @@ export function useAppTooltipHost(): AppTooltipHostState {
 
     useLayoutEffect(() => {
         if (!activeTooltip) {
-            setTooltipVisibility(false);
+            updateTooltipView({ isVisible: false });
             activeTooltipIdRef.current = null;
             return;
         }
@@ -133,8 +121,8 @@ export function useAppTooltipHost(): AppTooltipHostState {
             const triggerRect =
                 activeTooltip.triggerElement.getBoundingClientRect();
 
-            setTooltipPosition(
-                calculateTooltipPosition(
+            updateTooltipView({
+                position: calculateTooltipPosition(
                     triggerRect,
                     {
                         width: tooltipElement.offsetWidth,
@@ -143,15 +131,15 @@ export function useAppTooltipHost(): AppTooltipHostState {
                     activeTooltip.side,
                     activeTooltip.offset,
                 ),
-            );
+            });
         };
 
         updatePosition();
 
         if (activeTooltip.id !== activeTooltipIdRef.current) {
-            setTooltipVisibility(false);
+            updateTooltipView({ isVisible: false });
             frameId = requestAnimationFrame(() => {
-                setTooltipVisibility(true);
+                updateTooltipView({ isVisible: true });
             });
             activeTooltipIdRef.current = activeTooltip.id;
         }
@@ -167,7 +155,7 @@ export function useAppTooltipHost(): AppTooltipHostState {
                 cancelAnimationFrame(frameId);
             }
         };
-    }, [activeTooltip, setTooltipPosition, setTooltipVisibility]);
+    }, [activeTooltip, updateTooltipView]);
 
     useEffect(() => {
         if (!activeTooltip) {

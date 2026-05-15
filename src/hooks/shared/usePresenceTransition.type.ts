@@ -7,3 +7,5 @@ export type UsePresenceTransitionResult = {
     isPresent: boolean;
     isClosing: boolean;
 };
+
+export type PresenceTransitionState = UsePresenceTransitionResult;

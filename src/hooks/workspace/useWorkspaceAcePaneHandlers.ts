@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import type { WorkspaceAcePaneProps } from "../../components/workspace/editor/WorkspaceEditorSurface.type";
+import { useEffect, useReducer, useRef } from "react";
 import type {
     AceChangeDelta,
     AceEditorInstance,
@@ -10,30 +9,21 @@ import {
     setAceRelativeLineNumbers,
 } from "../../lib/workspace/editor/editor";
 import type { WorkspaceOutlineChange } from "../../lib/workspace/outline/outline.type";
+import type {
+    UseWorkspaceAcePaneHandlersOptions,
+    UseWorkspaceAcePaneHandlersResult,
+    WorkspaceAcePaneInteractionState,
+} from "./useWorkspaceAcePaneHandlers.type";
 
-type UseWorkspaceAcePaneHandlersOptions = Pick<
-    WorkspaceAcePaneProps,
-    | "createHandleEditorChange"
-    | "createHandleEditorLoad"
-    | "createHandleEditorUnmount"
-    | "createHandleScroll"
-    | "isActiveTab"
-    | "isRelativeLineNumbersEnabled"
-    | "isTabsToSpacesEnabled"
-    | "isVisible"
-    | "onActiveTabLuauChange"
-    | "tab"
-    | "tabSize"
->;
-
-type UseWorkspaceAcePaneHandlersResult = {
-    onBlur: () => void;
-    onChange: (value: string, delta?: AceChangeDelta) => void;
-    onCursorChange: () => void;
-    onFocus: () => void;
-    onLoad: (editor: AceEditorInstance) => void;
-    onScroll: (editor: AceEditorInstance) => void;
-};
+function updateWorkspaceAcePaneInteractionState(
+    currentState: WorkspaceAcePaneInteractionState,
+    nextState: Partial<WorkspaceAcePaneInteractionState>,
+): WorkspaceAcePaneInteractionState {
+    return {
+        ...currentState,
+        ...nextState,
+    };
+}
 
 function normalizeOutlineChange(
     delta?: AceChangeDelta,
@@ -69,8 +59,14 @@ export function useWorkspaceAcePaneHandlers({
     tabSize,
 }: UseWorkspaceAcePaneHandlersOptions): UseWorkspaceAcePaneHandlersResult {
     const editorRef = useRef<AceEditorInstance | null>(null);
-    const [isEditorFocused, setIsEditorFocused] = useState(false);
-    const [isCursorRowVisible, setIsCursorRowVisible] = useState(false);
+    const [interactionState, setInteractionState] = useReducer(
+        updateWorkspaceAcePaneInteractionState,
+        {
+            isEditorFocused: false,
+            isCursorRowVisible: false,
+        },
+    );
+    const { isEditorFocused, isCursorRowVisible } = interactionState;
     const editorChangeHandler = createHandleEditorChange(tab.id);
 
     function applyRelativeLineNumbers(
@@ -129,8 +125,10 @@ export function useWorkspaceAcePaneHandlers({
             setAceRelativeLineNumbers(editorRef.current, false);
         }
 
-        setIsEditorFocused(false);
-        setIsCursorRowVisible(false);
+        setInteractionState({
+            isEditorFocused: false,
+            isCursorRowVisible: false,
+        });
     }, [isVisible]);
 
     useEffect(() => {
@@ -168,7 +166,7 @@ export function useWorkspaceAcePaneHandlers({
         const isCursorVisible = isAceCursorRowVisible(editor);
 
         createHandleScroll(tab.id)(editor);
-        setIsCursorRowVisible(isCursorVisible);
+        setInteractionState({ isCursorRowVisible: isCursorVisible });
         applyRelativeLineNumbers(editor, isCursorVisible);
     }
 
@@ -176,8 +174,10 @@ export function useWorkspaceAcePaneHandlers({
         const editor = editorRef.current;
         const isCursorVisible = editor ? isAceCursorRowVisible(editor) : false;
 
-        setIsEditorFocused(true);
-        setIsCursorRowVisible(isCursorVisible);
+        setInteractionState({
+            isEditorFocused: true,
+            isCursorRowVisible: isCursorVisible,
+        });
 
         if (editor) {
             setAceRelativeLineNumbers(
@@ -190,8 +190,10 @@ export function useWorkspaceAcePaneHandlers({
     function handleBlur(): void {
         const editor = editorRef.current;
 
-        setIsEditorFocused(false);
-        setIsCursorRowVisible(false);
+        setInteractionState({
+            isEditorFocused: false,
+            isCursorRowVisible: false,
+        });
 
         if (editor) {
             setAceRelativeLineNumbers(editor, false);
@@ -202,7 +204,7 @@ export function useWorkspaceAcePaneHandlers({
         const editor = editorRef.current;
         const isCursorVisible = editor ? isAceCursorRowVisible(editor) : false;
 
-        setIsCursorRowVisible(isCursorVisible);
+        setInteractionState({ isCursorRowVisible: isCursorVisible });
 
         if (editor) {
             applyRelativeLineNumbers(editor, isCursorVisible);

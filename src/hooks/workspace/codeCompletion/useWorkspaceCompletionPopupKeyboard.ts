@@ -1,29 +1,11 @@
-import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import { useEffect } from "react";
-import type { LuauCompletionPopupState } from "../../../lib/luau/luau.type";
-import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
+import { useEffect, useRef } from "react";
 import {
     isDeletionKey,
     isManualCompletionShortcut,
     isNavigationKey,
 } from "../../../lib/workspace/codeCompletion/keyboard";
-import type { UpdateWorkspaceCompletionPopupOptions } from "../../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import { shiftCompletionSelection } from "./useWorkspaceCompletionPopupHelpers";
-
-type WorkspaceCompletionPopupKeyboardOptions = {
-    acceptCompletion: (completionIndex: number) => void;
-    activeEditorMode: string;
-    completionPopup: LuauCompletionPopupState | null;
-    getActiveEditor: () => AceEditorInstance | null;
-    isIntellisenseEnabled: boolean;
-    setCompletionPopup: Dispatch<
-        SetStateAction<LuauCompletionPopupState | null>
-    >;
-    suppressNextPassiveCompletionRef: MutableRefObject<boolean>;
-    updateCompletionPopup: (
-        options?: UpdateWorkspaceCompletionPopupOptions,
-    ) => void;
-};
+import type { WorkspaceCompletionPopupKeyboardOptions } from "./useWorkspaceCompletionPopupKeyboard.type";
 
 /**
  * Handles keyboard interactions with the Luau completion popup.
@@ -47,96 +29,94 @@ export function useWorkspaceCompletionPopupKeyboard({
     suppressNextPassiveCompletionRef,
     updateCompletionPopup,
 }: WorkspaceCompletionPopupKeyboardOptions): void {
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent): void => {
-            const editor = getActiveEditor();
+    const handleKeyDownRef = useRef<((event: KeyboardEvent) => void) | null>(
+        null,
+    );
 
-            if (!editor?.isFocused()) {
-                return;
-            }
+    handleKeyDownRef.current = (event: KeyboardEvent): void => {
+        const editor = getActiveEditor();
 
-            if (isDeletionKey(event.key) || isNavigationKey(event.key)) {
-                suppressNextPassiveCompletionRef.current = true;
+        if (!editor?.isFocused()) {
+            return;
+        }
 
-                if (
-                    isDeletionKey(event.key) ||
-                    event.key === "ArrowLeft" ||
-                    event.key === "ArrowRight" ||
-                    event.key === "Home" ||
-                    event.key === "End" ||
-                    event.key === "PageUp" ||
-                    event.key === "PageDown" ||
-                    !completionPopup
-                ) {
-                    setCompletionPopup(null);
-                }
-            }
+        if (isDeletionKey(event.key) || isNavigationKey(event.key)) {
+            suppressNextPassiveCompletionRef.current = true;
 
             if (
-                isManualCompletionShortcut(event) &&
-                isIntellisenseEnabled &&
-                activeEditorMode === "luau"
+                isDeletionKey(event.key) ||
+                event.key === "ArrowLeft" ||
+                event.key === "ArrowRight" ||
+                event.key === "Home" ||
+                event.key === "End" ||
+                event.key === "PageUp" ||
+                event.key === "PageDown" ||
+                !completionPopup
             ) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                updateCompletionPopup({ forceOpen: true });
-                return;
-            }
-
-            if (!completionPopup) {
-                return;
-            }
-
-            if (event.key === "ArrowDown") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                setCompletionPopup((currentPopup) =>
-                    shiftCompletionSelection(currentPopup, 1),
-                );
-                return;
-            }
-
-            if (event.key === "ArrowUp") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                setCompletionPopup((currentPopup) =>
-                    shiftCompletionSelection(currentPopup, -1),
-                );
-                return;
-            }
-
-            if (event.key === "Enter" || event.key === "Tab") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                acceptCompletion(completionPopup.selectedIndex);
-                return;
-            }
-
-            if (event.key === "Escape") {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
                 setCompletionPopup(null);
             }
+        }
+
+        if (
+            isManualCompletionShortcut(event) &&
+            isIntellisenseEnabled &&
+            activeEditorMode === "luau"
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            updateCompletionPopup({ forceOpen: true });
+            return;
+        }
+
+        if (!completionPopup) {
+            return;
+        }
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            setCompletionPopup((currentPopup) =>
+                shiftCompletionSelection(currentPopup, 1),
+            );
+            return;
+        }
+
+        if (event.key === "ArrowUp") {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            setCompletionPopup((currentPopup) =>
+                shiftCompletionSelection(currentPopup, -1),
+            );
+            return;
+        }
+
+        if (event.key === "Enter" || event.key === "Tab") {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            acceptCompletion(completionPopup.selectedIndex);
+            return;
+        }
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            setCompletionPopup(null);
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent): void => {
+            handleKeyDownRef.current?.(event);
         };
 
         window.addEventListener("keydown", handleKeyDown, true);
-
         return () => {
             window.removeEventListener("keydown", handleKeyDown, true);
         };
-    }, [
-        acceptCompletion,
-        activeEditorMode,
-        completionPopup,
-        getActiveEditor,
-        isIntellisenseEnabled,
-        setCompletionPopup,
-        suppressNextPassiveCompletionRef,
-        updateCompletionPopup,
-    ]);
+    }, []);
 }

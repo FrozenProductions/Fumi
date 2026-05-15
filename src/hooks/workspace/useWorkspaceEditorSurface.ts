@@ -1,9 +1,5 @@
-import type {
-    CSSProperties,
-    PointerEvent as ReactPointerEvent,
-    RefObject,
-} from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import type {
     WorkspaceEditorOutlineProps,
     WorkspaceEditorPaneProps,
@@ -14,33 +10,22 @@ import {
     WORKSPACE_OUTLINE_PANEL_MIN_WIDTH,
 } from "../../constants/workspace/outline";
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
-import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { getReactAceComponent } from "../../lib/workspace/editor/editor";
-import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
+import type {
+    UseWorkspaceEditorSurfaceResult,
+    WorkspaceEditorRuntimeState,
+} from "./useWorkspaceEditorSurface.type";
 
-type UseWorkspaceEditorSurfaceResult = {
-    refs: {
-        editorContainerRef: RefObject<HTMLDivElement | null>;
+function updateWorkspaceEditorRuntimeState(
+    currentState: WorkspaceEditorRuntimeState,
+    nextState: Partial<WorkspaceEditorRuntimeState>,
+): WorkspaceEditorRuntimeState {
+    return {
+        ...currentState,
+        ...nextState,
     };
-    state: {
-        AceEditorComponent: AceEditorComponent | null;
-        aceRuntime: LoadedAceRuntime | null;
-        activeTab: WorkspaceEditorPaneProps["tabs"][number] | null;
-        isAceReady: boolean;
-        isOutlinePanelSupported: boolean;
-        outlinePanelClassName: string;
-        outlinePanelStyle: CSSProperties;
-        tabs: WorkspaceEditorPaneProps["tabs"];
-        workspaceActionsClassName: string;
-        workspaceActionsStyle: CSSProperties;
-    };
-    actions: {
-        handleOutlineResizePointerDown: (
-            event: ReactPointerEvent<HTMLButtonElement>,
-        ) => void;
-    };
-};
+}
 
 /**
  * Loads editor runtime and owns outline resize interactions for the workspace editor.
@@ -59,10 +44,15 @@ export function useWorkspaceEditorSurface(options: {
         onSetOutlinePanelWidth,
     } = outline;
 
-    const [isAceReady, setIsAceReady] = useState(false);
-    const [AceEditorComponent, setAceEditorComponent] =
-        useState<AceEditorComponent | null>(null);
-    const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
+    const [runtimeState, setRuntimeState] = useReducer(
+        updateWorkspaceEditorRuntimeState,
+        {
+            AceEditorComponent: null,
+            aceRuntime: null,
+            isAceReady: false,
+        },
+    );
+    const { AceEditorComponent, aceRuntime, isAceReady } = runtimeState;
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
     const [outlinePanelPreviewWidth, setOutlinePanelPreviewWidth] = useState<
         number | null
@@ -121,9 +111,11 @@ export function useWorkspaceEditorSurface(options: {
             const reactAceComponent = getReactAceComponent(reactAceModule);
 
             if (isMounted) {
-                setAceRuntime(loadedAceRuntime);
-                setAceEditorComponent(() => reactAceComponent);
-                setIsAceReady(true);
+                setRuntimeState({
+                    aceRuntime: loadedAceRuntime,
+                    AceEditorComponent: reactAceComponent,
+                    isAceReady: true,
+                });
             }
         })();
 

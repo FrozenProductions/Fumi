@@ -22,49 +22,27 @@ export function useAppDragDrop(): UseAppDragDropResult {
         const hasFilePayload = (event: DragEvent): boolean =>
             Array.from(event.dataTransfer?.types ?? []).includes("Files");
 
-        const handleDragEnter = (event: DragEvent): void => {
+        const handleDragEvent = (event: DragEvent): void => {
             if (!hasFilePayload(event)) {
                 return;
             }
 
             event.preventDefault();
-            setIsDragActive(true);
-        };
-        const handleDragOver = (event: DragEvent): void => {
-            if (!hasFilePayload(event)) {
-                return;
-            }
-
-            event.preventDefault();
-            setIsDragActive(true);
-        };
-        const handleDragLeave = (event: DragEvent): void => {
-            if (!hasFilePayload(event)) {
-                return;
-            }
-
-            event.preventDefault();
-            setIsDragActive(false);
-        };
-        const handleDrop = (event: DragEvent): void => {
-            if (!hasFilePayload(event)) {
-                return;
-            }
-
-            event.preventDefault();
-            setIsDragActive(false);
+            setIsDragActive(
+                event.type === "dragenter" || event.type === "dragover",
+            );
         };
 
-        window.addEventListener("dragenter", handleDragEnter);
-        window.addEventListener("dragleave", handleDragLeave);
-        window.addEventListener("dragover", handleDragOver);
-        window.addEventListener("drop", handleDrop);
+        window.addEventListener("dragenter", handleDragEvent);
+        window.addEventListener("dragleave", handleDragEvent);
+        window.addEventListener("dragover", handleDragEvent);
+        window.addEventListener("drop", handleDragEvent);
         return () => {
             unsubscribeNativeHover();
-            window.removeEventListener("dragenter", handleDragEnter);
-            window.removeEventListener("dragleave", handleDragLeave);
-            window.removeEventListener("dragover", handleDragOver);
-            window.removeEventListener("drop", handleDrop);
+            window.removeEventListener("dragenter", handleDragEvent);
+            window.removeEventListener("dragleave", handleDragEvent);
+            window.removeEventListener("dragover", handleDragEvent);
+            window.removeEventListener("drop", handleDragEvent);
         };
     }, []);
 

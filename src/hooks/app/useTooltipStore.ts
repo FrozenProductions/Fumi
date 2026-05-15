@@ -62,4 +62,7 @@ export const useTooltipStore = create<TooltipStore>((set) => ({
     setTooltipVisibility: (isVisible) => {
         set({ isVisible });
     },
+    updateTooltipView: (view) => {
+        set(view);
+    },
 }));

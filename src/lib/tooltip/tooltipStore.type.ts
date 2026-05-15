@@ -27,6 +27,10 @@ type TooltipStoreActions = {
     clearTooltip: () => void;
     setTooltipPosition: (position: TooltipPosition) => void;
     setTooltipVisibility: (isVisible: boolean) => void;
+    updateTooltipView: (view: {
+        isVisible?: boolean;
+        position?: TooltipPosition;
+    }) => void;
 };
 
 export type TooltipStore = TooltipStoreState & TooltipStoreActions;

@@ -1,40 +1,25 @@
-import type { FocusEvent, RefObject } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { FocusEvent } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
+import type {
+    UseWorkspaceActionsMenuOptions,
+    UseWorkspaceActionsMenuResult,
+    WorkspaceActionsConfirmAction,
+    WorkspaceActionsMenuState,
+    WorkspaceActionsMenuStateUpdate,
+} from "./useWorkspaceActionsMenu.type";
 
-export type WorkspaceActionsConfirmAction = "kill" | `kill-pid-${number}`;
+function updateWorkspaceActionsMenuState(
+    currentState: WorkspaceActionsMenuState,
+    update: WorkspaceActionsMenuStateUpdate,
+): WorkspaceActionsMenuState {
+    const nextState =
+        typeof update === "function" ? update(currentState) : update;
 
-type UseWorkspaceActionsMenuOptions = {
-    isAnyRobloxKillPending: boolean;
-};
-
-type UseWorkspaceActionsMenuResult = {
-    refs: {
-        containerRef: RefObject<HTMLDivElement | null>;
+    return {
+        ...currentState,
+        ...nextState,
     };
-    state: {
-        isDropdownOpen: boolean;
-        isLaunchModifierActive: boolean;
-        revealedProcessPid: number | null;
-        confirmingAction: WorkspaceActionsConfirmAction | null;
-    };
-    actions: {
-        clearPendingConfirm: () => void;
-        closeMenu: () => void;
-        handleHideProcess: (
-            pid: number,
-            currentTarget: HTMLDivElement,
-            relatedTarget?: EventTarget | null,
-        ) => void;
-        handleProcessRowBlur: (
-            event: FocusEvent<HTMLDivElement>,
-            pid: number,
-        ) => void;
-        revealProcess: (pid: number) => void;
-        setLaunchModifierActive: (value: boolean) => void;
-        startConfirm: (action: WorkspaceActionsConfirmAction) => void;
-        toggleMenu: () => void;
-    };
-};
+}
 
 /**
  * Manages menu-local state for workspace actions including confirm timers and hover reveals.
@@ -46,13 +31,21 @@ type UseWorkspaceActionsMenuResult = {
 export function useWorkspaceActionsMenu({
     isAnyRobloxKillPending,
 }: UseWorkspaceActionsMenuOptions): UseWorkspaceActionsMenuResult {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isLaunchModifierActive, setIsLaunchModifierActive] = useState(false);
-    const [revealedProcessPid, setRevealedProcessPid] = useState<number | null>(
-        null,
+    const [state, dispatchMenuState] = useReducer(
+        updateWorkspaceActionsMenuState,
+        {
+            isDropdownOpen: false,
+            isLaunchModifierActive: false,
+            revealedProcessPid: null,
+            confirmingAction: null,
+        },
     );
-    const [confirmingAction, setConfirmingAction] =
-        useState<WorkspaceActionsConfirmAction | null>(null);
+    const {
+        isDropdownOpen,
+        isLaunchModifierActive,
+        revealedProcessPid,
+        confirmingAction,
+    } = state;
     const containerRef = useRef<HTMLDivElement>(null);
     const confirmTimeoutRef = useRef<ReturnType<
         typeof window.setTimeout
@@ -64,25 +57,23 @@ export function useWorkspaceActionsMenu({
             confirmTimeoutRef.current = null;
         }
 
-        setConfirmingAction(null);
-    }, []);
-
-    const resetMenuState = useCallback((): void => {
-        setIsLaunchModifierActive(false);
-        setRevealedProcessPid(null);
+        dispatchMenuState({ confirmingAction: null });
     }, []);
 
     const closeMenu = useCallback((): void => {
-        setIsDropdownOpen(false);
-        resetMenuState();
-    }, [resetMenuState]);
+        dispatchMenuState({
+            isDropdownOpen: false,
+            isLaunchModifierActive: false,
+            revealedProcessPid: null,
+        });
+    }, []);
 
     const startConfirm = useCallback(
         (action: WorkspaceActionsConfirmAction): void => {
             clearPendingConfirm();
-            setConfirmingAction(action);
+            dispatchMenuState({ confirmingAction: action });
             confirmTimeoutRef.current = window.setTimeout(() => {
-                setConfirmingAction(null);
+                dispatchMenuState({ confirmingAction: null });
                 confirmTimeoutRef.current = null;
             }, 2_000);
         },
@@ -90,16 +81,20 @@ export function useWorkspaceActionsMenu({
     );
 
     const toggleMenu = useCallback((): void => {
-        setIsDropdownOpen((isOpen) => {
-            const nextIsOpen = !isOpen;
+        dispatchMenuState((currentState) => {
+            const isDropdownOpen = !currentState.isDropdownOpen;
 
-            if (!nextIsOpen) {
-                resetMenuState();
-            }
-
-            return nextIsOpen;
+            return {
+                isDropdownOpen,
+                isLaunchModifierActive: isDropdownOpen
+                    ? currentState.isLaunchModifierActive
+                    : false,
+                revealedProcessPid: isDropdownOpen
+                    ? currentState.revealedProcessPid
+                    : null,
+            };
         });
-    }, [resetMenuState]);
+    }, []);
 
     const handleHideProcess = useCallback(
         (
@@ -122,9 +117,12 @@ export function useWorkspaceActionsMenu({
                 return;
             }
 
-            setRevealedProcessPid((currentPid) =>
-                currentPid === pid ? null : currentPid,
-            );
+            dispatchMenuState((currentState) => ({
+                revealedProcessPid:
+                    currentState.revealedProcessPid === pid
+                        ? null
+                        : currentState.revealedProcessPid,
+            }));
         },
         [],
     );
@@ -137,7 +135,7 @@ export function useWorkspaceActionsMenu({
     );
 
     const revealProcess = useCallback((pid: number): void => {
-        setRevealedProcessPid(pid);
+        dispatchMenuState({ revealedProcessPid: pid });
     }, []);
 
     useEffect(() => {
@@ -166,16 +164,16 @@ export function useWorkspaceActionsMenu({
 
     useEffect(() => {
         if (!isDropdownOpen) {
-            setIsLaunchModifierActive(false);
+            dispatchMenuState({ isLaunchModifierActive: false });
             return;
         }
 
         function syncLaunchModifierState(event: KeyboardEvent): void {
-            setIsLaunchModifierActive(event.shiftKey);
+            dispatchMenuState({ isLaunchModifierActive: event.shiftKey });
         }
 
         function resetLaunchModifierState(): void {
-            setIsLaunchModifierActive(false);
+            dispatchMenuState({ isLaunchModifierActive: false });
         }
 
         window.addEventListener("keydown", syncLaunchModifierState);
@@ -213,7 +211,9 @@ export function useWorkspaceActionsMenu({
             handleHideProcess,
             handleProcessRowBlur,
             revealProcess,
-            setLaunchModifierActive: setIsLaunchModifierActive,
+            setLaunchModifierActive: (value) => {
+                dispatchMenuState({ isLaunchModifierActive: value });
+            },
             startConfirm,
             toggleMenu,
         },

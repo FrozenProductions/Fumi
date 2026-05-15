@@ -1,36 +1,23 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
-import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import { copyTextToClipboard } from "../../lib/platform/core/clipboard";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
 import { getReactAceComponent } from "../../lib/workspace/editor/editor";
-import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
-import type { WorkspaceExecutionHistoryEntry } from "../../lib/workspace/executionHistory/executionHistory.type";
+import type {
+    UseWorkspaceExecutionHistoryPreviewOptions,
+    UseWorkspaceExecutionHistoryPreviewResult,
+    WorkspaceExecutionHistoryPreviewLoadState,
+} from "./useWorkspaceExecutionHistoryPreview.type";
 
-type UseWorkspaceExecutionHistoryPreviewOptions = {
-    entries: readonly WorkspaceExecutionHistoryEntry[];
-    isOpen: boolean;
-    onReRun: (entry: WorkspaceExecutionHistoryEntry) => Promise<void>;
-};
-
-type UseWorkspaceExecutionHistoryPreviewResult = {
-    state: {
-        AceEditorComp: AceEditorComponent | null;
-        aceRuntime: LoadedAceRuntime | null;
-        editorLoadError: string | null;
-        feedbackMessage: string | null;
-        isCopying: boolean;
-        isReRunning: boolean;
-        selectedEntry: WorkspaceExecutionHistoryEntry | null;
-        selectedEntryId: string | null;
+function updateWorkspaceExecutionHistoryPreviewLoadState(
+    currentState: WorkspaceExecutionHistoryPreviewLoadState,
+    nextState: Partial<WorkspaceExecutionHistoryPreviewLoadState>,
+): WorkspaceExecutionHistoryPreviewLoadState {
+    return {
+        ...currentState,
+        ...nextState,
     };
-    actions: {
-        copyScript: () => Promise<void>;
-        reRun: () => Promise<void>;
-        retryEditorLoad: () => void;
-        selectEntry: (entryId: string) => void;
-    };
-};
+}
 
 /**
  * Loads the read-only Ace preview and owns per-entry execution history actions.
@@ -49,14 +36,25 @@ export function useWorkspaceExecutionHistoryPreview({
     const [selectedEntryId, setSelectedEntryId] = useState<string | null>(
         entries[0]?.id ?? null,
     );
-    const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
     const [isCopying, setIsCopying] = useState(false);
     const [isReRunning, setIsReRunning] = useState(false);
-    const [editorLoadError, setEditorLoadError] = useState<string | null>(null);
-    const [editorLoadNonce, setEditorLoadNonce] = useState(0);
-    const [AceEditorComp, setAceEditorComp] =
-        useState<AceEditorComponent | null>(null);
-    const [aceRuntime, setAceRuntime] = useState<LoadedAceRuntime | null>(null);
+    const [loadState, dispatchLoadState] = useReducer(
+        updateWorkspaceExecutionHistoryPreviewLoadState,
+        {
+            AceEditorComp: null,
+            aceRuntime: null,
+            editorLoadError: null,
+            editorLoadNonce: 0,
+            feedbackMessage: null,
+        },
+    );
+    const {
+        AceEditorComp,
+        aceRuntime,
+        editorLoadError,
+        editorLoadNonce,
+        feedbackMessage,
+    } = loadState;
     const selectedEntry =
         entries.find((entry) => entry.id === selectedEntryId) ??
         entries[0] ??
@@ -64,8 +62,10 @@ export function useWorkspaceExecutionHistoryPreview({
 
     useEffect(() => {
         if (!isOpen) {
-            setFeedbackMessage(null);
-            setEditorLoadError(null);
+            dispatchLoadState({
+                feedbackMessage: null,
+                editorLoadError: null,
+            });
             return;
         }
 
@@ -84,7 +84,7 @@ export function useWorkspaceExecutionHistoryPreview({
         }
 
         if (editorLoadNonce > 0) {
-            setFeedbackMessage(null);
+            dispatchLoadState({ feedbackMessage: null });
         }
 
         let isMounted = true;
@@ -99,20 +99,22 @@ export function useWorkspaceExecutionHistoryPreview({
                     return;
                 }
 
-                setEditorLoadError(null);
-                setAceRuntime(loadedAceRuntime);
-                setAceEditorComp(() => reactAceComponent);
+                dispatchLoadState({
+                    editorLoadError: null,
+                    aceRuntime: loadedAceRuntime,
+                    AceEditorComp: reactAceComponent,
+                });
             } catch (error) {
                 if (!isMounted) {
                     return;
                 }
 
-                setEditorLoadError(
-                    getErrorMessage(
+                dispatchLoadState({
+                    editorLoadError: getErrorMessage(
                         error,
                         "Could not load the script preview.",
                     ),
-                );
+                });
             }
         })();
 
@@ -130,11 +132,14 @@ export function useWorkspaceExecutionHistoryPreview({
 
         try {
             await copyTextToClipboard(selectedEntry.scriptContent);
-            setFeedbackMessage("Copied script.");
+            dispatchLoadState({ feedbackMessage: "Copied script." });
         } catch (error) {
-            setFeedbackMessage(
-                getErrorMessage(error, "Could not copy the stored script."),
-            );
+            dispatchLoadState({
+                feedbackMessage: getErrorMessage(
+                    error,
+                    "Could not copy the stored script.",
+                ),
+            });
         } finally {
             setIsCopying(false);
         }
@@ -146,7 +151,7 @@ export function useWorkspaceExecutionHistoryPreview({
         }
 
         setIsReRunning(true);
-        setFeedbackMessage(null);
+        dispatchLoadState({ feedbackMessage: null });
 
         try {
             await onReRun(selectedEntry);
@@ -156,11 +161,13 @@ export function useWorkspaceExecutionHistoryPreview({
     }, [isReRunning, onReRun, selectedEntry]);
 
     const retryEditorLoad = useCallback((): void => {
-        setEditorLoadError(null);
-        setAceRuntime(null);
-        setAceEditorComp(null);
-        setEditorLoadNonce((currentValue) => currentValue + 1);
-    }, []);
+        dispatchLoadState({
+            editorLoadError: null,
+            aceRuntime: null,
+            AceEditorComp: null,
+            editorLoadNonce: editorLoadNonce + 1,
+        });
+    }, [editorLoadNonce]);
 
     return {
         state: {
