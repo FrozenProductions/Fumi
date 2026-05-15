@@ -107,6 +107,8 @@ export function useAppTooltipHost(): AppTooltipHostState {
     );
     const tooltipMeasureRef = useRef<HTMLDivElement | null>(null);
     const activeTooltipIdRef = useRef<string | null>(null);
+    const clearTooltipRef = useRef(clearTooltip);
+    clearTooltipRef.current = clearTooltip;
 
     useLayoutEffect(() => {
         if (!activeTooltip) {
@@ -124,7 +126,7 @@ export function useAppTooltipHost(): AppTooltipHostState {
                 !tooltipElement ||
                 !document.body.contains(activeTooltip.triggerElement)
             ) {
-                clearTooltip();
+                clearTooltipRef.current();
                 return;
             }
 
@@ -165,7 +167,7 @@ export function useAppTooltipHost(): AppTooltipHostState {
                 cancelAnimationFrame(frameId);
             }
         };
-    }, [activeTooltip, clearTooltip, setTooltipPosition, setTooltipVisibility]);
+    }, [activeTooltip, setTooltipPosition, setTooltipVisibility]);
 
     useEffect(() => {
         if (!activeTooltip) {
@@ -174,20 +176,24 @@ export function useAppTooltipHost(): AppTooltipHostState {
 
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === "Escape") {
-                clearTooltip();
+                clearTooltipRef.current();
             }
         };
 
-        window.addEventListener("blur", clearTooltip);
-        window.addEventListener("pointerdown", clearTooltip);
+        const handleClearTooltip = (): void => {
+            clearTooltipRef.current();
+        };
+
+        window.addEventListener("blur", handleClearTooltip);
+        window.addEventListener("pointerdown", handleClearTooltip);
         window.addEventListener("keydown", handleKeyDown);
 
         return () => {
-            window.removeEventListener("blur", clearTooltip);
-            window.removeEventListener("pointerdown", clearTooltip);
+            window.removeEventListener("blur", handleClearTooltip);
+            window.removeEventListener("pointerdown", handleClearTooltip);
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [activeTooltip, clearTooltip]);
+    }, [activeTooltip]);
 
     return {
         activeTooltip,
