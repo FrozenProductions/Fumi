@@ -63,12 +63,27 @@ describe("getCommandCommandPaletteItems", () => {
                             workspaceName: "current",
                             activeTabId: "tab-1",
                             splitView: {
-                                direction: "vertical",
-                                primaryTabId: "tab-1",
-                                secondaryTabId: "tab-2",
-                                secondaryTabIds: ["tab-2"],
-                                splitRatio: 0.5,
-                                focusedPane: "secondary",
+                                activePaneId: "pane-secondary",
+                                root: {
+                                    type: "split",
+                                    id: "split-root",
+                                    direction: "horizontal",
+                                    ratios: [0.5, 0.5],
+                                    children: [
+                                        {
+                                            type: "pane",
+                                            id: "pane-primary",
+                                            activeTabId: "tab-1",
+                                            tabIds: ["tab-1"],
+                                        },
+                                        {
+                                            type: "pane",
+                                            id: "pane-secondary",
+                                            activeTabId: "tab-2",
+                                            tabIds: ["tab-2"],
+                                        },
+                                    ],
+                                },
                             },
                             archivedTabs: [],
                             executionHistory: [],
@@ -126,23 +141,17 @@ describe("getCommandCommandPaletteItems", () => {
         expect(items.map((item) => item.id)).toEqual(
             expect.arrayContaining([
                 "command-split-focus-left",
-                "command-split-focus-right",
                 "command-split-reset",
             ]),
         );
         expect(getCommand("command-split-focus-left")).toMatchObject({
-            isDisabled: false,
             meta: "Ctrl+Mod+1",
-        });
-        expect(getCommand("command-split-focus-right")).toMatchObject({
-            isDisabled: true,
-            meta: "Current",
         });
 
         getCommand("command-split-focus-left").onSelect();
         getCommand("command-split-reset").onSelect();
 
-        expect(focusWorkspacePane).toHaveBeenCalledWith("primary");
+        expect(focusWorkspacePane).toHaveBeenCalledWith("pane-secondary");
         expect(resetWorkspaceSplitView).toHaveBeenCalledOnce();
     });
 

@@ -79,12 +79,30 @@ describe("buildWorkspaceSession", () => {
         const session = buildWorkspaceSession(snapshot);
 
         expect(session.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-1",
-            secondaryTabId: "tab-2",
-            secondaryTabIds: ["tab-2"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "secondary",
+            activePaneId: "pane-secondary",
+            root: {
+                type: "split",
+                id: "split-root",
+                direction: "horizontal",
+                ratios: [
+                    DEFAULT_WORKSPACE_SPLIT_RATIO,
+                    DEFAULT_WORKSPACE_SPLIT_RATIO,
+                ],
+                children: [
+                    {
+                        type: "pane",
+                        id: "pane-primary",
+                        activeTabId: "tab-1",
+                        tabIds: ["tab-1"],
+                    },
+                    {
+                        type: "pane",
+                        id: "pane-secondary",
+                        activeTabId: "tab-2",
+                        tabIds: ["tab-2"],
+                    },
+                ],
+            },
         });
     });
 

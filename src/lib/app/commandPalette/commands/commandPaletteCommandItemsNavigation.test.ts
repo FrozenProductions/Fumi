@@ -94,7 +94,7 @@ describe("getCommandCommandPaletteItems", () => {
         const duplicateWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const deleteWorkspaceTab = vi.fn().mockResolvedValue(undefined);
         const toggleConnection = vi.fn().mockResolvedValue(undefined);
-        const openWorkspaceTabInPane = vi.fn();
+        const splitWorkspaceTab = vi.fn();
         const onActivateAttachMode = vi.fn();
         const onActivateGoToLineMode = vi.fn();
         const onActivateThemeMode = vi.fn();
@@ -137,7 +137,7 @@ describe("getCommandCommandPaletteItems", () => {
             tabActions: {
                 duplicateWorkspaceTab,
                 deleteWorkspaceTab,
-                openWorkspaceTabInPane,
+                splitWorkspaceTab,
             },
         });
         const items = getCommandCommandPaletteItems(
@@ -208,17 +208,17 @@ describe("getCommandCommandPaletteItems", () => {
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
         expect(duplicateWorkspaceTab).toHaveBeenCalledWith("tab-1");
         expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
-        expect(openWorkspaceTabInPane).toHaveBeenNthCalledWith(
+        expect(splitWorkspaceTab).toHaveBeenNthCalledWith(
             1,
             "tab-1",
-            "primary",
-            "vertical",
+            null,
+            "left",
         );
-        expect(openWorkspaceTabInPane).toHaveBeenNthCalledWith(
+        expect(splitWorkspaceTab).toHaveBeenNthCalledWith(
             2,
             "tab-1",
-            "secondary",
-            "vertical",
+            null,
+            "right",
         );
         expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(4);
         expect(getCommand("command-goto-line")).toMatchObject({

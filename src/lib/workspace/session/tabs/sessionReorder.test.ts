@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vite-plus/test";
-import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
 import {
     createSnapshotTab,
     createWorkspaceSession,
@@ -32,7 +31,7 @@ describe("reorderWorkspaceTabs", () => {
         ]);
     });
 
-    it("keeps right-pane ordering in sync with reordered tabs", () => {
+    it("keeps split pane tab ordering independent from tab bar order", () => {
         const workspace = createWorkspaceSession({
             tabs: [
                 {
@@ -53,12 +52,27 @@ describe("reorderWorkspaceTabs", () => {
                 },
             ],
             splitView: {
-                direction: "vertical",
-                primaryTabId: "tab-1",
-                secondaryTabId: "tab-3",
-                secondaryTabIds: ["tab-3", "tab-4"],
-                splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-                focusedPane: "secondary",
+                activePaneId: "pane-secondary",
+                root: {
+                    type: "split",
+                    id: "split-root",
+                    direction: "horizontal",
+                    ratios: [0.5, 0.5],
+                    children: [
+                        {
+                            type: "pane",
+                            id: "pane-primary",
+                            activeTabId: "tab-1",
+                            tabIds: ["tab-1", "tab-2"],
+                        },
+                        {
+                            type: "pane",
+                            id: "pane-secondary",
+                            activeTabId: "tab-3",
+                            tabIds: ["tab-3", "tab-4"],
+                        },
+                    ],
+                },
             },
         });
 
@@ -70,9 +84,11 @@ describe("reorderWorkspaceTabs", () => {
             "tab-4",
             "tab-3",
         ]);
-        expect(nextWorkspace.splitView?.secondaryTabIds).toEqual([
-            "tab-4",
-            "tab-3",
-        ]);
+        expect(nextWorkspace.splitView?.root).toMatchObject({
+            children: [
+                { id: "pane-primary", tabIds: ["tab-1", "tab-2"] },
+                { id: "pane-secondary", tabIds: ["tab-3", "tab-4"] },
+            ],
+        });
     });
 });

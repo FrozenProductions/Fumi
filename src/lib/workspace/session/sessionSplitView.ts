@@ -837,9 +837,17 @@ export function splitWorkspaceTabState(
         activeTabId: tabId,
         tabIds: [tabId],
     };
+    const targetAfterRemoval =
+        findPanePath(removedRoot, targetPane.id)?.pane ??
+        getWorkspaceSplitPanes(removedRoot)[0];
+
+    if (!targetAfterRemoval) {
+        return currentWorkspace;
+    }
+
     const nextRoot = insertPaneAtTarget(
         removedRoot,
-        targetPane.id,
+        targetAfterRemoval.id,
         placement,
         newPane,
     );

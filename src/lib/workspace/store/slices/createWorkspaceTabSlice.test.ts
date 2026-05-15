@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { DEFAULT_WORKSPACE_SPLIT_RATIO } from "../../../../constants/workspace/workspace";
 import type { WorkspaceSession } from "../../session/session.type";
+import { normalizeSplitView } from "../../session/sessionSplitView";
+import type {
+    WorkspaceLegacySplitView,
+    WorkspaceSplitView,
+} from "../../session/sessionSplitView.type";
 import type { WorkspaceTab } from "../../session/tabs/sessionTabs.type";
 import type { WorkspaceStore } from "../workspaceStore.type";
 
@@ -51,6 +56,19 @@ function createWorkspaceSession(
         ],
         ...overrides,
     };
+}
+
+function createWorkspaceSplitView(
+    splitView: WorkspaceLegacySplitView,
+    tabIds: readonly string[] = ["tab-1", "tab-2", "tab-3", "tab-4"],
+): WorkspaceSplitView {
+    const normalizedSplitView = normalizeSplitView(splitView, new Set(tabIds));
+
+    if (!normalizedSplitView) {
+        throw new Error("Expected test split view to normalize.");
+    }
+
+    return normalizedSplitView;
 }
 
 async function createTabStore(initialWorkspace: WorkspaceSession) {
@@ -112,27 +130,34 @@ describe("createWorkspaceTabSlice", () => {
         const store = await createTabStore(
             createWorkspaceSession({
                 activeTabId: "tab-3",
-                splitView: {
+                splitView: createWorkspaceSplitView({
                     direction: "vertical",
                     primaryTabId: "tab-1",
                     secondaryTabId: "tab-3",
                     secondaryTabIds: ["tab-3", "tab-4"],
                     splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
                     focusedPane: "secondary",
-                },
+                }),
             }),
         );
 
         store.getState().openWorkspaceTabInPane("tab-4", "primary");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-4");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-4",
-            secondaryTabId: "tab-3",
-            secondaryTabIds: ["tab-3"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "primary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-4",
+            root: {
+                direction: "horizontal",
+                children: [
+                    { id: "pane-primary", tabIds: ["tab-1", "tab-2"] },
+                    {
+                        id: "pane-tab-4",
+                        activeTabId: "tab-4",
+                        tabIds: ["tab-4"],
+                    },
+                    { id: "pane-secondary", tabIds: ["tab-3"] },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -140,27 +165,34 @@ describe("createWorkspaceTabSlice", () => {
     it("moves the current primary tab to the secondary pane and promotes another left tab instead of swapping", async () => {
         const store = await createTabStore(
             createWorkspaceSession({
-                splitView: {
+                splitView: createWorkspaceSplitView({
                     direction: "vertical",
                     primaryTabId: "tab-1",
                     secondaryTabId: "tab-3",
                     secondaryTabIds: ["tab-3", "tab-4"],
                     splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
                     focusedPane: "primary",
-                },
+                }),
             }),
         );
 
         store.getState().openWorkspaceTabInPane("tab-1", "secondary");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-1");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-2",
-            secondaryTabId: "tab-1",
-            secondaryTabIds: ["tab-3", "tab-4", "tab-1"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "secondary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-1",
+            root: {
+                direction: "horizontal",
+                children: [
+                    { id: "pane-primary", tabIds: ["tab-2"] },
+                    {
+                        id: "pane-tab-1",
+                        activeTabId: "tab-1",
+                        tabIds: ["tab-1"],
+                    },
+                    { id: "pane-secondary", tabIds: ["tab-3", "tab-4"] },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -171,13 +203,23 @@ describe("createWorkspaceTabSlice", () => {
         store.getState().openWorkspaceTabInPane("tab-3", "primary");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-3");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-3",
-            secondaryTabId: "tab-1",
-            secondaryTabIds: ["tab-1", "tab-2", "tab-4"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "primary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-3",
+            root: {
+                direction: "horizontal",
+                children: [
+                    {
+                        id: "pane-tab-3",
+                        activeTabId: "tab-3",
+                        tabIds: ["tab-3"],
+                    },
+                    {
+                        id: "pane-root",
+                        activeTabId: "tab-1",
+                        tabIds: ["tab-1", "tab-2", "tab-4"],
+                    },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -188,13 +230,23 @@ describe("createWorkspaceTabSlice", () => {
         store.getState().openWorkspaceTabInPane("tab-1", "primary");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-1");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-1",
-            secondaryTabId: "tab-2",
-            secondaryTabIds: ["tab-2", "tab-3", "tab-4"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "primary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-1",
+            root: {
+                direction: "horizontal",
+                children: [
+                    {
+                        id: "pane-tab-1",
+                        activeTabId: "tab-1",
+                        tabIds: ["tab-1"],
+                    },
+                    {
+                        id: "pane-root",
+                        activeTabId: "tab-2",
+                        tabIds: ["tab-2", "tab-3", "tab-4"],
+                    },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -207,13 +259,23 @@ describe("createWorkspaceTabSlice", () => {
             .openWorkspaceTabInPane("tab-4", "secondary", "horizontal");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-4");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "horizontal",
-            primaryTabId: "tab-1",
-            secondaryTabId: "tab-4",
-            secondaryTabIds: ["tab-4"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "secondary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-4",
+            root: {
+                direction: "horizontal",
+                children: [
+                    {
+                        id: "pane-root",
+                        activeTabId: "tab-1",
+                        tabIds: ["tab-1", "tab-2", "tab-3"],
+                    },
+                    {
+                        id: "pane-tab-4",
+                        activeTabId: "tab-4",
+                        tabIds: ["tab-4"],
+                    },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -221,79 +283,98 @@ describe("createWorkspaceTabSlice", () => {
     it("preserves the current split direction when selecting a pane tab", async () => {
         const store = await createTabStore(
             createWorkspaceSession({
-                splitView: {
+                splitView: createWorkspaceSplitView({
                     direction: "horizontal",
                     primaryTabId: "tab-1",
                     secondaryTabId: "tab-3",
                     secondaryTabIds: ["tab-3", "tab-4"],
                     splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
                     focusedPane: "secondary",
-                },
+                }),
             }),
         );
 
         store.getState().openWorkspaceTabInPane("tab-4", "secondary");
 
-        expect(store.getState().workspace?.splitView?.direction).toBe(
-            "horizontal",
-        );
-        expect(store.getState().workspace?.splitView?.secondaryTabId).toBe(
-            "tab-4",
-        );
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-4",
+            root: {
+                direction: "vertical",
+                children: [
+                    { id: "pane-primary", tabIds: ["tab-1", "tab-2"] },
+                    {
+                        direction: "horizontal",
+                        children: [
+                            { id: "pane-secondary", tabIds: ["tab-3"] },
+                            { id: "pane-tab-4", tabIds: ["tab-4"] },
+                        ],
+                    },
+                ],
+            },
+        });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
 
     it("updates split ratio in memory without persisting immediately", async () => {
         const store = await createTabStore(
             createWorkspaceSession({
-                splitView: {
+                splitView: createWorkspaceSplitView({
                     direction: "vertical",
                     primaryTabId: "tab-1",
                     secondaryTabId: "tab-3",
                     secondaryTabIds: ["tab-3", "tab-4"],
                     splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
                     focusedPane: "primary",
-                },
+                }),
             }),
         );
 
         store.persistWorkspaceState.mockClear();
         store.getState().setWorkspaceSplitRatio(0.68);
 
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-1",
-            secondaryTabId: "tab-3",
-            secondaryTabIds: ["tab-3", "tab-4"],
-            splitRatio: 0.68,
-            focusedPane: "primary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-primary",
+            root: {
+                direction: "horizontal",
+                ratios: [0.68, 0.31999999999999995],
+                children: [
+                    { id: "pane-primary", tabIds: ["tab-1", "tab-2"] },
+                    { id: "pane-secondary", tabIds: ["tab-3", "tab-4"] },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).not.toHaveBeenCalled();
     });
 
-    it("changes split direction and resets the split ratio", async () => {
+    it("resets the split ratio through the legacy direction action", async () => {
         const store = await createTabStore(
             createWorkspaceSession({
-                splitView: {
+                splitView: createWorkspaceSplitView({
                     direction: "vertical",
                     primaryTabId: "tab-1",
                     secondaryTabId: "tab-3",
                     secondaryTabIds: ["tab-3", "tab-4"],
                     splitRatio: 0.68,
                     focusedPane: "primary",
-                },
+                }),
             }),
         );
 
         store.getState().setWorkspaceSplitDirection("horizontal");
 
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "horizontal",
-            primaryTabId: "tab-1",
-            secondaryTabId: "tab-3",
-            secondaryTabIds: ["tab-3", "tab-4"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "primary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-primary",
+            root: {
+                direction: "horizontal",
+                ratios: [
+                    DEFAULT_WORKSPACE_SPLIT_RATIO,
+                    DEFAULT_WORKSPACE_SPLIT_RATIO,
+                ],
+                children: [
+                    { id: "pane-primary", tabIds: ["tab-1", "tab-2"] },
+                    { id: "pane-secondary", tabIds: ["tab-3", "tab-4"] },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -306,27 +387,36 @@ describe("createWorkspaceTabSlice", () => {
                     createWorkspaceTab("tab-1"),
                     createWorkspaceTab("tab-2"),
                 ],
-                splitView: {
-                    direction: "vertical",
-                    primaryTabId: "tab-1",
-                    secondaryTabId: "tab-2",
-                    secondaryTabIds: ["tab-2"],
-                    splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-                    focusedPane: "primary",
-                },
+                splitView: createWorkspaceSplitView(
+                    {
+                        direction: "vertical",
+                        primaryTabId: "tab-1",
+                        secondaryTabId: "tab-2",
+                        secondaryTabIds: ["tab-2"],
+                        splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                        focusedPane: "primary",
+                    },
+                    ["tab-1", "tab-2"],
+                ),
             }),
         );
 
         store.getState().openWorkspaceTabInPane("tab-1", "secondary");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-1");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-2",
-            secondaryTabId: "tab-1",
-            secondaryTabIds: ["tab-1"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "secondary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-1",
+            root: {
+                direction: "horizontal",
+                children: [
+                    { id: "pane-secondary", tabIds: ["tab-2"] },
+                    {
+                        id: "pane-tab-1",
+                        activeTabId: "tab-1",
+                        tabIds: ["tab-1"],
+                    },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
@@ -339,27 +429,36 @@ describe("createWorkspaceTabSlice", () => {
                     createWorkspaceTab("tab-1"),
                     createWorkspaceTab("tab-2"),
                 ],
-                splitView: {
-                    direction: "vertical",
-                    primaryTabId: "tab-1",
-                    secondaryTabId: "tab-2",
-                    secondaryTabIds: ["tab-2"],
-                    splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-                    focusedPane: "secondary",
-                },
+                splitView: createWorkspaceSplitView(
+                    {
+                        direction: "vertical",
+                        primaryTabId: "tab-1",
+                        secondaryTabId: "tab-2",
+                        secondaryTabIds: ["tab-2"],
+                        splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                        focusedPane: "secondary",
+                    },
+                    ["tab-1", "tab-2"],
+                ),
             }),
         );
 
         store.getState().openWorkspaceTabInPane("tab-2", "primary");
 
         expect(store.getState().workspace?.activeTabId).toBe("tab-2");
-        expect(store.getState().workspace?.splitView).toEqual({
-            direction: "vertical",
-            primaryTabId: "tab-2",
-            secondaryTabId: "tab-1",
-            secondaryTabIds: ["tab-1"],
-            splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
-            focusedPane: "primary",
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-tab-2",
+            root: {
+                direction: "horizontal",
+                children: [
+                    {
+                        id: "pane-tab-2",
+                        activeTabId: "tab-2",
+                        tabIds: ["tab-2"],
+                    },
+                    { id: "pane-primary", tabIds: ["tab-1"] },
+                ],
+            },
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
