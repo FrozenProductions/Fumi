@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
 import { useAppStore } from "../../hooks/app/useAppStore";
 import { useWorkspaceTabBarState } from "../../hooks/workspace/tabBar/useWorkspaceTabBarState";
+import { useWorkspaceTabContextMenuActions } from "../../hooks/workspace/tabBar/useWorkspaceTabContextMenuActions";
 import { getAppHotkeyShortcutLabel } from "../../lib/app/hotkeys/hotkeys";
 import { joinClassNames } from "../../lib/shared/className";
-import { getWorkspaceSplitScopeTabIds } from "../../lib/workspace/session/sessionSplitView";
 import { WorkspaceTabBarControls } from "./tabBar/WorkspaceTabBarControls";
 import { WorkspaceTabBarTabs } from "./tabBar/WorkspaceTabBarTabs";
 import { WorkspaceTabContextMenu } from "./tabBar/WorkspaceTabContextMenu";
@@ -70,117 +70,20 @@ export function WorkspaceTabBar({
         ? (workspace.tabs.find((tab) => tab.id === contextMenuState.tabId) ??
           null)
         : null;
-
-    const handleRenameFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        const targetTab = workspace.tabs.find(
-            (tab) => tab.id === contextMenuState.tabId,
-        );
-
-        if (!targetTab) {
-            return;
-        }
-
-        handleStartRename(targetTab.id, targetTab.fileName);
-    };
-
-    const handleDeleteFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onDeleteTab(contextMenuState.tabId);
-    };
-
-    const handleArchiveFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onArchiveTab(contextMenuState.tabId);
-    };
-
-    const handleTogglePinnedFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onToggleTabPinned(contextMenuState.tabId);
-    };
-
-    const getContextMenuArchiveScopeTabIds = (): string[] | undefined => {
-        if (
-            !isSplitViewArchiveScopeEnabled ||
-            !contextMenuState ||
-            !splitView
-        ) {
-            return undefined;
-        }
-
-        return getWorkspaceSplitScopeTabIds(
-            splitView,
-            workspace.tabs,
-            contextMenuState.tabId,
-        );
-    };
-
-    const handleArchiveAllFromContextMenu = (): void => {
-        onArchiveAllTabs(getContextMenuArchiveScopeTabIds());
-    };
-
-    const handleArchiveOtherFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onArchiveOtherTabs(
-            contextMenuState.tabId,
-            getContextMenuArchiveScopeTabIds(),
-        );
-    };
-
-    const handleDuplicateFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onDuplicateTab(contextMenuState.tabId);
-    };
-
-    const handleSplitLeftFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onSplitTab(contextMenuState.tabId, null, "left");
-    };
-
-    const handleSplitRightFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onSplitTab(contextMenuState.tabId, null, "right");
-    };
-
-    const handleSplitTopFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onSplitTab(contextMenuState.tabId, null, "top");
-    };
-
-    const handleSplitBottomFromContextMenu = (): void => {
-        if (!contextMenuState) {
-            return;
-        }
-
-        onSplitTab(contextMenuState.tabId, null, "bottom");
-    };
+    const contextMenuActions = useWorkspaceTabContextMenuActions({
+        contextMenuState,
+        isSplitViewArchiveScopeEnabled,
+        splitView,
+        workspace,
+        onArchiveAllTabs,
+        onArchiveOtherTabs,
+        onArchiveTab,
+        onDeleteTab,
+        onDuplicateTab,
+        onSplitTab,
+        onToggleTabPinned,
+        onStartRename: handleStartRename,
+    });
 
     const closeSplitViewShortcutLabel = getAppHotkeyShortcutLabel(
         "TOGGLE_WORKSPACE_SPLIT_VIEW",
@@ -254,29 +157,20 @@ export function WorkspaceTabBar({
                 isOpen={contextMenuState !== null}
                 position={contextMenuPosition}
                 splitView={splitView}
-                canArchiveOtherTabs={
-                    (
-                        getContextMenuArchiveScopeTabIds()
-                            ?.map((tabId) =>
-                                workspace.tabs.find((tab) => tab.id === tabId),
-                            )
-                            .filter((tab) => tab && !tab.isPinned) ??
-                        workspace.tabs.filter((tab) => !tab.isPinned)
-                    ).length > 1
-                }
+                canArchiveOtherTabs={contextMenuActions.canArchiveOtherTabs}
                 isPinned={contextMenuTab?.isPinned === true}
-                onDuplicate={handleDuplicateFromContextMenu}
-                onArchive={handleArchiveFromContextMenu}
-                onArchiveAll={handleArchiveAllFromContextMenu}
-                onArchiveOther={handleArchiveOtherFromContextMenu}
-                onTogglePinned={handleTogglePinnedFromContextMenu}
+                onDuplicate={contextMenuActions.onDuplicate}
+                onArchive={contextMenuActions.onArchive}
+                onArchiveAll={contextMenuActions.onArchiveAll}
+                onArchiveOther={contextMenuActions.onArchiveOther}
+                onTogglePinned={contextMenuActions.onTogglePinned}
                 onClose={closeContextMenu}
-                onDelete={handleDeleteFromContextMenu}
-                onRename={handleRenameFromContextMenu}
-                onSplitLeft={handleSplitLeftFromContextMenu}
-                onSplitRight={handleSplitRightFromContextMenu}
-                onSplitTop={handleSplitTopFromContextMenu}
-                onSplitBottom={handleSplitBottomFromContextMenu}
+                onDelete={contextMenuActions.onDelete}
+                onRename={contextMenuActions.onRename}
+                onSplitLeft={contextMenuActions.onSplitLeft}
+                onSplitRight={contextMenuActions.onSplitRight}
+                onSplitTop={contextMenuActions.onSplitTop}
+                onSplitBottom={contextMenuActions.onSplitBottom}
                 onCloseSplitView={onCloseSplitView}
             />
 
