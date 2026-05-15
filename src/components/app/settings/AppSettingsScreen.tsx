@@ -13,6 +13,38 @@ import { AppSettingsHotkeysSection } from "./AppSettingsHotkeysSection";
 import { AppSettingsWorkspaceSection } from "./AppSettingsWorkspaceSection";
 import type { AppSettingsScreenProps } from "./appSettings.type";
 
+function getAppSettingsSectionContent({
+    activeSection,
+    isDevelopmentRuntime,
+    updater,
+}: {
+    activeSection: AppSettingsSection;
+    isDevelopmentRuntime: boolean;
+    updater: AppSettingsScreenProps["updater"];
+}): ReactElement {
+    if (activeSection === "general") {
+        return <AppSettingsGeneralSection updater={updater} />;
+    }
+
+    if (activeSection === "workspace") {
+        return <AppSettingsWorkspaceSection />;
+    }
+
+    if (activeSection === "editor") {
+        return <AppSettingsEditorSection />;
+    }
+
+    if (activeSection === "hotkeys") {
+        return <AppSettingsHotkeysSection />;
+    }
+
+    if (activeSection === "dev" && isDevelopmentRuntime) {
+        return <AppSettingsDevSection />;
+    }
+
+    return <AppSettingsGeneralSection updater={updater} />;
+}
+
 /**
  * The settings screen with section navigation and content panels.
  *
@@ -31,30 +63,11 @@ export function AppSettingsScreen({
     const visibleSections = APP_SETTINGS_SECTIONS.filter(
         ({ id }) => id !== "dev" || isDevelopmentRuntime,
     );
-
-    const renderSectionContent = (): ReactElement => {
-        if (activeSection === "general") {
-            return <AppSettingsGeneralSection updater={updater} />;
-        }
-
-        if (activeSection === "workspace") {
-            return <AppSettingsWorkspaceSection />;
-        }
-
-        if (activeSection === "editor") {
-            return <AppSettingsEditorSection />;
-        }
-
-        if (activeSection === "hotkeys") {
-            return <AppSettingsHotkeysSection />;
-        }
-
-        if (activeSection === "dev" && isDevelopmentRuntime) {
-            return <AppSettingsDevSection />;
-        }
-
-        return <AppSettingsGeneralSection updater={updater} />;
-    };
+    const sectionContent = getAppSettingsSectionContent({
+        activeSection,
+        isDevelopmentRuntime,
+        updater,
+    });
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden bg-fumi-50">
@@ -95,7 +108,7 @@ export function AppSettingsScreen({
 
                 <div className="flex min-w-0 flex-1 flex-col overflow-auto bg-fumi-50 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-10 py-2.5">
-                        {renderSectionContent()}
+                        {sectionContent}
                     </div>
                 </div>
             </div>
