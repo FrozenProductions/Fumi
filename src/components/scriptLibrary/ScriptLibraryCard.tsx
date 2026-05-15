@@ -1,10 +1,8 @@
 import {
     Calendar01Icon,
-    CheckmarkCircle01Icon,
     Copy01Icon,
     EyeIcon,
     FileAddIcon,
-    Key01Icon,
     Link01Icon,
     Loading02Icon,
     StarIcon,
@@ -15,6 +13,7 @@ import type { ReactElement } from "react";
 import { formatScriptLibraryDate } from "../../lib/scriptLibrary/scriptLibrary";
 import { AppIcon } from "../app/common/AppIcon";
 import { AppTooltip } from "../app/tooltip/AppTooltip";
+import { ScriptLibraryBadges } from "./ScriptLibraryBadges";
 import type { ScriptLibraryCardProps } from "./scriptLibrary.type";
 
 /**
@@ -44,31 +43,6 @@ export function ScriptLibraryCard({
         onCopyScript,
         onToggleFavorite,
     } = actions;
-    const scriptBadgeIcons = (
-        <>
-            {script.keySystem === false ? (
-                <div
-                    title="Keyless"
-                    className="flex size-6 items-center justify-center rounded-full bg-fumi-100 text-fumi-600"
-                >
-                    <AppIcon icon={Key01Icon} size={12} strokeWidth={2.4} />
-                </div>
-            ) : null}
-            {script.unpatched ? (
-                <div
-                    title="Unpatched"
-                    className="flex size-6 items-center justify-center rounded-full bg-fumi-100 text-fumi-600"
-                >
-                    <AppIcon
-                        icon={CheckmarkCircle01Icon}
-                        size={12}
-                        strokeWidth={2.4}
-                    />
-                </div>
-            ) : null}
-        </>
-    );
-
     return (
         <article
             className={`group flex justify-between rounded-[1.35rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-card)] transition-[transform,box-shadow,border-color] duration-200 hover:border-fumi-300 ${
@@ -86,7 +60,7 @@ export function ScriptLibraryCard({
                             </h3>
                             {viewFormat === "list" ? (
                                 <div className="flex shrink-0 gap-1">
-                                    {scriptBadgeIcons}
+                                    <ScriptLibraryBadges script={script} />
                                 </div>
                             ) : null}
                         </div>
@@ -108,7 +82,7 @@ export function ScriptLibraryCard({
                     </div>
                     {viewFormat === "grid" ? (
                         <div className="flex shrink-0 gap-1">
-                            {scriptBadgeIcons}
+                            <ScriptLibraryBadges script={script} />
                         </div>
                     ) : null}
                 </div>
