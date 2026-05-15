@@ -1,11 +1,5 @@
 import { useDroppable } from "@dnd-kit/react";
-import type {
-    CSSProperties,
-    ReactElement,
-    ReactNode,
-    PointerEvent as ReactPointerEvent,
-    RefObject,
-} from "react";
+import type { CSSProperties, ReactElement, ReactNode, RefObject } from "react";
 import { useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
@@ -17,6 +11,7 @@ import {
     SPLIT_DROP_ID_PREFIX,
 } from "../../../constants/workspace/workspace";
 import { useWorkspaceAcePaneHandlers } from "../../../hooks/workspace/useWorkspaceAcePaneHandlers";
+import { useWorkspaceSplitResizeHandle } from "../../../hooks/workspace/useWorkspaceSplitResizeHandle";
 import { joinClassNames } from "../../../lib/shared/className";
 import type {
     WorkspaceSplitNode,
@@ -322,39 +317,6 @@ type WorkspaceSplitResizeHandleProps = {
     containerRef: RefObject<HTMLDivElement | null>;
 };
 
-function getResizeSplitRatio(
-    event: PointerEvent | ReactPointerEvent<HTMLButtonElement>,
-    node: Extract<WorkspaceSplitNode, { type: "split" }>,
-    dividerIndex: number,
-    container: HTMLDivElement,
-): number {
-    const rect = container.getBoundingClientRect();
-    const size = node.direction === "horizontal" ? rect.width : rect.height;
-
-    if (size <= 0) {
-        return node.ratios[dividerIndex] ?? 0.5;
-    }
-
-    const pairStartRatio = node.ratios
-        .slice(0, dividerIndex)
-        .reduce((sum, ratio) => sum + ratio, 0);
-    const pairSizeRatio =
-        (node.ratios[dividerIndex] ?? 0.5) +
-        (node.ratios[dividerIndex + 1] ?? 0.5);
-    const pointerOffset =
-        node.direction === "horizontal"
-            ? event.clientX - rect.left
-            : event.clientY - rect.top;
-    const pairStart = pairStartRatio * size;
-    const pairSize = pairSizeRatio * size;
-
-    if (pairSize <= 0) {
-        return 0.5;
-    }
-
-    return (pointerOffset - pairStart) / pairSize;
-}
-
 function WorkspaceSplitResizeHandle({
     dividerIndex,
     node,
@@ -375,74 +337,13 @@ function WorkspaceSplitResizeHandle({
     const markerClassName = isHorizontal
         ? "absolute inset-y-0 left-1/2 w-[1px] -translate-x-1/2 bg-fumi-200"
         : "absolute left-0 top-1/2 h-[1px] w-full -translate-y-1/2 bg-fumi-200";
-
-    const handlePointerDown = (
-        event: ReactPointerEvent<HTMLButtonElement>,
-    ): void => {
-        const container = containerRef.current;
-
-        if (!container) {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        const pointerTarget = event.currentTarget;
-        pointerTarget.setPointerCapture(event.pointerId);
-        document.body.style.cursor = isHorizontal ? "col-resize" : "row-resize";
-        document.body.style.userSelect = "none";
-
-        const updateRatio = (
-            pointerEvent: PointerEvent | ReactPointerEvent<HTMLButtonElement>,
-            isCommit: boolean,
-        ): void => {
-            const splitRatio = getResizeSplitRatio(
-                pointerEvent,
-                node,
-                dividerIndex,
-                container,
-            );
-
-            if (isCommit) {
-                splitViewState.onResizeSplitCommit(
-                    splitRatio,
-                    node.id,
-                    dividerIndex,
-                );
-                return;
-            }
-
-            splitViewState.onResizeSplitPreview(
-                splitRatio,
-                node.id,
-                dividerIndex,
-            );
-        };
-        const cleanup = (): void => {
-            window.removeEventListener("pointermove", handlePointerMove);
-            window.removeEventListener("pointerup", handlePointerUp);
-            window.removeEventListener("pointercancel", handlePointerCancel);
-            document.body.style.cursor = "";
-            document.body.style.userSelect = "";
-        };
-        const handlePointerMove = (moveEvent: PointerEvent): void => {
-            updateRatio(moveEvent, false);
-        };
-        const handlePointerUp = (upEvent: PointerEvent): void => {
-            updateRatio(upEvent, true);
-            cleanup();
-        };
-        const handlePointerCancel = (): void => {
-            splitViewState.onResizeSplitCancel();
-            cleanup();
-        };
-
-        updateRatio(event, false);
-        window.addEventListener("pointermove", handlePointerMove);
-        window.addEventListener("pointerup", handlePointerUp);
-        window.addEventListener("pointercancel", handlePointerCancel);
-    };
+    const handlePointerDown = useWorkspaceSplitResizeHandle({
+        containerRef,
+        dividerIndex,
+        isHorizontal,
+        node,
+        splitViewState,
+    });
 
     return (
         <button
