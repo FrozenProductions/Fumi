@@ -472,15 +472,16 @@ fn build_executor_port_summaries(
         .iter()
         .map(|account| (account.id.as_str(), account.display_name.as_str()))
         .collect::<HashMap<_, _>>();
+    let binding_by_port = manifest
+        .roblox_bindings
+        .iter()
+        .map(|binding| (binding.port, binding))
+        .collect::<HashMap<_, _>>();
 
     executor_ports
         .iter()
         .map(|port| {
-            let Some(binding) = manifest
-                .roblox_bindings
-                .iter()
-                .find(|binding| binding.port == *port)
-            else {
+            let Some(binding) = binding_by_port.get(port).copied() else {
                 return ExecutorPortSummary {
                     port: *port,
                     bound_account_id: None,
@@ -516,14 +517,16 @@ fn build_roblox_process_list(
         .iter()
         .map(|account| (account.id.as_str(), account.display_name.as_str()))
         .collect::<HashMap<_, _>>();
+    let binding_by_pid = manifest
+        .roblox_bindings
+        .iter()
+        .map(|binding| (binding.pid, binding))
+        .collect::<HashMap<_, _>>();
 
     running_processes
         .iter()
         .map(|process| {
-            let binding = manifest
-                .roblox_bindings
-                .iter()
-                .find(|binding| binding.pid == process.pid);
+            let binding = binding_by_pid.get(&process.pid).copied();
             let bound_account_id = binding
                 .and_then(|binding| binding.account_id.as_ref())
                 .cloned();
