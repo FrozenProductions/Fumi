@@ -24,11 +24,9 @@ export function normalizeSearchValue(value: string): string {
  */
 function scoreSearchFields<TFieldName extends string>(
     fields: SearchField<TFieldName>[],
-    searchValue: string,
+    normalizedSearchValue: string,
     fieldWeights: Record<TFieldName, number>,
 ): number | null {
-    const normalizedSearchValue = normalizeSearchValue(searchValue);
-
     if (!normalizedSearchValue) {
         return 0;
     }
@@ -66,38 +64,65 @@ export function searchItems<TItem, TFieldName extends string>(
         return [];
     }
 
-    if (!normalizeSearchValue(searchValue)) {
+    const normalizedSearchValue = normalizeSearchValue(searchValue);
+
+    if (!normalizedSearchValue) {
         return items.slice(0, limit);
     }
 
-    return items
-        .reduce<SearchResult<TItem>[]>((results, item, index) => {
-            const score = scoreSearchFields(
-                getFields(item),
-                searchValue,
-                fieldWeights,
-            );
+    const topResults: SearchResult<TItem>[] = [];
 
-            if (score === null) {
-                return results;
-            }
+    items.forEach((item, index) => {
+        const score = scoreSearchFields(
+            getFields(item),
+            normalizedSearchValue,
+            fieldWeights,
+        );
 
-            results.push({
-                item,
-                index,
-                score,
-            });
-            return results;
-        }, [])
-        .sort((left, right) => {
-            if (right.score !== left.score) {
-                return right.score - left.score;
-            }
+        if (score === null) {
+            return;
+        }
 
-            return left.index - right.index;
-        })
-        .slice(0, limit)
-        .map((entry) => entry.item);
+        insertSearchResult(topResults, { item, index, score }, limit);
+    });
+
+    return topResults.map((entry) => entry.item);
+}
+
+function compareSearchResults<TItem>(
+    left: SearchResult<TItem>,
+    right: SearchResult<TItem>,
+): number {
+    if (right.score !== left.score) {
+        return right.score - left.score;
+    }
+
+    return left.index - right.index;
+}
+
+function insertSearchResult<TItem>(
+    topResults: SearchResult<TItem>[],
+    result: SearchResult<TItem>,
+    limit: number,
+): void {
+    let insertIndex = 0;
+
+    while (
+        insertIndex < topResults.length &&
+        compareSearchResults(topResults[insertIndex], result) <= 0
+    ) {
+        insertIndex += 1;
+    }
+
+    if (insertIndex >= limit) {
+        return;
+    }
+
+    topResults.splice(insertIndex, 0, result);
+
+    if (topResults.length > limit) {
+        topResults.pop();
+    }
 }
 
 function scoreSearchField(
