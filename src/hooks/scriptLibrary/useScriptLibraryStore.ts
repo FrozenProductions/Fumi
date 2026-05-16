@@ -20,6 +20,13 @@ import type {
     ScriptLibraryStoreState,
 } from "./useScriptLibraryStore.type";
 
+const favoriteScriptIds = new Set<string>();
+
+/** Resets the internal favorite ID index. Exported for test isolation. */
+export function resetFavoriteScriptIds(): void {
+    favoriteScriptIds.clear();
+}
+
 /**
  * Checks whether any script library filter is currently active.
  *
@@ -157,30 +164,28 @@ export const createScriptLibraryStoreStateCreator: StateCreator<
         setViewFormat: (viewFormat) => {
             set({ viewFormat });
         },
+        getFavoriteScriptIds: () => favoriteScriptIds,
         toggleFavorite: (script) => {
-            set((state) => {
-                const favoriteScriptIndex = state.favoriteScripts.findIndex(
-                    (favoriteScript) => favoriteScript._id === script._id,
-                );
+            if (favoriteScriptIds.has(script._id)) {
+                favoriteScriptIds.delete(script._id);
+                set((state) => ({
+                    favoriteScripts: state.favoriteScripts.filter(
+                        (favoriteScript) => favoriteScript._id !== script._id,
+                    ),
+                }));
+                return;
+            }
 
-                if (favoriteScriptIndex >= 0) {
-                    return {
-                        favoriteScripts: state.favoriteScripts.filter(
-                            (favoriteScript) =>
-                                favoriteScript._id !== script._id,
-                        ),
-                    };
-                }
-
-                return {
-                    favoriteScripts: [
-                        normalizeScriptLibraryFavoriteEntry(script),
-                        ...state.favoriteScripts,
-                    ],
-                };
-            });
+            favoriteScriptIds.add(script._id);
+            set((state) => ({
+                favoriteScripts: [
+                    normalizeScriptLibraryFavoriteEntry(script),
+                    ...state.favoriteScripts,
+                ],
+            }));
         },
         removeFavorite: (scriptId) => {
+            favoriteScriptIds.delete(scriptId);
             set((state) => ({
                 favoriteScripts: state.favoriteScripts.filter(
                     (favoriteScript) => favoriteScript._id !== scriptId,
@@ -188,6 +193,7 @@ export const createScriptLibraryStoreStateCreator: StateCreator<
             }));
         },
         clearFavorites: () => {
+            favoriteScriptIds.clear();
             set({ favoriteScripts: [] });
         },
         goToPreviousPage: () => {
@@ -339,5 +345,13 @@ export const useScriptLibraryStore = create<ScriptLibraryStore>()(
         name: SCRIPT_LIBRARY_STORE_STORAGE_KEY,
         storage: createJSONStorage(() => globalThis.localStorage),
         partialize: getPersistedScriptLibraryStoreState,
+        onRehydrateStorage: () => (state) => {
+            if (state) {
+                favoriteScriptIds.clear();
+                for (const entry of state.favoriteScripts) {
+                    favoriteScriptIds.add(entry._id);
+                }
+            }
+        },
     }),
 );

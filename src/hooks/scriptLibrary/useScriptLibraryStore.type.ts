@@ -33,6 +33,7 @@ type ScriptLibraryStoreActions = {
     toggleFilter: (filterKey: keyof ScriptLibraryFilters) => void;
     setOrderBy: (orderBy: ScriptLibrarySort) => void;
     setViewFormat: (viewFormat: ScriptLibraryViewFormat) => void;
+    getFavoriteScriptIds: () => Set<string>;
     toggleFavorite: (script: ScriptLibraryEntry) => void;
     removeFavorite: (scriptId: string) => void;
     clearFavorites: () => void;
