@@ -407,12 +407,15 @@ function createLegacySplitViewTree(
     splitView: WorkspaceLegacySplitView,
     openTabIds: Set<string>,
 ): WorkspaceSplitView | null {
-    const primaryTabIds = Array.from(openTabIds).filter(
-        (tabId) => !splitView.secondaryTabIds?.includes(tabId),
+    const secondaryTabIdSet = new Set(
+        splitView.secondaryTabIds ?? [splitView.secondaryTabId],
     );
-    const secondaryTabIds = (
-        splitView.secondaryTabIds ?? [splitView.secondaryTabId]
-    ).filter((tabId) => openTabIds.has(tabId));
+    const primaryTabIds = Array.from(openTabIds).filter(
+        (tabId) => !secondaryTabIdSet.has(tabId),
+    );
+    const secondaryTabIds = Array.from(secondaryTabIdSet).filter((tabId) =>
+        openTabIds.has(tabId),
+    );
 
     if (
         !openTabIds.has(splitView.primaryTabId) ||
@@ -1019,9 +1022,10 @@ function appendTabsToFirstPane(
     }
 
     if (isSplitPaneNode(root)) {
+        const existingTabIds = new Set(root.tabIds);
         const nextTabIds = [
             ...root.tabIds,
-            ...tabIds.filter((id) => !root.tabIds.includes(id)),
+            ...tabIds.filter((id) => !existingTabIds.has(id)),
         ];
 
         return {
