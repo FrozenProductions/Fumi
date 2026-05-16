@@ -11,25 +11,39 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Add execution history search and filters.
 - Add editor caret and tab spacing settings.
 - Add an execute-active-tab hotkey and command palette action.
+- Add workspace tab pinning.
+- Add bulk tab archive actions, including split-view scoped archive actions.
+- Add relative line number settings.
 - Add `_G` symbol support to Luau intellisense and outline search.
+- Add loadstring entries to the Luau outline panel.
 
 ### Changed
 
+- Rework split view behavior and migrate related tests to the pane-tree model.
+- Improve split editor typing, tab metadata, split-pane lookup, workspace iteration, account binding summary, Luau completion indexing, and bounded search ranking performance.
 - Improve Rust backend reliability across metadata, storage, binary cookie, dialog, and Luau parser flows.
-- Reorganize platform wrappers, window helpers, workspace command wrappers, automatic execution rows, and Luau completion modules into smaller domain files.
-- Extract app shell and view startup orchestration out of the main entry files.
+- Reorganize platform wrappers, window helpers, workspace command wrappers, automatic execution rows, Luau completion modules, workspace contracts, app component types, and editor type files into smaller domain files.
+- Extract app shell, view startup orchestration, workspace/editor handlers, tab menus, tooltip behavior, command palette items, script library actions, automatic execution flows, account rows, and executor option UI into focused modules.
 - Move binary cookie and Roblox process helpers under the accounts backend domain.
-- Clean up frontend type ownership, imports, shared validation helpers, and editor surface prop types.
+- Clean up frontend type ownership, imports, shared validation helpers, editor surface prop types, derived state, deprecated React APIs, and dead code.
+- Stabilize workspace action, tab bar, tab item, editor sidebar, tooltip, close-listener, and hook state update flows.
+- Polish tab context menu spacing, account list item formatting, script loading labels, settings padding, and Tailwind size utilities.
+- Add JSDoc docstrings to exported functions, hooks, and components.
 
 ### Removed
 
 - Trim low-value frontend tests.
+- Remove animated text derived state and unused code.
 
 ### Fixed
 
 - Fix command palette toggle focus.
 - Fix app zoom viewport fill behavior.
 - Fix archive search header jitter in workspace settings.
+- Fix restored split editor layout shifts.
+- Fix split tab dirty indicators.
+- Scope tab list dropdowns per split pane.
+- Prevent tab menu clipping.
 - Add typed executor command wrappers for Roblox executor platform calls.
 - Improve keyboard focus handling for editor split panes.
 - Wrap settings select handlers to avoid passing raw setters through UI props.
