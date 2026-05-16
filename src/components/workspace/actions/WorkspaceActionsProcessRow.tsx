@@ -12,6 +12,18 @@ type WorkspaceActionsProcessRowProps = {
     process: WorkspaceActionsDropdownProps["roblox"]["processes"][number];
 };
 
+/**
+ * Renders a single Roblox process row in the workspace actions dropdown.
+ *
+ * Displays the process account label with streamer mode masking support.
+ * Includes a kill button with confirmation state and loading indicator.
+ *
+ * @param props - Component configuration
+ * @param props.index - The row's position in the process list
+ * @param props.options - Parent dropdown options and state
+ * @param props.process - The Roblox process to display
+ * @returns A React component
+ */
 export function WorkspaceActionsProcessRow({
     index,
     options,

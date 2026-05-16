@@ -32,6 +32,19 @@ type UseAutomaticExecutionRenameResult = {
     handleStartRename: (script: AutomaticExecutionScript) => void;
 };
 
+/**
+ * Manages rename state and interactions for automatic execution scripts.
+ *
+ * Handles starting rename inline, validating input, committing the rename
+ * via the backend, and error handling. Manages focus, selection, and
+ * submission state with blur/keydown interactions.
+ *
+ * @param options - Configuration for rename management
+ * @param options.scripts - List of automatic execution scripts
+ * @param options.onRenameScript - Called to commit the rename
+ * @param options.onSelectScript - Called when selecting the script during rename
+ * @returns Rename state and event handlers
+ */
 export function useAutomaticExecutionRename({
     scripts,
     onRenameScript,

@@ -11,6 +11,20 @@ type AppCommandPaletteResultItemProps = {
     onHoverItem: AppCommandPaletteResultsProps["onHoverItem"];
 };
 
+/**
+ * Renders a single result item in the command palette dropdown.
+ *
+ * Displays the item's icon, label, optional description, and meta badge.
+ * Handles hover and click interactions for selection.
+ *
+ * @param props - Component configuration
+ * @param props.index - The item's position in the results list
+ * @param props.isActive - Whether this item is currently selected
+ * @param props.item - The command palette result to display
+ * @param props.onCommitSelection - Called when the item is clicked
+ * @param props.onHoverItem - Called when the item is hovered
+ * @returns A React component
+ */
 export function AppCommandPaletteResultItem({
     index,
     isActive,

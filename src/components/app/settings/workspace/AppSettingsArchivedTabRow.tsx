@@ -11,6 +11,20 @@ type AppSettingsArchivedTabRowProps = {
     onRestoreTab: AppSettingsArchivedTabsListProps["onRestoreTab"];
 };
 
+/**
+ * Renders a single archived tab row with restore and delete actions.
+ *
+ * Displays the tab's file name and archive date, with buttons to restore
+ * the tab to the workspace or permanently delete it.
+ *
+ * @param props - Component configuration
+ * @param props.actionButtonClassNames - CSS classes for action buttons
+ * @param props.dateFormatter - Formatter for the archive date
+ * @param props.tab - The archived tab to display
+ * @param props.onDeleteTab - Called when delete is clicked
+ * @param props.onRestoreTab - Called when restore is clicked
+ * @returns A React component
+ */
 export function AppSettingsArchivedTabRow({
     actionButtonClassNames,
     dateFormatter,

@@ -22,6 +22,15 @@ type UseAppHotkeyRecorderControllerResult = {
     onStartRecording: (action: AppHotkeyAction) => void;
 };
 
+/**
+ * Manages hotkey recording state, conflict detection, and binding updates.
+ *
+ * Integrates with the hotkey recorder to capture key combinations, detects
+ * conflicts with existing bindings, and provides status feedback. Supports
+ * resetting individual or all bindings to defaults.
+ *
+ * @returns Recording state, status messages, hotkey groups, and action handlers
+ */
 export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderControllerResult {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const setHotkeyBinding = useAppStore((state) => state.setHotkeyBinding);

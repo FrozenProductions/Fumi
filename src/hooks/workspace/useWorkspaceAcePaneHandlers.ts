@@ -45,6 +45,27 @@ function normalizeOutlineChange(
     };
 }
 
+/**
+ * Manages Ace editor event handlers and interaction state for a workspace pane.
+ *
+ * Handles editor load, change, scroll, and unmount events. Manages cursor visibility,
+ * focus state, relative line numbers, and Luau analysis updates. Applies indent
+ * settings and maintains editor lifecycle.
+ *
+ * @param options - Configuration for the editor handlers
+ * @param options.createHandleEditorChange - Factory for change handler
+ * @param options.createHandleEditorLoad - Factory for load handler
+ * @param options.createHandleEditorUnmount - Factory for unmount handler
+ * @param options.createHandleScroll - Factory for scroll handler
+ * @param options.isActiveTab - Whether this pane's tab is active
+ * @param options.isRelativeLineNumbersEnabled - Whether relative line numbers are enabled
+ * @param options.isTabsToSpacesEnabled - Whether tabs convert to spaces
+ * @param options.isVisible - Whether the pane is visible
+ * @param options.onActiveTabLuauChange - Called when the active tab's Luau content changes
+ * @param options.tab - The tab data for this pane
+ * @param options.tabSize - The editor tab size
+ * @returns Editor refs, interaction state, and event handlers
+ */
 export function useWorkspaceAcePaneHandlers({
     createHandleEditorChange,
     createHandleEditorLoad,

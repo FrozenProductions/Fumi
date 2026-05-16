@@ -96,6 +96,28 @@ function getCanArchiveOtherTabs(
     return unpinnedTabCount > 1;
 }
 
+/**
+ * Creates action handlers for the workspace tab context menu.
+ *
+ * Provides handlers for archive (single, other, all), delete, duplicate, split,
+ * pin/unpin, and rename operations. Determines archive scope based on split view
+ * settings and validates action availability (e.g., can't close last unpinned tab).
+ *
+ * @param options - Configuration for context menu actions
+ * @param options.contextMenuState - Current context menu state
+ * @param options.isSplitViewArchiveScopeEnabled - Whether archive scope is split pane
+ * @param options.splitView - Current split view state
+ * @param options.workspace - Current workspace session
+ * @param options.onArchiveAllTabs - Called to archive all tabs
+ * @param options.onArchiveOtherTabs - Called to archive other tabs
+ * @param options.onArchiveTab - Called to archive a single tab
+ * @param options.onDeleteTab - Called to delete a tab
+ * @param options.onDuplicateTab - Called to duplicate a tab
+ * @param options.onSplitTab - Called to split a tab
+ * @param options.onToggleTabPinned - Called to toggle pin state
+ * @param options.onStartRename - Called to start renaming
+ * @returns Action handlers for the context menu
+ */
 export function useWorkspaceTabContextMenuActions({
     contextMenuState,
     isSplitViewArchiveScopeEnabled,

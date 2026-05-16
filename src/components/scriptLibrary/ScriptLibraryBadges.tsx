@@ -7,6 +7,16 @@ type ScriptLibraryBadgesProps = {
     script: ScriptLibraryCardProps["script"];
 };
 
+/**
+ * Renders badge indicators for a script card showing key system and patch status.
+ *
+ * Displays a key icon for keyless scripts and a checkmark for unpatched scripts.
+ * Badges are shown conditionally based on the script's properties.
+ *
+ * @param props - Component configuration
+ * @param props.script - The script data to display badges for
+ * @returns A React component
+ */
 export function ScriptLibraryBadges({
     script,
 }: ScriptLibraryBadgesProps): ReactElement {

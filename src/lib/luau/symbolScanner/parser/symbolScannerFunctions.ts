@@ -8,6 +8,13 @@ import { LuauSymbolScannerBindings } from "../symbolScannerBindings";
 
 const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
 
+/**
+ * Parses Luau function declarations and their parameters.
+ *
+ * Handles local/global functions, method syntax (self parameter),
+ * namespaced functions (table.member), and generic type parameters.
+ * Tracks function scope frames for nested symbol resolution.
+ */
 export abstract class LuauSymbolScannerFunctions extends LuauSymbolScannerBindings {
     protected abstract parseScopedBlock(
         endKeywords: Set<string>,

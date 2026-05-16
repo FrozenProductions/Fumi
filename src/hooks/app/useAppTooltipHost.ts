@@ -85,6 +85,15 @@ function calculateTooltipPosition(
     }
 }
 
+/**
+ * Manages tooltip positioning, visibility, and lifecycle as the host component.
+ *
+ * Subscribes to the tooltip store and calculates optimal position based on trigger
+ * element bounds. Handles resize/scroll repositioning, escape key dismissal,
+ * and pointer/blur events. Uses requestAnimationFrame for entrance animations.
+ *
+ * @returns Tooltip host state including position, visibility, and refs
+ */
 export function useAppTooltipHost(): AppTooltipHostState {
     const activeTooltip = useTooltipStore((state) => state.activeTooltip);
     const position = useTooltipStore((state) => state.position);

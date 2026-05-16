@@ -39,6 +39,25 @@ function getAccountStatusLabel(
     return account.boundPort !== null ? "Active" : "Offline";
 }
 
+/**
+ * Renders a single account row in the accounts list with launch, reveal, and delete actions.
+ *
+ * Displays account avatar, display name, identity label, and status. Supports
+ * streamer mode masking for privacy. Shows loading state during launch/delete operations.
+ *
+ * @param props - Component configuration
+ * @param props.account - The account to display
+ * @param props.deletingAccountId - ID of account currently being deleted
+ * @param props.isStreamerModeEnabled - Whether streamer mode is active
+ * @param props.launchingAccountId - ID of account currently being launched
+ * @param props.revealedAccountId - ID of account whose details are revealed
+ * @param props.onDeleteAccount - Called when delete is clicked
+ * @param props.onHideAccount - Called when row loses focus
+ * @param props.onLaunchAccount - Called when launch is clicked
+ * @param props.onRevealAccount - Called when reveal is clicked
+ * @param props.onRowBlur - Called when row loses focus
+ * @returns A React component
+ */
 export function AccountListItem({
     account,
     deletingAccountId,

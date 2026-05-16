@@ -43,6 +43,21 @@ function getResizeSplitRatio(
     return (pointerOffset - pairStart) / pairSize;
 }
 
+/**
+ * Creates a pointer event handler for resizing split panes via drag interaction.
+ *
+ * Captures pointer events, calculates split ratio based on drag position, and
+ * dispatches preview/commit/cancel actions to the split view state. Sets cursor
+ * and disables selection during drag.
+ *
+ * @param options - Configuration for the resize handle
+ * @param options.containerRef - Ref to the container element
+ * @param options.dividerIndex - Index of the divider being dragged
+ * @param options.isHorizontal - Whether the split is horizontal
+ * @param options.node - The split group node being resized
+ * @param options.splitViewState - Split view state callbacks
+ * @returns Pointer event handler for the resize handle
+ */
 export function useWorkspaceSplitResizeHandle({
     containerRef,
     dividerIndex,

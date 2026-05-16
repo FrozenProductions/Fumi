@@ -1,6 +1,13 @@
 import type { ScopeFrame } from "../symbolScanner.type";
 import { LuauSymbolScannerFunctions } from "./symbolScannerFunctions";
 
+/**
+ * Parses Luau code blocks and control flow structures.
+ *
+ * Extends the function parser to handle block-level constructs including
+ * do-blocks, while/repeat loops, if/elseif/else statements, for loops,
+ * and export statements. Manages scope frames for nested blocks.
+ */
 export class LuauSymbolScannerBlocks extends LuauSymbolScannerFunctions {
     protected parseBlock(
         scope: ScopeFrame,

@@ -12,6 +12,19 @@ type WorkspaceTabListDropdownItemProps = {
     onSelectTab: WorkspaceTabListDropdownProps["onSelectTab"];
 };
 
+/**
+ * Renders a single tab item in the tab list dropdown menu.
+ *
+ * Displays the tab's file base name with indicators for pinned and dirty state.
+ * Closes the dropdown and selects the tab when clicked.
+ *
+ * @param props - Component configuration
+ * @param props.activeTabId - ID of the currently active tab
+ * @param props.tab - The tab to display
+ * @param props.onClose - Called to close the dropdown after selection
+ * @param props.onSelectTab - Called when the tab is clicked
+ * @returns A React component
+ */
 export function WorkspaceTabListDropdownItem({
     activeTabId,
     tab,

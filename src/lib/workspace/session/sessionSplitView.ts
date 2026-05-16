@@ -517,6 +517,13 @@ function getWorkspaceActivePane(
     return findPanePath(splitView.root, splitView.activePaneId)?.pane ?? null;
 }
 
+/**
+ * Gets the active tab ID from the focused pane, falling back to the provided active tab ID.
+ *
+ * @param splitView - The current split view state
+ * @param activeTabId - Fallback tab ID if no pane is focused
+ * @returns The active tab ID from the focused pane, or the fallback
+ */
 export function getFocusedPaneTabId(
     splitView: WorkspaceSplitView | null,
     activeTabId: string | null,
@@ -542,6 +549,13 @@ export function getWorkspaceSplitScopeTabIds(
     return pane?.tabIds.filter((id) => tabIds.has(id)) ?? [];
 }
 
+/**
+ * Finds the split pane ID that contains the given tab.
+ *
+ * @param splitView - The current split view state
+ * @param tabId - The tab ID to locate
+ * @returns The pane ID containing the tab, or null if not found
+ */
 export function getWorkspaceSplitPaneIdForTab(
     splitView: WorkspaceSplitView | null,
     tabId: string,
@@ -553,6 +567,16 @@ export function getWorkspaceSplitPaneIdForTab(
     return findPaneForTab(splitView.root, tabId)?.pane.id ?? null;
 }
 
+/**
+ * Removes a tab from the split view and cleans up empty panes.
+ *
+ * If removing the tab leaves a pane empty, that pane is removed from the
+ * split tree. Returns null if the split view becomes empty.
+ *
+ * @param splitView - The current split view state
+ * @param removedTabId - The tab ID to remove
+ * @returns The updated split view, or null if no panes remain
+ */
 export function removedTabFromSplitView(
     splitView: WorkspaceSplitView,
     removedTabId: string,
@@ -598,6 +622,16 @@ export function removedTabFromSplitView(
     );
 }
 
+/**
+ * Updates the workspace session to select the specified tab.
+ *
+ * Sets the active tab ID and updates the split view's active pane to
+ * contain the selected tab. Returns unchanged if the tab doesn't exist.
+ *
+ * @param currentWorkspace - The current workspace session
+ * @param tabId - The tab ID to select
+ * @returns The updated workspace session
+ */
 export function selectWorkspaceTabState(
     currentWorkspace: WorkspaceSession,
     tabId: string,
@@ -814,6 +848,18 @@ function createInitialSplitView(
     };
 }
 
+/**
+ * Splits a tab into a new pane adjacent to the target pane.
+ *
+ * Creates a new split layout if none exists, or inserts the tab into
+ * a new pane next to the target pane in the specified direction.
+ *
+ * @param currentWorkspace - The current workspace session
+ * @param tabId - The tab ID to split
+ * @param targetPaneId - The pane ID to split next to (null for root)
+ * @param placement - The direction to place the new pane (left, right, top, bottom)
+ * @returns The updated workspace session with the new split layout
+ */
 export function splitWorkspaceTabState(
     currentWorkspace: WorkspaceSession,
     tabId: string,
@@ -889,6 +935,17 @@ export function splitWorkspaceTabState(
     };
 }
 
+/**
+ * Moves a tab from its current pane to a target pane.
+ *
+ * If the tab is already in the target pane, just selects it. Removes the
+ * tab from its source pane and adds it to the target pane's tab list.
+ *
+ * @param currentWorkspace - The current workspace session
+ * @param tabId - The tab ID to move
+ * @param paneId - The target pane ID
+ * @returns The updated workspace session
+ */
 export function moveWorkspaceTabToPaneState(
     currentWorkspace: WorkspaceSession,
     tabId: string,
@@ -959,6 +1016,15 @@ export function moveWorkspaceTabToPaneState(
     };
 }
 
+/**
+ * Resizes a split group by adjusting the ratio between two adjacent panes.
+ *
+ * @param currentWorkspace - The current workspace session
+ * @param splitRatio - The new split ratio (0.0 to 1.0)
+ * @param splitId - The split group ID to resize (defaults to root)
+ * @param dividerIndex - The index of the divider to adjust (defaults to 0)
+ * @returns The updated workspace session with adjusted pane sizes
+ */
 export function resizeWorkspaceSplitGroupState(
     currentWorkspace: WorkspaceSession,
     splitRatio: number,
@@ -1053,6 +1119,15 @@ function appendTabsToFirstPane(
     };
 }
 
+/**
+ * Closes the currently focused split pane and merges its tabs into an adjacent pane.
+ *
+ * If the root is a single pane or no split view exists, clears the split view entirely.
+ * Otherwise, removes the active pane and redistributes its tabs to a neighboring pane.
+ *
+ * @param currentWorkspace - The current workspace session
+ * @returns The updated workspace session with the pane closed
+ */
 export function closeWorkspaceFocusedSplitPaneState(
     currentWorkspace: WorkspaceSession,
 ): WorkspaceSession {
@@ -1133,6 +1208,16 @@ export function closeWorkspaceFocusedSplitPaneState(
     };
 }
 
+/**
+ * Focuses a split pane by setting it as the active pane.
+ *
+ * Updates the active pane ID and sets the active tab to the pane's current tab.
+ * Returns unchanged if the pane doesn't exist or is already focused.
+ *
+ * @param currentWorkspace - The current workspace session
+ * @param paneId - The pane ID to focus
+ * @returns The updated workspace session
+ */
 export function focusWorkspacePaneState(
     currentWorkspace: WorkspaceSession,
     paneId: string,

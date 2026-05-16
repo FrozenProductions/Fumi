@@ -3,6 +3,13 @@ import type { ScopeFrame, TokenBoundary } from "./symbolScanner.type";
 
 const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
 
+/**
+ * Parses Luau variable bindings and assignments.
+ *
+ * Handles local variable declarations, global variable assignments,
+ * _G member assignments, and for-loop binding extraction. Tracks
+ * lexical scope and visibility for collected symbols.
+ */
 export abstract class LuauSymbolScannerBindings extends LuauSymbolScannerCursor {
     protected parseBareAssignment(
         scope: ScopeFrame,

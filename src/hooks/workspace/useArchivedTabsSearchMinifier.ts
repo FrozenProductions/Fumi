@@ -53,6 +53,15 @@ function canMinifyArchiveSearch(
     );
 }
 
+/**
+ * Manages minification state for the archived tabs search container based on scroll position.
+ *
+ * Uses IntersectionObserver to detect when the search container scrolls out of view,
+ * triggering a minified state. Includes expansion animation delay and presence
+ * transition for smooth show/hide behavior.
+ *
+ * @returns Minification state, refs, and transition flags
+ */
 export function useArchivedTabsSearchMinifier(): UseArchivedTabsSearchMinifierResult {
     const sentinelRef = useRef<HTMLDivElement>(null);
     const searchContainerHeightRef = useRef(0);

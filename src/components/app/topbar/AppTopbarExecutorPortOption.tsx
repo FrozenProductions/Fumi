@@ -12,6 +12,22 @@ type AppTopbarExecutorPortOptionProps = {
     onSelectPort: (port: string) => void;
 };
 
+/**
+ * Renders a single executor port option in the topbar dropdown.
+ *
+ * Displays the port label with streamer mode masking support. Handles
+ * port selection and reveal/hide interactions for privacy control.
+ *
+ * @param props - Component configuration
+ * @param props.port - The port value string
+ * @param props.portSummary - Summary data for the port
+ * @param props.revealedPort - Currently revealed port (for masking)
+ * @param props.isStreamerModeEnabled - Whether streamer mode is active
+ * @param props.onClearRevealedPort - Called to hide the port
+ * @param props.onRevealPort - Called to reveal the port
+ * @param props.onSelectPort - Called when the port is selected
+ * @returns A React component
+ */
 export function AppTopbarExecutorPortOption({
     port,
     portSummary,

@@ -32,6 +32,21 @@ type UseScriptLibraryCardActionsResult = {
     createCardActions: (script: ScriptLibraryEntry) => ScriptLibraryCardActions;
 };
 
+/**
+ * Creates action handlers for script library card interactions.
+ *
+ * Provides handlers for copying script/link to clipboard, adding to workspace,
+ * and toggling favorite status. Tracks activity state (copying, adding) and
+ * activation feedback for each action.
+ *
+ * @param options - Configuration for card actions
+ * @param options.activity - Current activity state (copying, adding)
+ * @param options.actions - Action dispatchers (activate, toggle favorite)
+ * @param options.favoriteIds - Set of favorite script IDs
+ * @param options.hasWorkspace - Whether a workspace is loaded
+ * @param options.workspaceSession - Workspace session for adding scripts
+ * @returns Factory function to create card actions for a script
+ */
 export function useScriptLibraryCardActions({
     activity,
     actions,

@@ -54,6 +54,13 @@ const LUAU_COMPLETION_ROOT_KEYWORDS = LUAU_COMPLETION_KEYWORDS.filter(
     (keyword) => keyword !== "export",
 );
 
+/**
+ * Root-level Luau completion items including keywords, built-in types, and globals.
+ *
+ * These completions are available at the top level of any Luau file without
+ * requiring a namespace prefix. Each item includes documentation sourced
+ * from official Luau docs.
+ */
 export const LUAU_ROOT_COMPLETIONS: LuauCompletionItem[] =
     dedupeCompletionItems([
         ...LUAU_COMPLETION_ROOT_KEYWORDS.map((keyword) => ({

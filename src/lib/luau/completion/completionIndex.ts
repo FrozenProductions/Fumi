@@ -200,6 +200,14 @@ function getCompletionItemsByPrefix<TItem extends IndexedCompletionItem>(
     );
 }
 
+/**
+ * Retrieves completion items matching a prefix using a first-character index for fast lookup.
+ *
+ * @param itemsByFirstCharacter - Pre-built index mapping first characters to items
+ * @param items - Fallback items when prefix is empty
+ * @param normalizedPrefix - The normalized prefix to search for
+ * @returns Matching completion items
+ */
 export function getFirstCompletionItemsByPrefix<
     TItem extends IndexedCompletionItem,
 >(
@@ -217,6 +225,12 @@ export function getFirstCompletionItemsByPrefix<
     );
 }
 
+/**
+ * Creates an index mapping the first character of each item's normalized label to its items.
+ *
+ * @param items - Completion items to index
+ * @returns Map from first character to array of items starting with that character
+ */
 export function createCompletionItemsByFirstCharacter<
     TItem extends IndexedCompletionItem,
 >(items: readonly TItem[]): Map<string, TItem[]> {
@@ -237,6 +251,14 @@ export function createCompletionItemsByFirstCharacter<
     return itemsByFirstCharacter;
 }
 
+/**
+ * Retrieves completion items from a priority index matching the given prefix.
+ *
+ * @param index - The completion index organized by priority level
+ * @param priority - The priority level to query
+ * @param normalizedPrefix - The normalized prefix to search for
+ * @returns Matching completion items at the specified priority
+ */
 export function getCompletionIndexItemsByPrefix(
     index: CompletionIndexByPriority,
     priority: AppIntellisensePriority,
@@ -353,7 +375,20 @@ export function addMatchingCompletionItems(options: {
     }
 }
 
+/**
+ * Pre-built index of Luau namespace completions organized by priority.
+ *
+ * Contains all standard library functions and types grouped by their namespace
+ * (e.g., `string`, `table`, `math`) for efficient intellisense lookup.
+ */
 export const LUAU_NAMESPACE_INDEX = createNamespaceIndex();
+
+/**
+ * Pre-built index of root-level Luau completions organized by priority.
+ *
+ * Contains keywords, built-in types, and global functions available at the
+ * top level of any Luau file without namespace qualification.
+ */
 export const LUAU_ROOT_COMPLETION_INDEX = createCompletionIndexByPriority(
     LUAU_ROOT_COMPLETIONS,
 );

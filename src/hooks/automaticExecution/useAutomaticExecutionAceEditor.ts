@@ -40,6 +40,22 @@ function getEditorCursor(editor: Ace.Editor): {
     };
 }
 
+/**
+ * Manages Ace editor state and event handlers for automatic execution scripts.
+ *
+ * Handles editor load, change, focus/blur, and cursor tracking. Syncs cursor
+ * position and scroll state with the script data. Applies indent settings and
+ * manages relative line numbers based on focus state.
+ *
+ * @param options - Configuration for the Ace editor
+ * @param options.isRelativeLineNumbersEnabled - Whether relative line numbers are enabled
+ * @param options.isTabsToSpacesEnabled - Whether tabs convert to spaces
+ * @param options.onChange - Called when editor content changes
+ * @param options.onCursorChange - Called when cursor position changes
+ * @param options.script - The script to display in the editor
+ * @param options.tabSize - The editor tab size
+ * @returns Editor ref, focus/cursor state, and event handlers
+ */
 export function useAutomaticExecutionAceEditor({
     isRelativeLineNumbersEnabled,
     isTabsToSpacesEnabled,

@@ -10,6 +10,20 @@ type AppCodeCompletionItemProps = {
     onSelectItem: AppCodeCompletionProps["onSelectItem"];
 };
 
+/**
+ * Renders a single code completion item in the editor's autocomplete dropdown.
+ *
+ * Displays the completion label and a compact detail badge (e.g., "function", "keyword").
+ * Handles hover and selection interactions for the autocomplete popup.
+ *
+ * @param props - Component configuration
+ * @param props.index - The item's position in the completion list
+ * @param props.isSelected - Whether this item is currently selected
+ * @param props.item - The completion item to display
+ * @param props.onHoverItem - Called when the item is hovered
+ * @param props.onSelectItem - Called when the item is selected
+ * @returns A React component
+ */
 export function AppCodeCompletionItem({
     index,
     isSelected,

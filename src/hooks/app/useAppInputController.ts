@@ -20,6 +20,21 @@ type UseAppInputControllerResult = {
     handleKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
 };
 
+/**
+ * Manages text input state for numeric/text fields with validation and stepping.
+ *
+ * Handles draft value editing, commit on Enter/blur, cancel on Escape, and
+ * arrow key stepping. Validates against min/max bounds and formats the
+ * displayed value based on editing state.
+ *
+ * @param options - Configuration for the input controller
+ * @param options.maxValue - Maximum allowed value
+ * @param options.minValue - Minimum allowed value
+ * @param options.onChange - Called when the value commits
+ * @param options.step - Step increment for arrow keys
+ * @param options.value - Current committed value
+ * @returns Displayed value and event handlers
+ */
 export function useAppInputController({
     maxValue,
     minValue,

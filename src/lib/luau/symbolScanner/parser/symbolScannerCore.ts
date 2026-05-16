@@ -11,6 +11,13 @@ import type {
 import { extractLuauOutlineComments } from "../symbolScannerOutlineComments";
 import { tokenizeLuau } from "./symbolScannerTokenizer";
 
+/**
+ * Abstract base class for the Luau symbol scanner.
+ *
+ * Provides the core scanning infrastructure including token management,
+ * scope tracking, and symbol collection. Subclasses implement parseBlock
+ * to handle specific parsing strategies (functions-only vs full analysis).
+ */
 export abstract class LuauSymbolScannerCore {
     protected readonly content: string;
     protected readonly functionScopes: ScopeFrame[] = [];

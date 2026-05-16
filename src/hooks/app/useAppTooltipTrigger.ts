@@ -25,6 +25,23 @@ type UseAppTooltipTriggerResult = {
     triggerElementRef: RefObject<HTMLElement | null>;
 };
 
+/**
+ * Manages tooltip trigger behavior including delayed showing, hiding, and lifecycle.
+ *
+ * Attaches to a trigger element via ref, shows tooltip on hover/focus with configurable
+ * delay, and hides on blur/click. Supports disabling tooltips and respects skip-delay
+ * conditions for immediate display.
+ *
+ * @param options - Configuration for the tooltip trigger
+ * @param options.content - Tooltip content to display
+ * @param options.delayMs - Delay before showing tooltip
+ * @param options.disabled - Whether the tooltip is disabled
+ * @param options.offset - Distance from trigger element
+ * @param options.shortcut - Optional shortcut to display
+ * @param options.side - Which side to show the tooltip
+ * @param options.tooltipId - Unique identifier for the tooltip
+ * @returns Tooltip visibility state, ref, and open/close handlers
+ */
 export function useAppTooltipTrigger({
     content,
     delayMs,

@@ -8,6 +8,13 @@ import { LuauSymbolScannerCore } from "./symbolScannerCore";
 const GLOBAL_ENVIRONMENT_IDENTIFIER = "_G";
 const LOADSTRING_IDENTIFIER = "loadstring";
 
+/**
+ * Provides token cursor operations for the Luau symbol scanner.
+ *
+ * Implements token navigation (current, peek, skip), keyword/symbol matching,
+ * and balanced token skipping for type expressions and simple statements.
+ * Also handles loadstring identifier detection within token ranges.
+ */
 export abstract class LuauSymbolScannerCursor extends LuauSymbolScannerCore {
     protected canStartBareAssignment(): boolean {
         const currentToken = this.current();
