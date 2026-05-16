@@ -19,6 +19,7 @@ import type {
     WorkspaceSplitPaneNode,
     WorkspaceSplitPlacement,
 } from "../../../lib/workspace/session/sessionSplitView.type";
+import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import { WorkspaceActionsButton } from "../actions/WorkspaceActionsButton";
 import { WorkspaceTabBar } from "../WorkspaceTabBar";
 import { AppCodeCompletion } from "./AppCodeCompletion";
@@ -202,7 +203,7 @@ function WorkspaceSplitDropZone({
 type WorkspacePaneTabBarProps = {
     activeTabId: string | null;
     paneId: string;
-    tabs: WorkspaceEditorSurfaceProps["pane"]["tabs"];
+    tabs: WorkspaceScreenTab[];
     pane: WorkspaceEditorSurfaceProps["pane"];
     splitViewState: WorkspaceEditorSurfaceProps["splitViewState"];
 };
@@ -217,12 +218,6 @@ function WorkspacePaneTabBar({
     const { isDropTarget, ref } = useDroppable({
         id: `${PANE_DROP_ID_PREFIX}:${paneId}`,
     });
-    const screenTabs = tabs.map((tab) => ({
-        fileName: tab.fileName,
-        id: tab.id,
-        isDirty: tab.content !== tab.savedContent,
-        isPinned: tab.isPinned === true,
-    }));
 
     if (tabs.length === 0) {
         return null;
@@ -240,13 +235,13 @@ function WorkspacePaneTabBar({
                 workspace={{
                     ...pane.tabBar.workspaceBase,
                     activeTabId,
-                    tabs: screenTabs,
+                    tabs,
                     splitView: splitViewState.splitView,
                 }}
                 splitView={splitViewState.splitView}
                 tabListScopeId={paneId}
                 renameState={pane.tabBar.renameState}
-                previewTabs={screenTabs}
+                previewTabs={tabs}
                 isTabDragActive={pane.tabBar.isTabDragActive}
                 splitDropTarget={null}
                 onCreateFile={pane.tabBar.onCreateFile}
@@ -275,6 +270,7 @@ type WorkspaceSplitPaneProps = {
         string,
         WorkspaceEditorSurfaceProps["pane"]["tabs"][number]
     >;
+    tabMetadataById: ReadonlyMap<string, WorkspaceScreenTab>;
     pane: WorkspaceEditorSurfaceProps["pane"];
     completion: WorkspaceEditorSurfaceProps["completion"];
     outline: WorkspaceEditorSurfaceProps["outline"];
@@ -286,6 +282,7 @@ const WorkspaceSplitPane = memo(function WorkspaceSplitPane({
     node,
     shouldShowTabBar,
     tabById,
+    tabMetadataById,
     pane,
     completion,
     outline,
@@ -309,6 +306,19 @@ const WorkspaceSplitPane = memo(function WorkspaceSplitPane({
         },
         [],
     );
+    const paneScreenTabs = useMemo(
+        () =>
+            node.tabIds.reduce<WorkspaceScreenTab[]>((tabs, tabId) => {
+                const tab = tabMetadataById.get(tabId);
+
+                if (tab) {
+                    tabs.push(tab);
+                }
+
+                return tabs;
+            }, []),
+        [node.tabIds, tabMetadataById],
+    );
     const activeTab =
         (node.activeTabId ? tabById.get(node.activeTabId) : undefined) ??
         paneTabs[0] ??
@@ -326,7 +336,7 @@ const WorkspaceSplitPane = memo(function WorkspaceSplitPane({
                 <WorkspacePaneTabBar
                     activeTabId={activeTab?.id ?? null}
                     paneId={node.id}
-                    tabs={paneTabs}
+                    tabs={paneScreenTabs}
                     pane={pane}
                     splitViewState={splitViewState}
                 />
@@ -411,15 +421,14 @@ function areWorkspaceSplitPaneTabBarsEqual(
                 return false;
             }
 
-            const currentTab = currentProps.tabById.get(tabId);
-            const nextTab = nextProps.tabById.get(tabId);
+            const currentTab = currentProps.tabMetadataById.get(tabId);
+            const nextTab = nextProps.tabMetadataById.get(tabId);
 
             return (
                 currentTab?.id === nextTab?.id &&
                 currentTab?.fileName === nextTab?.fileName &&
                 currentTab?.isPinned === nextTab?.isPinned &&
-                (currentTab?.content !== currentTab?.savedContent) ===
-                    (nextTab?.content !== nextTab?.savedContent)
+                currentTab?.isDirty === nextTab?.isDirty
             );
         })
     );
@@ -479,6 +488,7 @@ type WorkspaceSplitTreeProps = {
         string,
         WorkspaceEditorSurfaceProps["pane"]["tabs"][number]
     >;
+    tabMetadataById: ReadonlyMap<string, WorkspaceScreenTab>;
     pane: WorkspaceEditorSurfaceProps["pane"];
     completion: WorkspaceEditorSurfaceProps["completion"];
     outline: WorkspaceEditorSurfaceProps["outline"];
@@ -537,6 +547,7 @@ function WorkspaceSplitResizeHandle({
 function WorkspaceSplitTree({
     node,
     tabById,
+    tabMetadataById,
     pane,
     completion,
     outline,
@@ -551,6 +562,7 @@ function WorkspaceSplitTree({
                 node={node}
                 shouldShowTabBar
                 tabById={tabById}
+                tabMetadataById={tabMetadataById}
                 pane={pane}
                 completion={completion}
                 outline={outline}
@@ -583,6 +595,7 @@ function WorkspaceSplitTree({
                 <WorkspaceSplitTree
                     node={child}
                     tabById={tabById}
+                    tabMetadataById={tabMetadataById}
                     pane={pane}
                     completion={completion}
                     outline={outline}
@@ -635,6 +648,7 @@ export function WorkspaceEditorSurface({
     const {
         editorSurfaceStyle,
         isAceReady,
+        tabMetadata,
         tabs,
         workspaceActionsClassName,
         workspaceActionsStyle,
@@ -643,15 +657,19 @@ export function WorkspaceEditorSurface({
         () => new Map(tabs.map((tab) => [tab.id, tab] as const)),
         [tabs],
     );
+    const tabMetadataById = useMemo(
+        () => new Map(tabMetadata.map((tab) => [tab.id, tab] as const)),
+        [tabMetadata],
+    );
     const rootPaneNode = useMemo(
         () =>
             ({
                 type: "pane",
                 id: "pane-root",
                 activeTabId: pane.activeTabId,
-                tabIds: tabs.map((tab) => tab.id),
+                tabIds: tabMetadata.map((tab) => tab.id),
             }) satisfies WorkspaceSplitPaneNode,
-        [pane.activeTabId, tabs],
+        [pane.activeTabId, tabMetadata],
     );
     const rootPaneOutline = useMemo(
         () => ({ onActiveTabLuauChange }),
@@ -674,6 +692,7 @@ export function WorkspaceEditorSurface({
                 <WorkspaceSplitTree
                     node={splitView.root}
                     tabById={tabById}
+                    tabMetadataById={tabMetadataById}
                     pane={pane}
                     completion={completion}
                     outline={outline}
@@ -685,6 +704,7 @@ export function WorkspaceEditorSurface({
                     node={rootPaneNode}
                     shouldShowTabBar={false}
                     tabById={tabById}
+                    tabMetadataById={tabMetadataById}
                     pane={pane}
                     completion={completion}
                     outline={rootPaneOutline}

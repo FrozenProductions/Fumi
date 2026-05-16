@@ -6,6 +6,7 @@ import type {
 import type { WorkspaceEditorPaneProps } from "../../components/workspace/editor/WorkspaceEditorProps.type";
 import type { LoadedAceRuntime } from "../../lib/luau/ace/loadAceRuntime.type";
 import type { AceEditorComponent } from "../../lib/workspace/editor/editor.type";
+import type { WorkspaceScreenTab } from "../../lib/workspace/session/tabs/sessionTabs.type";
 
 export type UseWorkspaceEditorSurfaceResult = {
     refs: {
@@ -20,6 +21,7 @@ export type UseWorkspaceEditorSurfaceResult = {
         isOutlinePanelSupported: boolean;
         outlinePanelClassName: string;
         outlinePanelStyle: CSSProperties;
+        tabMetadata: WorkspaceScreenTab[];
         tabs: WorkspaceEditorPaneProps["tabs"];
         workspaceActionsClassName: string;
         workspaceActionsStyle: CSSProperties;

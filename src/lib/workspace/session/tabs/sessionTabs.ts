@@ -11,6 +11,7 @@ import type {
 function createWorkspaceTab(tab: WorkspaceTabSnapshot): WorkspaceTab {
     return {
         ...tab,
+        isDirty: tab.isDirty,
         isPinned: tab.isPinned === true,
         savedContent: tab.content,
         contentRevision: 0,
@@ -129,7 +130,7 @@ export function getNextActiveTabId(
  * Checks if any workspace tab has unsaved content changes.
  */
 export function hasWorkspaceDraftChanges(workspace: WorkspaceSession): boolean {
-    return workspace.tabs.some((tab) => tab.content !== tab.savedContent);
+    return workspace.tabs.some((tab) => tab.isDirty);
 }
 
 /**
@@ -143,7 +144,7 @@ export function getWorkspaceDirtyTabCount(
     }
 
     return workspace.tabs.reduce((count, tab) => {
-        return count + Number(tab.content !== tab.savedContent);
+        return count + Number(tab.isDirty);
     }, 0);
 }
 
@@ -290,7 +291,7 @@ export function mergeWorkspaceSession(
 
             const currentTab = currentTabsById.get(tabState.id);
 
-            if (currentTab && currentTab.content !== currentTab.savedContent) {
+            if (currentTab?.isDirty) {
                 workspaceTabs.push({
                     ...currentTab,
                     cursor: clampCursorToContent(
@@ -314,7 +315,7 @@ export function mergeWorkspaceSession(
         [],
     );
     const preservedDirtyTabs = currentWorkspace.tabs.flatMap((tab) =>
-        !snapshotTabIds.has(tab.id) && tab.content !== tab.savedContent
+        !snapshotTabIds.has(tab.id) && tab.isDirty
             ? [
                   {
                       ...tab,

@@ -88,15 +88,19 @@ export function createWorkspaceSession(
             savedContent: "tab-2-content",
         },
     ];
+    const normalizedTabs = tabs.map((tab) => ({
+        ...tab,
+        isDirty: tab.isDirty || tab.content !== tab.savedContent,
+    }));
 
     return {
         workspacePath: "/tmp/fumi",
         workspaceName: "fumi",
-        activeTabId: tabs[0]?.id ?? null,
+        activeTabId: normalizedTabs[0]?.id ?? null,
         splitView: null,
-        tabs,
         archivedTabs: [],
         executionHistory: [],
         ...overrides,
+        tabs: normalizedTabs,
     };
 }

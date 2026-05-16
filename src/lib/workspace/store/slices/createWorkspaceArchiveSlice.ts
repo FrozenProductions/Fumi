@@ -58,9 +58,7 @@ export const createWorkspaceArchiveSlice: WorkspaceStoreSliceCreator<
                 return;
             }
 
-            const hasDraftChanges = tabsToArchive.some(
-                (tab) => tab.content !== tab.savedContent,
-            );
+            const hasDraftChanges = tabsToArchive.some((tab) => tab.isDirty);
             const shouldDiscardChanges =
                 !hasDraftChanges || (await confirmAction(confirmMessage));
 

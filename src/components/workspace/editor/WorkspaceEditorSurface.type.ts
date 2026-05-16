@@ -9,6 +9,7 @@ import type {
 } from "../../../lib/app/app.type";
 import type { LoadedAceRuntime } from "../../../lib/luau/ace/loadAceRuntime.type";
 import type { AceEditorComponent } from "../../../lib/workspace/editor/editor.type";
+import type { WorkspaceScreenTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import type {
     WorkspaceEditorCompletionProps,
     WorkspaceEditorOutlineProps,
@@ -62,6 +63,7 @@ export type WorkspaceEditorSurfaceProps = {
             isOutlinePanelSupported: boolean;
             outlinePanelClassName: string;
             outlinePanelStyle: CSSProperties;
+            tabMetadata: WorkspaceScreenTab[];
             tabs: WorkspaceEditorPaneProps["tabs"];
             workspaceActionsClassName: string;
             workspaceActionsStyle: CSSProperties;

@@ -1,5 +1,12 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 import type {
     WorkspaceEditorOutlineProps,
     WorkspaceEditorPaneProps,
@@ -12,6 +19,8 @@ import {
 import { loadAceRuntime } from "../../lib/luau/ace/loadAceRuntime";
 import { getEditorModeForFileName } from "../../lib/luau/fileType";
 import { getReactAceComponent } from "../../lib/workspace/editor/editor";
+import type { WorkspaceSplitNode } from "../../lib/workspace/session/sessionSplitView.type";
+import type { WorkspaceScreenTab } from "../../lib/workspace/session/tabs/sessionTabs.type";
 import type {
     UseWorkspaceEditorSurfaceResult,
     WorkspaceEditorRuntimeState,
@@ -27,6 +36,25 @@ function updateWorkspaceEditorRuntimeState(
     };
 }
 
+function collectWorkspaceSplitActiveTabIds(
+    node: WorkspaceSplitNode,
+    activeTabIds: string[],
+): void {
+    if (node.type === "pane") {
+        const activeTabId = node.activeTabId ?? node.tabIds[0];
+
+        if (activeTabId) {
+            activeTabIds.push(activeTabId);
+        }
+
+        return;
+    }
+
+    node.children.forEach((child) => {
+        collectWorkspaceSplitActiveTabIds(child, activeTabIds);
+    });
+}
+
 /**
  * Loads editor runtime and owns outline resize interactions for the workspace editor.
  */
@@ -35,7 +63,7 @@ export function useWorkspaceEditorSurface(options: {
     pane: WorkspaceEditorPaneProps;
     splitViewState: WorkspaceEditorSplitViewProps;
 }): UseWorkspaceEditorSurfaceResult {
-    const { outline, pane } = options;
+    const { outline, pane, splitViewState } = options;
     const { activeTabId, tabs } = pane;
     const {
         isOutlinePanelVisible,
@@ -109,6 +137,39 @@ export function useWorkspaceEditorSurface(options: {
     const outlinePanelStyle = {
         width: `${resolvedOutlinePanelWidth}px`,
     } satisfies CSSProperties;
+    const tabMetadata = useMemo<WorkspaceScreenTab[]>(
+        () =>
+            tabs.map((tab) => ({
+                fileName: tab.fileName,
+                id: tab.id,
+                isDirty: tab.isDirty,
+                isPinned: tab.isPinned === true,
+            })),
+        [tabs],
+    );
+    const editorTabs = useMemo(() => {
+        const activeEditorTabIds: string[] = [];
+
+        if (splitViewState.splitView?.root) {
+            collectWorkspaceSplitActiveTabIds(
+                splitViewState.splitView.root,
+                activeEditorTabIds,
+            );
+        } else if (activeTabId) {
+            activeEditorTabIds.push(activeTabId);
+        }
+
+        if (activeEditorTabIds.length === 0) {
+            return [];
+        }
+
+        const tabById = new Map(tabs.map((tab) => [tab.id, tab] as const));
+
+        return activeEditorTabIds.flatMap((tabId) => {
+            const tab = tabById.get(tabId);
+            return tab ? [tab] : [];
+        });
+    }, [activeTabId, splitViewState.splitView, tabs]);
 
     useEffect(() => {
         let isMounted = true;
@@ -220,7 +281,8 @@ export function useWorkspaceEditorSurface(options: {
             isOutlinePanelSupported,
             outlinePanelClassName,
             outlinePanelStyle,
-            tabs,
+            tabMetadata,
+            tabs: editorTabs,
             workspaceActionsClassName,
             workspaceActionsStyle,
         },

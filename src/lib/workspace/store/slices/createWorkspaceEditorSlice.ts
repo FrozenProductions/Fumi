@@ -45,6 +45,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
     ): WorkspaceTab => ({
         ...tab,
         content,
+        isDirty: content !== tab.savedContent,
         contentRevision: (tab.contentRevision ?? 0) + 1,
     });
     return {
@@ -105,16 +106,13 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                                 ...tab,
                                 content: activeContent,
                                 cursor: nextCursor,
+                                isDirty: false,
                                 savedContent: activeContent,
                             }),
                         ),
                         dirtyTabCount: Math.max(
                             0,
-                            state.dirtyTabCount -
-                                Number(
-                                    activeTab.content !==
-                                        activeTab.savedContent,
-                                ),
+                            state.dirtyTabCount - Number(activeTab.isDirty),
                         ),
                         errorMessage: null,
                         transientTabCursorsById: removeTransientTabCursor(
@@ -152,7 +150,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                     };
                 }
 
-                const wasDirty = activeTab.content !== activeTab.savedContent;
+                const wasDirty = activeTab.isDirty;
                 const isDirty = content !== activeTab.savedContent;
 
                 return {
@@ -183,7 +181,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                     return {};
                 }
 
-                const wasDirty = targetTab.content !== targetTab.savedContent;
+                const wasDirty = targetTab.isDirty;
                 const isDirty = content !== targetTab.savedContent;
 
                 return {
