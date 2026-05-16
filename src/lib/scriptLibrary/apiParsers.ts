@@ -266,6 +266,7 @@ export function normalizeScript(
     return {
         _id: script._id,
         title: script.title?.trim() || "Untitled script",
+        gameTitle: script.game?.title?.trim() || null,
         description: script.description?.trim() || "No description provided.",
         createdAt: script.createdAt || script.lastUpdated || "",
         views: typeof script.views === "number" ? script.views : 0,

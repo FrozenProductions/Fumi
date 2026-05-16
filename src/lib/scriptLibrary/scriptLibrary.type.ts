@@ -83,6 +83,7 @@ export type RscriptsScriptDetailResponse = {
 export type ScriptLibraryEntry = {
     _id: string;
     title: string;
+    gameTitle: string | null;
     description: string;
     createdAt: string;
     views: number;

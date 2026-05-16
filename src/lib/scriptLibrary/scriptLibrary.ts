@@ -7,6 +7,16 @@ import type {
     ScriptLibrarySort,
 } from "./scriptLibrary.type";
 
+function normalizeScriptLibrarySearchValue(value: string): string {
+    return value
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+}
+
 /**
  * Formats an ISO date string into a human-readable short date (e.g., "Apr 18, 2026").
  *
@@ -43,6 +53,29 @@ export function getWorkspaceScriptFileName(
     script: Pick<ScriptLibraryEntry, "title">,
 ): string {
     return `${clampWorkspaceTabBaseName(script.title.trim())}.lua`;
+}
+
+/**
+ * Builds the visible script title used by rscripts.net search results.
+ */
+export function getScriptLibraryDisplayTitle(
+    script: Pick<ScriptLibraryEntry, "gameTitle" | "title">,
+): string {
+    const title = script.title.trim();
+    const gameTitle = script.gameTitle?.trim();
+
+    if (!gameTitle) {
+        return title;
+    }
+
+    const normalizedTitle = normalizeScriptLibrarySearchValue(title);
+    const normalizedGameTitle = normalizeScriptLibrarySearchValue(gameTitle);
+
+    if (!normalizedGameTitle || normalizedTitle.includes(normalizedGameTitle)) {
+        return title;
+    }
+
+    return `${gameTitle} ${title}`;
 }
 
 /**
@@ -97,17 +130,28 @@ function matchesScriptLibraryQuery(
     query: string,
 ): boolean {
     const normalizedQuery = query.trim().toLowerCase();
+    const normalizedTerms = normalizeScriptLibrarySearchValue(query)
+        .split(" ")
+        .filter((term) => term.length > 0);
 
     if (!normalizedQuery) {
         return true;
     }
 
     return [
+        getScriptLibraryDisplayTitle(script),
         script.title,
         script.description,
         script.creator.name,
         script.slug,
-    ].some((value) => value.toLowerCase().includes(normalizedQuery));
+    ].some((value) => {
+        const normalizedValue = normalizeScriptLibrarySearchValue(value);
+
+        return (
+            value.toLowerCase().includes(normalizedQuery) ||
+            normalizedTerms.every((term) => normalizedValue.includes(term))
+        );
+    });
 }
 
 /**

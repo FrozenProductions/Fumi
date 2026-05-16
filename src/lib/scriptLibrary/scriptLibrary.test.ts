@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 import { DEFAULT_SCRIPT_LIBRARY_FILTERS } from "../../constants/scriptLibrary/scriptLibrary";
 import {
+    getScriptLibraryDisplayTitle,
     getVisibleScriptLibraryEntries,
     normalizeScriptLibraryFavoriteEntry,
 } from "./scriptLibrary";
@@ -12,6 +13,7 @@ function createScriptLibraryEntry(
     return {
         _id: "script-1",
         title: "Velocity Hub",
+        gameTitle: null,
         description: "Fast traversal tools for open world games.",
         createdAt: "2026-01-02T00:00:00.000Z",
         views: 180,
@@ -47,6 +49,28 @@ describe("normalizeScriptLibraryFavoriteEntry", () => {
                 }),
             }),
         );
+    });
+});
+
+describe("getScriptLibraryDisplayTitle", () => {
+    it("matches rscripts result titles by prefixing distinct game titles", () => {
+        expect(
+            getScriptLibraryDisplayTitle(
+                createScriptLibraryEntry({
+                    title: "Infinite Yield",
+                    gameTitle: "Work at a Pizza Place",
+                }),
+            ),
+        ).toBe("Work at a Pizza Place Infinite Yield");
+
+        expect(
+            getScriptLibraryDisplayTitle(
+                createScriptLibraryEntry({
+                    title: "Work at a Pizza Place Infinite Yield",
+                    gameTitle: "Work at a Pizza Place",
+                }),
+            ),
+        ).toBe("Work at a Pizza Place Infinite Yield");
     });
 });
 
@@ -96,6 +120,23 @@ describe("getVisibleScriptLibraryEntries", () => {
                 orderBy: "likes",
             }).map((script) => script._id),
         ).toEqual(["script-3"]);
+
+        expect(
+            getVisibleScriptLibraryEntries(
+                [
+                    createScriptLibraryEntry({
+                        _id: "script-4",
+                        title: "Infinite Yield",
+                        gameTitle: "Work at a Pizza Place",
+                    }),
+                ],
+                {
+                    query: "pizza infinite",
+                    filters: DEFAULT_SCRIPT_LIBRARY_FILTERS,
+                    orderBy: "date",
+                },
+            ).map((script) => script._id),
+        ).toEqual(["script-4"]);
 
         expect(
             getVisibleScriptLibraryEntries(favoriteScripts, {

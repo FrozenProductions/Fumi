@@ -10,7 +10,10 @@ import {
     UserCheck01Icon,
 } from "@hugeicons/core-free-icons";
 import type { ReactElement } from "react";
-import { formatScriptLibraryDate } from "../../lib/scriptLibrary/scriptLibrary";
+import {
+    formatScriptLibraryDate,
+    getScriptLibraryDisplayTitle,
+} from "../../lib/scriptLibrary/scriptLibrary";
 import { AppIcon } from "../app/common/AppIcon";
 import { AppTooltip } from "../app/tooltip/AppTooltip";
 import { ScriptLibraryBadges } from "./ScriptLibraryBadges";
@@ -43,6 +46,8 @@ export function ScriptLibraryCard({
         onCopyScript,
         onToggleFavorite,
     } = actions;
+    const displayTitle = getScriptLibraryDisplayTitle(script);
+
     return (
         <article
             className={`group flex justify-between rounded-[1.35rem] border border-fumi-200 bg-fumi-50 p-5 shadow-[var(--shadow-app-card)] transition-[transform,box-shadow,border-color] duration-200 hover:border-fumi-300 ${
@@ -56,7 +61,7 @@ export function ScriptLibraryCard({
                     <div className="min-w-0">
                         <div className="flex items-start gap-2">
                             <h3 className="truncate font-semibold leading-tight tracking-[-0.01em] text-fumi-900">
-                                {script.title}
+                                {displayTitle}
                             </h3>
                             {viewFormat === "list" ? (
                                 <div className="flex shrink-0 gap-1">

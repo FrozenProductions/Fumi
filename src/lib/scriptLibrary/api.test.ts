@@ -3,9 +3,13 @@ import { DEFAULT_SCRIPT_LIBRARY_FILTERS } from "../../constants/scriptLibrary/sc
 import {
     createScriptLibraryCachedSession,
     fetchFilteredScriptsPage,
+    fetchScriptsPage,
 } from "./api";
 
-function createRscriptsEntry(id: string) {
+function createRscriptsEntry(
+    id: string,
+    overrides: Record<string, unknown> = {},
+) {
     return {
         _id: id,
         title: `Script ${id}`,
@@ -26,22 +30,88 @@ function createRscriptsEntry(id: string) {
             image: null,
             verified: true,
         },
+        game: {
+            title: null,
+        },
+        ...overrides,
     };
 }
 
-function createRscriptsPage(page: number, maxPages: number) {
-    const firstId = (page - 1) * 20;
+function createRscriptsPage(
+    page: number,
+    maxPages: number,
+    scripts = Array.from({ length: 20 }, (_, index) => {
+        const firstId = (page - 1) * 20;
 
+        return createRscriptsEntry(String(firstId + index + 1));
+    }),
+) {
     return {
-        scripts: Array.from({ length: 20 }, (_, index) =>
-            createRscriptsEntry(String(firstId + index + 1)),
-        ),
+        scripts,
         info: {
             currentPage: page,
             maxPages,
         },
     };
 }
+
+describe("fetchScriptsPage", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("ranks exact website-style search titles ahead of loose newest API matches", async () => {
+        const fetchMock = vi.fn(async (url: string | URL | Request) => {
+            const parsedUrl = new URL(String(url));
+            const page = Number(parsedUrl.searchParams.get("page") ?? "1");
+
+            if (page === 1) {
+                return new Response(
+                    JSON.stringify(
+                        createRscriptsPage(1, 2, [
+                            createRscriptsEntry("loose", {
+                                title: "Infinite Jump Farm",
+                                description: "Yield money quickly.",
+                                createdAt: "2026-05-16T00:00:00.000Z",
+                            }),
+                        ]),
+                    ),
+                );
+            }
+
+            return new Response(
+                JSON.stringify(
+                    createRscriptsPage(2, 2, [
+                        createRscriptsEntry("exact", {
+                            title: "Infinite Yield",
+                            createdAt: "2026-01-03T00:00:00.000Z",
+                            game: {
+                                title: "Work at a Pizza Place",
+                            },
+                        }),
+                    ]),
+                ),
+            );
+        });
+        const session = createScriptLibraryCachedSession();
+
+        vi.stubGlobal("fetch", fetchMock);
+
+        const page = await fetchScriptsPage(
+            session,
+            "infinite yield",
+            1,
+            "date",
+            new AbortController().signal,
+        );
+
+        expect(page.scripts.map((script) => script._id)).toEqual([
+            "exact",
+            "loose",
+        ]);
+        expect(page.scripts[0]?.gameTitle).toBe("Work at a Pizza Place");
+    });
+});
 
 describe("fetchFilteredScriptsPage", () => {
     afterEach(() => {

@@ -16,5 +16,6 @@ export type ScriptLibraryFilteredCache = {
 export type ScriptLibraryCachedSession = {
     filteredResults: Map<string, ScriptLibraryFilteredCache>;
     pages: Map<number, ScriptLibraryPage>;
+    searchResults: ScriptLibraryEntry[] | null;
     maxPages: number | null;
 };

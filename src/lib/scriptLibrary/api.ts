@@ -1,6 +1,7 @@
 import {
     RSCRIPTS_API_BASE_URL,
     SCRIPT_LIBRARY_PAGE_SIZE,
+    SCRIPT_LIBRARY_SEARCH_SOURCE_BATCH_SIZE,
 } from "../../constants/scriptLibrary/scriptLibrary";
 import { copyTextToClipboard } from "../platform/core/clipboard";
 import { getUnknownCauseMessage } from "../shared/errorMessage";
@@ -18,7 +19,10 @@ import {
 } from "./apiParsers";
 import { fetchJsonResponse, fetchTextResponse } from "./apiTransport";
 import { ScriptLibraryError } from "./errors";
-import { matchesScriptLibraryFilters } from "./scriptLibrary";
+import {
+    getScriptLibraryDisplayTitle,
+    matchesScriptLibraryFilters,
+} from "./scriptLibrary";
 import type {
     ScriptLibraryEntry,
     ScriptLibraryFilters,
@@ -70,6 +74,7 @@ export function createScriptLibraryCachedSession(): ScriptLibraryCachedSession {
     return {
         filteredResults: new Map<string, ScriptLibraryFilteredCache>(),
         pages: new Map<number, ScriptLibraryPage>(),
+        searchResults: null,
         maxPages: null,
     };
 }
@@ -131,19 +136,148 @@ function getScriptLibraryFilteredCache(
     return cache;
 }
 
-/**
- * Fetches a single page of scripts from the remote API, caching the result in the session.
- *
- * Returns the cached page if available; otherwise fetches, parses, normalizes, and stores it.
- *
- * @param session - The active cached session
- * @param query - Search query string (empty for no filter)
- * @param page - 1-based page number
- * @param orderBy - Sort order for results
- * @param signal - Abort signal for cancellation
- * @returns The fetched or cached page of normalized scripts
- */
-export async function fetchScriptsPage(
+function normalizeSearchValue(value: string): string {
+    return value
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+}
+
+function getSearchTerms(query: string): string[] {
+    return normalizeSearchValue(query)
+        .split(" ")
+        .filter((term) => term.length > 0);
+}
+
+function getOrderValue(
+    script: ScriptLibraryEntry,
+    orderBy: ScriptLibrarySort,
+): number {
+    if (orderBy === "views") {
+        return script.views;
+    }
+
+    if (orderBy === "likes") {
+        return script.likes;
+    }
+
+    const timestamp = Date.parse(script.createdAt);
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function getScriptSearchRank(
+    script: ScriptLibraryEntry,
+    query: string,
+): number {
+    const terms = getSearchTerms(query);
+
+    if (terms.length === 0) {
+        return 0;
+    }
+
+    const phrase = terms.join(" ");
+    const displayTitle = normalizeSearchValue(
+        getScriptLibraryDisplayTitle(script),
+    );
+    const title = normalizeSearchValue(script.title);
+    const slug = normalizeSearchValue(script.slug);
+    const description = normalizeSearchValue(script.description);
+    const creator = normalizeSearchValue(script.creator.name);
+    const hasEveryTermInDisplayTitle = terms.every((term) =>
+        displayTitle.includes(term),
+    );
+    const hasEveryTermInTitle = terms.every((term) => title.includes(term));
+    const hasEveryTermInDescription = terms.every((term) =>
+        description.includes(term),
+    );
+    let rank = 0;
+
+    if (displayTitle === phrase) {
+        rank += 1_000_000;
+    }
+
+    if (title === phrase) {
+        rank += 900_000;
+    }
+
+    if (displayTitle.includes(phrase)) {
+        rank += 800_000;
+    }
+
+    if (title.includes(phrase)) {
+        rank += 700_000;
+    }
+
+    if (hasEveryTermInDisplayTitle) {
+        rank += 500_000;
+    }
+
+    if (hasEveryTermInTitle) {
+        rank += 400_000;
+    }
+
+    if (slug.includes(phrase)) {
+        rank += 250_000;
+    }
+
+    if (description.includes(phrase)) {
+        rank += 80_000;
+    }
+
+    if (hasEveryTermInDescription) {
+        rank += 20_000;
+    }
+
+    for (const term of terms) {
+        if (displayTitle.includes(term)) {
+            rank += 500;
+        }
+
+        if (slug.includes(term)) {
+            rank += 200;
+        }
+
+        if (description.includes(term)) {
+            rank += 50;
+        }
+
+        if (creator.includes(term)) {
+            rank += 25;
+        }
+    }
+
+    return rank;
+}
+
+function getRankedSearchScripts(
+    scripts: ScriptLibraryEntry[],
+    query: string,
+    orderBy: ScriptLibrarySort,
+): ScriptLibraryEntry[] {
+    return scripts
+        .map((script) => ({
+            rank: getScriptSearchRank(script, query),
+            script,
+        }))
+        .filter((entry) => entry.rank > 0)
+        .toSorted((left, right) => {
+            return (
+                right.rank - left.rank ||
+                getOrderValue(right.script, orderBy) -
+                    getOrderValue(left.script, orderBy) ||
+                getScriptLibraryDisplayTitle(left.script).localeCompare(
+                    getScriptLibraryDisplayTitle(right.script),
+                )
+            );
+        })
+        .map((entry) => entry.script);
+}
+
+async function fetchRemoteScriptsPage(
     session: ScriptLibraryCachedSession,
     query: string,
     page: number,
@@ -185,6 +319,107 @@ export async function fetchScriptsPage(
     session.maxPages = maxPages;
 
     return normalizedPage;
+}
+
+async function fetchRankedSearchScripts(
+    session: ScriptLibraryCachedSession,
+    query: string,
+    orderBy: ScriptLibrarySort,
+    signal: AbortSignal,
+): Promise<ScriptLibraryEntry[]> {
+    if (session.searchResults) {
+        return session.searchResults;
+    }
+
+    const firstPage = await fetchRemoteScriptsPage(
+        session,
+        query,
+        1,
+        orderBy,
+        signal,
+    );
+    const scriptsById = new Map(
+        firstPage.scripts.map((script) => [script._id, script]),
+    );
+    let nextPage = 2;
+
+    while (nextPage <= firstPage.maxPages) {
+        const batchPages = Array.from(
+            {
+                length: Math.min(
+                    SCRIPT_LIBRARY_SEARCH_SOURCE_BATCH_SIZE,
+                    firstPage.maxPages - nextPage + 1,
+                ),
+            },
+            (_, index) => nextPage + index,
+        );
+        const batchResults = await Promise.all(
+            batchPages.map((page) =>
+                fetchRemoteScriptsPage(session, query, page, orderBy, signal),
+            ),
+        );
+
+        for (const result of batchResults) {
+            for (const script of result.scripts) {
+                scriptsById.set(script._id, script);
+            }
+        }
+
+        nextPage += batchPages.length;
+    }
+
+    session.searchResults = getRankedSearchScripts(
+        Array.from(scriptsById.values()),
+        query,
+        orderBy,
+    );
+
+    return session.searchResults;
+}
+
+/**
+ * Fetches a single page of scripts from the remote API, caching the result in the session.
+ *
+ * Returns the cached page if available; otherwise fetches, parses, normalizes, and stores it.
+ *
+ * @param session - The active cached session
+ * @param query - Search query string (empty for no filter)
+ * @param page - 1-based page number
+ * @param orderBy - Sort order for results
+ * @param signal - Abort signal for cancellation
+ * @returns The fetched or cached page of normalized scripts
+ */
+export async function fetchScriptsPage(
+    session: ScriptLibraryCachedSession,
+    query: string,
+    page: number,
+    orderBy: ScriptLibrarySort,
+    signal: AbortSignal,
+): Promise<ScriptLibraryPage> {
+    if (query) {
+        const searchResults = await fetchRankedSearchScripts(
+            session,
+            query,
+            orderBy,
+            signal,
+        );
+        const startIndex = (page - 1) * SCRIPT_LIBRARY_PAGE_SIZE;
+        const maxPages = Math.max(
+            1,
+            Math.ceil(searchResults.length / SCRIPT_LIBRARY_PAGE_SIZE),
+        );
+
+        return {
+            scripts: searchResults.slice(
+                startIndex,
+                startIndex + SCRIPT_LIBRARY_PAGE_SIZE,
+            ),
+            currentPage: page,
+            maxPages,
+        };
+    }
+
+    return fetchRemoteScriptsPage(session, query, page, orderBy, signal);
 }
 
 /**

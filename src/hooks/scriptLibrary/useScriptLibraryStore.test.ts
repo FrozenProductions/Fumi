@@ -15,6 +15,7 @@ function createScriptLibraryEntry(
     return {
         _id: "script-1",
         title: "Velocity Hub",
+        gameTitle: null,
         description: "Fast traversal tools for open world games.",
         createdAt: "2026-01-02T00:00:00.000Z",
         views: 180,
