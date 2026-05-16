@@ -164,7 +164,7 @@ function WorkspacePaneTabBar({
     const screenTabs = tabs.map((tab) => ({
         fileName: tab.fileName,
         id: tab.id,
-        isDirty: tab.isDirty,
+        isDirty: tab.content !== tab.savedContent,
         isPinned: tab.isPinned === true,
     }));
 
