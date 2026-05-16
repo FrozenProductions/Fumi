@@ -130,29 +130,126 @@ function createCompletionIndexByPriority(
         createIndexedCompletionItem(item, namespace),
     );
     const indexByPriority = {} as CompletionIndexByPriority;
+    const sortedItemsByPriority = new Map<
+        AppIntellisensePriority,
+        IndexedCompletionItem[]
+    >();
 
     for (const priority of LUAU_COMPLETION_INDEX_PRIORITIES) {
-        indexByPriority[priority] = indexedItems.toSorted((left, right) =>
-            compareIndexedCompletionItems(left, right, priority),
-        );
+        Object.defineProperty(indexByPriority, priority, {
+            enumerable: true,
+            get: () => {
+                const cachedItems = sortedItemsByPriority.get(priority);
+
+                if (cachedItems) {
+                    return cachedItems;
+                }
+
+                const sortedItems = indexedItems.toSorted((left, right) =>
+                    compareIndexedCompletionItems(left, right, priority),
+                );
+
+                sortedItemsByPriority.set(priority, sortedItems);
+
+                return sortedItems;
+            },
+        });
     }
 
     return indexByPriority;
 }
 
-function createNamespaceIndex(): Map<string, CompletionIndexByPriority> {
-    const namespaceItems = new Map<string, LuauCompletionItem[]>();
-
-    for (const group of [
+function getNamespaceCompletionGroups(): readonly {
+    items: readonly LuauCompletionItem[];
+    namespace: string;
+}[] {
+    return [
         ...LUAU_NAMESPACE_COMPLETIONS,
         ...ROBLOX_NAMESPACE_COMPLETIONS,
         ...SUNC_NAMESPACE_COMPLETIONS,
         ...UNC_NAMESPACE_COMPLETIONS,
         ...RAKNET_NAMESPACE_COMPLETIONS,
-    ]) {
-        const existingItems = namespaceItems.get(group.namespace) ?? [];
+    ];
+}
 
-        namespaceItems.set(group.namespace, [...existingItems, ...group.items]);
+function appendNamespaceItems(
+    namespaceItems: Map<string, LuauCompletionItem[]>,
+    namespace: string,
+    items: readonly LuauCompletionItem[],
+): void {
+    const existingItems = namespaceItems.get(namespace);
+
+    if (existingItems) {
+        existingItems.push(...items);
+        return;
+    }
+
+    namespaceItems.set(namespace, [...items]);
+}
+
+function getCompletionItemsByPrefix<TItem extends IndexedCompletionItem>(
+    items: readonly TItem[],
+    normalizedPrefix: string,
+): readonly TItem[] {
+    if (normalizedPrefix.length === 0) {
+        return items;
+    }
+
+    return items.filter((item) =>
+        item.normalizedLabel.startsWith(normalizedPrefix),
+    );
+}
+
+export function getFirstCompletionItemsByPrefix<
+    TItem extends IndexedCompletionItem,
+>(
+    itemsByFirstCharacter: ReadonlyMap<string, readonly TItem[]>,
+    items: readonly TItem[],
+    normalizedPrefix: string,
+): readonly TItem[] {
+    if (normalizedPrefix.length === 0) {
+        return items;
+    }
+
+    return getCompletionItemsByPrefix(
+        itemsByFirstCharacter.get(normalizedPrefix[0]) ?? [],
+        normalizedPrefix,
+    );
+}
+
+export function createCompletionItemsByFirstCharacter<
+    TItem extends IndexedCompletionItem,
+>(items: readonly TItem[]): Map<string, TItem[]> {
+    const itemsByFirstCharacter = new Map<string, TItem[]>();
+
+    for (const item of items) {
+        const firstCharacter = item.normalizedLabel[0] ?? "";
+        const existingItems = itemsByFirstCharacter.get(firstCharacter);
+
+        if (existingItems) {
+            existingItems.push(item);
+            continue;
+        }
+
+        itemsByFirstCharacter.set(firstCharacter, [item]);
+    }
+
+    return itemsByFirstCharacter;
+}
+
+export function getCompletionIndexItemsByPrefix(
+    index: CompletionIndexByPriority,
+    priority: AppIntellisensePriority,
+    normalizedPrefix: string,
+): readonly IndexedCompletionItem[] {
+    return getCompletionItemsByPrefix(index[priority], normalizedPrefix);
+}
+
+function createNamespaceIndex(): Map<string, CompletionIndexByPriority> {
+    const namespaceItems = new Map<string, LuauCompletionItem[]>();
+
+    for (const group of getNamespaceCompletionGroups()) {
+        appendNamespaceItems(namespaceItems, group.namespace, group.items);
     }
 
     const namespaceIndex = new Map<string, CompletionIndexByPriority>();

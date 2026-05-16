@@ -1,7 +1,10 @@
 import { EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY } from "../../../constants/luau/core/luauCompletionIndex";
 import type { AppIntellisensePriority } from "../../app/app.type";
 import type { LuauFileSymbol } from "../luau.type";
-import type { LuauFileAnalysis } from "../symbolScanner/symbolScanner.type";
+import type {
+    LuauFileAnalysis,
+    ScopeFrame,
+} from "../symbolScanner/symbolScanner.type";
 import type {
     FileIndexedCompletionItem,
     IndexedCompletionItem,
@@ -11,14 +14,28 @@ import {
     addMatchingCompletionItem,
     addMatchingCompletionItems,
     compareIndexedCompletionItems,
+    createCompletionItemsByFirstCharacter,
     createIndexedCompletionItemFromFileSymbol,
+    getCompletionIndexItemsByPrefix,
+    getFirstCompletionItemsByPrefix,
     LUAU_NAMESPACE_INDEX,
     LUAU_ROOT_COMPLETION_INDEX,
 } from "./completionIndex";
 
+type FileCompletionIndex = {
+    functionScopesByStart: FunctionScopeIndexEntry[];
+    items: FileIndexedCompletionItem[];
+    itemsByFirstCharacter: Map<string, FileIndexedCompletionItem[]>;
+};
+
+type FunctionScopeIndexEntry = {
+    maxEndThroughEntry: number;
+    scope: ScopeFrame;
+};
+
 const FILE_COMPLETION_INDEX_CACHE = new WeakMap<
     LuauFileAnalysis,
-    FileIndexedCompletionItem[]
+    FileCompletionIndex
 >();
 const STALE_ANALYSIS_BOUNDARY_TOLERANCE = 1;
 
@@ -37,31 +54,6 @@ export function shouldSuppressLuauCompletionForTokenType(
         normalizedTokenType.includes("comment") ||
         normalizedTokenType.includes("string")
     );
-}
-
-function getInnermostFunctionOwner(
-    functionScopes: ReadonlyArray<{
-        end: number;
-        start: number;
-    }>,
-    cursorIndex: number,
-): number | null {
-    let innermostStart: number | null = null;
-    let innermostWidth = Number.POSITIVE_INFINITY;
-
-    for (const scope of functionScopes) {
-        if (scope.start > cursorIndex || cursorIndex > scope.end) {
-            continue;
-        }
-
-        const width = scope.end - scope.start;
-        if (width < innermostWidth) {
-            innermostStart = scope.start;
-            innermostWidth = width;
-        }
-    }
-
-    return innermostStart;
 }
 
 function shouldIncludeFileSymbol(
@@ -95,16 +87,10 @@ function shouldIncludeFileSymbol(
     return symbol.ownerFunctionStart === currentFunctionOwner;
 }
 
-function getFileCompletionIndex(
+function createFileCompletionIndex(
     analysis: LuauFileAnalysis,
-): FileIndexedCompletionItem[] {
-    const cachedIndex = FILE_COMPLETION_INDEX_CACHE.get(analysis);
-
-    if (cachedIndex) {
-        return cachedIndex;
-    }
-
-    const index = analysis.symbols
+): FileCompletionIndex {
+    const items = analysis.symbols
         .flatMap((symbol) =>
             symbol.kind === "comment" || symbol.kind === "loadstring"
                 ? []
@@ -114,9 +100,96 @@ function getFileCompletionIndex(
             compareIndexedCompletionItems(left, right, "balanced"),
         );
 
+    return {
+        functionScopesByStart: createFunctionScopeIndex(
+            analysis.functionScopes,
+        ),
+        items,
+        itemsByFirstCharacter: createCompletionItemsByFirstCharacter(items),
+    };
+}
+
+function createFunctionScopeIndex(
+    functionScopes: readonly ScopeFrame[],
+): FunctionScopeIndexEntry[] {
+    let maxEndThroughEntry = Number.NEGATIVE_INFINITY;
+
+    return functionScopes
+        .toSorted((left, right) => left.start - right.start)
+        .map((scope) => {
+            maxEndThroughEntry = Math.max(maxEndThroughEntry, scope.end);
+
+            return {
+                maxEndThroughEntry,
+                scope,
+            };
+        });
+}
+
+function getFileCompletionIndex(
+    analysis: LuauFileAnalysis,
+): FileCompletionIndex {
+    const cachedIndex = FILE_COMPLETION_INDEX_CACHE.get(analysis);
+
+    if (cachedIndex) {
+        return cachedIndex;
+    }
+
+    const index = createFileCompletionIndex(analysis);
+
     FILE_COMPLETION_INDEX_CACHE.set(analysis, index);
 
     return index;
+}
+
+function getLastFunctionScopeStartBeforeCursor(
+    functionScopes: readonly FunctionScopeIndexEntry[],
+    cursorIndex: number,
+): number {
+    let leftIndex = 0;
+    let rightIndex = functionScopes.length - 1;
+    let resultIndex = -1;
+
+    while (leftIndex <= rightIndex) {
+        const middleIndex = Math.floor((leftIndex + rightIndex) / 2);
+        const middleScope = functionScopes[middleIndex];
+
+        if (!middleScope || middleScope.scope.start > cursorIndex) {
+            rightIndex = middleIndex - 1;
+            continue;
+        }
+
+        resultIndex = middleIndex;
+        leftIndex = middleIndex + 1;
+    }
+
+    return resultIndex;
+}
+
+function getInnermostFunctionOwner(
+    functionScopes: readonly FunctionScopeIndexEntry[],
+    cursorIndex: number,
+): number | null {
+    const startIndex = getLastFunctionScopeStartBeforeCursor(
+        functionScopes,
+        cursorIndex,
+    );
+
+    for (let index = startIndex; index >= 0; index -= 1) {
+        const entry = functionScopes[index];
+
+        if (!entry || entry.maxEndThroughEntry < cursorIndex) {
+            return null;
+        }
+
+        const { scope } = entry;
+
+        if (cursorIndex <= scope.end) {
+            return scope.start;
+        }
+    }
+
+    return null;
 }
 
 function addVisibleFileCompletionItems(options: {
@@ -144,12 +217,18 @@ function addVisibleFileCompletionItems(options: {
         return;
     }
 
+    const fileCompletionIndex = getFileCompletionIndex(analysis);
     const currentFunctionOwner = getInnermostFunctionOwner(
-        analysis.functionScopes,
+        fileCompletionIndex.functionScopesByStart,
         cursorIndex,
     );
+    const matchingItems = getFirstCompletionItemsByPrefix(
+        fileCompletionIndex.itemsByFirstCharacter,
+        fileCompletionIndex.items,
+        normalizedPrefix,
+    );
 
-    for (const item of getFileCompletionIndex(analysis)) {
+    for (const item of matchingItems) {
         if (
             !shouldIncludeFileSymbol(
                 item.symbol,
@@ -209,9 +288,12 @@ export function getLuauCompletionQuery(options: {
             topItems,
         });
         addMatchingCompletionItems({
-            items:
-                LUAU_NAMESPACE_INDEX.get(namespacePath)?.[priority] ??
-                EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY[priority],
+            items: getCompletionIndexItemsByPrefix(
+                LUAU_NAMESPACE_INDEX.get(namespacePath) ??
+                    EMPTY_LUAU_COMPLETION_INDEX_BY_PRIORITY,
+                priority,
+                normalizedPrefix,
+            ),
             normalizedPrefix,
             priority,
             seen,
@@ -245,7 +327,11 @@ export function getLuauCompletionQuery(options: {
         topItems,
     });
     addMatchingCompletionItems({
-        items: LUAU_ROOT_COMPLETION_INDEX[priority],
+        items: getCompletionIndexItemsByPrefix(
+            LUAU_ROOT_COMPLETION_INDEX,
+            priority,
+            normalizedPrefix,
+        ),
         normalizedPrefix,
         priority,
         seen,
