@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/react";
 import type { CSSProperties, ReactElement, ReactNode, RefObject } from "react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -215,6 +215,10 @@ function WorkspacePaneTabBar({
 type WorkspaceSplitPaneProps = {
     node: WorkspaceSplitPaneNode;
     shouldShowTabBar: boolean;
+    tabById: ReadonlyMap<
+        string,
+        WorkspaceEditorSurfaceProps["pane"]["tabs"][number]
+    >;
     pane: WorkspaceEditorSurfaceProps["pane"];
     completion: WorkspaceEditorSurfaceProps["completion"];
     outline: WorkspaceEditorSurfaceProps["outline"];
@@ -225,6 +229,7 @@ type WorkspaceSplitPaneProps = {
 function WorkspaceSplitPane({
     node,
     shouldShowTabBar,
+    tabById,
     pane,
     completion,
     outline,
@@ -236,7 +241,6 @@ function WorkspaceSplitPane({
         aceRuntime,
         tabs: workspaceTabs,
     } = surface.state;
-    const tabById = new Map(workspaceTabs.map((tab) => [tab.id, tab] as const));
     const paneTabs = node.tabIds.reduce<(typeof workspaceTabs)[number][]>(
         (tabs, tabId) => {
             const tab = tabById.get(tabId);
@@ -315,6 +319,10 @@ function WorkspaceSplitPane({
 
 type WorkspaceSplitTreeProps = {
     node: WorkspaceSplitNode;
+    tabById: ReadonlyMap<
+        string,
+        WorkspaceEditorSurfaceProps["pane"]["tabs"][number]
+    >;
     pane: WorkspaceEditorSurfaceProps["pane"];
     completion: WorkspaceEditorSurfaceProps["completion"];
     outline: WorkspaceEditorSurfaceProps["outline"];
@@ -372,6 +380,7 @@ function WorkspaceSplitResizeHandle({
 
 function WorkspaceSplitTree({
     node,
+    tabById,
     pane,
     completion,
     outline,
@@ -385,6 +394,7 @@ function WorkspaceSplitTree({
             <WorkspaceSplitPane
                 node={node}
                 shouldShowTabBar
+                tabById={tabById}
                 pane={pane}
                 completion={completion}
                 outline={outline}
@@ -416,6 +426,7 @@ function WorkspaceSplitTree({
             >
                 <WorkspaceSplitTree
                     node={child}
+                    tabById={tabById}
                     pane={pane}
                     completion={completion}
                     outline={outline}
@@ -468,9 +479,14 @@ export function WorkspaceEditorSurface({
     const {
         editorSurfaceStyle,
         isAceReady,
+        tabs,
         workspaceActionsClassName,
         workspaceActionsStyle,
     } = surface.state;
+    const tabById = useMemo(
+        () => new Map(tabs.map((tab) => [tab.id, tab] as const)),
+        [tabs],
+    );
 
     return (
         <div
@@ -487,6 +503,7 @@ export function WorkspaceEditorSurface({
             {splitView?.root ? (
                 <WorkspaceSplitTree
                     node={splitView.root}
+                    tabById={tabById}
                     pane={pane}
                     completion={completion}
                     outline={outline}
@@ -499,9 +516,10 @@ export function WorkspaceEditorSurface({
                         type: "pane",
                         id: "pane-root",
                         activeTabId: pane.activeTabId,
-                        tabIds: pane.tabs.map((tab) => tab.id),
+                        tabIds: tabs.map((tab) => tab.id),
                     }}
                     shouldShowTabBar={false}
+                    tabById={tabById}
                     pane={pane}
                     completion={completion}
                     outline={{ onActiveTabLuauChange }}
