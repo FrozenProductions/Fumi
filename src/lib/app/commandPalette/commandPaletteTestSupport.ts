@@ -86,6 +86,7 @@ export function createWorkspaceSession(
         editorActions: {
             clearErrorMessage: vi.fn(),
             updateActiveTabContent: vi.fn(),
+            updateWorkspaceTabContent: vi.fn(),
             updateActiveTabCursor: vi.fn(),
             updateActiveTabScrollTop: vi.fn(),
             ...overrides.editorActions,

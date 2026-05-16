@@ -61,8 +61,8 @@ export function WorkspaceEditorRegion({
     const saveActiveWorkspaceTab = useWorkspaceStore(
         (state) => state.saveActiveWorkspaceTab,
     );
-    const updateActiveTabContent = useWorkspaceStore(
-        (state) => state.updateActiveTabContent,
+    const updateWorkspaceTabContent = useWorkspaceStore(
+        (state) => state.updateWorkspaceTabContent,
     );
     const updateActiveTabCursor = useWorkspaceStore(
         (state) => state.updateActiveTabCursor,
@@ -89,6 +89,7 @@ export function WorkspaceEditorRegion({
         activeTabId && latestLuauChangeState?.tabId === activeTabId
             ? latestLuauChangeState.change
             : null;
+    const resolvedActiveTabId = activeTabId ?? "";
     const resolvedTabs = useMemo(() => [...tabs], [tabs]);
     const { analysis: activeLuauAnalysis, symbols: luauSymbols } =
         useWorkspaceLuauAnalysis(
@@ -116,7 +117,7 @@ export function WorkspaceEditorRegion({
         intellisensePriority: editorSettings.intellisensePriority,
         intellisenseWidth: editorSettings.intellisenseWidth,
         saveActiveWorkspaceTab,
-        updateActiveTabContent,
+        updateWorkspaceTabContent,
         updateActiveTabCursor,
         updateActiveTabScrollTop,
     });
@@ -162,59 +163,116 @@ export function WorkspaceEditorRegion({
         [setOutlineExpandedGroups],
     );
 
+    const pane = useMemo(
+        () => ({
+            activeTabId: resolvedActiveTabId,
+            appTheme,
+            cursorStyle: editorSettings.cursorStyle,
+            editorFontSize: editorSettings.fontSize,
+            isSmoothCaretEnabled: editorSettings.isSmoothCaretEnabled,
+            isScopeHighlightingEnabled:
+                editorSettings.isScopeHighlightingEnabled,
+            isRelativeLineNumbersEnabled:
+                editorSettings.isRelativeLineNumbersEnabled,
+            isWordWrapEnabled: editorSettings.isWordWrapEnabled,
+            isTabsToSpacesEnabled: editorSettings.isTabsToSpacesEnabled,
+            tabSize: editorSettings.tabSize,
+            tabs: resolvedTabs,
+            searchPanel,
+            tabBar,
+            workspaceActionsButton,
+            onSelectTab: selectWorkspaceTab,
+        }),
+        [
+            resolvedActiveTabId,
+            appTheme,
+            editorSettings.cursorStyle,
+            editorSettings.fontSize,
+            editorSettings.isRelativeLineNumbersEnabled,
+            editorSettings.isScopeHighlightingEnabled,
+            editorSettings.isSmoothCaretEnabled,
+            editorSettings.isTabsToSpacesEnabled,
+            editorSettings.isWordWrapEnabled,
+            editorSettings.tabSize,
+            resolvedTabs,
+            searchPanel,
+            selectWorkspaceTab,
+            tabBar,
+            workspaceActionsButton,
+        ],
+    );
+    const completion = useMemo(
+        () => ({
+            acceptCompletion,
+            completionPopup,
+            createHandleEditorChange,
+            createHandleEditorLoad,
+            createHandleEditorUnmount,
+            createHandleScroll,
+            handleCompletionHover,
+        }),
+        [
+            acceptCompletion,
+            completionPopup,
+            createHandleEditorChange,
+            createHandleEditorLoad,
+            createHandleEditorUnmount,
+            createHandleScroll,
+            handleCompletionHover,
+        ],
+    );
+    const outline = useMemo(
+        () => ({
+            isOutlinePanelVisible: editorSettings.isOutlinePanelVisible,
+            sidebarPosition,
+            luauSymbols,
+            outlinePanelWidth: editorSettings.outlinePanelWidth,
+            outlineExpandedGroups: editorSettings.outlineExpandedGroups,
+            outlineSearchQuery: editorSettings.outlineSearchQuery,
+            onToggleExpandedGroup: handleToggleOutlineExpandedGroup,
+            onExpandAllGroups: handleExpandAllOutlineGroups,
+            onCollapseAllGroups: handleCollapseAllOutlineGroups,
+            onOutlineSearchQueryChange: setOutlineSearchQuery,
+            onActiveTabLuauChange: handleActiveTabLuauChange,
+            onSetOutlinePanelWidth: setOutlinePanelWidth,
+            goToLine,
+        }),
+        [
+            editorSettings.isOutlinePanelVisible,
+            editorSettings.outlineExpandedGroups,
+            editorSettings.outlinePanelWidth,
+            editorSettings.outlineSearchQuery,
+            goToLine,
+            handleActiveTabLuauChange,
+            handleCollapseAllOutlineGroups,
+            handleExpandAllOutlineGroups,
+            handleToggleOutlineExpandedGroup,
+            luauSymbols,
+            setOutlinePanelWidth,
+            setOutlineSearchQuery,
+            sidebarPosition,
+        ],
+    );
+    const splitViewState = useMemo(
+        () => ({
+            splitView,
+            onFocusPane: focusWorkspacePane,
+            onResizeSplitPreview,
+            onResizeSplitCommit,
+            onResizeSplitCancel,
+        }),
+        [
+            focusWorkspacePane,
+            onResizeSplitCancel,
+            onResizeSplitCommit,
+            onResizeSplitPreview,
+            splitView,
+        ],
+    );
+
     if (!activeTabId) {
         return null;
     }
-
-    const pane = {
-        activeTabId,
-        appTheme,
-        cursorStyle: editorSettings.cursorStyle,
-        editorFontSize: editorSettings.fontSize,
-        isSmoothCaretEnabled: editorSettings.isSmoothCaretEnabled,
-        isScopeHighlightingEnabled: editorSettings.isScopeHighlightingEnabled,
-        isRelativeLineNumbersEnabled:
-            editorSettings.isRelativeLineNumbersEnabled,
-        isWordWrapEnabled: editorSettings.isWordWrapEnabled,
-        isTabsToSpacesEnabled: editorSettings.isTabsToSpacesEnabled,
-        tabSize: editorSettings.tabSize,
-        tabs: resolvedTabs,
-        searchPanel,
-        tabBar,
-        workspaceActionsButton,
-        onSelectTab: selectWorkspaceTab,
-    } as const;
-    const completion = {
-        acceptCompletion,
-        completionPopup,
-        createHandleEditorChange,
-        createHandleEditorLoad,
-        createHandleEditorUnmount,
-        createHandleScroll,
-        handleCompletionHover,
-    } as const;
-    const outline = {
-        isOutlinePanelVisible: editorSettings.isOutlinePanelVisible,
-        sidebarPosition,
-        luauSymbols,
-        outlinePanelWidth: editorSettings.outlinePanelWidth,
-        outlineExpandedGroups: editorSettings.outlineExpandedGroups,
-        outlineSearchQuery: editorSettings.outlineSearchQuery,
-        onToggleExpandedGroup: handleToggleOutlineExpandedGroup,
-        onExpandAllGroups: handleExpandAllOutlineGroups,
-        onCollapseAllGroups: handleCollapseAllOutlineGroups,
-        onOutlineSearchQueryChange: setOutlineSearchQuery,
-        onActiveTabLuauChange: handleActiveTabLuauChange,
-        onSetOutlinePanelWidth: setOutlinePanelWidth,
-        goToLine,
-    } as const;
-    const splitViewState = {
-        splitView,
-        onFocusPane: focusWorkspacePane,
-        onResizeSplitPreview,
-        onResizeSplitCommit,
-        onResizeSplitCancel,
-    } as const;
 
     return (
         <WorkspaceEditor

@@ -53,6 +53,7 @@ type UseWorkspaceSessionStoreFields = Pick<
     | "focusWorkspacePane"
     | "closeWorkspaceSplitView"
     | "updateActiveTabContent"
+    | "updateWorkspaceTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
     | "workspace"
@@ -109,6 +110,7 @@ export type WorkspaceSessionArchiveActions = Pick<
 export type WorkspaceSessionEditorActions = Pick<
     UseWorkspaceSessionStoreFields,
     | "updateActiveTabContent"
+    | "updateWorkspaceTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
     | "clearErrorMessage"

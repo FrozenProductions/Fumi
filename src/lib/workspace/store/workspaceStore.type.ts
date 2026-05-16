@@ -80,6 +80,7 @@ type WorkspaceStoreActions = {
     closeWorkspaceSplitView: () => void;
     saveActiveWorkspaceTab: () => Promise<void>;
     updateActiveTabContent: (content: string) => void;
+    updateWorkspaceTabContent: (tabId: string, content: string) => void;
     updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;
     updateActiveTabScrollTop: (scrollTop: number) => void;
     replaceWorkspaceExecutionHistory: (
@@ -151,6 +152,7 @@ export type WorkspaceEditorSlice = Pick<
     WorkspaceStoreActions,
     | "saveActiveWorkspaceTab"
     | "updateActiveTabContent"
+    | "updateWorkspaceTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
     | "setErrorMessage"

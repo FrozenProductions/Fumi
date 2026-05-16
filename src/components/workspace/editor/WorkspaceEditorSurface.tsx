@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/react";
 import type { CSSProperties, ReactElement, ReactNode, RefObject } from "react";
-import { useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -13,6 +13,7 @@ import {
 import { useWorkspaceAcePaneHandlers } from "../../../hooks/workspace/useWorkspaceAcePaneHandlers";
 import { useWorkspaceSplitResizeHandle } from "../../../hooks/workspace/useWorkspaceSplitResizeHandle";
 import { joinClassNames } from "../../../lib/shared/className";
+import type { AceChangeDelta } from "../../../lib/workspace/codeCompletion/ace.type";
 import type {
     WorkspaceSplitNode,
     WorkspaceSplitPaneNode,
@@ -27,7 +28,7 @@ import type {
     WorkspaceEditorSurfaceProps,
 } from "./WorkspaceEditorSurface.type";
 
-function WorkspaceAcePane({
+const WorkspaceAcePane = memo(function WorkspaceAcePane({
     AceEditorComponent,
     aceRuntime,
     appTheme,
@@ -48,6 +49,7 @@ function WorkspaceAcePane({
     tab,
     tabSize,
 }: WorkspaceAcePaneProps): ReactElement {
+    const [editorValue, setEditorValue] = useState(tab.content);
     const acePaneHandlers = useWorkspaceAcePaneHandlers({
         createHandleEditorChange,
         createHandleEditorLoad,
@@ -61,19 +63,37 @@ function WorkspaceAcePane({
         tab,
         tabSize,
     });
-    const editorOptions = {
-        ...WORKSPACE_EDITOR_OPTIONS,
-        animatedScroll: isSmoothCaretEnabled,
-        cursorStyle,
-        relativeLineNumbers: false,
-        useSoftTabs: isTabsToSpacesEnabled,
-    } as const;
-    const editorClassName = joinClassNames(
-        "workspace-ace-editor",
-        isSmoothCaretEnabled && "workspace-ace-editor-smooth-caret",
-        !isScopeHighlightingEnabled &&
-            "workspace-ace-editor-disable-scope-highlight",
+    const editorOptions = useMemo(
+        () => ({
+            ...WORKSPACE_EDITOR_OPTIONS,
+            animatedScroll: isSmoothCaretEnabled,
+            cursorStyle,
+            relativeLineNumbers: false,
+            useSoftTabs: isTabsToSpacesEnabled,
+        }),
+        [cursorStyle, isSmoothCaretEnabled, isTabsToSpacesEnabled],
     );
+    const editorClassName = useMemo(
+        () =>
+            joinClassNames(
+                "workspace-ace-editor",
+                isSmoothCaretEnabled && "workspace-ace-editor-smooth-caret",
+                !isScopeHighlightingEnabled &&
+                    "workspace-ace-editor-disable-scope-highlight",
+            ),
+        [isScopeHighlightingEnabled, isSmoothCaretEnabled],
+    );
+    const syncEditorValueChange = useCallback(
+        (value: string, delta?: AceChangeDelta): void => {
+            setEditorValue(value);
+            acePaneHandlers.onChange(value, delta);
+        },
+        [acePaneHandlers],
+    );
+
+    useEffect(() => {
+        setEditorValue(tab.content);
+    }, [tab.content]);
 
     return (
         <div
@@ -88,9 +108,9 @@ function WorkspaceAcePane({
                 theme={aceRuntime.getTheme(appTheme)}
                 width="100%"
                 height="100%"
-                value={tab.content}
+                value={editorValue}
                 onLoad={acePaneHandlers.onLoad}
-                onChange={acePaneHandlers.onChange}
+                onChange={syncEditorValueChange}
                 onScroll={acePaneHandlers.onScroll}
                 onFocus={acePaneHandlers.onFocus}
                 onBlur={acePaneHandlers.onBlur}
@@ -109,6 +129,42 @@ function WorkspaceAcePane({
                 style={WORKSPACE_EDITOR_STYLE}
             />
         </div>
+    );
+}, areWorkspaceAcePanePropsEqual);
+
+function areWorkspaceAcePanePropsEqual(
+    currentProps: WorkspaceAcePaneProps,
+    nextProps: WorkspaceAcePaneProps,
+): boolean {
+    return (
+        currentProps.AceEditorComponent === nextProps.AceEditorComponent &&
+        currentProps.aceRuntime === nextProps.aceRuntime &&
+        currentProps.appTheme === nextProps.appTheme &&
+        currentProps.createHandleEditorChange ===
+            nextProps.createHandleEditorChange &&
+        currentProps.createHandleEditorLoad ===
+            nextProps.createHandleEditorLoad &&
+        currentProps.createHandleEditorUnmount ===
+            nextProps.createHandleEditorUnmount &&
+        currentProps.createHandleScroll === nextProps.createHandleScroll &&
+        currentProps.cursorStyle === nextProps.cursorStyle &&
+        currentProps.editorFontSize === nextProps.editorFontSize &&
+        currentProps.isSmoothCaretEnabled === nextProps.isSmoothCaretEnabled &&
+        currentProps.isScopeHighlightingEnabled ===
+            nextProps.isScopeHighlightingEnabled &&
+        currentProps.isRelativeLineNumbersEnabled ===
+            nextProps.isRelativeLineNumbersEnabled &&
+        currentProps.isWordWrapEnabled === nextProps.isWordWrapEnabled &&
+        currentProps.isTabsToSpacesEnabled ===
+            nextProps.isTabsToSpacesEnabled &&
+        currentProps.isActiveTab === nextProps.isActiveTab &&
+        currentProps.isVisible === nextProps.isVisible &&
+        currentProps.onActiveTabLuauChange ===
+            nextProps.onActiveTabLuauChange &&
+        currentProps.tab.id === nextProps.tab.id &&
+        currentProps.tab.fileName === nextProps.tab.fileName &&
+        currentProps.tab.content === nextProps.tab.content &&
+        currentProps.tabSize === nextProps.tabSize
     );
 }
 
@@ -226,7 +282,7 @@ type WorkspaceSplitPaneProps = {
     splitViewState: WorkspaceEditorSurfaceProps["splitViewState"];
 };
 
-function WorkspaceSplitPane({
+const WorkspaceSplitPane = memo(function WorkspaceSplitPane({
     node,
     shouldShowTabBar,
     tabById,
@@ -257,13 +313,14 @@ function WorkspaceSplitPane({
         (node.activeTabId ? tabById.get(node.activeTabId) : undefined) ??
         paneTabs[0] ??
         null;
+    const handlePointerDown = useCallback((): void => {
+        splitViewState.onFocusPane(node.id);
+    }, [node.id, splitViewState.onFocusPane]);
 
     return (
         <div
             className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-fumi-200 bg-fumi-50"
-            onPointerDown={() => {
-                splitViewState.onFocusPane(node.id);
-            }}
+            onPointerDown={handlePointerDown}
         >
             {shouldShowTabBar ? (
                 <WorkspacePaneTabBar
@@ -314,6 +371,105 @@ function WorkspaceSplitPane({
                 <WorkspaceSplitDropZone paneId={node.id} placement="bottom" />
             </div>
         </div>
+    );
+}, areWorkspaceSplitPanePropsEqual);
+
+function getWorkspaceSplitPaneActiveTab(
+    props: WorkspaceSplitPaneProps,
+): WorkspaceEditorSurfaceProps["pane"]["tabs"][number] | null {
+    const explicitActiveTab = props.node.activeTabId
+        ? props.tabById.get(props.node.activeTabId)
+        : undefined;
+
+    if (explicitActiveTab) {
+        return explicitActiveTab;
+    }
+
+    for (const tabId of props.node.tabIds) {
+        const tab = props.tabById.get(tabId);
+
+        if (tab) {
+            return tab;
+        }
+    }
+
+    return null;
+}
+
+function areWorkspaceSplitPaneTabBarsEqual(
+    currentProps: WorkspaceSplitPaneProps,
+    nextProps: WorkspaceSplitPaneProps,
+): boolean {
+    if (currentProps.shouldShowTabBar !== nextProps.shouldShowTabBar) {
+        return false;
+    }
+
+    return (
+        currentProps.node.tabIds.length === nextProps.node.tabIds.length &&
+        currentProps.node.tabIds.every((tabId, index) => {
+            if (tabId !== nextProps.node.tabIds[index]) {
+                return false;
+            }
+
+            const currentTab = currentProps.tabById.get(tabId);
+            const nextTab = nextProps.tabById.get(tabId);
+
+            return (
+                currentTab?.id === nextTab?.id &&
+                currentTab?.fileName === nextTab?.fileName &&
+                currentTab?.isPinned === nextTab?.isPinned &&
+                (currentTab?.content !== currentTab?.savedContent) ===
+                    (nextTab?.content !== nextTab?.savedContent)
+            );
+        })
+    );
+}
+
+function areWorkspaceSplitPanePropsEqual(
+    currentProps: WorkspaceSplitPaneProps,
+    nextProps: WorkspaceSplitPaneProps,
+): boolean {
+    const currentActiveTab = getWorkspaceSplitPaneActiveTab(currentProps);
+    const nextActiveTab = getWorkspaceSplitPaneActiveTab(nextProps);
+
+    return (
+        currentProps.node === nextProps.node &&
+        currentProps.pane.activeTabId === nextProps.pane.activeTabId &&
+        currentProps.pane.appTheme === nextProps.pane.appTheme &&
+        currentProps.pane.cursorStyle === nextProps.pane.cursorStyle &&
+        currentProps.pane.editorFontSize === nextProps.pane.editorFontSize &&
+        currentProps.pane.isSmoothCaretEnabled ===
+            nextProps.pane.isSmoothCaretEnabled &&
+        currentProps.pane.isScopeHighlightingEnabled ===
+            nextProps.pane.isScopeHighlightingEnabled &&
+        currentProps.pane.isRelativeLineNumbersEnabled ===
+            nextProps.pane.isRelativeLineNumbersEnabled &&
+        currentProps.pane.isWordWrapEnabled ===
+            nextProps.pane.isWordWrapEnabled &&
+        currentProps.pane.isTabsToSpacesEnabled ===
+            nextProps.pane.isTabsToSpacesEnabled &&
+        currentProps.pane.tabSize === nextProps.pane.tabSize &&
+        currentProps.pane.tabBar === nextProps.pane.tabBar &&
+        currentProps.pane.onSelectTab === nextProps.pane.onSelectTab &&
+        currentProps.completion.createHandleEditorChange ===
+            nextProps.completion.createHandleEditorChange &&
+        currentProps.completion.createHandleEditorLoad ===
+            nextProps.completion.createHandleEditorLoad &&
+        currentProps.completion.createHandleEditorUnmount ===
+            nextProps.completion.createHandleEditorUnmount &&
+        currentProps.completion.createHandleScroll ===
+            nextProps.completion.createHandleScroll &&
+        currentProps.outline.onActiveTabLuauChange ===
+            nextProps.outline.onActiveTabLuauChange &&
+        currentProps.surface.state.AceEditorComponent ===
+            nextProps.surface.state.AceEditorComponent &&
+        currentProps.surface.state.aceRuntime ===
+            nextProps.surface.state.aceRuntime &&
+        currentProps.splitViewState === nextProps.splitViewState &&
+        currentActiveTab?.id === nextActiveTab?.id &&
+        currentActiveTab?.fileName === nextActiveTab?.fileName &&
+        currentActiveTab?.content === nextActiveTab?.content &&
+        areWorkspaceSplitPaneTabBarsEqual(currentProps, nextProps)
     );
 }
 
@@ -487,6 +643,20 @@ export function WorkspaceEditorSurface({
         () => new Map(tabs.map((tab) => [tab.id, tab] as const)),
         [tabs],
     );
+    const rootPaneNode = useMemo(
+        () =>
+            ({
+                type: "pane",
+                id: "pane-root",
+                activeTabId: pane.activeTabId,
+                tabIds: tabs.map((tab) => tab.id),
+            }) satisfies WorkspaceSplitPaneNode,
+        [pane.activeTabId, tabs],
+    );
+    const rootPaneOutline = useMemo(
+        () => ({ onActiveTabLuauChange }),
+        [onActiveTabLuauChange],
+    );
 
     return (
         <div
@@ -512,17 +682,12 @@ export function WorkspaceEditorSurface({
                 />
             ) : (
                 <WorkspaceSplitPane
-                    node={{
-                        type: "pane",
-                        id: "pane-root",
-                        activeTabId: pane.activeTabId,
-                        tabIds: tabs.map((tab) => tab.id),
-                    }}
+                    node={rootPaneNode}
                     shouldShowTabBar={false}
                     tabById={tabById}
                     pane={pane}
                     completion={completion}
-                    outline={{ onActiveTabLuauChange }}
+                    outline={rootPaneOutline}
                     surface={surface}
                     splitViewState={splitViewState}
                 />

@@ -94,6 +94,7 @@ function createWorkspaceStoreState(
         closeWorkspaceSplitView: vi.fn(),
         saveActiveWorkspaceTab: vi.fn(),
         updateActiveTabContent: vi.fn(),
+        updateWorkspaceTabContent: vi.fn(),
         updateActiveTabCursor: vi.fn(),
         updateActiveTabScrollTop: vi.fn(),
         setErrorMessage: vi.fn(),

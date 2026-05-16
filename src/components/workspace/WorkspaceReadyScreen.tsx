@@ -346,6 +346,53 @@ function WorkspaceReadyContent({
     onSplitWorkspaceTab,
     onToggleWorkspaceTabPinned,
 }: WorkspaceReadyContentProps): ReactElement {
+    const editorRegionTabBar = useMemo(
+        () => ({
+            workspaceBase: {
+                workspacePath: workspace.workspacePath,
+                workspaceName: workspace.workspaceName,
+                archivedTabs: workspace.archivedTabs,
+                executionHistory: workspace.executionHistory,
+                splitView: resolvedSplitView,
+            },
+            renameState,
+            isTabDragActive,
+            onCreateFile: onCreateWorkspaceFile,
+            onSelectTab: onSelectWorkspaceTab,
+            onDuplicateTab: onDuplicateWorkspaceTab,
+            onArchiveTab: onArchiveWorkspaceTab,
+            onArchiveAllTabs: onArchiveAllWorkspaceTabs,
+            onArchiveOtherTabs: onArchiveOtherWorkspaceTabs,
+            onToggleTabPinned: onToggleWorkspaceTabPinned,
+            onDeleteTab: onDeleteWorkspaceTab,
+            onSplitTab: onSplitWorkspaceTab,
+            onCloseSplitView: onCloseWorkspaceSplitView,
+            middleClickTabAction,
+            isSplitViewArchiveScopeEnabled,
+        }),
+        [
+            isSplitViewArchiveScopeEnabled,
+            isTabDragActive,
+            middleClickTabAction,
+            onArchiveAllWorkspaceTabs,
+            onArchiveOtherWorkspaceTabs,
+            onArchiveWorkspaceTab,
+            onCloseWorkspaceSplitView,
+            onCreateWorkspaceFile,
+            onDeleteWorkspaceTab,
+            onDuplicateWorkspaceTab,
+            onSelectWorkspaceTab,
+            onSplitWorkspaceTab,
+            onToggleWorkspaceTabPinned,
+            renameState,
+            resolvedSplitView,
+            workspace.archivedTabs,
+            workspace.executionHistory,
+            workspace.workspaceName,
+            workspace.workspacePath,
+        ],
+    );
+
     return (
         <>
             {workspace.tabs.length > 0 && !resolvedSplitView ? (
@@ -400,32 +447,7 @@ function WorkspaceReadyContent({
                                 onResizeSplitCommit={onResizeSplitCommit}
                                 onResizeSplitCancel={onResizeSplitCancel}
                                 workspaceActionsButton={workspaceActionsButton}
-                                tabBar={{
-                                    workspaceBase: {
-                                        workspacePath: workspace.workspacePath,
-                                        workspaceName: workspace.workspaceName,
-                                        archivedTabs: workspace.archivedTabs,
-                                        executionHistory:
-                                            workspace.executionHistory,
-                                        splitView: resolvedSplitView,
-                                    },
-                                    renameState,
-                                    isTabDragActive,
-                                    onCreateFile: onCreateWorkspaceFile,
-                                    onSelectTab: onSelectWorkspaceTab,
-                                    onDuplicateTab: onDuplicateWorkspaceTab,
-                                    onArchiveTab: onArchiveWorkspaceTab,
-                                    onArchiveAllTabs: onArchiveAllWorkspaceTabs,
-                                    onArchiveOtherTabs:
-                                        onArchiveOtherWorkspaceTabs,
-                                    onToggleTabPinned:
-                                        onToggleWorkspaceTabPinned,
-                                    onDeleteTab: onDeleteWorkspaceTab,
-                                    onSplitTab: onSplitWorkspaceTab,
-                                    onCloseSplitView: onCloseWorkspaceSplitView,
-                                    middleClickTabAction,
-                                    isSplitViewArchiveScopeEnabled,
-                                }}
+                                tabBar={editorRegionTabBar}
                             />
                         </div>
                     </div>

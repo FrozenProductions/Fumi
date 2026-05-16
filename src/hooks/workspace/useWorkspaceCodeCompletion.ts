@@ -1,4 +1,5 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { WORKSPACE_EDITOR_CONTENT_SYNC_DELAY_MS } from "../../constants/workspace/editor";
 import type { LuauFileAnalysis } from "../../lib/luau/symbolScanner/symbolScanner.type";
 import { isPassiveCompletionTrigger } from "../../lib/workspace/codeCompletion/ace";
 import type {
@@ -9,6 +10,10 @@ import type {
     UseWorkspaceCodeCompletionOptions,
     UseWorkspaceCodeCompletionResult,
 } from "../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
+import {
+    clearLiveWorkspaceEditorContent,
+    setLiveWorkspaceEditorContent,
+} from "../../lib/workspace/editor/liveWorkspaceEditorContent";
 import type {
     AceEditorDestroyEventTarget,
     StoredAceSessionState,
@@ -35,7 +40,7 @@ export function useWorkspaceCodeCompletion({
     intellisensePriority,
     intellisenseWidth,
     saveActiveWorkspaceTab,
-    updateActiveTabContent,
+    updateWorkspaceTabContent,
     updateActiveTabCursor,
     updateActiveTabScrollTop,
 }: UseWorkspaceCodeCompletionOptions): UseWorkspaceCodeCompletionResult {
@@ -46,6 +51,13 @@ export function useWorkspaceCodeCompletion({
     const sessionStateByTabIdRef = useRef(
         new Map<string, StoredAceSessionState>(),
     );
+    const cursorUpdateAnimationFrameIdRef = useRef<number | null>(null);
+    const scrollUpdateAnimationFrameIdRef = useRef<number | null>(null);
+    const contentUpdateTimeoutIdRef = useRef<number | null>(null);
+    const pendingContentUpdateRef = useRef<{
+        content: string;
+        tabId: string;
+    } | null>(null);
     const suppressNextPassiveCompletionRef = useRef(false);
     const activeTabIdRef = useRef<string | null>(activeTabId);
     const activeLuauAnalysisRef = useRef<LuauFileAnalysis | null>(
@@ -69,6 +81,146 @@ export function useWorkspaceCodeCompletion({
         (): LuauFileAnalysis | null => activeLuauAnalysisRef.current,
         [],
     );
+    const cancelCursorUpdate = useCallback((): void => {
+        if (cursorUpdateAnimationFrameIdRef.current === null) {
+            return;
+        }
+
+        window.cancelAnimationFrame(cursorUpdateAnimationFrameIdRef.current);
+        cursorUpdateAnimationFrameIdRef.current = null;
+    }, []);
+    const cancelScrollUpdate = useCallback((): void => {
+        if (scrollUpdateAnimationFrameIdRef.current === null) {
+            return;
+        }
+
+        window.cancelAnimationFrame(scrollUpdateAnimationFrameIdRef.current);
+        scrollUpdateAnimationFrameIdRef.current = null;
+    }, []);
+    const cancelContentUpdate = useCallback((): void => {
+        if (contentUpdateTimeoutIdRef.current === null) {
+            return;
+        }
+
+        window.clearTimeout(contentUpdateTimeoutIdRef.current);
+        contentUpdateTimeoutIdRef.current = null;
+    }, []);
+    const flushPendingContentToStore = useCallback((): void => {
+        cancelContentUpdate();
+
+        const pendingContentUpdate = pendingContentUpdateRef.current;
+
+        if (!pendingContentUpdate) {
+            return;
+        }
+
+        pendingContentUpdateRef.current = null;
+        updateWorkspaceTabContent(
+            pendingContentUpdate.tabId,
+            pendingContentUpdate.content,
+        );
+        clearLiveWorkspaceEditorContent(pendingContentUpdate.tabId);
+    }, [cancelContentUpdate, updateWorkspaceTabContent]);
+    const scheduleContentUpdate = useCallback(
+        (tabId: string, content: string): void => {
+            setLiveWorkspaceEditorContent(tabId, content);
+            pendingContentUpdateRef.current = { content, tabId };
+            cancelContentUpdate();
+            contentUpdateTimeoutIdRef.current = window.setTimeout(() => {
+                flushPendingContentToStore();
+            }, WORKSPACE_EDITOR_CONTENT_SYNC_DELAY_MS);
+        },
+        [cancelContentUpdate, flushPendingContentToStore],
+    );
+    const flushActiveCursorToStore = useCallback((): void => {
+        cancelCursorUpdate();
+
+        const activeTabIdValue = activeTabIdRef.current;
+
+        if (!activeTabIdValue) {
+            return;
+        }
+
+        const editor = editorByTabIdRef.current.get(activeTabIdValue);
+
+        if (!editor) {
+            return;
+        }
+
+        const cursor = editor.getCursorPosition();
+
+        updateActiveTabCursor({
+            line: cursor.row,
+            column: cursor.column,
+            scrollTop: editor.session.getScrollTop(),
+        });
+    }, [cancelCursorUpdate, updateActiveTabCursor]);
+    const scheduleCursorUpdate = useCallback(
+        (tabId: string): void => {
+            if (cursorUpdateAnimationFrameIdRef.current !== null) {
+                return;
+            }
+
+            cursorUpdateAnimationFrameIdRef.current =
+                window.requestAnimationFrame(() => {
+                    cursorUpdateAnimationFrameIdRef.current = null;
+
+                    if (activeTabIdRef.current !== tabId) {
+                        return;
+                    }
+
+                    const editor = editorByTabIdRef.current.get(tabId);
+
+                    if (!editor) {
+                        return;
+                    }
+
+                    const cursor = editor.getCursorPosition();
+
+                    updateActiveTabCursor({
+                        line: cursor.row,
+                        column: cursor.column,
+                        scrollTop: editor.session.getScrollTop(),
+                    });
+                });
+        },
+        [updateActiveTabCursor],
+    );
+    const scheduleScrollUpdate = useCallback(
+        (tabId: string): void => {
+            if (scrollUpdateAnimationFrameIdRef.current !== null) {
+                return;
+            }
+
+            scrollUpdateAnimationFrameIdRef.current =
+                window.requestAnimationFrame(() => {
+                    scrollUpdateAnimationFrameIdRef.current = null;
+
+                    if (activeTabIdRef.current !== tabId) {
+                        return;
+                    }
+
+                    const editor = editorByTabIdRef.current.get(tabId);
+
+                    if (!editor) {
+                        return;
+                    }
+
+                    updateActiveTabScrollTop(editor.session.getScrollTop());
+                });
+        },
+        [updateActiveTabScrollTop],
+    );
+    const saveActiveWorkspaceTabWithCursor =
+        useCallback(async (): Promise<void> => {
+            flushPendingContentToStore();
+            flushActiveCursorToStore();
+            await saveActiveWorkspaceTab();
+        }, [
+            flushActiveCursorToStore,
+            flushPendingContentToStore,
+            saveActiveWorkspaceTab,
+        ]);
 
     const {
         acceptCompletion,
@@ -120,7 +272,7 @@ export function useWorkspaceCodeCompletion({
         editorByTabIdRef,
         getActiveEditor,
         goToLine,
-        saveActiveWorkspaceTab,
+        saveActiveWorkspaceTab: saveActiveWorkspaceTabWithCursor,
         sessionStateByTabIdRef,
         tabs,
     });
@@ -138,12 +290,7 @@ export function useWorkspaceCodeCompletion({
             return;
         }
 
-        const cursor = editor.getCursorPosition();
-        updateActiveTabCursor({
-            line: cursor.row,
-            column: cursor.column,
-            scrollTop: editor.session.getScrollTop(),
-        });
+        scheduleCursorUpdate(tabId);
 
         if (suppressNextPassiveCompletionRef.current) {
             suppressNextPassiveCompletionRef.current = false;
@@ -191,6 +338,7 @@ export function useWorkspaceCodeCompletion({
             cursorListenerCleanupByTabIdRef.current.get(tabId)?.();
             cursorListenerCleanupByTabIdRef.current.delete(tabId);
             editorByTabIdRef.current.delete(tabId);
+            clearLiveWorkspaceEditorContent(tabId);
 
             if (activeTabIdRef.current === tabId) {
                 closeCompletionPopup();
@@ -206,7 +354,7 @@ export function useWorkspaceCodeCompletion({
                     return;
                 }
 
-                updateActiveTabContent(value);
+                scheduleContentUpdate(tabId, value);
 
                 if (!isIntellisenseEnabled) {
                     closeCompletionPopup();
@@ -234,8 +382,8 @@ export function useWorkspaceCodeCompletion({
         [
             closeCompletionPopup,
             isIntellisenseEnabled,
-            updateActiveTabContent,
             updateCompletionPopup,
+            scheduleContentUpdate,
         ],
     );
 
@@ -248,7 +396,7 @@ export function useWorkspaceCodeCompletion({
                     return;
                 }
 
-                updateActiveTabScrollTop(editor.session.getScrollTop());
+                scheduleScrollUpdate(tabId);
 
                 if (!completionPopup) {
                     return;
@@ -256,8 +404,16 @@ export function useWorkspaceCodeCompletion({
 
                 repositionCompletionPopup();
             },
-        [completionPopup, repositionCompletionPopup, updateActiveTabScrollTop],
+        [completionPopup, repositionCompletionPopup, scheduleScrollUpdate],
     );
+
+    useEffect(() => {
+        return () => {
+            flushPendingContentToStore();
+            cancelCursorUpdate();
+            cancelScrollUpdate();
+        };
+    }, [cancelCursorUpdate, cancelScrollUpdate, flushPendingContentToStore]);
 
     return {
         completionPopup,

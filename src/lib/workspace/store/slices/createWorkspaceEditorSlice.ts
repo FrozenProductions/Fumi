@@ -1,11 +1,16 @@
 import { saveWorkspaceFile as saveWorkspaceFileCommand } from "../../../platform/workspace/workspace";
 import { getErrorMessage } from "../../../shared/errorMessage";
+import {
+    clearLiveWorkspaceEditorContent,
+    getLiveWorkspaceEditorContent,
+} from "../../editor/liveWorkspaceEditorContent";
 import { clampCursorToContent } from "../../session/sessionCursor";
 import type { WorkspaceCursorState } from "../../session/sessionCursor.type";
 import {
     updateActiveWorkspaceTab,
     updateWorkspaceTab,
 } from "../../session/tabs/sessionTabs";
+import type { WorkspaceTab } from "../../session/tabs/sessionTabs.type";
 import {
     getActiveTabFromWorkspace,
     isMatchingWorkspacePath,
@@ -34,27 +39,37 @@ function removeTransientTabCursor(
 export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
     WorkspaceEditorSlice
 > = (set, get) => {
-    const getResolvedActiveTabCursor = (): WorkspaceCursorState | null => {
-        const { transientTabCursorsById, workspace } = get();
-        const activeTab = getActiveTabFromWorkspace(workspace);
-
-        if (!workspace || !activeTab) {
-            return null;
-        }
-
-        return clampCursorToContent(
-            activeTab.content,
-            transientTabCursorsById[activeTab.id] ?? activeTab.cursor,
-        );
-    };
-
+    const updateTabContent = (
+        tab: WorkspaceTab,
+        content: string,
+    ): WorkspaceTab => ({
+        ...tab,
+        content,
+        contentRevision: (tab.contentRevision ?? 0) + 1,
+    });
     return {
         saveActiveWorkspaceTab: async (): Promise<void> => {
-            const { workspace } = get();
+            const { transientTabCursorsById, workspace } = get();
             const activeTab = getActiveTabFromWorkspace(workspace);
-            const nextCursor = getResolvedActiveTabCursor();
+            const activeContent = activeTab
+                ? (getLiveWorkspaceEditorContent(activeTab.id) ??
+                  activeTab.content)
+                : null;
+            const nextCursor =
+                activeTab && activeContent !== null
+                    ? clampCursorToContent(
+                          activeContent,
+                          transientTabCursorsById[activeTab.id] ??
+                              activeTab.cursor,
+                      )
+                    : null;
 
-            if (!workspace || !activeTab || !nextCursor) {
+            if (
+                !workspace ||
+                !activeTab ||
+                activeContent === null ||
+                !nextCursor
+            ) {
                 return;
             }
 
@@ -62,7 +77,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                 await saveWorkspaceFileCommand({
                     workspacePath: workspace.workspacePath,
                     tabId: activeTab.id,
-                    content: activeTab.content,
+                    content: activeContent,
                     cursor: nextCursor,
                 });
 
@@ -88,8 +103,9 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                             activeTab.id,
                             (tab) => ({
                                 ...tab,
+                                content: activeContent,
                                 cursor: nextCursor,
-                                savedContent: tab.content,
+                                savedContent: activeContent,
                             }),
                         ),
                         dirtyTabCount: Math.max(
@@ -107,6 +123,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                         ),
                     };
                 });
+                clearLiveWorkspaceEditorContent(activeTab.id);
             } catch (error) {
                 console.error("Failed to save workspace file.", error);
                 set({
@@ -141,11 +158,39 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                 return {
                     workspace: updateActiveWorkspaceTab(
                         currentWorkspace,
-                        (tab) => ({
-                            ...tab,
-                            content,
-                            contentRevision: (tab.contentRevision ?? 0) + 1,
-                        }),
+                        (tab) => updateTabContent(tab, content),
+                    ),
+                    dirtyTabCount:
+                        state.dirtyTabCount +
+                        Number(isDirty) -
+                        Number(wasDirty),
+                };
+            });
+        },
+        updateWorkspaceTabContent: (tabId: string, content: string): void => {
+            set((state) => {
+                const currentWorkspace = state.workspace;
+
+                if (!currentWorkspace) {
+                    return {};
+                }
+
+                const targetTab = currentWorkspace.tabs.find(
+                    (tab) => tab.id === tabId,
+                );
+
+                if (!targetTab || targetTab.content === content) {
+                    return {};
+                }
+
+                const wasDirty = targetTab.content !== targetTab.savedContent;
+                const isDirty = content !== targetTab.savedContent;
+
+                return {
+                    workspace: updateWorkspaceTab(
+                        currentWorkspace,
+                        tabId,
+                        (tab) => updateTabContent(tab, content),
                     ),
                     dirtyTabCount:
                         state.dirtyTabCount +

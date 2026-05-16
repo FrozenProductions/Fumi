@@ -18,7 +18,7 @@ export type UseWorkspaceCodeCompletionOptions = {
     intellisensePriority: AppIntellisensePriority;
     intellisenseWidth: AppIntellisenseWidth;
     saveActiveWorkspaceTab: () => Promise<void>;
-    updateActiveTabContent: (content: string) => void;
+    updateWorkspaceTabContent: (tabId: string, content: string) => void;
     updateActiveTabCursor: (cursor: WorkspaceCursorState) => void;
     updateActiveTabScrollTop: (scrollTop: number) => void;
 };

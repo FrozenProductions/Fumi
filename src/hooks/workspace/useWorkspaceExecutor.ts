@@ -8,6 +8,7 @@ import {
     subscribeToExecutorStatusChanged,
 } from "../../lib/platform/roblox/executor";
 import { getErrorMessage } from "../../lib/shared/errorMessage";
+import { getLiveWorkspaceEditorContent } from "../../lib/workspace/editor/liveWorkspaceEditorContent";
 import type { WorkspaceExecutionHistoryEntry } from "../../lib/workspace/executionHistory/executionHistory.type";
 import {
     getExecutorPortsFromSummaries,
@@ -307,7 +308,9 @@ export function useWorkspaceExecutor({
 
         await executeScript({
             fileName: activeTab.fileName,
-            scriptContent: activeTab.content,
+            scriptContent:
+                getLiveWorkspaceEditorContent(activeTab.id) ??
+                activeTab.content,
             executeFailureMessage: "Could not execute the active script.",
         });
     };

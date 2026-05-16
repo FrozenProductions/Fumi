@@ -101,6 +101,9 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const updateActiveTabContent = useWorkspaceStore(
         (state) => state.updateActiveTabContent,
     );
+    const updateWorkspaceTabContent = useWorkspaceStore(
+        (state) => state.updateWorkspaceTabContent,
+    );
     const updateActiveTabCursor = useWorkspaceStore(
         (state) => state.updateActiveTabCursor,
     );
@@ -160,6 +163,7 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
         },
         editorActions: {
             updateActiveTabContent,
+            updateWorkspaceTabContent,
             updateActiveTabCursor,
             updateActiveTabScrollTop,
             clearErrorMessage,
