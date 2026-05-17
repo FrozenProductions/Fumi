@@ -15,7 +15,6 @@ export function useAppScopedHotkeys({
     activeTab,
     workspace,
     hotkeys,
-    closeCommandPalette,
     selectSidebarItem,
     toggleCommandPalette,
     toggleCommandPaletteScope,
@@ -160,17 +159,12 @@ export function useAppScopedHotkeys({
     useHotkey(
         "Escape",
         () => {
-            if (isCommandPaletteOpen) {
-                closeCommandPalette();
-                return;
-            }
-
             if (activeSidebarItem === "settings") {
                 selectSidebarItem("workspace");
             }
         },
         {
-            enabled: isCommandPaletteOpen || activeSidebarItem === "settings",
+            enabled: !isCommandPaletteOpen && activeSidebarItem === "settings",
         },
     );
 

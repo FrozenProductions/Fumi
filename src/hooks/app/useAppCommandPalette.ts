@@ -324,6 +324,35 @@ export function useAppCommandPalette({
         };
     }, [cancelScheduledInputFocus]);
 
+    useEffect(() => {
+        function handleCaptureEscape(event: globalThis.KeyboardEvent): void {
+            if (
+                event.key === "Escape" &&
+                (mode === "attach" ||
+                    mode === "goto-line" ||
+                    mode === "intellisense-priority" ||
+                    mode === "symbol" ||
+                    mode === "tab-size" ||
+                    mode === "theme")
+            ) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                setState({
+                    mode: "default",
+                    scope: "commands",
+                    activeResultIndex: 0,
+                    query: "",
+                });
+                scheduleInputFocus();
+            }
+        }
+
+        window.addEventListener("keydown", handleCaptureEscape, true);
+        return () => {
+            window.removeEventListener("keydown", handleCaptureEscape, true);
+        };
+    }, [mode, scheduleInputFocus]);
+
     const clampedActiveResultIndex =
         results.length === 0
             ? 0
@@ -475,11 +504,6 @@ export function useAppCommandPalette({
             if (event.key === "Escape") {
                 event.preventDefault();
 
-                if (query) {
-                    setState({ query: "" });
-                    return;
-                }
-
                 if (
                     mode === "attach" ||
                     mode === "goto-line" ||
@@ -492,6 +516,7 @@ export function useAppCommandPalette({
                         mode: "default",
                         scope: "commands",
                         activeResultIndex: 0,
+                        query: "",
                     });
                     return;
                 }
@@ -506,7 +531,6 @@ export function useAppCommandPalette({
             mode,
             onClose,
             onGoToLine,
-            query,
             results,
         ],
     );
