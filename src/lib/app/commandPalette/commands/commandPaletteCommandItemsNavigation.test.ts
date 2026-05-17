@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { getAppCommandPaletteResults } from "../commandPaletteController";
-import { getAttachCommandPaletteItems } from "../commandPaletteModes";
+import {
+    getAttachCommandPaletteItems,
+    getSymbolCommandPaletteItems,
+} from "../commandPaletteModes";
 import {
     createCommandPaletteOptions,
     createWorkspaceExecutor,
@@ -73,6 +76,13 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-kill-roblox",
                 "command-sidebar",
                 "command-outline-panel",
+                "command-toggle-word-wrap",
+                "command-toggle-relative-line-numbers",
+                "command-change-tab-size",
+                "command-toggle-intellisense",
+                "command-change-intellisense-priority",
+                "command-toggle-smooth-caret",
+                "command-toggle-scope-highlighting",
                 "command-zoom-in",
                 "command-zoom-out",
                 "command-zoom-reset",
@@ -106,6 +116,7 @@ describe("getCommandCommandPaletteItems", () => {
         const splitWorkspaceTab = vi.fn();
         const onActivateAttachMode = vi.fn();
         const onActivateGoToLineMode = vi.fn();
+        const onActivateSymbolMode = vi.fn();
         const onActivateThemeMode = vi.fn();
         const onOpenWorkspaceScreen = vi.fn();
         const onOpenAccounts = vi.fn();
@@ -162,6 +173,7 @@ describe("getCommandCommandPaletteItems", () => {
                 activeSidebarItem: "script-library",
                 onActivateAttachMode,
                 onActivateGoToLineMode,
+                onActivateSymbolMode,
                 onActivateThemeMode,
                 onOpenWorkspaceScreen,
                 onOpenAccounts,
@@ -182,6 +194,7 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-execute-tab",
                 "command-beautify-tab",
                 "command-goto-line",
+                "command-goto-symbol",
                 "command-rename-tab",
                 "command-duplicate-tab",
                 "command-delete-tab",
@@ -204,6 +217,7 @@ describe("getCommandCommandPaletteItems", () => {
         getCommand("command-execute-tab").onSelect();
         getCommand("command-beautify-tab").onSelect();
         getCommand("command-goto-line").onSelect();
+        getCommand("command-goto-symbol").onSelect();
         getCommand("command-rename-tab").onSelect();
         getCommand("command-duplicate-tab").onSelect();
         getCommand("command-delete-tab").onSelect();
@@ -216,6 +230,7 @@ describe("getCommandCommandPaletteItems", () => {
         expect(onActivateThemeMode).toHaveBeenCalledOnce();
         expect(executeActiveTab).toHaveBeenCalledOnce();
         expect(onActivateGoToLineMode).toHaveBeenCalledOnce();
+        expect(onActivateSymbolMode).toHaveBeenCalledOnce();
         expect(onRequestRenameCurrentTab).toHaveBeenCalledOnce();
         expect(duplicateWorkspaceTab).toHaveBeenCalledWith("tab-1");
         expect(deleteWorkspaceTab).toHaveBeenCalledWith("tab-1");
@@ -233,6 +248,9 @@ describe("getCommandCommandPaletteItems", () => {
         );
         expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(5);
         expect(getCommand("command-goto-line")).toMatchObject({
+            closeOnSelect: false,
+        });
+        expect(getCommand("command-goto-symbol")).toMatchObject({
             closeOnSelect: false,
         });
         expect(getCommand("command-attach-executor")).toMatchObject({
@@ -318,6 +336,147 @@ describe("getCommandCommandPaletteItems", () => {
         );
         expect(clearErrorMessage).toHaveBeenCalledOnce();
         expect(setErrorMessage).not.toHaveBeenCalled();
+    });
+
+    it("toggles editor settings and offers editor option switches", () => {
+        const onSetEditorWordWrapEnabled = vi.fn();
+        const onSetEditorRelativeLineNumbersEnabled = vi.fn();
+        const onActivateTabSizeMode = vi.fn();
+        const onSetEditorIntellisenseEnabled = vi.fn();
+        const onActivateIntellisensePriorityMode = vi.fn();
+        const onSetEditorSmoothCaretEnabled = vi.fn();
+        const onSetEditorScopeHighlightingEnabled = vi.fn();
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                editorSettings: {
+                    fontSize: 13,
+                    cursorStyle: "ace",
+                    isSmoothCaretEnabled: true,
+                    isScopeHighlightingEnabled: false,
+                    isRelativeLineNumbersEnabled: true,
+                    isWordWrapEnabled: false,
+                    isTabsToSpacesEnabled: true,
+                    tabSize: 4,
+                    isIntellisenseEnabled: true,
+                    intellisensePriority: "balanced",
+                    intellisenseWidth: "large",
+                    isOutlinePanelVisible: true,
+                    outlinePanelWidth: 280,
+                    outlineExpandedGroups: {},
+                    outlineSearchQuery: "",
+                },
+                onSetEditorWordWrapEnabled,
+                onSetEditorRelativeLineNumbersEnabled,
+                onActivateTabSizeMode,
+                onSetEditorIntellisenseEnabled,
+                onActivateIntellisensePriorityMode,
+                onSetEditorSmoothCaretEnabled,
+                onSetEditorScopeHighlightingEnabled,
+            }),
+        );
+
+        const getCommand = (id: string) =>
+            items.find((item) => item.id === id) ??
+            (() => {
+                throw new Error(`Missing command item: ${id}`);
+            })();
+
+        getCommand("command-toggle-word-wrap").onSelect();
+        getCommand("command-toggle-relative-line-numbers").onSelect();
+        getCommand("command-change-tab-size").onSelect();
+        getCommand("command-toggle-intellisense").onSelect();
+        getCommand("command-change-intellisense-priority").onSelect();
+        getCommand("command-toggle-smooth-caret").onSelect();
+        getCommand("command-toggle-scope-highlighting").onSelect();
+
+        expect(onSetEditorWordWrapEnabled).toHaveBeenCalledWith(true);
+        expect(onSetEditorRelativeLineNumbersEnabled).toHaveBeenCalledWith(
+            false,
+        );
+        expect(onActivateTabSizeMode).toHaveBeenCalledOnce();
+        expect(onSetEditorIntellisenseEnabled).toHaveBeenCalledWith(false);
+        expect(onActivateIntellisensePriorityMode).toHaveBeenCalledOnce();
+        expect(onSetEditorSmoothCaretEnabled).toHaveBeenCalledWith(false);
+        expect(onSetEditorScopeHighlightingEnabled).toHaveBeenCalledWith(true);
+        expect(getCommand("command-change-tab-size")).toMatchObject({
+            closeOnSelect: false,
+            meta: "4 spaces",
+        });
+        expect(
+            getCommand("command-change-intellisense-priority"),
+        ).toMatchObject({
+            closeOnSelect: false,
+            meta: "balanced",
+        });
+    });
+
+    it("builds tab size choices in a focused mode", () => {
+        const onSetEditorTabSize = vi.fn();
+        const options = createCommandPaletteOptions({
+            onSetEditorTabSize,
+        });
+        const items = getAppCommandPaletteResults({
+            ...options,
+            activeTab: null,
+            goToLineNumber: null,
+            hotkeyBindings: {},
+            mode: "tab-size",
+            normalizedQuery: "",
+            scope: "commands",
+            theme: "dark",
+            onGoToLine: vi.fn(),
+            onSetTheme: vi.fn(),
+        });
+
+        expect(items.map((item) => item.id)).toEqual([
+            "command-tab-size-2",
+            "command-tab-size-4",
+            "command-tab-size-6",
+            "command-tab-size-8",
+        ]);
+        expect(items[1]).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
+        });
+
+        items[3]?.onSelect();
+
+        expect(onSetEditorTabSize).toHaveBeenCalledWith(8);
+    });
+
+    it("builds Intellisense priority choices in a focused mode", () => {
+        const onSetEditorIntellisensePriority = vi.fn();
+        const options = createCommandPaletteOptions({
+            onSetEditorIntellisensePriority,
+        });
+        const items = getAppCommandPaletteResults({
+            ...options,
+            activeTab: null,
+            goToLineNumber: null,
+            hotkeyBindings: {},
+            mode: "intellisense-priority",
+            normalizedQuery: "",
+            scope: "commands",
+            theme: "dark",
+            onGoToLine: vi.fn(),
+            onSetTheme: vi.fn(),
+        });
+
+        expect(items.map((item) => item.id)).toEqual([
+            "command-intellisense-priority-balanced",
+            "command-intellisense-priority-language",
+            "command-intellisense-priority-executor",
+        ]);
+        expect(items[0]).toMatchObject({
+            isDisabled: true,
+            meta: "Current",
+        });
+
+        items[2]?.onSelect();
+
+        expect(onSetEditorIntellisensePriority).toHaveBeenCalledWith(
+            "executor",
+        );
     });
 
     it("offers detach only while attached", () => {
@@ -454,6 +613,38 @@ describe("getCommandCommandPaletteItems", () => {
         expect(attachToPort).toHaveBeenCalledWith(5554);
     });
 
+    it("builds searchable symbol jump items for the active Luau tab", () => {
+        const onGoToLine = vi.fn();
+        const onOpenWorkspaceScreen = vi.fn();
+        const activeTab = {
+            id: "tab-symbols",
+            fileName: "symbols.lua",
+            content: [
+                "local alpha = 1",
+                "function beta()",
+                "    return alpha",
+                "end",
+            ].join("\n"),
+            savedContent: "",
+            isDirty: false,
+            cursor: { line: 0, column: 0, scrollTop: 0 },
+        };
+
+        const items = getSymbolCommandPaletteItems({
+            activeTab,
+            onGoToLine,
+            onOpenWorkspaceScreen,
+        });
+        const betaItem = items.find((item) => item.label === "beta");
+
+        expect(betaItem).toBeDefined();
+
+        betaItem?.onSelect();
+
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledOnce();
+        expect(onGoToLine).toHaveBeenCalledWith(2);
+    });
+
     it("filters attach port items by the typed port query", () => {
         const workspaceExecutor = createWorkspaceExecutor();
         const options = createCommandPaletteOptions({
@@ -475,5 +666,37 @@ describe("getCommandCommandPaletteItems", () => {
         expect(items.map((item) => item.id)).toEqual([
             "command-attach-port-5553",
         ]);
+    });
+
+    it("filters symbol mode results by query", () => {
+        const onGoToLine = vi.fn();
+        const options = createCommandPaletteOptions();
+        const activeTab = {
+            id: "tab-symbol-filter",
+            fileName: "symbols.lua",
+            content: [
+                "local alpha = 1",
+                "function beta()",
+                "    return alpha",
+                "end",
+            ].join("\n"),
+            savedContent: "",
+            isDirty: false,
+            cursor: { line: 0, column: 0, scrollTop: 0 },
+        };
+        const items = getAppCommandPaletteResults({
+            ...options,
+            activeTab,
+            goToLineNumber: null,
+            hotkeyBindings: {},
+            mode: "symbol",
+            normalizedQuery: "beta",
+            scope: "commands",
+            theme: "dark",
+            onGoToLine,
+            onSetTheme: vi.fn(),
+        });
+
+        expect(items.map((item) => item.label)).toEqual(["beta"]);
     });
 });

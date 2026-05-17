@@ -48,6 +48,7 @@ export function useAppShellController(): UseAppShellControllerResult {
     const commandPaletteMode = useAppStore((state) => state.commandPaletteMode);
     const activeSidebarItem = useAppStore((state) => state.activeSidebarItem);
     const theme = useAppStore((state) => state.theme);
+    const editorSettings = useAppStore((state) => state.editorSettings);
     const closeCommandPalette = useAppStore(
         (state) => state.closeCommandPalette,
     );
@@ -64,6 +65,25 @@ export function useAppShellController(): UseAppShellControllerResult {
     const toggleOutlinePanel = useAppStore((state) => state.toggleOutlinePanel);
     const selectSidebarItem = useAppStore((state) => state.selectSidebarItem);
     const setTheme = useAppStore((state) => state.setTheme);
+    const setEditorIntellisenseEnabled = useAppStore(
+        (state) => state.setEditorIntellisenseEnabled,
+    );
+    const setEditorIntellisensePriority = useAppStore(
+        (state) => state.setEditorIntellisensePriority,
+    );
+    const setEditorRelativeLineNumbersEnabled = useAppStore(
+        (state) => state.setEditorRelativeLineNumbersEnabled,
+    );
+    const setEditorScopeHighlightingEnabled = useAppStore(
+        (state) => state.setEditorScopeHighlightingEnabled,
+    );
+    const setEditorSmoothCaretEnabled = useAppStore(
+        (state) => state.setEditorSmoothCaretEnabled,
+    );
+    const setEditorTabSize = useAppStore((state) => state.setEditorTabSize);
+    const setEditorWordWrapEnabled = useAppStore(
+        (state) => state.setEditorWordWrapEnabled,
+    );
     const updater = useAppUpdater();
     const showsSettingsUpdateIndicator =
         import.meta.env.DEV || updater.availableUpdate !== null;
@@ -158,6 +178,7 @@ export function useAppShellController(): UseAppShellControllerResult {
         activeSidebarItem,
         theme,
         sidebarPosition,
+        editorSettings,
         isOutlinePanelVisible,
     } as const;
     const commandPaletteActions = {
@@ -177,6 +198,14 @@ export function useAppShellController(): UseAppShellControllerResult {
         onZoomOut: handleZoomOut,
         onZoomReset: handleZoomReset,
         onRequestRenameCurrentTab: requestRenameCurrentTab,
+        onSetEditorIntellisenseEnabled: setEditorIntellisenseEnabled,
+        onSetEditorIntellisensePriority: setEditorIntellisensePriority,
+        onSetEditorRelativeLineNumbersEnabled:
+            setEditorRelativeLineNumbersEnabled,
+        onSetEditorScopeHighlightingEnabled: setEditorScopeHighlightingEnabled,
+        onSetEditorSmoothCaretEnabled: setEditorSmoothCaretEnabled,
+        onSetEditorTabSize: setEditorTabSize,
+        onSetEditorWordWrapEnabled: setEditorWordWrapEnabled,
     } as const;
 
     useEffect(() => {

@@ -8,6 +8,9 @@ import type {
 import {
     getAttachCommandPaletteItems,
     getGoToLineCommandPaletteItems,
+    getIntellisensePriorityCommandPaletteItems,
+    getSymbolCommandPaletteItems,
+    getTabSizeCommandPaletteItems,
     getThemeCommandPaletteItems,
 } from "./commandPaletteModes";
 import { getCommandCommandPaletteItems } from "./commands/commandPaletteCommands";
@@ -117,6 +120,7 @@ export function getAppCommandPaletteResults({
     activeSidebarItem,
     theme,
     sidebarPosition,
+    editorSettings,
     onGoToLine,
     onOpenWorkspaceScreen,
     onOpenAutomaticExecution,
@@ -133,6 +137,13 @@ export function getAppCommandPaletteResults({
     onZoomOut,
     onZoomReset,
     onRequestRenameCurrentTab,
+    onSetEditorIntellisenseEnabled,
+    onSetEditorIntellisensePriority,
+    onSetEditorRelativeLineNumbersEnabled,
+    onSetEditorScopeHighlightingEnabled,
+    onSetEditorSmoothCaretEnabled,
+    onSetEditorTabSize,
+    onSetEditorWordWrapEnabled,
     hotkeyBindings,
     activeTab,
     goToLineNumber,
@@ -141,6 +152,9 @@ export function getAppCommandPaletteResults({
     normalizedQuery,
     onActivateAttachMode,
     onActivateGoToLineMode,
+    onActivateIntellisensePriorityMode,
+    onActivateSymbolMode,
+    onActivateTabSizeMode,
     onActivateThemeMode,
 }: GetAppCommandPaletteResultsOptions) {
     if (mode === "attach") {
@@ -162,6 +176,32 @@ export function getAppCommandPaletteResults({
         });
     }
 
+    if (mode === "symbol") {
+        return searchAppCommandPaletteItems(
+            getSymbolCommandPaletteItems({
+                activeTab,
+                onGoToLine,
+                onOpenWorkspaceScreen,
+            }),
+            normalizedQuery,
+            APP_COMMAND_PALETTE_MAX_RESULTS,
+        );
+    }
+
+    if (mode === "intellisense-priority") {
+        return getIntellisensePriorityCommandPaletteItems({
+            currentPriority: editorSettings.intellisensePriority,
+            onSetPriority: onSetEditorIntellisensePriority,
+        });
+    }
+
+    if (mode === "tab-size") {
+        return getTabSizeCommandPaletteItems({
+            currentTabSize: editorSettings.tabSize,
+            onSetTabSize: onSetEditorTabSize,
+        });
+    }
+
     if (mode === "theme") {
         return getThemeCommandPaletteItems({
             currentTheme: theme,
@@ -177,9 +217,13 @@ export function getAppCommandPaletteResults({
                 isSidebarOpen,
                 activeSidebarItem,
                 sidebarPosition,
+                editorSettings,
                 hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
                 onActivateAttachMode,
                 onActivateGoToLineMode,
+                onActivateIntellisensePriorityMode,
+                onActivateSymbolMode,
+                onActivateTabSizeMode,
                 onActivateThemeMode,
                 onOpenWorkspaceScreen,
                 onOpenAutomaticExecution,
@@ -194,6 +238,13 @@ export function getAppCommandPaletteResults({
                 onZoomOut,
                 onZoomReset,
                 onRequestRenameCurrentTab,
+                onSetEditorIntellisenseEnabled,
+                onSetEditorIntellisensePriority,
+                onSetEditorRelativeLineNumbersEnabled,
+                onSetEditorScopeHighlightingEnabled,
+                onSetEditorSmoothCaretEnabled,
+                onSetEditorTabSize,
+                onSetEditorWordWrapEnabled,
                 isOutlinePanelVisible,
             }),
             normalizedQuery,

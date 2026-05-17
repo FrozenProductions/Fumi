@@ -58,6 +58,7 @@ export function useAppCommandPalette({
     activeSidebarItem,
     theme,
     sidebarPosition,
+    editorSettings,
     onClose,
     onGoToLine,
     onOpenWorkspaceScreen,
@@ -75,6 +76,13 @@ export function useAppCommandPalette({
     onZoomOut,
     onZoomReset,
     onRequestRenameCurrentTab,
+    onSetEditorIntellisenseEnabled,
+    onSetEditorIntellisensePriority,
+    onSetEditorRelativeLineNumbersEnabled,
+    onSetEditorScopeHighlightingEnabled,
+    onSetEditorSmoothCaretEnabled,
+    onSetEditorTabSize,
+    onSetEditorWordWrapEnabled,
 }: UseAppCommandPaletteOptions): UseAppCommandPaletteResult {
     const [state, setState] = useReducer(updateAppCommandPaletteState, {
         query: "",
@@ -220,6 +228,45 @@ export function useAppCommandPalette({
         scheduleInputFocus({ shouldSelect: true });
     }, [scheduleInputFocus]);
 
+    const activateIntellisensePriorityMode = useCallback((): void => {
+        startTransition(() => {
+            setState({
+                mode: "intellisense-priority",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
+    const activateSymbolMode = useCallback((): void => {
+        startTransition(() => {
+            setState({
+                mode: "symbol",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
+    const activateTabSizeMode = useCallback((): void => {
+        startTransition(() => {
+            setState({
+                mode: "tab-size",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
     const results = getAppCommandPaletteResults({
         workspaceSession,
         workspaceExecutor,
@@ -227,6 +274,7 @@ export function useAppCommandPalette({
         activeSidebarItem,
         theme,
         sidebarPosition,
+        editorSettings,
         onGoToLine,
         onOpenWorkspaceScreen,
         onOpenAutomaticExecution,
@@ -243,6 +291,13 @@ export function useAppCommandPalette({
         onZoomOut,
         onZoomReset,
         onRequestRenameCurrentTab,
+        onSetEditorIntellisenseEnabled,
+        onSetEditorIntellisensePriority,
+        onSetEditorRelativeLineNumbersEnabled,
+        onSetEditorScopeHighlightingEnabled,
+        onSetEditorSmoothCaretEnabled,
+        onSetEditorTabSize,
+        onSetEditorWordWrapEnabled,
         hotkeyBindings,
         activeTab,
         goToLineNumber,
@@ -251,6 +306,9 @@ export function useAppCommandPalette({
         normalizedQuery,
         onActivateAttachMode: activateAttachMode,
         onActivateGoToLineMode: activateGoToLineMode,
+        onActivateIntellisensePriorityMode: activateIntellisensePriorityMode,
+        onActivateSymbolMode: activateSymbolMode,
+        onActivateTabSizeMode: activateTabSizeMode,
         onActivateThemeMode: activateThemeMode,
     });
 
@@ -425,6 +483,9 @@ export function useAppCommandPalette({
                 if (
                     mode === "attach" ||
                     mode === "goto-line" ||
+                    mode === "intellisense-priority" ||
+                    mode === "symbol" ||
+                    mode === "tab-size" ||
                     mode === "theme"
                 ) {
                     setState({

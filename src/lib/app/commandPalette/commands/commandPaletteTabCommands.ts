@@ -13,6 +13,7 @@ type CommandPaletteTabOptions = Pick<
     GetCommandPaletteCommandItemsOptions,
     | "hotkeyLabels"
     | "onActivateGoToLineMode"
+    | "onActivateSymbolMode"
     | "onOpenWorkspaceScreen"
     | "onRequestRenameCurrentTab"
     | "workspaceExecutor"
@@ -23,6 +24,7 @@ type CommandPaletteTabOptions = Pick<
 export function getActiveTabCommandItems({
     hotkeyLabels,
     onActivateGoToLineMode,
+    onActivateSymbolMode,
     onOpenWorkspaceScreen,
     onRequestRenameCurrentTab,
     workspaceExecutor,
@@ -103,6 +105,15 @@ export function getActiveTabCommandItems({
             keywords: `goto go to jump line ${activeTab.fileName} current tab`,
             closeOnSelect: false,
             onSelect: onActivateGoToLineMode,
+        },
+        {
+            id: "command-goto-symbol",
+            label: "Go to Symbol",
+            description: `Jump to a function or variable in ${activeTab.fileName}.`,
+            icon: CommandIcon,
+            keywords: `goto go to jump symbol function variable outline ${activeTab.fileName} current tab`,
+            closeOnSelect: false,
+            onSelect: onActivateSymbolMode,
         },
         {
             id: "command-save-tab",

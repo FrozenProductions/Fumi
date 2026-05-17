@@ -2,7 +2,12 @@ import type { KeyboardEvent, MouseEvent, RefObject } from "react";
 import type { UseWorkspaceExecutorResult } from "../../workspace/executor/executor.type";
 import type { UseWorkspaceSessionResult } from "../../workspace/session/session.type";
 import type { WorkspaceTab } from "../../workspace/session/tabs/sessionTabs.type";
-import type { AppTheme } from "../app.type";
+import type {
+    AppEditorSettings,
+    AppEditorTabSize,
+    AppIntellisensePriority,
+    AppTheme,
+} from "../app.type";
 import type { AppHotkeyBindings } from "../hotkeys/hotkeys.type";
 import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";
 import type {
@@ -21,6 +26,9 @@ export type GetCommandPaletteCommandItemsOptions = {
     hotkeyLabels: AppCommandPaletteHotkeyLabels;
     onActivateGoToLineMode: () => void;
     onActivateAttachMode: () => void;
+    onActivateIntellisensePriorityMode: () => void;
+    onActivateSymbolMode: () => void;
+    onActivateTabSizeMode: () => void;
     onActivateThemeMode: () => void;
     onOpenWorkspaceScreen: () => void;
     onOpenAutomaticExecution: () => void;
@@ -36,6 +44,16 @@ export type GetCommandPaletteCommandItemsOptions = {
     onZoomOut: () => void;
     onZoomReset: () => void;
     onRequestRenameCurrentTab: () => void;
+    editorSettings: AppEditorSettings;
+    onSetEditorIntellisenseEnabled: (isEnabled: boolean) => void;
+    onSetEditorIntellisensePriority: (
+        priority: AppIntellisensePriority,
+    ) => void;
+    onSetEditorRelativeLineNumbersEnabled: (isEnabled: boolean) => void;
+    onSetEditorScopeHighlightingEnabled: (isEnabled: boolean) => void;
+    onSetEditorSmoothCaretEnabled: (isEnabled: boolean) => void;
+    onSetEditorTabSize: (tabSize: AppEditorTabSize) => void;
+    onSetEditorWordWrapEnabled: (isEnabled: boolean) => void;
 };
 
 export type AppCommandPaletteControllerOptions = {
@@ -49,6 +67,7 @@ export type AppCommandPaletteControllerOptions = {
     activeSidebarItem: AppSidebarItem;
     theme: AppTheme;
     sidebarPosition: AppSidebarPosition;
+    editorSettings: AppEditorSettings;
     onClose: () => void;
     onGoToLine: (lineNumber: number) => void;
     onOpenWorkspaceScreen: () => void;
@@ -66,6 +85,15 @@ export type AppCommandPaletteControllerOptions = {
     onZoomOut: () => void;
     onZoomReset: () => void;
     onRequestRenameCurrentTab: () => void;
+    onSetEditorIntellisenseEnabled: (isEnabled: boolean) => void;
+    onSetEditorIntellisensePriority: (
+        priority: AppIntellisensePriority,
+    ) => void;
+    onSetEditorRelativeLineNumbersEnabled: (isEnabled: boolean) => void;
+    onSetEditorScopeHighlightingEnabled: (isEnabled: boolean) => void;
+    onSetEditorSmoothCaretEnabled: (isEnabled: boolean) => void;
+    onSetEditorTabSize: (tabSize: AppEditorTabSize) => void;
+    onSetEditorWordWrapEnabled: (isEnabled: boolean) => void;
 };
 
 export type AppCommandPaletteVisibilityState = {
@@ -137,6 +165,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "activeSidebarItem"
     | "theme"
     | "sidebarPosition"
+    | "editorSettings"
     | "onGoToLine"
     | "onOpenWorkspaceScreen"
     | "onOpenAutomaticExecution"
@@ -153,6 +182,13 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     | "onZoomOut"
     | "onZoomReset"
     | "onRequestRenameCurrentTab"
+    | "onSetEditorIntellisenseEnabled"
+    | "onSetEditorIntellisensePriority"
+    | "onSetEditorRelativeLineNumbersEnabled"
+    | "onSetEditorScopeHighlightingEnabled"
+    | "onSetEditorSmoothCaretEnabled"
+    | "onSetEditorTabSize"
+    | "onSetEditorWordWrapEnabled"
 > & {
     hotkeyBindings: AppHotkeyBindings;
     activeTab: WorkspaceTab | null;
@@ -162,6 +198,9 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     normalizedQuery: string;
     onActivateGoToLineMode: () => void;
     onActivateAttachMode: () => void;
+    onActivateIntellisensePriorityMode: () => void;
+    onActivateSymbolMode: () => void;
+    onActivateTabSizeMode: () => void;
     onActivateThemeMode: () => void;
 };
 
@@ -179,6 +218,22 @@ export type GetAttachCommandPaletteItemsOptions = {
 export type GetThemeCommandPaletteItemsOptions = {
     currentTheme: AppTheme;
     onSetTheme: (theme: AppTheme) => void;
+};
+
+export type GetIntellisensePriorityCommandPaletteItemsOptions = {
+    currentPriority: AppIntellisensePriority;
+    onSetPriority: (priority: AppIntellisensePriority) => void;
+};
+
+export type GetTabSizeCommandPaletteItemsOptions = {
+    currentTabSize: AppEditorTabSize;
+    onSetTabSize: (tabSize: AppEditorTabSize) => void;
+};
+
+export type GetSymbolCommandPaletteItemsOptions = {
+    activeTab: WorkspaceTab | null;
+    onGoToLine: (lineNumber: number) => void;
+    onOpenWorkspaceScreen: () => void;
 };
 
 export type AppCommandPaletteSearchFieldName =

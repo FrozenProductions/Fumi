@@ -1,5 +1,11 @@
 import type { KeyboardEvent, RefObject } from "react";
-import type { AppIconGlyph, AppTheme } from "../../../lib/app/app.type";
+import type {
+    AppEditorSettings,
+    AppEditorTabSize,
+    AppIconGlyph,
+    AppIntellisensePriority,
+    AppTheme,
+} from "../../../lib/app/app.type";
 import type {
     AppCommandPaletteItem,
     AppCommandPaletteMode,
@@ -23,6 +29,7 @@ export type AppCommandPaletteContextProps = {
     activeSidebarItem: AppSidebarItem;
     theme: AppTheme;
     sidebarPosition: AppSidebarPosition;
+    editorSettings: AppEditorSettings;
     isOutlinePanelVisible: boolean;
 };
 
@@ -43,6 +50,15 @@ export type AppCommandPaletteActionProps = {
     onZoomOut: () => void;
     onZoomReset: () => void;
     onRequestRenameCurrentTab: () => void;
+    onSetEditorIntellisenseEnabled: (isEnabled: boolean) => void;
+    onSetEditorIntellisensePriority: (
+        priority: AppIntellisensePriority,
+    ) => void;
+    onSetEditorRelativeLineNumbersEnabled: (isEnabled: boolean) => void;
+    onSetEditorScopeHighlightingEnabled: (isEnabled: boolean) => void;
+    onSetEditorSmoothCaretEnabled: (isEnabled: boolean) => void;
+    onSetEditorTabSize: (tabSize: AppEditorTabSize) => void;
+    onSetEditorWordWrapEnabled: (isEnabled: boolean) => void;
 };
 
 export type AppCommandPaletteProps = {

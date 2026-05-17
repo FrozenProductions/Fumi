@@ -222,14 +222,15 @@ export function getBaseCommandPaletteItems({
         },
         {
             id: "command-outline-panel",
-            label: isOutlinePanelVisible
-                ? "Hide outline panel"
-                : "Show outline panel",
+            label: "Toggle Outline Panel",
             description: activeTab
                 ? "Toggle the editor outline panel for the current workspace tab."
                 : "Open a workspace tab to use the outline panel.",
             icon: CommandIcon,
-            meta: hotkeyLabels.toggleOutlinePanel,
+            meta: getCurrentStateMeta(
+                isOutlinePanelVisible,
+                hotkeyLabels.toggleOutlinePanel,
+            ),
             keywords:
                 "outline panel symbols functions locals globals toggle sidebar",
             isDisabled: !activeTab,

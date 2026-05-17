@@ -1,5 +1,6 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { vi } from "vite-plus/test";
+import { DEFAULT_APP_EDITOR_SETTINGS } from "../../../constants/app/settings";
 import type {
     UseWorkspaceExecutorResult,
     WorkspaceExecutorActions,
@@ -167,8 +168,12 @@ export function createCommandPaletteOptions(
             toggleWorkspaceSplitView: "Mod+\\",
             toggleSidebarPosition: "",
         },
+        editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
         onActivateGoToLineMode: vi.fn(),
         onActivateAttachMode: vi.fn(),
+        onActivateIntellisensePriorityMode: vi.fn(),
+        onActivateSymbolMode: vi.fn(),
+        onActivateTabSizeMode: vi.fn(),
         onActivateThemeMode: vi.fn(),
         onOpenWorkspaceScreen: vi.fn(),
         onOpenAutomaticExecution: vi.fn(),
@@ -184,6 +189,13 @@ export function createCommandPaletteOptions(
         onZoomOut: vi.fn(),
         onZoomReset: vi.fn(),
         onRequestRenameCurrentTab: vi.fn(),
+        onSetEditorIntellisenseEnabled: vi.fn(),
+        onSetEditorIntellisensePriority: vi.fn(),
+        onSetEditorRelativeLineNumbersEnabled: vi.fn(),
+        onSetEditorScopeHighlightingEnabled: vi.fn(),
+        onSetEditorSmoothCaretEnabled: vi.fn(),
+        onSetEditorTabSize: vi.fn(),
+        onSetEditorWordWrapEnabled: vi.fn(),
         ...overrides,
     };
 }

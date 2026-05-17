@@ -1,6 +1,7 @@
 import type { GetCommandPaletteCommandItemsOptions } from "../commandPalette.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 import { getBaseCommandPaletteItems } from "./commandPaletteBaseCommands";
+import { getEditorCommandItems } from "./commandPaletteEditorCommands";
 import { getActiveTabCommandItems } from "./commandPaletteTabCommands";
 import { getWorkspaceCommandItems } from "./commandPaletteWorkspaceCommands";
 
@@ -10,6 +11,7 @@ export function getCommandCommandPaletteItems(
 ): AppCommandPaletteItem[] {
     return [
         ...getBaseCommandPaletteItems(options),
+        ...getEditorCommandItems(options),
         ...getWorkspaceCommandItems(options),
         ...getActiveTabCommandItems(options),
     ];
