@@ -52,6 +52,7 @@ fn build_app() -> tauri::Result<tauri::App> {
             executor::commands::execute_executor_script,
             executor::commands::update_executor_setting,
             luau::scan_luau_file_analysis,
+            luau::format_luau_script,
             automatic_execution::commands::bootstrap_automatic_execution,
             automatic_execution::commands::refresh_automatic_execution,
             automatic_execution::commands::create_automatic_execution_script,

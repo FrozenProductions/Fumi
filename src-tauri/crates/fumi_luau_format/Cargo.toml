@@ -1,0 +1,12 @@
+[package]
+name = "fumi_luau_format"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88.0"
+license = "MIT"
+publish = false
+
+[dependencies]
+luau-lexer = "0.2.96"
+luau-parser = "0.2.68"
+thiserror = "2.0"

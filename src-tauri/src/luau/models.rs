@@ -2,6 +2,30 @@
 
 use serde::{Deserialize, Serialize};
 
+use fumi_luau_format::FormatOptions;
+
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FormatLuauScriptOptions {
+    pub(crate) indent_width: u8,
+    pub(crate) trailing_newline: bool,
+}
+
+impl From<FormatLuauScriptOptions> for FormatOptions {
+    fn from(options: FormatLuauScriptOptions) -> Self {
+        Self {
+            indent_width: options.indent_width,
+            trailing_newline: options.trailing_newline,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FormatLuauScriptResult {
+    pub(crate) formatted: String,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct LuauFileAnalysis {

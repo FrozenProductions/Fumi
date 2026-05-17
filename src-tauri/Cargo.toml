@@ -21,6 +21,7 @@ tauri-build = { version = "2.0.5", features = [] }
 [dependencies]
 anyhow = "1.0"
 flate2 = "1.1"
+fumi_luau_format = { path = "crates/fumi_luau_format" }
 jsonschema = "0.46"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 schemars = { version = "1.0", features = ["preserve_order", "uuid1"] }
