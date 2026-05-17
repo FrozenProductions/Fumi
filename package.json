@@ -22,12 +22,12 @@
         "format": "biome format --write"
     },
     "dependencies": {
-        "@dnd-kit/react": "^0.3.2",
+        "@dnd-kit/react": "^0.4.0",
         "@hugeicons/core-free-icons": "^4.0.0",
         "@hugeicons/react": "^1.1.6",
         "@tanstack/react-hotkeys": "^0.10.0",
         "@tanstack/react-virtual": "^3.13.23",
-        "@tauri-apps/api": "^2.8.0",
+        "@tauri-apps/api": "^2.11.0",
         "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
         "@tauri-apps/plugin-dialog": "^2.7.1",
         "@tauri-apps/plugin-opener": "^2.5.3",
