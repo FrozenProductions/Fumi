@@ -26,6 +26,7 @@ import type {
 import { useAppStore } from "./useAppStore";
 
 const COMMAND_PALETTE_FOCUS_ATTEMPT_COUNT = 3;
+const COMMAND_PALETTE_TABS_FOCUS_DELAY_MS = 20;
 
 function updateAppCommandPaletteState(
     currentState: AppCommandPaletteState,
@@ -419,6 +420,14 @@ export function useAppCommandPalette({
         }
 
         scheduleInputFocus({ shouldSelect: didOpen });
+    }, [isOpen, mode, scheduleInputFocus, scope]);
+
+    useEffect(() => {
+        if (!isOpen || mode !== "default" || scope !== "tabs") {
+            return;
+        }
+
+        scheduleInputFocus({ delayMs: COMMAND_PALETTE_TABS_FOCUS_DELAY_MS });
     }, [isOpen, mode, scheduleInputFocus, scope]);
 
     const commitSelection = useCallback(
