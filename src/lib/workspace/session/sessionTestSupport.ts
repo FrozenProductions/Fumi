@@ -6,6 +6,12 @@ import type {
     WorkspaceTabState,
 } from "./tabs/sessionTabs.type";
 
+/**
+ * Creates a mock cursor state for testing.
+ *
+ * @param overrides - Optional overrides for cursor state
+ * @returns Mocked cursor state
+ */
 export function createCursor(
     overrides: Partial<WorkspaceCursorState> = {},
 ): WorkspaceCursorState {
@@ -17,6 +23,13 @@ export function createCursor(
     };
 }
 
+/**
+ * Creates a mock tab snapshot for testing.
+ *
+ * @param id - Tab identifier
+ * @param overrides - Optional overrides for tab snapshot
+ * @returns Mocked tab snapshot
+ */
 export function createSnapshotTab(
     id: string,
     overrides: Partial<WorkspaceTabSnapshot> = {},
@@ -32,6 +45,13 @@ export function createSnapshotTab(
     };
 }
 
+/**
+ * Creates a mock tab state for testing.
+ *
+ * @param id - Tab identifier
+ * @param overrides - Optional overrides for tab state
+ * @returns Mocked tab state
+ */
 export function createTabState(
     id: string,
     overrides: Partial<WorkspaceTabState> = {},
@@ -45,6 +65,12 @@ export function createTabState(
     };
 }
 
+/**
+ * Creates a mock workspace snapshot for testing.
+ *
+ * @param overrides - Optional overrides for workspace snapshot
+ * @returns Mocked workspace snapshot
+ */
 export function createWorkspaceSnapshot(
     overrides: Partial<WorkspaceSnapshot> = {},
 ): WorkspaceSnapshot {
@@ -75,6 +101,12 @@ export function createWorkspaceSnapshot(
     };
 }
 
+/**
+ * Creates a mock workspace session object for testing.
+ *
+ * @param overrides - Optional overrides for workspace session
+ * @returns Mocked workspace session
+ */
 export function createWorkspaceSession(
     overrides: Partial<WorkspaceSession> = {},
 ): WorkspaceSession {

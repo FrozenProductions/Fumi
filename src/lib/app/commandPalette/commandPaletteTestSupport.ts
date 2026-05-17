@@ -31,6 +31,12 @@ export type WorkspaceExecutorOverrides = {
     actions?: Partial<WorkspaceExecutorActions>;
 };
 
+/**
+ * Creates a mock workspace session for testing.
+ *
+ * @param overrides - Optional overrides for session state and actions
+ * @returns A mocked workspace session object
+ */
 export function createWorkspaceSession(
     overrides: WorkspaceSessionOverrides = {},
 ): UseWorkspaceSessionResult {
@@ -96,6 +102,12 @@ export function createWorkspaceSession(
     };
 }
 
+/**
+ * Creates a mock workspace executor for testing.
+ *
+ * @param overrides - Optional overrides for executor state and actions
+ * @returns A mocked workspace executor object
+ */
 export function createWorkspaceExecutor(
     overrides: WorkspaceExecutorOverrides = {},
 ): UseWorkspaceExecutorResult {
@@ -133,6 +145,12 @@ export function createWorkspaceExecutor(
     };
 }
 
+/**
+ * Creates mock command palette options for testing.
+ *
+ * @param overrides - Optional overrides for palette options
+ * @returns Mocked command palette options
+ */
 export function createCommandPaletteOptions(
     overrides: Partial<
         Parameters<typeof getCommandCommandPaletteItems>[0]
@@ -200,6 +218,12 @@ export function createCommandPaletteOptions(
     };
 }
 
+/**
+ * Creates a mock command palette item for testing.
+ *
+ * @param overrides - Item configuration and overrides
+ * @returns A mocked command palette item
+ */
 export function createAppCommandPaletteItem(
     overrides: Partial<AppCommandPaletteItem> &
         Pick<AppCommandPaletteItem, "id" | "label">,
