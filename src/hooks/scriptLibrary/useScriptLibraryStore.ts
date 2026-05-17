@@ -22,11 +22,6 @@ import type {
 
 const favoriteScriptIds = new Set<string>();
 
-/** Resets the internal favorite ID index. Exported for test isolation. */
-export function resetFavoriteScriptIds(): void {
-    favoriteScriptIds.clear();
-}
-
 /**
  * Checks whether any script library filter is currently active.
  *
