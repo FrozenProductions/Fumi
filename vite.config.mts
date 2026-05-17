@@ -30,7 +30,7 @@ export default defineConfig({
             process.env.TAURI_ENV_PLATFORM === "windows"
                 ? "chrome105"
                 : "es2020",
-        minify: process.env.TAURI_ENV_DEBUG ? false : "esbuild",
+        minify: !process.env.TAURI_ENV_DEBUG,
         sourcemap: Boolean(process.env.TAURI_ENV_DEBUG),
     },
     server: {
