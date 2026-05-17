@@ -10,6 +10,7 @@ import { getCommandCommandPaletteItems } from "./commandPaletteCommands";
 
 const platformMocks = vi.hoisted(() => ({
     confirmAction: vi.fn().mockResolvedValue(true),
+    formatLuauScript: vi.fn().mockResolvedValue({ formatted: "formatted" }),
     isTauriEnvironment: vi.fn(() => true),
     killRobloxProcesses: vi.fn().mockResolvedValue(undefined),
     launchRoblox: vi.fn().mockResolvedValue(undefined),
@@ -24,6 +25,10 @@ vi.mock("../../../platform/core/dialog", () => ({
     confirmAction: platformMocks.confirmAction,
 }));
 
+vi.mock("../../../platform/core/luau", () => ({
+    formatLuauScript: platformMocks.formatLuauScript,
+}));
+
 vi.mock("../../../platform/core/runtime", () => ({
     isTauriEnvironment: platformMocks.isTauriEnvironment,
 }));
@@ -31,6 +36,10 @@ vi.mock("../../../platform/core/runtime", () => ({
 beforeEach(() => {
     platformMocks.confirmAction.mockReset();
     platformMocks.confirmAction.mockResolvedValue(true);
+    platformMocks.formatLuauScript.mockReset();
+    platformMocks.formatLuauScript.mockResolvedValue({
+        formatted: "formatted",
+    });
     platformMocks.isTauriEnvironment.mockReset();
     platformMocks.isTauriEnvironment.mockReturnValue(true);
     platformMocks.killRobloxProcesses.mockReset();
@@ -171,6 +180,7 @@ describe("getCommandCommandPaletteItems", () => {
                 "command-open-execution-history",
                 "command-create-file",
                 "command-execute-tab",
+                "command-beautify-tab",
                 "command-goto-line",
                 "command-rename-tab",
                 "command-duplicate-tab",
@@ -192,6 +202,7 @@ describe("getCommandCommandPaletteItems", () => {
         getCommand("command-attach-executor").onSelect();
         getCommand("command-change-theme").onSelect();
         getCommand("command-execute-tab").onSelect();
+        getCommand("command-beautify-tab").onSelect();
         getCommand("command-goto-line").onSelect();
         getCommand("command-rename-tab").onSelect();
         getCommand("command-duplicate-tab").onSelect();
@@ -220,7 +231,7 @@ describe("getCommandCommandPaletteItems", () => {
             null,
             "right",
         );
-        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(4);
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(5);
         expect(getCommand("command-goto-line")).toMatchObject({
             closeOnSelect: false,
         });
@@ -235,6 +246,78 @@ describe("getCommandCommandPaletteItems", () => {
         expect(getCommand("command-change-theme")).toMatchObject({
             closeOnSelect: false,
         });
+    });
+
+    it("formats the active Luau tab from the command palette", async () => {
+        const updateWorkspaceTabContent = vi.fn();
+        const clearErrorMessage = vi.fn();
+        const setErrorMessage = vi.fn();
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: "tab-format",
+                            splitView: null,
+                            archivedTabs: [],
+                            executionHistory: [],
+                            tabs: [
+                                {
+                                    id: "tab-format",
+                                    fileName: "alpha.lua",
+                                    content: "local x=1",
+                                    savedContent: "local x=1",
+                                    isDirty: false,
+                                    cursor: {
+                                        line: 0,
+                                        column: 0,
+                                        scrollTop: 0,
+                                    },
+                                },
+                            ],
+                        },
+                        activeTab: {
+                            id: "tab-format",
+                            fileName: "alpha.lua",
+                            content: "local x=1",
+                            savedContent: "local x=1",
+                            isDirty: false,
+                            cursor: { line: 0, column: 0, scrollTop: 0 },
+                        },
+                        activeTabIndex: 0,
+                    },
+                    editorActions: {
+                        clearErrorMessage,
+                        setErrorMessage,
+                        updateWorkspaceTabContent,
+                    },
+                }),
+            }),
+        );
+
+        const beautifyItem = items.find(
+            (item) => item.id === "command-beautify-tab",
+        );
+
+        expect(beautifyItem).toMatchObject({
+            isDisabled: false,
+        });
+
+        beautifyItem?.onSelect();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(platformMocks.formatLuauScript).toHaveBeenCalledWith({
+            content: "local x=1",
+        });
+        expect(updateWorkspaceTabContent).toHaveBeenCalledWith(
+            "tab-format",
+            "formatted",
+        );
+        expect(clearErrorMessage).toHaveBeenCalledOnce();
+        expect(setErrorMessage).not.toHaveBeenCalled();
     });
 
     it("offers detach only while attached", () => {

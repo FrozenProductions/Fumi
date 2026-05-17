@@ -110,6 +110,7 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
     const updateActiveTabScrollTop = useWorkspaceStore(
         (state) => state.updateActiveTabScrollTop,
     );
+    const setErrorMessage = useWorkspaceStore((state) => state.setErrorMessage);
     const clearErrorMessage = useWorkspaceStore(
         (state) => state.clearErrorMessage,
     );
@@ -166,6 +167,7 @@ export function useWorkspaceSession(): UseWorkspaceSessionResult {
             updateWorkspaceTabContent,
             updateActiveTabCursor,
             updateActiveTabScrollTop,
+            setErrorMessage,
             clearErrorMessage,
         },
     };

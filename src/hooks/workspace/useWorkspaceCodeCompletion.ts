@@ -12,6 +12,7 @@ import type {
 } from "../../lib/workspace/codeCompletion/workspaceCodeCompletion.type";
 import {
     clearLiveWorkspaceEditorContent,
+    getLiveWorkspaceEditorContent,
     setLiveWorkspaceEditorContent,
 } from "../../lib/workspace/editor/liveWorkspaceEditorContent";
 import type {
@@ -115,6 +116,13 @@ export function useWorkspaceCodeCompletion({
         }
 
         pendingContentUpdateRef.current = null;
+        if (
+            getLiveWorkspaceEditorContent(pendingContentUpdate.tabId) !==
+            pendingContentUpdate.content
+        ) {
+            return;
+        }
+
         updateWorkspaceTabContent(
             pendingContentUpdate.tabId,
             pendingContentUpdate.content,

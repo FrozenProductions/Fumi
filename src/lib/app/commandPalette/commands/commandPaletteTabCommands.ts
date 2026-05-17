@@ -1,4 +1,11 @@
 import { CommandIcon } from "@hugeicons/core-free-icons";
+import { isLuauFileName } from "../../../luau/fileType";
+import { formatLuauScript } from "../../../platform/core/luau";
+import { getErrorMessage } from "../../../shared/errorMessage";
+import {
+    getLiveWorkspaceEditorContent,
+    setLiveWorkspaceEditorContent,
+} from "../../../workspace/editor/liveWorkspaceEditorContent";
 import type { GetCommandPaletteCommandItemsOptions } from "../commandPalette.type";
 import type { AppCommandPaletteItem } from "../commandPaletteDomain.type";
 
@@ -27,6 +34,8 @@ export function getActiveTabCommandItems({
         return [];
     }
 
+    const { clearErrorMessage, setErrorMessage, updateWorkspaceTabContent } =
+        workspaceSession.editorActions;
     const {
         archiveWorkspaceTab,
         deleteWorkspaceTab,
@@ -45,6 +54,7 @@ export function getActiveTabCommandItems({
         activeTab.fileName,
         executorState,
     );
+    const canBeautifyActiveTab = isLuauFileName(activeTab.fileName);
     const items: AppCommandPaletteItem[] = [
         {
             id: "command-execute-tab",
@@ -59,6 +69,29 @@ export function getActiveTabCommandItems({
                 executorState.isBusy,
             onSelect: () => {
                 void executeActiveTab();
+            },
+        },
+        {
+            id: "command-beautify-tab",
+            label: "Beautify current tab",
+            description: canBeautifyActiveTab
+                ? `Format ${activeTab.fileName} with the Luau beautifier.`
+                : "Only .lua and .luau tabs can be beautified.",
+            icon: CommandIcon,
+            keywords: `beautify format formatter pretty print luau lua ${activeTab.fileName}`,
+            isDisabled: !canBeautifyActiveTab,
+            onSelect: () => {
+                onOpenWorkspaceScreen();
+                void beautifyActiveTab({
+                    activeTabId: activeTab.id,
+                    content:
+                        getLiveWorkspaceEditorContent(activeTab.id) ??
+                        activeTab.content,
+                    fileName: activeTab.fileName,
+                    onClearErrorMessage: clearErrorMessage,
+                    onSetErrorMessage: setErrorMessage,
+                    onUpdateWorkspaceTabContent: updateWorkspaceTabContent,
+                });
             },
         },
         {
@@ -267,4 +300,36 @@ function getExecuteActiveTabDescription(
     }
 
     return `Run ${fileName} through the executor.`;
+}
+
+async function beautifyActiveTab({
+    activeTabId,
+    content,
+    fileName,
+    onClearErrorMessage,
+    onSetErrorMessage,
+    onUpdateWorkspaceTabContent,
+}: {
+    activeTabId: string;
+    content: string;
+    fileName: string;
+    onClearErrorMessage: () => void;
+    onSetErrorMessage: (message: string | null) => void;
+    onUpdateWorkspaceTabContent: (tabId: string, content: string) => void;
+}): Promise<void> {
+    try {
+        const result = await formatLuauScript({ content });
+
+        setLiveWorkspaceEditorContent(activeTabId, result.formatted);
+        onUpdateWorkspaceTabContent(activeTabId, result.formatted);
+        onClearErrorMessage();
+    } catch (error: unknown) {
+        const message = getErrorMessage(
+            error,
+            `Could not beautify ${fileName}.`,
+        );
+
+        console.warn(message);
+        onSetErrorMessage(message);
+    }
 }

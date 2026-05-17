@@ -56,6 +56,7 @@ type UseWorkspaceSessionStoreFields = Pick<
     | "updateWorkspaceTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
+    | "setErrorMessage"
     | "workspace"
     | "duplicateWorkspaceTab"
 >;
@@ -113,6 +114,7 @@ export type WorkspaceSessionEditorActions = Pick<
     | "updateWorkspaceTabContent"
     | "updateActiveTabCursor"
     | "updateActiveTabScrollTop"
+    | "setErrorMessage"
     | "clearErrorMessage"
 >;
 

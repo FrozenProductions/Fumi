@@ -70,3 +70,12 @@ export type LuauCompletionPopupState = {
     row: number;
     selectedIndex: number;
 };
+
+export type FormatLuauScriptOptions = {
+    indentWidth: number;
+    trailingNewline: boolean;
+};
+
+export type FormatLuauScriptResult = {
+    formatted: string;
+};
