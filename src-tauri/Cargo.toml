@@ -6,7 +6,7 @@ authors = ["FrozenProductions"]
 license = ""
 repository = ""
 edition = "2021"
-rust-version = "1.88.0"
+rust-version = "1.89"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
