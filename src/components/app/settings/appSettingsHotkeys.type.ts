@@ -6,10 +6,13 @@ export type AppSettingsHotkeyFieldProps = {
     shortcutLabel: string;
     isEditable: boolean;
     isCustomized: boolean;
+    isDisabled: boolean;
     isRecording: boolean;
     statusMessage?: string | null;
     lockedMessage?: string | null;
     onStartRecording: (action: AppHotkeyAction) => void;
     onCancelRecording: () => void;
     onReset: (action: AppHotkeyAction) => void;
+    onDisable: (action: AppHotkeyAction) => void;
+    onEnable: (action: AppHotkeyAction) => void;
 };

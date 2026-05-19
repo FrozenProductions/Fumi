@@ -1,9 +1,29 @@
+import type { RegisterableHotkey } from "@tanstack/hotkeys";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { getAppHotkeyBinding } from "../../lib/app/hotkeys/hotkeys";
-import type { AppHotkeyBindings } from "../../lib/app/hotkeys/hotkeys.type";
+import type {
+    AppHotkeyAction,
+    AppHotkeyBinding,
+    AppHotkeyBindings,
+} from "../../lib/app/hotkeys/hotkeys.type";
+
+const DISABLED_HOTKEY_PLACEHOLDER: RegisterableHotkey = {
+    key: "F13",
+    mod: false,
+    ctrl: false,
+    alt: false,
+    shift: false,
+};
+
+function toHotkeyOrPlaceholder(
+    binding: AppHotkeyBinding | null,
+): RegisterableHotkey {
+    return binding ?? DISABLED_HOTKEY_PLACEHOLDER;
+}
 
 type UseWorkspaceScreenHotkeysOptions = {
     hotkeyBindings: AppHotkeyBindings;
+    disabledHotkeys?: AppHotkeyAction[];
     isCommandPaletteOpen: boolean;
     isDesktopShell: boolean;
     isLaunching: boolean;
@@ -14,19 +34,9 @@ type UseWorkspaceScreenHotkeysOptions = {
     onToggleOutlinePanel: () => void;
 };
 
-/**
- * Registers workspace-screen-level hotkeys for Roblox controls and the outline panel.
- *
- * @remarks
- * Disables all hotkeys while the command palette is open. Desktop-only hotkeys
- * (launch and kill Roblox) are further gated by `isDesktopShell` and their
- * respective operation-in-progress flags.
- *
- * @param options - Hotkey configuration and action callbacks
- * @returns void (side-effect only)
- */
 export function useWorkspaceScreenHotkeys({
     hotkeyBindings,
+    disabledHotkeys = [],
     isCommandPaletteOpen,
     isDesktopShell,
     isLaunching,
@@ -39,25 +49,35 @@ export function useWorkspaceScreenHotkeys({
     const launchRobloxHotkey = getAppHotkeyBinding(
         "LAUNCH_ROBLOX",
         hotkeyBindings,
+        disabledHotkeys,
     );
-    const killRobloxHotkey = getAppHotkeyBinding("KILL_ROBLOX", hotkeyBindings);
+    const killRobloxHotkey = getAppHotkeyBinding(
+        "KILL_ROBLOX",
+        hotkeyBindings,
+        disabledHotkeys,
+    );
     const toggleOutlinePanelHotkey = getAppHotkeyBinding(
         "TOGGLE_OUTLINE_PANEL",
         hotkeyBindings,
+        disabledHotkeys,
     );
 
     useHotkey(
-        launchRobloxHotkey,
+        toHotkeyOrPlaceholder(launchRobloxHotkey),
         () => {
             void onLaunchRoblox();
         },
         {
-            enabled: isDesktopShell && !isCommandPaletteOpen && !isLaunching,
+            enabled:
+                isDesktopShell &&
+                !isCommandPaletteOpen &&
+                !isLaunching &&
+                launchRobloxHotkey !== null,
         },
     );
 
     useHotkey(
-        killRobloxHotkey,
+        toHotkeyOrPlaceholder(killRobloxHotkey),
         () => {
             void onConfirmKillRoblox();
         },
@@ -66,17 +86,18 @@ export function useWorkspaceScreenHotkeys({
                 isDesktopShell &&
                 !isCommandPaletteOpen &&
                 !isKillingRoblox &&
-                killingRobloxProcessPid === null,
+                killingRobloxProcessPid === null &&
+                killRobloxHotkey !== null,
         },
     );
 
     useHotkey(
-        toggleOutlinePanelHotkey,
+        toHotkeyOrPlaceholder(toggleOutlinePanelHotkey),
         () => {
             onToggleOutlinePanel();
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled: !isCommandPaletteOpen && toggleOutlinePanelHotkey !== null,
         },
     );
 }

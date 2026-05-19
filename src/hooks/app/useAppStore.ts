@@ -168,17 +168,55 @@ export const useAppStore = create<AppStore>()(
             resetHotkeyBinding: (action) => {
                 set((state) => {
                     const nextHotkeyBindings = { ...state.hotkeyBindings };
-
                     delete nextHotkeyBindings[action];
+
+                    const nextDisabledHotkeys = state.disabledHotkeys.filter(
+                        (disabledAction) => disabledAction !== action,
+                    );
 
                     return {
                         hotkeyBindings: nextHotkeyBindings,
+                        disabledHotkeys: nextDisabledHotkeys,
                     };
                 });
             },
             resetAllHotkeyBindings: () => {
                 set({
                     hotkeyBindings: {},
+                    disabledHotkeys: [],
+                });
+            },
+            disableHotkeyBinding: (action) => {
+                set((state) => {
+                    if (state.disabledHotkeys.includes(action)) {
+                        return state;
+                    }
+
+                    const nextHotkeyBindings = { ...state.hotkeyBindings };
+                    delete nextHotkeyBindings[action];
+
+                    return {
+                        hotkeyBindings: nextHotkeyBindings,
+                        disabledHotkeys: [...state.disabledHotkeys, action],
+                    };
+                });
+            },
+            enableHotkeyBinding: (action) => {
+                set((state) => {
+                    const nextDisabledHotkeys = state.disabledHotkeys.filter(
+                        (disabledAction) => disabledAction !== action,
+                    );
+
+                    if (
+                        nextDisabledHotkeys.length ===
+                        state.disabledHotkeys.length
+                    ) {
+                        return state;
+                    }
+
+                    return {
+                        disabledHotkeys: nextDisabledHotkeys,
+                    };
                 });
             },
             setAutoUpdateEnabled: (isEnabled) => {

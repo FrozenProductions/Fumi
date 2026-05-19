@@ -36,6 +36,7 @@ export function WorkspaceReadyScreen({
     executionHistoryModal,
 }: WorkspaceScreenProps): ReactElement | null {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
+    const disabledHotkeys = useAppStore((state) => state.disabledHotkeys);
     const isCommandPaletteOpen = useAppStore(
         (state) => state.isCommandPaletteOpen,
     );
@@ -146,6 +147,7 @@ export function WorkspaceReadyScreen({
 
     useWorkspaceScreenHotkeys({
         hotkeyBindings,
+        disabledHotkeys,
         isCommandPaletteOpen,
         isDesktopShell,
         isLaunching,

@@ -32,6 +32,7 @@ export function useAppGlobalHotkeyCapture({
     useEffect(() => {
         const handleGlobalAppKeydown = (event: KeyboardEvent): void => {
             if (
+                hotkeys.toggleWorkspaceSplitView !== null &&
                 shouldTriggerAppHotkeyCapture(
                     event,
                     hotkeys.toggleWorkspaceSplitView,
@@ -48,6 +49,7 @@ export function useAppGlobalHotkeyCapture({
             }
 
             if (
+                hotkeys.executeActiveTab !== null &&
                 shouldTriggerAppHotkeyCapture(event, hotkeys.executeActiveTab)
             ) {
                 if (
@@ -68,6 +70,7 @@ export function useAppGlobalHotkeyCapture({
             }
 
             if (
+                hotkeys.toggleExecutorConnection !== null &&
                 shouldTriggerAppHotkeyCodeFallback(
                     event,
                     hotkeys.toggleExecutorConnection,
@@ -85,6 +88,7 @@ export function useAppGlobalHotkeyCapture({
             }
 
             if (
+                hotkeys.openSettings !== null &&
                 shouldTriggerAppHotkeyCodeFallback(event, hotkeys.openSettings)
             ) {
                 if (isCommandPaletteOpen) {
@@ -104,6 +108,7 @@ export function useAppGlobalHotkeyCapture({
             }
 
             if (
+                hotkeys.openCommandPalette !== null &&
                 shouldTriggerAppHotkeyCodeFallback(
                     event,
                     hotkeys.openCommandPalette,
@@ -116,6 +121,7 @@ export function useAppGlobalHotkeyCapture({
             }
 
             if (
+                hotkeys.commandPaletteCommands !== null &&
                 shouldTriggerAppHotkeyCodeFallback(
                     event,
                     hotkeys.commandPaletteCommands,
@@ -132,6 +138,7 @@ export function useAppGlobalHotkeyCapture({
             }
 
             if (
+                hotkeys.commandPaletteWorkspaces !== null &&
                 shouldTriggerAppHotkeyCodeFallback(
                     event,
                     hotkeys.commandPaletteWorkspaces,
@@ -144,6 +151,10 @@ export function useAppGlobalHotkeyCapture({
                 event.preventDefault();
                 event.stopPropagation();
                 toggleCommandPaletteScope("workspaces");
+                return;
+            }
+
+            if (hotkeys.goToLine === null) {
                 return;
             }
 

@@ -64,19 +64,20 @@ describe("findAppHotkeyConflict", () => {
     });
 
     it("detects conflicts against editable raw-object shortcuts", () => {
-        expect(
-            findAppHotkeyConflict(
-                "OPEN_COMMAND_PALETTE",
-                getAppHotkeyBinding("RESET_WORKSPACE_SPLIT_VIEW", {}),
-                {},
-            ),
-        ).toEqual({
-            label: "Reset split ratio",
-            shortcutLabel: getResolvedAppHotkey(
-                "RESET_WORKSPACE_SPLIT_VIEW",
-                {},
-            ).shortcutLabel,
-        });
+        const binding = getAppHotkeyBinding("RESET_WORKSPACE_SPLIT_VIEW", {});
+
+        expect(binding).not.toBeNull();
+        if (binding !== null) {
+            expect(
+                findAppHotkeyConflict("OPEN_COMMAND_PALETTE", binding, {}),
+            ).toEqual({
+                label: "Reset split ratio",
+                shortcutLabel: getResolvedAppHotkey(
+                    "RESET_WORKSPACE_SPLIT_VIEW",
+                    {},
+                ).shortcutLabel,
+            });
+        }
     });
 
     it("detects conflicts against reserved app shortcuts", () => {
@@ -113,6 +114,35 @@ describe("app hotkey resolution", () => {
             isCustomized: true,
             shortcutLabel: formatForDisplay("Mod+K"),
         });
+    });
+
+    it("returns null binding when hotkey is disabled", () => {
+        expect(
+            getAppHotkeyBinding("OPEN_COMMAND_PALETTE", {}, [
+                "OPEN_COMMAND_PALETTE",
+            ]),
+        ).toBeNull();
+    });
+
+    it("marks disabled hotkeys as customized", () => {
+        expect(
+            getResolvedAppHotkey("OPEN_COMMAND_PALETTE", {}, [
+                "OPEN_COMMAND_PALETTE",
+            ]),
+        ).toMatchObject({
+            binding: null,
+            isCustomized: true,
+            isDisabled: true,
+            shortcutLabel: "Disabled",
+        });
+    });
+
+    it("skips disabled bindings when finding conflicts", () => {
+        expect(
+            findAppHotkeyConflict("TOGGLE_SIDEBAR", "Mod+B", {}, [
+                "OPEN_COMMAND_PALETTE",
+            ]),
+        ).toBeNull();
     });
 });
 

@@ -78,11 +78,16 @@ export function getAppHotkeyDefinition(
 export function getAppHotkeyBinding(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
-): AppHotkeyBinding {
+    disabledHotkeys: AppHotkeyAction[] = [],
+): AppHotkeyBinding | null {
     const definition = getAppHotkeyDefinition(action);
 
     if (!definition.isEditable) {
         return definition.defaultBinding;
+    }
+
+    if (disabledHotkeys.includes(action)) {
+        return null;
     }
 
     return hotkeyBindings[action] ?? definition.defaultBinding;
@@ -94,8 +99,17 @@ export function getAppHotkeyBinding(
 export function getAppHotkeyShortcutLabel(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
+    disabledHotkeys: AppHotkeyAction[] = [],
 ): string {
-    const binding = getAppHotkeyBinding(action, hotkeyBindings);
+    const binding = getAppHotkeyBinding(
+        action,
+        hotkeyBindings,
+        disabledHotkeys,
+    );
+
+    if (binding === null) {
+        return "Disabled";
+    }
 
     return formatForDisplay(
         typeof binding === "string"
@@ -114,11 +128,21 @@ export function getAppHotkeyShortcutLabel(
 function isAppHotkeyCustomized(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
+    disabledHotkeys: AppHotkeyAction[] = [],
 ): boolean {
     const definition = getAppHotkeyDefinition(action);
+
+    if (!definition.isEditable) {
+        return false;
+    }
+
+    if (disabledHotkeys.includes(action)) {
+        return true;
+    }
+
     const binding = hotkeyBindings[action];
 
-    if (!definition.isEditable || binding === undefined) {
+    if (binding === undefined) {
         return false;
     }
 
@@ -131,16 +155,30 @@ function isAppHotkeyCustomized(
 export function getResolvedAppHotkey(
     action: AppHotkeyAction,
     hotkeyBindings: AppHotkeyBindings,
+    disabledHotkeys: AppHotkeyAction[] = [],
 ): ResolvedAppHotkey {
     const definition = getAppHotkeyDefinition(action);
-    const binding = getAppHotkeyBinding(action, hotkeyBindings);
+    const binding = getAppHotkeyBinding(
+        action,
+        hotkeyBindings,
+        disabledHotkeys,
+    );
 
     return {
         action,
         ...definition,
         binding,
-        shortcutLabel: getAppHotkeyShortcutLabel(action, hotkeyBindings),
-        isCustomized: isAppHotkeyCustomized(action, hotkeyBindings),
+        shortcutLabel: getAppHotkeyShortcutLabel(
+            action,
+            hotkeyBindings,
+            disabledHotkeys,
+        ),
+        isCustomized: isAppHotkeyCustomized(
+            action,
+            hotkeyBindings,
+            disabledHotkeys,
+        ),
+        isDisabled: disabledHotkeys.includes(action),
     };
 }
 
@@ -161,14 +199,21 @@ export function getAppHotkeySettingsActions(): AppHotkeyAction[] {
  * @param hotkeyBindings - Persisted user overrides
  * @returns Array of groups, each containing a label and its resolved hotkeys
  */
-export function getAppHotkeyGroups(hotkeyBindings: AppHotkeyBindings): Array<{
+export function getAppHotkeyGroups(
+    hotkeyBindings: AppHotkeyBindings,
+    disabledHotkeys: AppHotkeyAction[] = [],
+): Array<{
     groupLabel: string;
     hotkeys: ResolvedAppHotkey[];
 }> {
     const groups = new Map<string, ResolvedAppHotkey[]>();
 
     for (const action of getAppHotkeySettingsActions()) {
-        const hotkey = getResolvedAppHotkey(action, hotkeyBindings);
+        const hotkey = getResolvedAppHotkey(
+            action,
+            hotkeyBindings,
+            disabledHotkeys,
+        );
         const existingGroup = groups.get(hotkey.groupLabel);
 
         if (existingGroup) {
@@ -192,6 +237,7 @@ export function findAppHotkeyConflict(
     action: AppHotkeyAction,
     binding: AppHotkeyBinding,
     hotkeyBindings: AppHotkeyBindings,
+    disabledHotkeys: AppHotkeyAction[] = [],
 ): AppHotkeyConflict | null {
     const normalizedBinding = normalizeAppHotkeyBinding(binding);
 
@@ -200,13 +246,26 @@ export function findAppHotkeyConflict(
             continue;
         }
 
+        if (disabledHotkeys.includes(currentAction)) {
+            continue;
+        }
+
         const currentBinding = getAppHotkeyBinding(
             currentAction,
             hotkeyBindings,
+            disabledHotkeys,
         );
 
+        if (currentBinding === null) {
+            continue;
+        }
+
         if (normalizeAppHotkeyBinding(currentBinding) === normalizedBinding) {
-            const hotkey = getResolvedAppHotkey(currentAction, hotkeyBindings);
+            const hotkey = getResolvedAppHotkey(
+                currentAction,
+                hotkeyBindings,
+                disabledHotkeys,
+            );
 
             return {
                 label: hotkey.label,

@@ -2,25 +2,28 @@ import type { ReactElement } from "react";
 import { AppAnimatedText } from "../common/AppAnimatedText";
 import type { AppSettingsHotkeyFieldProps } from "./appSettingsHotkeys.type";
 
-/**
- * Renders a single hotkey binding row with recording and reset controls.
- *
- * @param props - Component props
- */
 export function AppSettingsHotkeyField({
     action,
     label,
     shortcutLabel,
     isEditable,
     isCustomized,
+    isDisabled,
     isRecording,
     statusMessage,
     lockedMessage,
     onStartRecording,
     onCancelRecording,
     onReset,
+    onDisable,
+    onEnable,
 }: AppSettingsHotkeyFieldProps): ReactElement {
     const handleButtonClick = (): void => {
+        if (isDisabled) {
+            onEnable(action);
+            return;
+        }
+
         if (isRecording) {
             onCancelRecording();
         } else {
@@ -28,7 +31,15 @@ export function AppSettingsHotkeyField({
         }
     };
 
-    const buttonLabel = isRecording ? "Press keys..." : shortcutLabel;
+    const handleDisable = (): void => {
+        onDisable(action);
+    };
+
+    const buttonLabel = isDisabled
+        ? "Disabled"
+        : isRecording
+          ? "Press keys..."
+          : shortcutLabel;
 
     return (
         <div className="flex items-start justify-between gap-4">
@@ -54,9 +65,11 @@ export function AppSettingsHotkeyField({
                     onClick={handleButtonClick}
                     disabled={!isEditable}
                     className={`app-select-none inline-flex h-[22px] items-center justify-center rounded-[0.5rem] border px-1.5 text-[10px] font-semibold tracking-[0.01em] transition-[background-color,border-color,color,min-width] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50 disabled:cursor-default disabled:opacity-50 ${
-                        isRecording
-                            ? "min-w-[5.5rem] border-fumi-300 bg-fumi-100 text-fumi-800"
-                            : "min-w-[3.5rem] border-fumi-200 bg-fumi-50 text-fumi-700 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800"
+                        isDisabled
+                            ? "min-w-[4.5rem] border-fumi-200 bg-fumi-50 text-fumi-400"
+                            : isRecording
+                              ? "min-w-[5.5rem] border-fumi-300 bg-fumi-100 text-fumi-800"
+                              : "min-w-[3.5rem] border-fumi-200 bg-fumi-50 text-fumi-700 hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-800"
                     }`}
                 >
                     <AppAnimatedText
@@ -65,14 +78,23 @@ export function AppSettingsHotkeyField({
                     />
                 </button>
 
-                {!isRecording && isCustomized ? (
-                    <button
-                        type="button"
-                        onClick={() => onReset(action)}
-                        className="app-select-none inline-flex h-[22px] items-center justify-center rounded-[0.5rem] border border-fumi-200 bg-fumi-50 px-1.5 text-[10px] font-semibold text-fumi-600 transition-[background-color,border-color,color] duration-150 ease-out hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
-                    >
-                        Reset
-                    </button>
+                {!isDisabled && !isRecording && isCustomized ? (
+                    <>
+                        <button
+                            type="button"
+                            onClick={handleDisable}
+                            className="app-select-none inline-flex h-[22px] items-center justify-center rounded-[0.5rem] border border-fumi-200 bg-fumi-50 px-1.5 text-[10px] font-semibold text-fumi-600 transition-[background-color,border-color,color] duration-150 ease-out hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+                        >
+                            Disable
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onReset(action)}
+                            className="app-select-none inline-flex h-[22px] items-center justify-center rounded-[0.5rem] border border-fumi-200 bg-fumi-50 px-1.5 text-[10px] font-semibold text-fumi-600 transition-[background-color,border-color,color] duration-150 ease-out hover:border-fumi-300 hover:bg-fumi-100 hover:text-fumi-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-2 focus-visible:ring-offset-fumi-50"
+                        >
+                            Reset
+                        </button>
+                    </>
                 ) : null}
             </div>
         </div>

@@ -23,6 +23,7 @@ export const DEFAULT_APP_STORE_STATE = {
     theme: DEFAULT_APP_THEME,
     isStreamerModeEnabled: DEFAULT_APP_STREAMER_MODE_ENABLED,
     hotkeyBindings: {},
+    disabledHotkeys: [],
     editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
     updaterSettings: DEFAULT_APP_UPDATER_SETTINGS,
     workspaceSettings: DEFAULT_APP_WORKSPACE_SETTINGS,

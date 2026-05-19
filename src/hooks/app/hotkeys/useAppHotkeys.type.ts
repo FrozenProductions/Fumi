@@ -1,4 +1,5 @@
 import type {
+    AppHotkeyAction,
     AppHotkeyBinding,
     AppHotkeyBindings,
 } from "../../../lib/app/hotkeys/hotkeys.type";
@@ -12,27 +13,28 @@ import type {
 
 export type ResolvedAppHotkeyBindings = {
     hotkeyBindings: AppHotkeyBindings;
-    openCommandPalette: AppHotkeyBinding;
-    openSettings: AppHotkeyBinding;
-    commandPaletteCommands: AppHotkeyBinding;
-    commandPaletteWorkspaces: AppHotkeyBinding;
-    goToLine: AppHotkeyBinding;
-    openWorkspaceDirectory: AppHotkeyBinding;
-    toggleSidebar: AppHotkeyBinding;
-    openWorkspaceScreen: AppHotkeyBinding;
-    openAutomaticExecution: AppHotkeyBinding;
-    openScriptLibrary: AppHotkeyBinding;
-    openAccounts: AppHotkeyBinding;
-    createWorkspaceFile: AppHotkeyBinding;
-    archiveWorkspaceTab: AppHotkeyBinding;
-    toggleWorkspaceSplitView: AppHotkeyBinding;
-    moveWorkspaceTabToLeftPane: AppHotkeyBinding;
-    moveWorkspaceTabToRightPane: AppHotkeyBinding;
-    resetWorkspaceSplitView: AppHotkeyBinding;
-    focusWorkspaceLeftPane: AppHotkeyBinding;
-    focusWorkspaceRightPane: AppHotkeyBinding;
-    toggleExecutorConnection: AppHotkeyBinding;
-    executeActiveTab: AppHotkeyBinding;
+    disabledHotkeys: AppHotkeyAction[];
+    openCommandPalette: AppHotkeyBinding | null;
+    openSettings: AppHotkeyBinding | null;
+    commandPaletteCommands: AppHotkeyBinding | null;
+    commandPaletteWorkspaces: AppHotkeyBinding | null;
+    goToLine: AppHotkeyBinding | null;
+    openWorkspaceDirectory: AppHotkeyBinding | null;
+    toggleSidebar: AppHotkeyBinding | null;
+    openWorkspaceScreen: AppHotkeyBinding | null;
+    openAutomaticExecution: AppHotkeyBinding | null;
+    openScriptLibrary: AppHotkeyBinding | null;
+    openAccounts: AppHotkeyBinding | null;
+    createWorkspaceFile: AppHotkeyBinding | null;
+    archiveWorkspaceTab: AppHotkeyBinding | null;
+    toggleWorkspaceSplitView: AppHotkeyBinding | null;
+    moveWorkspaceTabToLeftPane: AppHotkeyBinding | null;
+    moveWorkspaceTabToRightPane: AppHotkeyBinding | null;
+    resetWorkspaceSplitView: AppHotkeyBinding | null;
+    focusWorkspaceLeftPane: AppHotkeyBinding | null;
+    focusWorkspaceRightPane: AppHotkeyBinding | null;
+    toggleExecutorConnection: AppHotkeyBinding | null;
+    executeActiveTab: AppHotkeyBinding | null;
 };
 
 export type UseAppGlobalHotkeyCaptureOptions = {

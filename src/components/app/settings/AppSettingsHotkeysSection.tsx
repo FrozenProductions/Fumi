@@ -18,7 +18,7 @@ export function AppSettingsHotkeysSection(): ReactElement {
                         Keyboard shortcuts
                     </p>
                     <p className="mt-1 text-xs leading-[1.55] text-fumi-400">
-                        Click a shortcut to record. Press Backspace to reset.
+                        Click a shortcut to record. Press Backspace to disable.
                         Native menu shortcuts stay fixed and are not listed
                         here.
                     </p>
@@ -47,6 +47,7 @@ export function AppSettingsHotkeysSection(): ReactElement {
                                 shortcutLabel={hotkey.shortcutLabel}
                                 isEditable={hotkey.isEditable}
                                 isCustomized={hotkey.isCustomized}
+                                isDisabled={hotkey.isDisabled}
                                 isRecording={
                                     hotkeyRecorder.recordingAction ===
                                         hotkey.action &&
@@ -70,6 +71,8 @@ export function AppSettingsHotkeysSection(): ReactElement {
                                     hotkeyRecorder.onCancelRecording
                                 }
                                 onReset={hotkeyRecorder.onResetBinding}
+                                onDisable={hotkeyRecorder.onDisableBinding}
+                                onEnable={hotkeyRecorder.onEnableBinding}
                             />
                         ))}
                     </div>

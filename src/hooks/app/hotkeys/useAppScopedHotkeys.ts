@@ -1,14 +1,22 @@
+import type { RegisterableHotkey } from "@tanstack/hotkeys";
 import { useHotkey } from "@tanstack/react-hotkeys";
+import type { AppHotkeyBinding } from "../../../lib/app/hotkeys/hotkeys.type";
 import type { UseAppScopedHotkeysOptions } from "./useAppHotkeys.type";
 
-/**
- * Registers workspace-scoped keyboard shortcuts and routes them to appropriate handlers.
- *
- * @remarks
- * Registers hotkeys for workspace operations (open, create, archive tabs),
- * split view management, sidebar navigation, and command palette control.
- * Hotkeys are conditionally enabled based on context (e.g., command palette open).
- */
+const DISABLED_HOTKEY_PLACEHOLDER: RegisterableHotkey = {
+    key: "F13",
+    mod: false,
+    ctrl: false,
+    alt: false,
+    shift: false,
+};
+
+function toHotkeyOrPlaceholder(
+    binding: AppHotkeyBinding | null,
+): RegisterableHotkey {
+    return binding ?? DISABLED_HOTKEY_PLACEHOLDER;
+}
+
 export function useAppScopedHotkeys({
     activeSidebarItem,
     isCommandPaletteOpen,
@@ -54,71 +62,83 @@ export function useAppScopedHotkeys({
         !isExecutorBusy;
 
     useHotkey(
-        hotkeys.openWorkspaceDirectory,
+        toHotkeyOrPlaceholder(hotkeys.openWorkspaceDirectory),
         () => {
             void openWorkspaceDirectory();
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled:
+                !isCommandPaletteOpen &&
+                hotkeys.openWorkspaceDirectory !== null,
         },
     );
 
     useHotkey(
-        hotkeys.toggleSidebar,
+        toHotkeyOrPlaceholder(hotkeys.toggleSidebar),
         () => {
             toggleSidebar();
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled: !isCommandPaletteOpen && hotkeys.toggleSidebar !== null,
         },
     );
 
     useHotkey(
-        hotkeys.openWorkspaceScreen,
+        toHotkeyOrPlaceholder(hotkeys.openWorkspaceScreen),
         () => {
             selectSidebarItem("workspace");
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled:
+                !isCommandPaletteOpen && hotkeys.openWorkspaceScreen !== null,
         },
     );
 
     useHotkey(
-        hotkeys.openAutomaticExecution,
+        toHotkeyOrPlaceholder(hotkeys.openAutomaticExecution),
         () => {
             selectSidebarItem("automatic-execution");
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled:
+                !isCommandPaletteOpen &&
+                hotkeys.openAutomaticExecution !== null,
         },
     );
 
     useHotkey(
-        hotkeys.openScriptLibrary,
+        toHotkeyOrPlaceholder(hotkeys.openScriptLibrary),
         () => {
             selectSidebarItem("script-library");
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled:
+                !isCommandPaletteOpen && hotkeys.openScriptLibrary !== null,
         },
     );
 
     useHotkey(
-        hotkeys.openAccounts,
+        toHotkeyOrPlaceholder(hotkeys.openAccounts),
         () => {
             selectSidebarItem("accounts");
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled: !isCommandPaletteOpen && hotkeys.openAccounts !== null,
         },
     );
 
-    useHotkey(hotkeys.openCommandPalette, () => {
-        toggleCommandPalette();
-    });
+    useHotkey(
+        toHotkeyOrPlaceholder(hotkeys.openCommandPalette),
+        () => {
+            toggleCommandPalette();
+        },
+        {
+            enabled: hotkeys.openCommandPalette !== null,
+        },
+    );
 
     useHotkey(
-        hotkeys.openSettings,
+        toHotkeyOrPlaceholder(hotkeys.openSettings),
         () => {
             if (activeSidebarItem === "settings") {
                 selectSidebarItem("workspace");
@@ -128,33 +148,42 @@ export function useAppScopedHotkeys({
             selectSidebarItem("settings");
         },
         {
-            enabled: !isCommandPaletteOpen,
+            enabled: !isCommandPaletteOpen && hotkeys.openSettings !== null,
         },
     );
 
     useHotkey(
-        hotkeys.commandPaletteCommands,
+        toHotkeyOrPlaceholder(hotkeys.commandPaletteCommands),
         () => {
             toggleCommandPaletteScope("commands");
         },
         {
-            enabled: isCommandPaletteOpen,
+            enabled:
+                isCommandPaletteOpen && hotkeys.commandPaletteCommands !== null,
         },
     );
 
     useHotkey(
-        hotkeys.commandPaletteWorkspaces,
+        toHotkeyOrPlaceholder(hotkeys.commandPaletteWorkspaces),
         () => {
             toggleCommandPaletteScope("workspaces");
         },
         {
-            enabled: isCommandPaletteOpen,
+            enabled:
+                isCommandPaletteOpen &&
+                hotkeys.commandPaletteWorkspaces !== null,
         },
     );
 
-    useHotkey(hotkeys.goToLine, () => {
-        toggleGoToLineCommandPalette();
-    });
+    useHotkey(
+        toHotkeyOrPlaceholder(hotkeys.goToLine),
+        () => {
+            toggleGoToLineCommandPalette();
+        },
+        {
+            enabled: hotkeys.goToLine !== null,
+        },
+    );
 
     useHotkey(
         "Escape",
@@ -169,17 +198,19 @@ export function useAppScopedHotkeys({
     );
 
     useHotkey(
-        hotkeys.createWorkspaceFile,
+        toHotkeyOrPlaceholder(hotkeys.createWorkspaceFile),
         () => {
             void createWorkspaceFile();
         },
         {
-            enabled: canRunWorkspaceTabAction,
+            enabled:
+                canRunWorkspaceTabAction &&
+                hotkeys.createWorkspaceFile !== null,
         },
     );
 
     useHotkey(
-        hotkeys.archiveWorkspaceTab,
+        toHotkeyOrPlaceholder(hotkeys.archiveWorkspaceTab),
         () => {
             const activeTabId = activeTab?.id;
 
@@ -190,23 +221,27 @@ export function useAppScopedHotkeys({
             void archiveWorkspaceTab(activeTabId);
         },
         {
-            enabled: canRunWorkspaceTabAction && hasActiveTab,
+            enabled:
+                canRunWorkspaceTabAction &&
+                hasActiveTab &&
+                hotkeys.archiveWorkspaceTab !== null,
         },
     );
 
     useHotkey(
-        hotkeys.toggleWorkspaceSplitView,
+        toHotkeyOrPlaceholder(hotkeys.toggleWorkspaceSplitView),
         () => {
             selectSidebarItem("workspace");
             toggleWorkspaceSplitView();
         },
         {
-            enabled: canToggleSplitView,
+            enabled:
+                canToggleSplitView && hotkeys.toggleWorkspaceSplitView !== null,
         },
     );
 
     useHotkey(
-        hotkeys.moveWorkspaceTabToLeftPane,
+        toHotkeyOrPlaceholder(hotkeys.moveWorkspaceTabToLeftPane),
         () => {
             const activeTabId = activeTab?.id;
 
@@ -222,12 +257,14 @@ export function useAppScopedHotkeys({
             );
         },
         {
-            enabled: canToggleSplitView,
+            enabled:
+                canToggleSplitView &&
+                hotkeys.moveWorkspaceTabToLeftPane !== null,
         },
     );
 
     useHotkey(
-        hotkeys.moveWorkspaceTabToRightPane,
+        toHotkeyOrPlaceholder(hotkeys.moveWorkspaceTabToRightPane),
         () => {
             const activeTabId = activeTab?.id;
 
@@ -243,23 +280,27 @@ export function useAppScopedHotkeys({
             );
         },
         {
-            enabled: canToggleSplitView,
+            enabled:
+                canToggleSplitView &&
+                hotkeys.moveWorkspaceTabToRightPane !== null,
         },
     );
 
     useHotkey(
-        hotkeys.resetWorkspaceSplitView,
+        toHotkeyOrPlaceholder(hotkeys.resetWorkspaceSplitView),
         () => {
             selectSidebarItem("workspace");
             resetWorkspaceSplitView();
         },
         {
-            enabled: canUseSplitViewHotkeys,
+            enabled:
+                canUseSplitViewHotkeys &&
+                hotkeys.resetWorkspaceSplitView !== null,
         },
     );
 
     useHotkey(
-        hotkeys.focusWorkspaceLeftPane,
+        toHotkeyOrPlaceholder(hotkeys.focusWorkspaceLeftPane),
         () => {
             selectSidebarItem("workspace");
             const activePaneId = workspace?.splitView?.activePaneId;
@@ -269,12 +310,14 @@ export function useAppScopedHotkeys({
             }
         },
         {
-            enabled: canUseSplitViewHotkeys,
+            enabled:
+                canUseSplitViewHotkeys &&
+                hotkeys.focusWorkspaceLeftPane !== null,
         },
     );
 
     useHotkey(
-        hotkeys.focusWorkspaceRightPane,
+        toHotkeyOrPlaceholder(hotkeys.focusWorkspaceRightPane),
         () => {
             selectSidebarItem("workspace");
             const activePaneId = workspace?.splitView?.activePaneId;
@@ -284,28 +327,32 @@ export function useAppScopedHotkeys({
             }
         },
         {
-            enabled: canUseSplitViewHotkeys,
+            enabled:
+                canUseSplitViewHotkeys &&
+                hotkeys.focusWorkspaceRightPane !== null,
         },
     );
 
     useHotkey(
-        hotkeys.toggleExecutorConnection,
+        toHotkeyOrPlaceholder(hotkeys.toggleExecutorConnection),
         () => {
             selectSidebarItem("workspace");
             void toggleExecutorConnection();
         },
         {
-            enabled: canToggleExecutorConnection,
+            enabled:
+                canToggleExecutorConnection &&
+                hotkeys.toggleExecutorConnection !== null,
         },
     );
 
     useHotkey(
-        hotkeys.executeActiveTab,
+        toHotkeyOrPlaceholder(hotkeys.executeActiveTab),
         () => {
             void executeActiveTab();
         },
         {
-            enabled: canExecuteActiveTab,
+            enabled: canExecuteActiveTab && hotkeys.executeActiveTab !== null,
         },
     );
 }

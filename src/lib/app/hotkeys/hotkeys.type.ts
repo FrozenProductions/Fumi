@@ -43,9 +43,10 @@ export type AppHotkeyDefinition = {
 
 export type ResolvedAppHotkey = AppHotkeyDefinition & {
     action: AppHotkeyAction;
-    binding: AppHotkeyBinding;
+    binding: AppHotkeyBinding | null;
     shortcutLabel: string;
     isCustomized: boolean;
+    isDisabled: boolean;
 };
 
 export type AppReservedHotkey = {

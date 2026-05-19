@@ -1,6 +1,8 @@
+import { APP_HOTKEY_DEFINITIONS } from "../../constants/app/hotkeys";
 import { APP_ZOOM_DEFAULT } from "../../constants/app/settings";
 import type { AppStore, AppStoreState } from "./appStore.type";
 import { normalizeAppHotkeyBindings } from "./hotkeys/hotkeys";
+import type { AppHotkeyAction } from "./hotkeys/hotkeys.type";
 import {
     clampAppZoomPercent,
     isAppSidebarItem,
@@ -41,6 +43,9 @@ export function mergeAppStoreState(
         : currentState.theme;
     const hotkeyBindings = normalizeAppHotkeyBindings(
         persistedAppState.hotkeyBindings,
+    );
+    const disabledHotkeys = normalizeAppDisabledHotkeys(
+        persistedAppState.disabledHotkeys,
     );
     const intellisenseWidth = normalizeAppIntellisenseWidth(
         persistedAppState.editorSettings?.intellisenseWidth,
@@ -104,6 +109,7 @@ export function mergeAppStoreState(
         theme,
         isStreamerModeEnabled,
         hotkeyBindings,
+        disabledHotkeys,
         sidebarPosition,
         updaterSettings: {
             ...currentState.updaterSettings,
@@ -147,9 +153,28 @@ export function getPersistedAppStoreState(
         theme: state.theme,
         isStreamerModeEnabled: state.isStreamerModeEnabled,
         hotkeyBindings: state.hotkeyBindings,
+        disabledHotkeys: state.disabledHotkeys,
         updaterSettings: state.updaterSettings,
         editorSettings: state.editorSettings,
         workspaceSettings: state.workspaceSettings,
         sidebarPosition: state.sidebarPosition,
     };
+}
+
+function isValidDisabledHotkey(value: unknown): value is AppHotkeyAction {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const definition = APP_HOTKEY_DEFINITIONS[value as AppHotkeyAction];
+
+    return definition?.isEditable === true;
+}
+
+function normalizeAppDisabledHotkeys(value: unknown): AppHotkeyAction[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.filter(isValidDisabledHotkey);
 }

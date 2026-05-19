@@ -20,6 +20,8 @@ type UseAppHotkeyRecorderControllerResult = {
     onResetAllBindings: () => void;
     onResetBinding: (action: AppHotkeyAction) => void;
     onStartRecording: (action: AppHotkeyAction) => void;
+    onDisableBinding: (action: AppHotkeyAction) => void;
+    onEnableBinding: (action: AppHotkeyAction) => void;
 };
 
 /**
@@ -27,16 +29,23 @@ type UseAppHotkeyRecorderControllerResult = {
  *
  * Integrates with the hotkey recorder to capture key combinations, detects
  * conflicts with existing bindings, and provides status feedback. Supports
- * resetting individual or all bindings to defaults.
+ * disabling keybinds via Backspace and resetting individual or all bindings.
  *
  * @returns Recording state, status messages, hotkey groups, and action handlers
  */
 export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderControllerResult {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
+    const disabledHotkeys = useAppStore((state) => state.disabledHotkeys);
     const setHotkeyBinding = useAppStore((state) => state.setHotkeyBinding);
     const resetHotkeyBinding = useAppStore((state) => state.resetHotkeyBinding);
     const resetAllHotkeyBindings = useAppStore(
         (state) => state.resetAllHotkeyBindings,
+    );
+    const disableHotkeyBinding = useAppStore(
+        (state) => state.disableHotkeyBinding,
+    );
+    const enableHotkeyBinding = useAppStore(
+        (state) => state.enableHotkeyBinding,
     );
     const [recordingAction, setRecordingAction] =
         useState<AppHotkeyAction | null>(null);
@@ -46,8 +55,9 @@ export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderController
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const recordingActionRef = useRef<AppHotkeyAction | null>(null);
     const statusTimeoutRef = useRef<number | null>(null);
-    const groups = getAppHotkeyGroups(hotkeyBindings);
-    const hasCustomBindings = Object.keys(hotkeyBindings).length > 0;
+    const groups = getAppHotkeyGroups(hotkeyBindings, disabledHotkeys);
+    const hasCustomBindings =
+        Object.keys(hotkeyBindings).length > 0 || disabledHotkeys.length > 0;
 
     useEffect(() => {
         recordingActionRef.current = recordingAction;
@@ -101,6 +111,7 @@ export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderController
                 action,
                 hotkey,
                 hotkeyBindings,
+                disabledHotkeys,
             );
 
             if (conflictingAction) {
@@ -126,7 +137,7 @@ export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderController
                 return;
             }
 
-            resetHotkeyBinding(action);
+            disableHotkeyBinding(action);
             clearStatus();
         },
     });
@@ -159,6 +170,16 @@ export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderController
         clearStatus();
     }
 
+    function handleDisableBinding(action: AppHotkeyAction): void {
+        disableHotkeyBinding(action);
+        clearStatus();
+    }
+
+    function handleEnableBinding(action: AppHotkeyAction): void {
+        enableHotkeyBinding(action);
+        clearStatus();
+    }
+
     return {
         groups,
         hasCustomBindings,
@@ -170,5 +191,7 @@ export function useAppHotkeyRecorderController(): UseAppHotkeyRecorderController
         onResetAllBindings: handleResetAllBindings,
         onResetBinding: handleResetBinding,
         onStartRecording: handleStartRecording,
+        onDisableBinding: handleDisableBinding,
+        onEnableBinding: handleEnableBinding,
     };
 }

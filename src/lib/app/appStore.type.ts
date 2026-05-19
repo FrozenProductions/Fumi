@@ -35,6 +35,7 @@ export type AppStoreState = AppAccountPrivacySettings & {
     zoomPercent: number;
     theme: AppTheme;
     hotkeyBindings: AppHotkeyBindings;
+    disabledHotkeys: AppHotkeyAction[];
     editorSettings: AppEditorSettings;
     updaterSettings: AppUpdaterSettings;
     workspaceSettings: AppWorkspaceSettings;
@@ -63,6 +64,8 @@ type AppStoreActions = {
     ) => void;
     resetHotkeyBinding: (action: AppHotkeyAction) => void;
     resetAllHotkeyBindings: () => void;
+    disableHotkeyBinding: (action: AppHotkeyAction) => void;
+    enableHotkeyBinding: (action: AppHotkeyAction) => void;
     setAutoUpdateEnabled: (isEnabled: boolean) => void;
     setStreamerModeEnabled: (isEnabled: boolean) => void;
     setEditorFontSize: (fontSize: number) => void;
