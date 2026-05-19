@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Add relative line number settings.
 - Add `_G` symbol support to Luau intellisense and outline search.
 - Add loadstring entries to the Luau outline panel.
+- Add command palette commands for symbols, tab size, and intellisense priority.
+- Add Luau beautify command with native beautifier.
+- Add focus delay for tabs mode in command palette.
+- Improve script library search ranking and display titles.
 
 ### Changed
 
@@ -29,11 +33,17 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Stabilize workspace action, tab bar, tab item, editor sidebar, tooltip, close-listener, and hook state update flows.
 - Polish tab context menu spacing, account list item formatting, script loading labels, settings padding, and Tailwind size utilities.
 - Add JSDoc docstrings to exported functions, hooks, and components.
+- Replace esbuild with oxc for minification.
+- Update dnd-kit and tauri-apps dependencies.
+- Upgrade Rust toolchain to 1.89 for smol_str MSRV compatibility.
+- Replace O(n) favorite lookup with Set index in script library store.
+- Adjust command palette UI sizing and increase max results.
 
 ### Removed
 
 - Trim low-value frontend tests.
 - Remove animated text derived state and unused code.
+- Remove unused export resetFavoriteScriptIds.
 
 ### Fixed
 
@@ -47,6 +57,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Add typed executor command wrappers for Roblox executor platform calls.
 - Improve keyboard focus handling for editor split panes.
 - Wrap settings select handlers to avoid passing raw setters through UI props.
+- Fix Escape closing command palette in special mode selectors.
 
 ## [1.0.8] - 2026-05-02
 
