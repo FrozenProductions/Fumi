@@ -13,7 +13,7 @@ import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,
 } from "../workspaceStore.type";
-import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport";
+import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport.type";
 
 /**
  * Creates the action that bootstraps the workspace session on app startup.

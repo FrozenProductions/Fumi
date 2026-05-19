@@ -4,9 +4,7 @@ import {
 } from "../../../constants/workspace/executor";
 import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
 import { parseExecutorPort } from "./executor";
-import type { ExecutorStatusPayload } from "./executor.type";
-
-export type AsyncUnsubscribe = () => void;
+import type { AsyncUnsubscribe, ExecutorStatusPayload } from "./executor.type";
 
 /**
  * Creates the initial executor port summaries before the desktop status hydrates.

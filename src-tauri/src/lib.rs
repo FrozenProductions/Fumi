@@ -82,6 +82,10 @@ fn build_app() -> tauri::Result<tauri::App> {
         .build(tauri::generate_context!())
 }
 
+/// Entry point for the Tauri application.
+///
+/// Builds the app, registers commands and plugins, then enters the run loop.
+/// On ExitRequested the lifecycle handler coordinates frontend cleanup.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() -> tauri::Result<()> {
     let app = build_app()?;

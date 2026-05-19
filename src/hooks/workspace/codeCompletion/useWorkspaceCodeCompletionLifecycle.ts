@@ -3,25 +3,7 @@ import { useEffect } from "react";
 import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
 import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import { useAppStore } from "../../app/useAppStore";
-
-export type StoredAceSessionState = {
-    content: string;
-    scrollLeft: number;
-    scrollTop: number;
-    selection: unknown;
-    undoHistory: object;
-};
-
-export type AceSelectionEventTarget = {
-    on: (eventName: "changeCursor", listener: () => void) => void;
-    off: (eventName: "changeCursor", listener: () => void) => void;
-};
-
-export type AceEditorDestroyEventTarget = AceEditorInstance & {
-    destroyed?: boolean;
-    on: (eventName: "destroy", listener: () => void) => void;
-    off: (eventName: "destroy", listener: () => void) => void;
-};
+import type { StoredAceSessionState } from "./useWorkspaceCodeCompletionLifecycle.type";
 
 type UseWorkspaceCodeCompletionLifecycleOptions = {
     activeTabId: string | null;

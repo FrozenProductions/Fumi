@@ -81,6 +81,7 @@ impl ExecutorRuntimeState {
         self.inner.lock().unwrap_or_else(|error| error.into_inner())
     }
 
+    /// Returns the current executor status payload, including available ports and attachment state.
     pub fn status<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
         let snapshot = self.current_status_snapshot();
         let executor_port_pool = executor_port_pool_for_kind(snapshot.executor_kind);
@@ -94,6 +95,9 @@ impl ExecutorRuntimeState {
         ))
     }
 
+    /// Opens a TCP connection to the executor at the given port.
+    ///
+    /// MacSploit establishes a persistent socket; Opiumware validates the port and marks attached.
     pub fn attach<R: Runtime>(
         &self,
         app: &AppHandle<R>,
@@ -197,6 +201,7 @@ impl ExecutorRuntimeState {
         Ok(status)
     }
 
+    /// Resets and re-establishes a connection on the currently configured port.
     pub fn reattach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
         let status = self.current_status_snapshot();
         let port = status.port;
@@ -224,6 +229,7 @@ impl ExecutorRuntimeState {
         self.attach(app, port)
     }
 
+    /// Closes the active executor connection and emits the updated status.
     pub fn detach<R: Runtime>(&self, app: &AppHandle<R>) -> Result<ExecutorStatusPayload> {
         let status = self.current_status_snapshot();
         log_executor_debug("detach requested");
@@ -273,6 +279,10 @@ impl ExecutorRuntimeState {
         Ok(next_status)
     }
 
+    /// Sends a script to the executor for injection and execution.
+    ///
+    /// For MacSploit the connection is reset and re-established before writing the frame.
+    /// For Opiumware the script is zlib-compressed and sent over a transient TCP connection.
     pub fn execute_script<R: Runtime>(&self, app: &AppHandle<R>, script: &str) -> Result<()> {
         let status = self.current_status_snapshot();
         log_executor_debug(format!(
@@ -316,6 +326,9 @@ impl ExecutorRuntimeState {
         }
     }
 
+    /// Sends an executor setting (key/value) over the active connection.
+    ///
+    /// Only supported for MacSploit; Opiumware returns an error.
     pub fn update_setting<R: Runtime>(
         &self,
         app: &AppHandle<R>,
@@ -343,6 +356,7 @@ impl ExecutorRuntimeState {
         self.write_frame_with_reconnect(app, ExecutorIpcType::Setting, payload.as_bytes())
     }
 
+    /// Updates the active port and emits the new executor status.
     pub fn select_current_port<R: Runtime>(
         &self,
         app: &AppHandle<R>,
@@ -557,6 +571,7 @@ fn build_status_payload(
     }
 }
 
+/// Queries the current executor status and emits an `executor_status_changed` event.
 pub(crate) fn emit_current_executor_status<R: Runtime>(
     app: &AppHandle<R>,
 ) -> Result<ExecutorStatusPayload> {
@@ -566,6 +581,7 @@ pub(crate) fn emit_current_executor_status<R: Runtime>(
     Ok(status)
 }
 
+/// Updates the executor port via the global state and returns the resulting status.
 pub(crate) fn select_current_executor_port<R: Runtime>(
     app: &AppHandle<R>,
     port: u16,

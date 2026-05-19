@@ -15,11 +15,11 @@ import {
     getLiveWorkspaceEditorContent,
     setLiveWorkspaceEditorContent,
 } from "../../lib/workspace/editor/liveWorkspaceEditorContent";
+import { useWorkspaceCodeCompletionLifecycle } from "./codeCompletion/useWorkspaceCodeCompletionLifecycle";
 import type {
     AceEditorDestroyEventTarget,
     StoredAceSessionState,
-} from "./codeCompletion/useWorkspaceCodeCompletionLifecycle";
-import { useWorkspaceCodeCompletionLifecycle } from "./codeCompletion/useWorkspaceCodeCompletionLifecycle";
+} from "./codeCompletion/useWorkspaceCodeCompletionLifecycle.type";
 import { useWorkspaceCompletionPopup } from "./codeCompletion/useWorkspaceCompletionPopup";
 import { useWorkspaceEditorLoadHandler } from "./codeCompletion/useWorkspaceEditorLoadHandler";
 import { useWorkspaceEditorSearch } from "./editorSearch/useWorkspaceEditorSearch";

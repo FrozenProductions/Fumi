@@ -44,6 +44,7 @@ impl AppRuntimeState {
             state.has_workspace_unsaved_changes || state.has_automatic_execution_unsaved_changes;
     }
 
+    /// Allocates a new monotonic ID for an exit-guard sync request.
     pub fn next_exit_guard_sync_request_id(&self) -> u64 {
         let mut state = self.lock();
         state.next_exit_guard_sync_request_id += 1;
@@ -58,33 +59,39 @@ impl AppRuntimeState {
             state.latest_completed_exit_guard_sync_id.max(sync_id);
     }
 
+    /// Returns true if the given sync ID (or a later one) has been resolved.
     #[must_use]
     pub fn has_completed_exit_guard_sync(&self, sync_id: u64) -> bool {
         self.lock().latest_completed_exit_guard_sync_id >= sync_id
     }
 
+    /// Returns true if there are unsaved changes and exit is not already in progress.
     #[must_use]
     pub fn should_guard_exit(&self) -> bool {
         let state = self.lock();
         state.has_synced_unsaved_changes && !state.is_exit_in_progress
     }
 
+    /// Marks exit as in progress and resets frontend readiness.
     pub fn begin_exit(&self) {
         let mut state = self.lock();
         state.is_exit_in_progress = true;
         state.is_frontend_ready_for_exit = false;
     }
 
+    /// Cancels an in-progress exit, re-enabling guard checks and resetting readiness.
     pub fn cancel_exit(&self) {
         let mut state = self.lock();
         state.is_exit_in_progress = false;
         state.is_frontend_ready_for_exit = false;
     }
 
+    /// Grants a one-time allowance for the next window-close request to bypass guards.
     pub fn allow_next_close_request(&self) {
         self.lock().allow_next_close_request = true;
     }
 
+    /// Consumes and returns the close-request allowance, resetting it to false.
     #[must_use]
     pub fn consume_next_close_request_allowance(&self) -> bool {
         let mut state = self.lock();
@@ -93,10 +100,12 @@ impl AppRuntimeState {
         should_allow
     }
 
+    /// Grants a one-time allowance for the next exit request to bypass guards.
     pub fn allow_next_exit_request(&self) {
         self.lock().allow_next_exit_request = true;
     }
 
+    /// Consumes and returns the exit-request allowance, resetting it to false.
     #[must_use]
     pub fn consume_next_exit_request_allowance(&self) -> bool {
         let mut state = self.lock();
@@ -105,10 +114,12 @@ impl AppRuntimeState {
         should_allow
     }
 
+    /// Marks the frontend as having completed its cleanup, allowing the process to exit.
     pub fn mark_frontend_ready_for_exit(&self) {
         self.lock().is_frontend_ready_for_exit = true;
     }
 
+    /// Returns true if the frontend has signalled it is ready to exit.
     #[must_use]
     pub fn is_frontend_ready_for_exit(&self) -> bool {
         self.lock().is_frontend_ready_for_exit

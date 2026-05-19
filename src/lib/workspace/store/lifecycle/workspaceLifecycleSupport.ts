@@ -15,11 +15,8 @@ import type {
     WorkspaceStoreSet,
 } from "../workspaceStore.type";
 
-export type WorkspaceLifecycleRuntime = {
-    bootstrapWorkspacePromise: Promise<void> | null;
-    hasBootstrappedWorkspaceSession: boolean;
-    latestWorkspaceRefreshRequestId: number;
-};
+/** Tracks bootstrap/refresh lifecycle state for the workspace store. */
+import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport.type";
 
 /**
  * Creates the runtime object that tracks bootstrap and refresh lifecycle state.

@@ -1,11 +1,7 @@
 import { FolderOpenIcon } from "@hugeicons/core-free-icons";
 import { vi } from "vite-plus/test";
 import { DEFAULT_APP_EDITOR_SETTINGS } from "../../../constants/app/settings";
-import type {
-    UseWorkspaceExecutorResult,
-    WorkspaceExecutorActions,
-    WorkspaceExecutorState,
-} from "../../workspace/executor/executor.type";
+import type { UseWorkspaceExecutorResult } from "../../workspace/executor/executor.type";
 import type {
     UseWorkspaceSessionResult,
     WorkspaceSessionArchiveActions,
@@ -16,6 +12,7 @@ import type {
 } from "../../workspace/session/session.type";
 import type { AppSidebarItem, AppSidebarPosition } from "../sidebar.type";
 import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
+import type { WorkspaceExecutorOverrides } from "./commandPaletteTestSupport.type";
 import type { getCommandCommandPaletteItems } from "./commands/commandPaletteCommands";
 
 type WorkspaceSessionOverrides = {
@@ -24,11 +21,6 @@ type WorkspaceSessionOverrides = {
     tabActions?: Partial<WorkspaceSessionTabActions>;
     archiveActions?: Partial<WorkspaceSessionArchiveActions>;
     editorActions?: Partial<WorkspaceSessionEditorActions>;
-};
-
-export type WorkspaceExecutorOverrides = {
-    state?: Partial<WorkspaceExecutorState>;
-    actions?: Partial<WorkspaceExecutorActions>;
 };
 
 /**

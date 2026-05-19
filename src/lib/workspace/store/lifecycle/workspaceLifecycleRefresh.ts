@@ -12,7 +12,7 @@ import type {
     WorkspaceStoreGet,
     WorkspaceStoreSet,
 } from "../workspaceStore.type";
-import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport";
+import type { WorkspaceLifecycleRuntime } from "./workspaceLifecycleSupport.type";
 
 /**
  * Creates the action that refreshes workspace state from the filesystem, merging with local drafts.

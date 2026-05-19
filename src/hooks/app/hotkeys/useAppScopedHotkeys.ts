@@ -17,6 +17,7 @@ function toHotkeyOrPlaceholder(
     return binding ?? DISABLED_HOTKEY_PLACEHOLDER;
 }
 
+/** Registers app-scoped hotkeys for sidebar navigation, command palette, workspace actions, and executor controls. */
 export function useAppScopedHotkeys({
     activeSidebarItem,
     isCommandPaletteOpen,

@@ -1,5 +1,8 @@
 import type { WorkspaceExecutionHistoryEntry } from "../executionHistory/executionHistory.type";
 
+/** Async unsubscribe function returned by a subscription starter. */
+export type AsyncUnsubscribe = () => void;
+
 export type ExecutorKind = "macsploit" | "opiumware" | "unsupported";
 
 export type ExecutorPortSummary = {

@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { AppAnimatedText } from "../common/AppAnimatedText";
 import type { AppSettingsHotkeyFieldProps } from "./appSettingsHotkeys.type";
 
+/** Renders a single hotkey field row showing label, shortcut, and interactive controls. */
 export function AppSettingsHotkeyField({
     action,
     label,

@@ -34,6 +34,7 @@ type UseWorkspaceScreenHotkeysOptions = {
     onToggleOutlinePanel: () => void;
 };
 
+/** Registers workspace-screen hotkeys: launch/kill Roblox and toggle the outline panel. */
 export function useWorkspaceScreenHotkeys({
     hotkeyBindings,
     disabledHotkeys = [],

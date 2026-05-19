@@ -7,7 +7,7 @@ import type {
     AceEditorDestroyEventTarget,
     AceSelectionEventTarget,
     StoredAceSessionState,
-} from "./useWorkspaceCodeCompletionLifecycle";
+} from "./useWorkspaceCodeCompletionLifecycle.type";
 
 type UseWorkspaceEditorLoadHandlerOptions = {
     activeTabIdRef: RefObject<string | null>;

@@ -2,6 +2,7 @@ import { getAppHotkeyBinding } from "../../../lib/app/hotkeys/hotkeys";
 import { useAppStore } from "../useAppStore";
 import type { ResolvedAppHotkeyBindings } from "./useAppHotkeys.type";
 
+/** Resolves all app hotkey bindings from store state, returning null for disabled actions. */
 export function useResolvedAppHotkeyBindings(): ResolvedAppHotkeyBindings {
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const disabledHotkeys = useAppStore((state) => state.disabledHotkeys);
