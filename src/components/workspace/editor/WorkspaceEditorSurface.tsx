@@ -338,6 +338,7 @@ const WorkspaceSplitPane = memo(function WorkspaceSplitPane({
             <div className="relative min-h-0 min-w-0 flex-1">
                 {AceEditorComponent && aceRuntime && activeTab ? (
                     <WorkspaceAcePane
+                        key={activeTab.id}
                         AceEditorComponent={AceEditorComponent}
                         aceRuntime={aceRuntime}
                         appTheme={pane.appTheme}
