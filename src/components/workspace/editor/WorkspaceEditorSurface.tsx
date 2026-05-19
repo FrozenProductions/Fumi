@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/react";
 import type { CSSProperties, ReactElement, ReactNode, RefObject } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -50,7 +50,6 @@ const WorkspaceAcePane = memo(function WorkspaceAcePane({
     tab,
     tabSize,
 }: WorkspaceAcePaneProps): ReactElement {
-    const [editorValue, setEditorValue] = useState(tab.content);
     const acePaneHandlers = useWorkspaceAcePaneHandlers({
         createHandleEditorChange,
         createHandleEditorLoad,
@@ -86,15 +85,10 @@ const WorkspaceAcePane = memo(function WorkspaceAcePane({
     );
     const syncEditorValueChange = useCallback(
         (value: string, delta?: AceChangeDelta): void => {
-            setEditorValue(value);
             acePaneHandlers.onChange(value, delta);
         },
         [acePaneHandlers],
     );
-
-    useEffect(() => {
-        setEditorValue(tab.content);
-    }, [tab.content]);
 
     return (
         <div
@@ -109,7 +103,7 @@ const WorkspaceAcePane = memo(function WorkspaceAcePane({
                 theme={aceRuntime.getTheme(appTheme)}
                 width="100%"
                 height="100%"
-                value={editorValue}
+                value={tab.content}
                 onLoad={acePaneHandlers.onLoad}
                 onChange={syncEditorValueChange}
                 onScroll={acePaneHandlers.onScroll}
