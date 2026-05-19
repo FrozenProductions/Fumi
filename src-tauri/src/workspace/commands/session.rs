@@ -15,7 +15,7 @@ use super::super::{
     WorkspaceBootstrapResponse, WorkspaceExecutionHistoryEntry, WorkspaceSnapshot,
     WorkspaceSplitView, WorkspaceTabState,
 };
-use super::{load_workspace_metadata, persist_workspace_metadata, CommandResponse};
+use super::{app_state_path, load_workspace_metadata, persist_workspace_metadata, CommandResponse};
 use crate::command::run_blocking_command;
 
 /// Bootstraps the workspace by restoring the last saved workspace if available.
@@ -23,7 +23,8 @@ use crate::command::run_blocking_command;
 #[command]
 pub async fn bootstrap_workspace(app: AppHandle) -> CommandResponse<WorkspaceBootstrapResponse> {
     run_blocking_command(move || {
-        let app_state = read_app_state(&app)?;
+        let app_state_path = app_state_path(&app)?;
+        let app_state = read_app_state(&app_state_path)?;
         let Some(last_workspace_path) = app_state.last_workspace_path else {
             return Ok(WorkspaceBootstrapResponse {
                 last_workspace_path: None,
@@ -37,7 +38,7 @@ pub async fn bootstrap_workspace(app: AppHandle) -> CommandResponse<WorkspaceBoo
                 workspace: Some(workspace),
             }),
             Err(error) if is_workspace_missing_error(&error) => {
-                clear_workspace_launch_state(&app)?;
+                clear_workspace_launch_state(&app_state_path)?;
                 Ok(WorkspaceBootstrapResponse {
                     last_workspace_path: None,
                     workspace: None,
@@ -59,7 +60,7 @@ pub async fn open_workspace(
 
     run_blocking_command(move || {
         let workspace = read_workspace_snapshot(&workspace_path)?;
-        persist_workspace_launch_state(&app, &workspace_path)?;
+        persist_workspace_launch_state(&app_state_path(&app)?, &workspace_path)?;
         Ok(workspace)
     })
     .await

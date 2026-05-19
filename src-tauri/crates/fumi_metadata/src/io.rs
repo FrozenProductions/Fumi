@@ -16,19 +16,19 @@ use super::current_unix_timestamp;
 
 static TEMP_FILE_COUNTER: AtomicU64 = AtomicU64::new(0);
 
-pub(crate) fn ensure_directory(path: &Path) -> Result<()> {
+pub fn ensure_directory(path: &Path) -> Result<()> {
     fs::create_dir_all(path)
         .with_context(|| format!("failed to create directory {}", path.display()))
 }
 
-pub(crate) fn ensure_file_parent_directory(path: &Path) -> Result<()> {
+pub fn ensure_file_parent_directory(path: &Path) -> Result<()> {
     match path.parent() {
         Some(parent) => ensure_directory(parent),
         None => Ok(()),
     }
 }
 
-pub(crate) fn read_json_file<T: DeserializeOwned>(file_path: &Path) -> Result<Option<T>> {
+pub fn read_json_file<T: DeserializeOwned>(file_path: &Path) -> Result<Option<T>> {
     match fs::read_to_string(file_path) {
         Ok(text) => serde_json::from_str(&text)
             .with_context(|| format!("failed to parse json from {}", file_path.display()))
@@ -38,11 +38,11 @@ pub(crate) fn read_json_file<T: DeserializeOwned>(file_path: &Path) -> Result<Op
     }
 }
 
-pub(crate) fn read_json_value(file_path: &Path) -> Result<Option<Value>> {
+pub fn read_json_value(file_path: &Path) -> Result<Option<Value>> {
     read_json_file(file_path)
 }
 
-pub(crate) fn atomic_write_json<T: Serialize>(file_path: &Path, value: &T) -> Result<()> {
+pub fn atomic_write_json<T: Serialize>(file_path: &Path, value: &T) -> Result<()> {
     let text = format!(
         "{}\n",
         serde_json::to_string_pretty(value).context("failed to serialize json payload")?
@@ -51,7 +51,7 @@ pub(crate) fn atomic_write_json<T: Serialize>(file_path: &Path, value: &T) -> Re
     atomic_write_bytes(file_path, text.as_bytes())
 }
 
-pub(crate) fn atomic_write_bytes(file_path: &Path, bytes: &[u8]) -> Result<()> {
+pub fn atomic_write_bytes(file_path: &Path, bytes: &[u8]) -> Result<()> {
     ensure_file_parent_directory(file_path)?;
     let timestamp = current_unix_timestamp()?;
     let counter = TEMP_FILE_COUNTER.fetch_add(1, Ordering::Relaxed);

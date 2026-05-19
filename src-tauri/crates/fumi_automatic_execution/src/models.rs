@@ -4,14 +4,14 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use crate::executor::ExecutorKind;
-use crate::metadata::MetadataHeader;
+use fumi_executor_core::ExecutorKind;
+use fumi_metadata::MetadataHeader;
 
-pub(super) const AUTOMATIC_EXECUTION_METADATA_DIR_NAME: &str = ".fumi";
-pub(super) const AUTOMATIC_EXECUTION_METADATA_FILE_NAME: &str = "automatic-execution.json";
-pub(super) const DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME: &str = "script";
-pub(super) const DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION: &str = ".lua";
-pub(super) const MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH: usize = 20;
+pub const AUTOMATIC_EXECUTION_METADATA_DIR_NAME: &str = ".fumi";
+pub const AUTOMATIC_EXECUTION_METADATA_FILE_NAME: &str = "automatic-execution.json";
+pub const DEFAULT_AUTOMATIC_EXECUTION_FILE_BASE_NAME: &str = "script";
+pub const DEFAULT_AUTOMATIC_EXECUTION_FILE_EXTENSION: &str = ".lua";
+pub const MAX_AUTOMATIC_EXECUTION_FILE_NAME_LENGTH: usize = 20;
 
 /// Cursor position and scroll state for an automatic execution script editor.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -63,37 +63,37 @@ pub struct AutomaticExecutionSnapshot {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct StoredAutomaticExecutionMetadata {
-    pub(super) version: u8,
-    pub(super) active_script_id: Option<String>,
-    pub(super) scripts: Option<Vec<AutomaticExecutionScriptState>>,
+pub struct StoredAutomaticExecutionMetadata {
+    pub version: u8,
+    pub active_script_id: Option<String>,
+    pub scripts: Option<Vec<AutomaticExecutionScriptState>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedAutomaticExecutionDocumentV1 {
-    pub(super) version: u8,
-    pub(super) active_script_id: Option<String>,
+pub struct PersistedAutomaticExecutionDocumentV1 {
+    pub version: u8,
+    pub active_script_id: Option<String>,
     #[serde(default)]
-    pub(super) scripts: Option<Vec<AutomaticExecutionScriptState>>,
+    pub scripts: Option<Vec<AutomaticExecutionScriptState>>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedAutomaticExecutionDocumentV2 {
+pub struct PersistedAutomaticExecutionDocumentV2 {
     #[serde(flatten)]
-    pub(super) header: MetadataHeader,
+    pub header: MetadataHeader,
     #[serde(default)]
-    pub(super) active_script_id: Option<String>,
-    pub(super) scripts: Vec<AutomaticExecutionScriptState>,
+    pub active_script_id: Option<String>,
+    pub scripts: Vec<AutomaticExecutionScriptState>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 impl PersistedAutomaticExecutionDocumentV2 {
-    pub(super) fn into_runtime(self) -> AutomaticExecutionMetadata {
+    pub fn into_runtime(self) -> AutomaticExecutionMetadata {
         AutomaticExecutionMetadata {
             version: self.header.version,
             active_script_id: self.active_script_id,
@@ -101,7 +101,7 @@ impl PersistedAutomaticExecutionDocumentV2 {
         }
     }
 
-    pub(super) fn from_runtime(
+    pub fn from_runtime(
         metadata: AutomaticExecutionMetadata,
         header: MetadataHeader,
         extra_fields: Map<String, Value>,

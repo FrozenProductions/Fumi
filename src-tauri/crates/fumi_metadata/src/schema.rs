@@ -16,7 +16,7 @@ static WORKSPACE_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::ne
 static AUTOMATIC_EXECUTION_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
 static ACCOUNTS_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
 
-pub(crate) fn validate_instance(kind: MetadataKind, instance: &Value) -> Result<()> {
+pub fn validate_instance(kind: MetadataKind, instance: &Value) -> Result<()> {
     let compiled = compiled_schema(kind)?;
     compiled
         .validator
@@ -29,14 +29,13 @@ pub(crate) fn validate_instance(kind: MetadataKind, instance: &Value) -> Result<
     Ok(())
 }
 
-pub(crate) fn validate_schema_document(schema: &Value) -> Result<()> {
+pub fn validate_schema_document(schema: &Value) -> Result<()> {
     jsonschema::meta::validate(schema)
         .map_err(|error| anyhow!("metadata schema document is invalid: {error}"))?;
     Ok(())
 }
 
-#[cfg(test)]
-pub(crate) fn export_schema_value<T>(kind: MetadataKind, version: u8) -> Result<Value>
+pub fn export_schema_value<T>(kind: MetadataKind, version: u8) -> Result<Value>
 where
     T: schemars::JsonSchema,
 {
@@ -85,8 +84,7 @@ where
     Ok(sort_json_value(value))
 }
 
-#[cfg(test)]
-pub(crate) fn write_schema_file<T>(
+pub fn write_schema_file<T>(
     path: &std::path::Path,
     kind: MetadataKind,
     version: u8,
@@ -125,13 +123,13 @@ fn compiled_schema(kind: MetadataKind) -> Result<&'static CompiledSchema> {
 fn load_compiled_schema(kind: MetadataKind) -> Result<CompiledSchema> {
     let text = match kind {
         MetadataKind::Workspace => {
-            include_str!("../../../src/shared/metadata/schemas/workspace.v5.schema.json")
+            include_str!("../../../../src/shared/metadata/schemas/workspace.v5.schema.json")
         }
         MetadataKind::AutomaticExecution => {
-            include_str!("../../../src/shared/metadata/schemas/automatic-execution.v2.schema.json")
+            include_str!("../../../../src/shared/metadata/schemas/automatic-execution.v2.schema.json")
         }
         MetadataKind::Accounts => {
-            include_str!("../../../src/shared/metadata/schemas/accounts.v3.schema.json")
+            include_str!("../../../../src/shared/metadata/schemas/accounts.v3.schema.json")
         }
     };
     let raw: Value = serde_json::from_str(text)
@@ -144,7 +142,6 @@ fn load_compiled_schema(kind: MetadataKind) -> Result<CompiledSchema> {
     Ok(CompiledSchema { validator })
 }
 
-#[cfg(test)]
 fn sort_json_value(value: Value) -> Value {
     match value {
         Value::Array(values) => Value::Array(values.into_iter().map(sort_json_value).collect()),
@@ -161,36 +158,4 @@ fn sort_json_value(value: Value) -> Value {
         }
         other => other,
     }
-}
-
-#[test]
-#[ignore = "Run manually to regenerate committed metadata schema artifacts."]
-fn export_metadata_schemas() -> Result<()> {
-    use super::registry::{
-        ACCOUNTS_METADATA_VERSION, AUTOMATIC_EXECUTION_METADATA_VERSION,
-        CURRENT_WORKSPACE_METADATA_VERSION,
-    };
-    use crate::{
-        accounts::models::PersistedAccountsDocumentV3,
-        automatic_execution::models::PersistedAutomaticExecutionDocumentV2,
-        workspace::models::PersistedWorkspaceDocumentV5,
-    };
-
-    write_schema_file::<PersistedWorkspaceDocumentV5>(
-        std::path::Path::new("../src/shared/metadata/schemas/workspace.v5.schema.json"),
-        MetadataKind::Workspace,
-        CURRENT_WORKSPACE_METADATA_VERSION,
-    )?;
-    write_schema_file::<PersistedAutomaticExecutionDocumentV2>(
-        std::path::Path::new("../src/shared/metadata/schemas/automatic-execution.v2.schema.json"),
-        MetadataKind::AutomaticExecution,
-        AUTOMATIC_EXECUTION_METADATA_VERSION,
-    )?;
-    write_schema_file::<PersistedAccountsDocumentV3>(
-        std::path::Path::new("../src/shared/metadata/schemas/accounts.v3.schema.json"),
-        MetadataKind::Accounts,
-        ACCOUNTS_METADATA_VERSION,
-    )?;
-
-    Ok(())
 }

@@ -1276,7 +1276,12 @@ version = "1.0.8"
 dependencies = [
  "anyhow",
  "flate2",
+ "fumi_accounts",
+ "fumi_automatic_execution",
+ "fumi_executor_core",
  "fumi_luau_format",
+ "fumi_metadata",
+ "fumi_workspace",
  "jsonschema",
  "objc",
  "objc-foundation",
@@ -1297,12 +1302,72 @@ dependencies = [
 ]
 
 [[package]]
+name = "fumi_accounts"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "fumi_executor_core",
+ "fumi_metadata",
+ "reqwest 0.12.28",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "fumi_automatic_execution"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "fumi_executor_core",
+ "fumi_metadata",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "fumi_executor_core"
+version = "0.1.0"
+dependencies = [
+ "schemars 1.2.1",
+ "serde",
+]
+
+[[package]]
 name = "fumi_luau_format"
 version = "0.1.0"
 dependencies = [
  "luau-lexer",
  "luau-parser",
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "fumi_metadata"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "jsonschema",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "fumi_workspace"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "fumi_executor_core",
+ "fumi_metadata",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]

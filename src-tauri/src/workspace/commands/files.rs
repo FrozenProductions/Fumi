@@ -339,6 +339,5 @@ pub async fn delete_workspace_file(
     run_blocking_command(move || delete_workspace_tab_by_id(&app, &workspace_path, &tab_id)).await
 }
 
-
 #[cfg(test)]
 mod tests;

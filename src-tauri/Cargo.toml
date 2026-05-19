@@ -8,6 +8,29 @@ repository = ""
 edition = "2021"
 rust-version = "1.89"
 
+[workspace]
+members = [
+    ".",
+    "crates/fumi_accounts",
+    "crates/fumi_automatic_execution",
+    "crates/fumi_executor_core",
+    "crates/fumi_luau_format",
+    "crates/fumi_metadata",
+    "crates/fumi_workspace",
+]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "1.0"
+flate2 = "1.1"
+jsonschema = "0.46"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+schemars = { version = "1.2.1", features = ["preserve_order", "uuid1"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+uuid = { version = "1.23.1", features = ["v4"] }
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
 
@@ -19,22 +42,27 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
-anyhow = "1.0"
-flate2 = "1.1"
+anyhow.workspace = true
+flate2.workspace = true
+fumi_accounts = { path = "crates/fumi_accounts" }
+fumi_automatic_execution = { path = "crates/fumi_automatic_execution" }
+fumi_executor_core = { path = "crates/fumi_executor_core" }
 fumi_luau_format = { path = "crates/fumi_luau_format" }
-jsonschema = "0.46"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
-schemars = { version = "1.2.1", features = ["preserve_order", "uuid1"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+fumi_metadata = { path = "crates/fumi_metadata" }
+fumi_workspace = { path = "crates/fumi_workspace" }
+jsonschema.workspace = true
+reqwest.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tauri = { version = "2.11.2", features = ["devtools", "macos-private-api"] }
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-process = "2.3.1"
 tauri-plugin-updater = "2.10.1"
-thiserror = "2.0"
-uuid = { version = "1.23.1", features = ["v4"] }
+thiserror.workspace = true
+uuid.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"

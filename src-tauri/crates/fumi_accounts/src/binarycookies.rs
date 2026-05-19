@@ -683,11 +683,11 @@ fn build_minimal_roblosecurity_file(value: Vec<u8>) -> Result<BinaryCookiesFile>
     })
 }
 
-pub(crate) fn build_minimal_roblosecurity_binarycookies(cookie_value: &[u8]) -> Result<Vec<u8>> {
+pub fn build_minimal_roblosecurity_binarycookies(cookie_value: &[u8]) -> Result<Vec<u8>> {
     build_minimal_roblosecurity_file(cookie_value.to_vec())?.encode()
 }
 
-pub(crate) fn write_minimal_roblosecurity_cookie_file(
+pub fn write_minimal_roblosecurity_cookie_file(
     output_path: &Path,
     cookie_value: &[u8],
 ) -> Result<()> {
@@ -701,7 +701,7 @@ pub(crate) fn write_minimal_roblosecurity_cookie_file(
         .with_context(|| format!("failed to write {}", output_path.display()))
 }
 
-pub(crate) fn read_roblosecurity_cookie_value(input_path: &Path) -> Result<Option<String>> {
+pub fn read_roblosecurity_cookie_value(input_path: &Path) -> Result<Option<String>> {
     let input_bytes = match fs::read(input_path) {
         Ok(input_bytes) => input_bytes,
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(None),

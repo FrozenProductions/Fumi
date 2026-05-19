@@ -10,10 +10,9 @@ use std::{
 
 use anyhow::{anyhow, Context, Result};
 use serde_json::Value;
-use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
-use crate::metadata::{
+use fumi_metadata::{
     backup::{create_backup, join_backup_path},
     current_unix_timestamp,
     io::{atomic_write_json, ensure_file_parent_directory, read_json_file, read_json_value},
@@ -52,11 +51,11 @@ fn workspace_missing_error() -> anyhow::Error {
     WorkspaceMissingError.into()
 }
 
-pub(super) fn is_workspace_missing_error(error: &anyhow::Error) -> bool {
+pub fn is_workspace_missing_error(error: &anyhow::Error) -> bool {
     error.downcast_ref::<WorkspaceMissingError>().is_some()
 }
 
-pub(super) fn ensure_workspace_exists(workspace_path: &Path) -> Result<()> {
+pub fn ensure_workspace_exists(workspace_path: &Path) -> Result<()> {
     if !workspace_path.is_dir() {
         return Err(workspace_missing_error());
     }
@@ -68,14 +67,6 @@ fn get_workspace_metadata_path(workspace_path: &Path) -> PathBuf {
     workspace_path
         .join(WORKSPACE_METADATA_DIR_NAME)
         .join(WORKSPACE_METADATA_FILE_NAME)
-}
-
-fn get_app_state_path<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<PathBuf> {
-    Ok(app
-        .path()
-        .app_local_data_dir()
-        .context("failed to resolve app local data directory")?
-        .join(APP_STATE_FILE_NAME))
 }
 
 fn split_workspace_file_name(file_name: &str) -> (&str, &str) {
@@ -153,7 +144,7 @@ fn ensure_workspace_extension(file_name: &str) -> String {
     }
 }
 
-pub(super) fn normalize_new_workspace_file_name(file_name: &str) -> String {
+pub fn normalize_new_workspace_file_name(file_name: &str) -> String {
     let sanitized_file_name = sanitize_file_name(file_name);
     if sanitized_file_name.is_empty() {
         return String::new();
@@ -168,7 +159,7 @@ pub(super) fn normalize_new_workspace_file_name(file_name: &str) -> String {
     normalized_file_name
 }
 
-pub(super) fn create_workspace_tab_id(seen_tab_ids: &HashSet<String>) -> String {
+pub fn create_workspace_tab_id(seen_tab_ids: &HashSet<String>) -> String {
     loop {
         let next_id = Uuid::new_v4().to_string();
         if !seen_tab_ids.contains(&next_id) {
@@ -292,7 +283,7 @@ fn current_workspace_document_from_runtime(
     });
     let header = existing_document
         .map(|document| MetadataHeader {
-            schema: crate::metadata::metadata_schema_id(
+            schema: fumi_metadata::metadata_schema_id(
                 MetadataKind::Workspace,
                 CURRENT_WORKSPACE_METADATA_VERSION,
             )
@@ -309,7 +300,7 @@ fn current_workspace_document_from_runtime(
             written_by_app_version: if preserve_updated_at {
                 document.header.written_by_app_version.clone()
             } else {
-                crate::metadata::CURRENT_APP_VERSION.to_string()
+                fumi_metadata::CURRENT_APP_VERSION.to_string()
             },
         })
         .unwrap_or_else(|| {
@@ -471,7 +462,7 @@ fn normalize_split_view(
     Some(split)
 }
 
-pub(super) fn normalize_cursor_state(cursor: &WorkspaceCursorState) -> WorkspaceCursorState {
+pub fn normalize_cursor_state(cursor: &WorkspaceCursorState) -> WorkspaceCursorState {
     WorkspaceCursorState {
         line: cursor.line.max(0),
         column: cursor.column.max(0),
@@ -534,7 +525,7 @@ fn normalize_workspace_tab_collection(
     normalized_tabs
 }
 
-pub(super) fn normalize_workspace_metadata(
+pub fn normalize_workspace_metadata(
     metadata: Option<StoredWorkspaceMetadata>,
 ) -> WorkspaceMetadata {
     let Some(metadata) = metadata else {
@@ -678,11 +669,11 @@ fn get_workspace_metadata_append_lock(workspace_path: &Path) -> Result<Arc<Mutex
     ))
 }
 
-pub(super) fn read_workspace_metadata(workspace_path: &Path) -> Result<WorkspaceMetadata> {
+pub fn read_workspace_metadata(workspace_path: &Path) -> Result<WorkspaceMetadata> {
     Ok(read_workspace_metadata_impl(workspace_path, true)?.value)
 }
 
-pub(super) fn write_workspace_metadata(
+pub fn write_workspace_metadata(
     workspace_path: &Path,
     metadata: &WorkspaceMetadata,
 ) -> Result<()> {
@@ -722,7 +713,7 @@ pub(super) fn write_workspace_metadata(
     )
 }
 
-pub(super) fn append_workspace_execution_history(
+pub fn append_workspace_execution_history(
     workspace_path: &Path,
     entry: WorkspaceExecutionHistoryEntry,
 ) -> Result<Vec<WorkspaceExecutionHistoryEntry>> {
@@ -750,11 +741,8 @@ pub(super) fn append_workspace_execution_history(
     Ok(next_execution_history)
 }
 
-fn import_legacy_app_state<R: tauri::Runtime>(
-    app_state_path: &Path,
-    app: &AppHandle<R>,
-) -> Result<Option<StoredAppState>> {
-    let current_dir = get_app_state_path(app)?
+fn import_legacy_app_state(app_state_path: &Path) -> Result<Option<StoredAppState>> {
+    let current_dir = app_state_path
         .parent()
         .map(Path::to_path_buf)
         .context("failed to resolve parent app state directory")?;
@@ -780,15 +768,14 @@ fn import_legacy_app_state<R: tauri::Runtime>(
     Ok(None)
 }
 
-pub(super) fn read_app_state<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<StoredAppState> {
-    let app_state_path = get_app_state_path(app)?;
-    if let Some(stored_state) = read_json_file::<StoredAppState>(&app_state_path)? {
+pub fn read_app_state(app_state_path: &Path) -> Result<StoredAppState> {
+    if let Some(stored_state) = read_json_file::<StoredAppState>(app_state_path)? {
         return Ok(StoredAppState {
             last_workspace_path: stored_state.last_workspace_path,
         });
     }
 
-    if let Some(legacy_state) = import_legacy_app_state(&app_state_path, app)? {
+    if let Some(legacy_state) = import_legacy_app_state(app_state_path)? {
         return Ok(StoredAppState {
             last_workspace_path: legacy_state.last_workspace_path,
         });
@@ -799,35 +786,32 @@ pub(super) fn read_app_state<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<St
     })
 }
 
-fn write_app_state<R: tauri::Runtime>(
-    app: &AppHandle<R>,
-    app_state: &StoredAppState,
-) -> Result<()> {
-    atomic_write_json(&get_app_state_path(app)?, app_state)
+fn write_app_state(app_state_path: &Path, app_state: &StoredAppState) -> Result<()> {
+    atomic_write_json(app_state_path, app_state)
 }
 
-pub(super) fn persist_workspace_launch_state<R: tauri::Runtime>(
-    app: &AppHandle<R>,
+pub fn persist_workspace_launch_state(
+    app_state_path: &Path,
     workspace_path: &Path,
 ) -> Result<()> {
     write_app_state(
-        app,
+        app_state_path,
         &StoredAppState {
             last_workspace_path: Some(workspace_path.display().to_string()),
         },
     )
 }
 
-pub(super) fn clear_workspace_launch_state<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<()> {
+pub fn clear_workspace_launch_state(app_state_path: &Path) -> Result<()> {
     write_app_state(
-        app,
+        app_state_path,
         &StoredAppState {
             last_workspace_path: None,
         },
     )
 }
 
-pub(super) fn ensure_unique_file_name(
+pub fn ensure_unique_file_name(
     workspace_path: &Path,
     metadata: &WorkspaceMetadata,
     preferred_file_name: &str,
@@ -878,7 +862,7 @@ fn chrono_like_timestamp() -> u128 {
     }
 }
 
-pub(super) fn get_next_script_name(workspace_path: &Path, metadata: &WorkspaceMetadata) -> String {
+pub fn get_next_script_name(workspace_path: &Path, metadata: &WorkspaceMetadata) -> String {
     for counter in 1..10_000 {
         let candidate_name = format!(
             "{DEFAULT_WORKSPACE_FILE_BASE_NAME}-{counter}{DEFAULT_WORKSPACE_FILE_EXTENSION}"
@@ -899,7 +883,7 @@ pub(super) fn get_next_script_name(workspace_path: &Path, metadata: &WorkspaceMe
     )
 }
 
-pub(super) fn has_conflicting_workspace_file_name(
+pub fn has_conflicting_workspace_file_name(
     metadata: &WorkspaceMetadata,
     tab_id: &str,
     file_name: &str,
@@ -911,12 +895,12 @@ pub(super) fn has_conflicting_workspace_file_name(
         .any(|tab| tab.id != tab_id && tab.file_name == file_name)
 }
 
-pub(super) fn is_case_only_workspace_rename(current_file_name: &str, next_file_name: &str) -> bool {
+pub fn is_case_only_workspace_rename(current_file_name: &str, next_file_name: &str) -> bool {
     current_file_name != next_file_name
         && current_file_name.to_lowercase() == next_file_name.to_lowercase()
 }
 
-pub(super) fn get_temporary_rename_file_name(
+pub fn get_temporary_rename_file_name(
     workspace_path: &Path,
     metadata: &WorkspaceMetadata,
     tab_id: &str,
@@ -943,7 +927,7 @@ pub(super) fn get_temporary_rename_file_name(
     )
 }
 
-pub(super) fn create_empty_cursor_state() -> WorkspaceCursorState {
+pub fn create_empty_cursor_state() -> WorkspaceCursorState {
     WorkspaceCursorState {
         line: 0,
         column: 0,
@@ -951,7 +935,7 @@ pub(super) fn create_empty_cursor_state() -> WorkspaceCursorState {
     }
 }
 
-pub(super) fn write_workspace_file(file_path: &Path, content: &str) -> Result<()> {
+pub fn write_workspace_file(file_path: &Path, content: &str) -> Result<()> {
     ensure_file_parent_directory(file_path)?;
     fs::write(file_path, content)
         .with_context(|| format!("failed to write {}", file_path.display()))
@@ -979,7 +963,7 @@ fn read_tab_snapshot(
     }))
 }
 
-pub(super) fn read_workspace_snapshot(workspace_path: &Path) -> Result<WorkspaceSnapshot> {
+pub fn read_workspace_snapshot(workspace_path: &Path) -> Result<WorkspaceSnapshot> {
     ensure_workspace_exists(workspace_path)?;
     let metadata = read_workspace_metadata(workspace_path)?;
     let mut tabs = Vec::with_capacity(metadata.tabs.len());
@@ -1029,7 +1013,7 @@ pub(super) fn read_workspace_snapshot(workspace_path: &Path) -> Result<Workspace
     })
 }
 
-pub(super) fn delete_workspace_file_from_disk(file_path: &Path) -> Result<()> {
+pub fn delete_workspace_file_from_disk(file_path: &Path) -> Result<()> {
     match fs::remove_file(file_path) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
@@ -1038,7 +1022,7 @@ pub(super) fn delete_workspace_file_from_disk(file_path: &Path) -> Result<()> {
     }
 }
 
-pub(super) fn resolve_workspace_file_delete_path(
+pub fn resolve_workspace_file_delete_path(
     workspace_path: &Path,
     file_name: &str,
 ) -> Result<PathBuf> {

@@ -16,7 +16,7 @@ const ROBLOX_EXECUTABLE_CANDIDATES: &[&str] = &["RobloxPlayer", "RobloxPlayerBet
 const PROCESS_EXIT_POLL_INTERVAL: Duration = Duration::from_millis(100);
 const PROCESS_EXIT_POLL_ATTEMPTS: usize = 50;
 
-pub(super) fn launch_roblox_application(roblox_app_path: &Path) -> Result<u32> {
+pub fn launch_roblox_application(roblox_app_path: &Path) -> Result<u32> {
     if !roblox_app_path.exists() {
         return Err(anyhow!(
             "roblox application not found at {}",
@@ -32,7 +32,7 @@ pub(super) fn launch_roblox_application(roblox_app_path: &Path) -> Result<u32> {
     Ok(child.id())
 }
 
-pub(super) fn resolve_roblox_executable_path(roblox_app_path: &Path) -> Result<PathBuf> {
+pub fn resolve_roblox_executable_path(roblox_app_path: &Path) -> Result<PathBuf> {
     for executable_name in ROBLOX_EXECUTABLE_CANDIDATES {
         let executable_path = roblox_app_path
             .join("Contents")
@@ -49,7 +49,7 @@ pub(super) fn resolve_roblox_executable_path(roblox_app_path: &Path) -> Result<P
     ))
 }
 
-pub(super) fn get_process_start_time(pid: u32) -> Result<i64> {
+pub fn get_process_start_time(pid: u32) -> Result<i64> {
     let output = Command::new("ps")
         .args(["-o", "lstart=", "-p", &pid.to_string()])
         .output()
@@ -130,7 +130,7 @@ fn naive_local_to_unix(
     Ok(secs)
 }
 
-pub(super) fn list_roblox_process_ids() -> Result<Vec<u32>> {
+pub fn list_roblox_process_ids() -> Result<Vec<u32>> {
     let output = Command::new("ps")
         .args(["-axo", "pid=,comm="])
         .output()
@@ -144,7 +144,7 @@ pub(super) fn list_roblox_process_ids() -> Result<Vec<u32>> {
     Ok(collect_roblox_process_ids(&stdout))
 }
 
-pub(super) fn collect_roblox_process_ids(stdout: &str) -> Vec<u32> {
+pub fn collect_roblox_process_ids(stdout: &str) -> Vec<u32> {
     let mut pids = stdout
         .lines()
         .filter_map(parse_ps_process_line)
@@ -156,7 +156,7 @@ pub(super) fn collect_roblox_process_ids(stdout: &str) -> Vec<u32> {
     pids
 }
 
-pub(super) fn parse_ps_process_line(line: &str) -> Option<(u32, &str)> {
+pub fn parse_ps_process_line(line: &str) -> Option<(u32, &str)> {
     let trimmed = line.trim();
     if trimmed.is_empty() {
         return None;
@@ -182,15 +182,15 @@ fn is_roblox_process_command(command: &str) -> bool {
     ROBLOX_PROCESS_NAMES.contains(&executable_name)
 }
 
-pub(super) fn terminate_process(pid: u32) -> Result<()> {
+pub fn terminate_process(pid: u32) -> Result<()> {
     terminate_processes(&[pid]).with_context(|| format!("failed to kill roblox process {pid}"))
 }
 
-pub(super) fn terminate_processes(pids: &[u32]) -> Result<()> {
+pub fn terminate_processes(pids: &[u32]) -> Result<()> {
     terminate_processes_with_callbacks(pids, send_process_signal, wait_for_processes_exit)
 }
 
-pub(super) fn terminate_processes_with_callbacks<SendSignal, WaitForExit>(
+pub fn terminate_processes_with_callbacks<SendSignal, WaitForExit>(
     pids: &[u32],
     mut send_signal: SendSignal,
     mut wait_for_exit: WaitForExit,
@@ -311,10 +311,10 @@ fn get_process_state(pid: u32) -> Result<Option<char>> {
     Ok(trimmed_state.chars().next())
 }
 
-pub(super) fn is_exited_process_state(process_state: char) -> bool {
+pub fn is_exited_process_state(process_state: char) -> bool {
     process_state == 'Z'
 }
 
-pub(super) fn sort_roblox_processes(processes: &mut [RobloxProcessInfo]) {
+pub fn sort_roblox_processes(processes: &mut [RobloxProcessInfo]) {
     processes.sort_by_key(|process| (process.started_at, process.pid));
 }

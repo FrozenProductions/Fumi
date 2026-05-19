@@ -4,16 +4,15 @@ use anyhow::{Context, Result};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[cfg(test)]
-pub(crate) const CURRENT_SCHEMA_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
-pub(crate) const CURRENT_APP_VERSION: &str = env!("CARGO_PKG_VERSION");
-pub(crate) const CURRENT_WORKSPACE_METADATA_VERSION: u8 = 5;
-pub(crate) const AUTOMATIC_EXECUTION_METADATA_VERSION: u8 = 2;
-pub(crate) const ACCOUNTS_METADATA_VERSION: u8 = 3;
+pub const CURRENT_SCHEMA_DRAFT: &str = "https://json-schema.org/draft/2020-12/schema";
+pub const CURRENT_APP_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const CURRENT_WORKSPACE_METADATA_VERSION: u8 = 5;
+pub const AUTOMATIC_EXECUTION_METADATA_VERSION: u8 = 2;
+pub const ACCOUNTS_METADATA_VERSION: u8 = 3;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum MetadataKind {
+pub enum MetadataKind {
     Workspace,
     AutomaticExecution,
     Accounts,
@@ -33,7 +32,7 @@ impl std::fmt::Display for MetadataKind {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct MetadataHeader {
+pub struct MetadataHeader {
     #[serde(rename = "$schema")]
     pub schema: String,
     pub kind: MetadataKind,
@@ -46,7 +45,7 @@ pub(crate) struct MetadataHeader {
 }
 
 impl MetadataHeader {
-    pub(crate) fn new(
+    pub fn new(
         kind: MetadataKind,
         version: u8,
         created_at: i64,
@@ -65,7 +64,7 @@ impl MetadataHeader {
     }
 }
 
-pub(crate) fn metadata_schema_id(kind: MetadataKind, version: u8) -> &'static str {
+pub fn metadata_schema_id(kind: MetadataKind, version: u8) -> &'static str {
     match (kind, version) {
         (MetadataKind::Workspace, CURRENT_WORKSPACE_METADATA_VERSION) => {
             "https://fumi.app/schemas/workspace.v5.schema.json"
@@ -84,7 +83,7 @@ pub(crate) fn metadata_schema_id(kind: MetadataKind, version: u8) -> &'static st
     }
 }
 
-pub(crate) fn current_unix_timestamp() -> Result<i64> {
+pub fn current_unix_timestamp() -> Result<i64> {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .context("system clock is before unix epoch")?

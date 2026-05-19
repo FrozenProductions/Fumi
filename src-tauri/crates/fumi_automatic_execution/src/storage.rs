@@ -9,8 +9,8 @@ use anyhow::{anyhow, Context, Result};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::executor::ExecutorKind;
-use crate::metadata::{
+use fumi_executor_core::ExecutorKind;
+use fumi_metadata::{
     backup::{create_backup, join_backup_path},
     current_unix_timestamp,
     io::{atomic_write_json, read_json_value},
@@ -46,7 +46,7 @@ fn unsupported_executor_error() -> anyhow::Error {
 }
 
 #[cfg(test)]
-pub(super) fn is_unsupported_executor_error(error: &anyhow::Error) -> bool {
+pub fn is_unsupported_executor_error(error: &anyhow::Error) -> bool {
     error
         .downcast_ref::<UnsupportedAutomaticExecutionError>()
         .is_some()
@@ -81,7 +81,7 @@ fn get_opiumware_automatic_execution_path(home_dir: &Path) -> PathBuf {
     home_dir.join("Opiumware").join("autoexec")
 }
 
-pub(super) fn resolve_automatic_execution_path(executor_kind: ExecutorKind) -> Result<PathBuf> {
+pub fn resolve_automatic_execution_path(executor_kind: ExecutorKind) -> Result<PathBuf> {
     let home_dir = resolve_home_directory()?;
 
     resolve_automatic_execution_path_at(
@@ -174,7 +174,7 @@ fn is_supported_script_file_name(file_name: &str) -> bool {
     !extension.is_empty() && is_supported_script_extension(extension)
 }
 
-pub(super) fn normalize_script_file_name(file_name: &str) -> String {
+pub fn normalize_script_file_name(file_name: &str) -> String {
     let sanitized_file_name = sanitize_file_name(file_name);
     if sanitized_file_name.is_empty() {
         return String::new();
@@ -196,7 +196,7 @@ pub(super) fn normalize_script_file_name(file_name: &str) -> String {
     format!("{base_name}{normalized_extension}")
 }
 
-pub(super) fn normalize_cursor_state(
+pub fn normalize_cursor_state(
     cursor: &AutomaticExecutionCursorState,
 ) -> AutomaticExecutionCursorState {
     AutomaticExecutionCursorState {
@@ -210,7 +210,7 @@ pub(super) fn normalize_cursor_state(
     }
 }
 
-pub(super) fn create_empty_cursor_state() -> AutomaticExecutionCursorState {
+pub fn create_empty_cursor_state() -> AutomaticExecutionCursorState {
     AutomaticExecutionCursorState {
         line: 0,
         column: 0,
@@ -218,7 +218,7 @@ pub(super) fn create_empty_cursor_state() -> AutomaticExecutionCursorState {
     }
 }
 
-pub(super) fn create_script_id(seen_ids: &HashSet<String>) -> String {
+pub fn create_script_id(seen_ids: &HashSet<String>) -> String {
     loop {
         let next_id = Uuid::new_v4().to_string();
         if !seen_ids.contains(&next_id) {
@@ -295,7 +295,7 @@ fn current_automatic_execution_document_from_runtime(
     });
     let header = existing_document
         .map(|document| MetadataHeader {
-            schema: crate::metadata::metadata_schema_id(
+            schema: fumi_metadata::metadata_schema_id(
                 MetadataKind::AutomaticExecution,
                 AUTOMATIC_EXECUTION_METADATA_VERSION,
             )
@@ -312,7 +312,7 @@ fn current_automatic_execution_document_from_runtime(
             written_by_app_version: if preserve_updated_at {
                 document.header.written_by_app_version.clone()
             } else {
-                crate::metadata::CURRENT_APP_VERSION.to_string()
+                fumi_metadata::CURRENT_APP_VERSION.to_string()
             },
         })
         .unwrap_or_else(|| {
@@ -375,7 +375,7 @@ fn read_disk_script_file_names(automatic_execution_path: &Path) -> Result<Vec<St
     Ok(file_names)
 }
 
-pub(super) fn normalize_automatic_execution_metadata(
+pub fn normalize_automatic_execution_metadata(
     metadata: Option<StoredAutomaticExecutionMetadata>,
     on_disk_file_names: &[String],
 ) -> AutomaticExecutionMetadata {
@@ -592,7 +592,7 @@ fn write_automatic_execution_document(
     atomic_write_json(metadata_path, document)
 }
 
-pub(super) fn read_automatic_execution_metadata_with_report(
+pub fn read_automatic_execution_metadata_with_report(
     automatic_execution_path: &Path,
 ) -> Result<MetadataReadResult<AutomaticExecutionMetadata>> {
     ensure_directory(automatic_execution_path)?;
@@ -645,13 +645,13 @@ pub(super) fn read_automatic_execution_metadata_with_report(
     })
 }
 
-pub(super) fn read_automatic_execution_metadata(
+pub fn read_automatic_execution_metadata(
     automatic_execution_path: &Path,
 ) -> Result<AutomaticExecutionMetadata> {
     Ok(read_automatic_execution_metadata_with_report(automatic_execution_path)?.value)
 }
 
-pub(super) fn write_automatic_execution_metadata(
+pub fn write_automatic_execution_metadata(
     automatic_execution_path: &Path,
     metadata: &AutomaticExecutionMetadata,
 ) -> Result<()> {
@@ -699,14 +699,14 @@ pub(super) fn write_automatic_execution_metadata(
     )
 }
 
-pub(super) fn read_automatic_execution_snapshot(
+pub fn read_automatic_execution_snapshot(
     executor_kind: ExecutorKind,
 ) -> Result<AutomaticExecutionSnapshot> {
     let automatic_execution_path = resolve_automatic_execution_path(executor_kind)?;
     read_automatic_execution_snapshot_at(&automatic_execution_path, executor_kind)
 }
 
-pub(super) fn read_automatic_execution_snapshot_at(
+pub fn read_automatic_execution_snapshot_at(
     automatic_execution_path: &Path,
     executor_kind: ExecutorKind,
 ) -> Result<AutomaticExecutionSnapshot> {
@@ -755,7 +755,7 @@ pub(super) fn read_automatic_execution_snapshot_at(
     })
 }
 
-pub(super) fn find_script(
+pub fn find_script(
     metadata: &AutomaticExecutionMetadata,
     script_id: &str,
 ) -> Result<AutomaticExecutionScriptState> {
@@ -819,7 +819,7 @@ fn chrono_like_timestamp() -> u128 {
     }
 }
 
-pub(super) fn get_next_script_name(
+pub fn get_next_script_name(
     automatic_execution_path: &Path,
     metadata: &AutomaticExecutionMetadata,
 ) -> String {
@@ -843,7 +843,7 @@ pub(super) fn get_next_script_name(
     )
 }
 
-pub(super) fn has_conflicting_script_file_name(
+pub fn has_conflicting_script_file_name(
     metadata: &AutomaticExecutionMetadata,
     script_id: &str,
     file_name: &str,
@@ -854,12 +854,12 @@ pub(super) fn has_conflicting_script_file_name(
         .any(|script| script.id != script_id && script.file_name == file_name)
 }
 
-pub(super) fn is_case_only_rename(current_file_name: &str, next_file_name: &str) -> bool {
+pub fn is_case_only_rename(current_file_name: &str, next_file_name: &str) -> bool {
     current_file_name != next_file_name
         && current_file_name.to_lowercase() == next_file_name.to_lowercase()
 }
 
-pub(super) fn get_temporary_rename_file_name(
+pub fn get_temporary_rename_file_name(
     automatic_execution_path: &Path,
     metadata: &AutomaticExecutionMetadata,
     script_id: &str,
@@ -884,7 +884,7 @@ pub(super) fn get_temporary_rename_file_name(
     )
 }
 
-pub(super) fn create_script(
+pub fn create_script(
     automatic_execution_path: &Path,
     metadata: &AutomaticExecutionMetadata,
     preferred_file_name: Option<&str>,
@@ -1063,7 +1063,7 @@ mod tests {
         atomic_write_json(&metadata_path, &current_document)?;
 
         let result = read_automatic_execution_metadata_with_report(automatic_execution_dir.path())?;
-        let persisted_document = crate::metadata::io::read_json_file::<
+        let persisted_document = fumi_metadata::io::read_json_file::<
             PersistedAutomaticExecutionDocumentV2,
         >(&metadata_path)?
         .expect("repaired metadata should be persisted");

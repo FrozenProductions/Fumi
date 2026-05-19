@@ -5,11 +5,9 @@ use std::{collections::HashSet, fs};
 use anyhow::{anyhow, Context, Result};
 use tauri::command;
 
-use crate::{
-    command::{run_blocking_command, CommandResponse},
-    executor::ExecutorKind,
-    metadata::AUTOMATIC_EXECUTION_METADATA_VERSION,
-};
+use crate::command::{run_blocking_command, CommandResponse};
+use fumi_executor_core::ExecutorKind;
+use fumi_metadata::AUTOMATIC_EXECUTION_METADATA_VERSION;
 
 use super::{
     storage::{

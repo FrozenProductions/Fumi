@@ -4,19 +4,19 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use crate::executor::ExecutorKind;
-use crate::metadata::{MetadataHeader, CURRENT_WORKSPACE_METADATA_VERSION};
+use fumi_executor_core::ExecutorKind;
+use fumi_metadata::{MetadataHeader, CURRENT_WORKSPACE_METADATA_VERSION};
 
-pub(super) const WORKSPACE_METADATA_DIR_NAME: &str = ".fumi";
-pub(super) const WORKSPACE_METADATA_FILE_NAME: &str = "workspace.json";
-pub(super) const APP_STATE_FILE_NAME: &str = "state.json";
-pub(super) const DEFAULT_WORKSPACE_FILE_BASE_NAME: &str = "script";
-pub(super) const DEFAULT_WORKSPACE_FILE_EXTENSION: &str = ".lua";
-pub(super) const MAX_WORKSPACE_TAB_NAME_LENGTH: usize = 20;
-pub(super) const WORKSPACE_MISSING_ERROR_MESSAGE: &str = "Workspace not found.";
-pub(super) const LEGACY_STATE_DIRECTORIES: [&str; 2] = ["Fumi", "frozenproductions.fumi"];
-pub(super) const WORKSPACE_METADATA_VERSION: u8 = CURRENT_WORKSPACE_METADATA_VERSION;
-pub(super) const MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES: usize = 100;
+pub const WORKSPACE_METADATA_DIR_NAME: &str = ".fumi";
+pub const WORKSPACE_METADATA_FILE_NAME: &str = "workspace.json";
+pub const APP_STATE_FILE_NAME: &str = "state.json";
+pub const DEFAULT_WORKSPACE_FILE_BASE_NAME: &str = "script";
+pub const DEFAULT_WORKSPACE_FILE_EXTENSION: &str = ".lua";
+pub const MAX_WORKSPACE_TAB_NAME_LENGTH: usize = 20;
+pub const WORKSPACE_MISSING_ERROR_MESSAGE: &str = "Workspace not found.";
+pub const LEGACY_STATE_DIRECTORIES: [&str; 2] = ["Fumi", "frozenproductions.fumi"];
+pub const WORKSPACE_METADATA_VERSION: u8 = CURRENT_WORKSPACE_METADATA_VERSION;
+pub const MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES: usize = 100;
 
 /// Cursor position and scroll state for a workspace editor tab.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -113,97 +113,97 @@ pub struct WorkspaceExecutionHistoryEntry {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct StoredAppState {
-    pub(super) last_workspace_path: Option<String>,
+pub struct StoredAppState {
+    pub last_workspace_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct StoredWorkspaceMetadata {
-    pub(super) version: u8,
-    pub(super) active_tab_id: Option<String>,
+pub struct StoredWorkspaceMetadata {
+    pub version: u8,
+    pub active_tab_id: Option<String>,
     #[serde(default)]
-    pub(super) split_view: Option<WorkspaceSplitView>,
-    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
-    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    pub split_view: Option<WorkspaceSplitView>,
+    pub tabs: Option<Vec<WorkspaceTabState>>,
+    pub archived_tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(default)]
-    pub(super) execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
+    pub execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedWorkspaceDocumentV1 {
-    pub(super) version: u8,
-    pub(super) active_tab_id: Option<String>,
+pub struct PersistedWorkspaceDocumentV1 {
+    pub version: u8,
+    pub active_tab_id: Option<String>,
     #[serde(default)]
-    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    pub tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedWorkspaceDocumentV2 {
-    pub(super) version: u8,
-    pub(super) active_tab_id: Option<String>,
+pub struct PersistedWorkspaceDocumentV2 {
+    pub version: u8,
+    pub active_tab_id: Option<String>,
     #[serde(default)]
-    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    pub tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(default)]
-    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    pub archived_tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedWorkspaceDocumentV3 {
-    pub(super) version: u8,
-    pub(super) active_tab_id: Option<String>,
+pub struct PersistedWorkspaceDocumentV3 {
+    pub version: u8,
+    pub active_tab_id: Option<String>,
     #[serde(default)]
-    pub(super) split_view: Option<WorkspaceSplitView>,
+    pub split_view: Option<WorkspaceSplitView>,
     #[serde(default)]
-    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    pub tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(default)]
-    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    pub archived_tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedWorkspaceDocumentV4 {
-    pub(super) version: u8,
-    pub(super) active_tab_id: Option<String>,
+pub struct PersistedWorkspaceDocumentV4 {
+    pub version: u8,
+    pub active_tab_id: Option<String>,
     #[serde(default)]
-    pub(super) split_view: Option<WorkspaceSplitView>,
+    pub split_view: Option<WorkspaceSplitView>,
     #[serde(default)]
-    pub(super) tabs: Option<Vec<WorkspaceTabState>>,
+    pub tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(default)]
-    pub(super) archived_tabs: Option<Vec<WorkspaceTabState>>,
+    pub archived_tabs: Option<Vec<WorkspaceTabState>>,
     #[serde(default)]
-    pub(super) execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
+    pub execution_history: Option<Vec<WorkspaceExecutionHistoryEntry>>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedWorkspaceDocumentV5 {
+pub struct PersistedWorkspaceDocumentV5 {
     #[serde(flatten)]
-    pub(super) header: MetadataHeader,
+    pub header: MetadataHeader,
     #[serde(default)]
-    pub(super) active_tab_id: Option<String>,
+    pub active_tab_id: Option<String>,
     #[serde(default)]
-    pub(super) split_view: Option<WorkspaceSplitView>,
-    pub(super) tabs: Vec<WorkspaceTabState>,
-    pub(super) archived_tabs: Vec<WorkspaceTabState>,
-    pub(super) execution_history: Vec<WorkspaceExecutionHistoryEntry>,
+    pub split_view: Option<WorkspaceSplitView>,
+    pub tabs: Vec<WorkspaceTabState>,
+    pub archived_tabs: Vec<WorkspaceTabState>,
+    pub execution_history: Vec<WorkspaceExecutionHistoryEntry>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 impl PersistedWorkspaceDocumentV5 {
-    pub(super) fn into_runtime(self) -> WorkspaceMetadata {
+    pub fn into_runtime(self) -> WorkspaceMetadata {
         WorkspaceMetadata {
             version: self.header.version,
             active_tab_id: self.active_tab_id,
@@ -214,7 +214,7 @@ impl PersistedWorkspaceDocumentV5 {
         }
     }
 
-    pub(super) fn from_runtime(
+    pub fn from_runtime(
         metadata: WorkspaceMetadata,
         header: MetadataHeader,
         extra_fields: Map<String, Value>,

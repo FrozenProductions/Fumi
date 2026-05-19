@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use reqwest::Client;
 use serde::Deserialize;
-use tauri::{AppHandle, Runtime};
 
 use super::models::ResolvedRobloxAccount;
 
@@ -32,18 +31,13 @@ fn create_client() -> Result<Client> {
         .context("failed to build roblox http client")
 }
 
-fn create_user_agent<R: Runtime>(app: &AppHandle<R>) -> String {
-    format!("Fumi/{}", app.package_info().version)
-}
-
-pub(super) async fn resolve_account_from_cookie<R: Runtime>(
-    app: &AppHandle<R>,
+pub async fn resolve_account_from_cookie(
+    user_agent: &str,
     cookie: &str,
 ) -> Result<ResolvedRobloxAccount> {
     let client = create_client()?;
-    let user_agent = create_user_agent(app);
-    let profile = fetch_authenticated_user(&client, cookie, &user_agent).await?;
-    let avatar_url = fetch_avatar_thumbnail(&client, profile.id, &user_agent).await?;
+    let profile = fetch_authenticated_user(&client, cookie, user_agent).await?;
+    let avatar_url = fetch_avatar_thumbnail(&client, profile.id, user_agent).await?;
 
     Ok(ResolvedRobloxAccount {
         user_id: profile.id,

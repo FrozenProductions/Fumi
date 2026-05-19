@@ -4,12 +4,12 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use crate::metadata::{registry::ACCOUNTS_METADATA_VERSION, MetadataHeader};
+use fumi_metadata::{registry::ACCOUNTS_METADATA_VERSION, MetadataHeader};
 
-pub(super) const ACCOUNTS_DIR_NAME: &str = "accounts";
-pub(super) const ACCOUNTS_MANIFEST_FILE_NAME: &str = "accounts.json";
-pub(super) const ACCOUNTS_COOKIES_DIR_NAME: &str = "cookies";
-pub(super) const ACCOUNTS_MANIFEST_VERSION: u8 = ACCOUNTS_METADATA_VERSION;
+pub const ACCOUNTS_DIR_NAME: &str = "accounts";
+pub const ACCOUNTS_MANIFEST_FILE_NAME: &str = "accounts.json";
+pub const ACCOUNTS_COOKIES_DIR_NAME: &str = "cookies";
+pub const ACCOUNTS_MANIFEST_VERSION: u8 = ACCOUNTS_METADATA_VERSION;
 
 /// Whether an account is currently active (bound to a running process) or offline.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
@@ -63,15 +63,15 @@ pub struct RobloxAccountIdentity {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) struct ResolvedRobloxAccount {
-    pub(super) user_id: i64,
-    pub(super) username: String,
-    pub(super) display_name: String,
-    pub(super) avatar_url: Option<String>,
+pub struct ResolvedRobloxAccount {
+    pub user_id: i64,
+    pub username: String,
+    pub display_name: String,
+    pub avatar_url: Option<String>,
 }
 
 impl ResolvedRobloxAccount {
-    pub(super) fn into_identity(self) -> RobloxAccountIdentity {
+    pub fn into_identity(self) -> RobloxAccountIdentity {
         RobloxAccountIdentity {
             user_id: self.user_id,
             username: self.username,
@@ -83,33 +83,33 @@ impl ResolvedRobloxAccount {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct StoredAccountRecord {
-    pub(super) id: String,
-    pub(super) user_id: i64,
-    pub(super) username: String,
-    pub(super) display_name: String,
-    pub(super) avatar_url: Option<String>,
-    pub(super) cookie_file_name: String,
-    pub(super) created_at: i64,
-    pub(super) updated_at: i64,
-    pub(super) last_launched_at: Option<i64>,
+pub struct StoredAccountRecord {
+    pub id: String,
+    pub user_id: i64,
+    pub username: String,
+    pub display_name: String,
+    pub avatar_url: Option<String>,
+    pub cookie_file_name: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub last_launched_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct StoredRobloxBindingRecord {
-    pub(super) pid: u32,
-    pub(super) started_at: i64,
-    pub(super) port: u16,
-    pub(super) account_id: Option<String>,
+pub struct StoredRobloxBindingRecord {
+    pub pid: u32,
+    pub started_at: i64,
+    pub port: u16,
+    pub account_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct StoredAccountsManifest {
-    pub(super) version: u8,
-    pub(super) accounts: Vec<StoredAccountRecord>,
-    pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
+pub struct StoredAccountsManifest {
+    pub version: u8,
+    pub accounts: Vec<StoredAccountRecord>,
+    pub roblox_bindings: Vec<StoredRobloxBindingRecord>,
 }
 
 impl Default for StoredAccountsManifest {
@@ -123,7 +123,7 @@ impl Default for StoredAccountsManifest {
 }
 
 impl StoredAccountRecord {
-    pub(super) fn to_summary(&self, bound_port: Option<u16>) -> AccountSummary {
+    pub fn to_summary(&self, bound_port: Option<u16>) -> AccountSummary {
         AccountSummary {
             id: self.id.clone(),
             user_id: self.user_id,
@@ -143,37 +143,37 @@ impl StoredAccountRecord {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedAccountsDocumentV1 {
-    pub(super) version: u8,
-    pub(super) active_account_id: Option<String>,
-    pub(super) accounts: Vec<StoredAccountRecord>,
+pub struct PersistedAccountsDocumentV1 {
+    pub version: u8,
+    pub active_account_id: Option<String>,
+    pub accounts: Vec<StoredAccountRecord>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedAccountsDocumentV2 {
-    pub(super) version: u8,
-    pub(super) accounts: Vec<StoredAccountRecord>,
-    pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
+pub struct PersistedAccountsDocumentV2 {
+    pub version: u8,
+    pub accounts: Vec<StoredAccountRecord>,
+    pub roblox_bindings: Vec<StoredRobloxBindingRecord>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PersistedAccountsDocumentV3 {
+pub struct PersistedAccountsDocumentV3 {
     #[serde(flatten)]
-    pub(super) header: MetadataHeader,
-    pub(super) accounts: Vec<StoredAccountRecord>,
-    pub(super) roblox_bindings: Vec<StoredRobloxBindingRecord>,
+    pub header: MetadataHeader,
+    pub accounts: Vec<StoredAccountRecord>,
+    pub roblox_bindings: Vec<StoredRobloxBindingRecord>,
     #[serde(flatten, default)]
-    pub(super) extra_fields: Map<String, Value>,
+    pub extra_fields: Map<String, Value>,
 }
 
 impl PersistedAccountsDocumentV3 {
-    pub(super) fn into_runtime(self) -> StoredAccountsManifest {
+    pub fn into_runtime(self) -> StoredAccountsManifest {
         StoredAccountsManifest {
             version: self.header.version,
             accounts: self.accounts,
@@ -181,7 +181,7 @@ impl PersistedAccountsDocumentV3 {
         }
     }
 
-    pub(super) fn from_runtime(
+    pub fn from_runtime(
         manifest: StoredAccountsManifest,
         header: MetadataHeader,
         extra_fields: Map<String, Value>,

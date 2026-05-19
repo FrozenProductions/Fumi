@@ -1,14 +1,9 @@
-pub(crate) mod commands;
+//! Workspace models, metadata persistence, archive handling, and app-state IO.
 
-pub(crate) mod models {
-    pub(crate) use fumi_workspace::models::*;
-}
+pub mod models;
+pub mod storage;
 
-pub(crate) mod storage {
-    pub(crate) use fumi_workspace::storage::*;
-}
-
-pub use fumi_workspace::{
+pub use models::{
     DroppedWorkspaceScriptDraft, WorkspaceBootstrapResponse, WorkspaceCursorState,
     WorkspaceExecutionHistoryEntry, WorkspaceMetadata, WorkspaceSnapshot, WorkspaceSplitView,
     WorkspaceTabSnapshot, WorkspaceTabState,

@@ -1,0 +1,17 @@
+[package]
+name = "fumi_accounts"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+license = "MIT"
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+fumi_executor_core = { path = "../fumi_executor_core" }
+fumi_metadata = { path = "../fumi_metadata" }
+reqwest.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true

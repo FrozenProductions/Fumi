@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use super::models::ExecutorKind;
+use crate::models::ExecutorKind;
 
 const MACSPLOIT_DETECTION_PATH: &str = "/Applications/Roblox.app/Contents/MacOS/macsploit.dylib";
 const OPIUMWARE_DETECTION_PATHS: [&str; 2] = [
@@ -15,18 +15,18 @@ const OPIUMWARE_AVAILABLE_PORTS: [u16; 6] = [8392, 8393, 8394, 8395, 8396, 8397]
 const UNSUPPORTED_EXECUTOR_PORTS: [u16; 0] = [];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ExecutorPortPool {
+pub struct ExecutorPortPool {
     pub executor_kind: ExecutorKind,
     pub ports: Vec<u16>,
 }
 
-pub(super) fn detect_executor_kind() -> ExecutorKind {
+pub fn detect_executor_kind() -> ExecutorKind {
     let opiumware_dylib_paths = OPIUMWARE_DETECTION_PATHS.map(Path::new);
 
     detect_executor_kind_at(Path::new(MACSPLOIT_DETECTION_PATH), &opiumware_dylib_paths)
 }
 
-pub(super) fn detect_executor_kind_at(
+pub fn detect_executor_kind_at(
     macsploit_dylib_path: &Path,
     opiumware_dylib_paths: &[&Path],
 ) -> ExecutorKind {
@@ -39,16 +39,15 @@ pub(super) fn detect_executor_kind_at(
     }
 }
 
-pub(crate) fn current_executor_port_pool() -> ExecutorPortPool {
+pub fn current_executor_port_pool() -> ExecutorPortPool {
     executor_port_pool_for_kind(detect_executor_kind())
 }
 
-#[cfg(test)]
-pub(crate) fn unsupported_executor_port_pool() -> ExecutorPortPool {
+pub fn unsupported_executor_port_pool() -> ExecutorPortPool {
     executor_port_pool_for_kind(ExecutorKind::Unsupported)
 }
 
-pub(crate) fn executor_port_pool_for_kind(executor_kind: ExecutorKind) -> ExecutorPortPool {
+pub fn executor_port_pool_for_kind(executor_kind: ExecutorKind) -> ExecutorPortPool {
     ExecutorPortPool {
         executor_kind,
         ports: available_ports_for_executor(executor_kind).to_vec(),
@@ -63,18 +62,18 @@ fn available_ports_for_executor(executor_kind: ExecutorKind) -> &'static [u16] {
     }
 }
 
-pub(super) fn default_executor_port(executor_kind: ExecutorKind) -> u16 {
+pub fn default_executor_port(executor_kind: ExecutorKind) -> u16 {
     available_ports_for_executor(executor_kind)
         .first()
         .copied()
         .unwrap_or(0)
 }
 
-pub(super) fn is_supported_port(executor_kind: ExecutorKind, port: u16) -> bool {
+pub fn is_supported_port(executor_kind: ExecutorKind, port: u16) -> bool {
     available_ports_for_executor(executor_kind).contains(&port)
 }
 
-pub(super) fn normalize_executor_port(executor_kind: ExecutorKind, port: u16) -> u16 {
+pub fn normalize_executor_port(executor_kind: ExecutorKind, port: u16) -> u16 {
     if is_supported_port(executor_kind, port) {
         port
     } else {

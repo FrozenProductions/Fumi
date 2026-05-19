@@ -12,18 +12,17 @@ use std::{
 
 use anyhow::{anyhow, Context, Result};
 use serde_json::Value;
-use tauri::{AppHandle, Manager, Runtime};
 use uuid::Uuid;
 
-use crate::{
-    executor::{self, ExecutorKind, ExecutorPortPool, ExecutorPortSummary},
-    metadata::{
-        backup::{create_backup, join_backup_path},
-        current_unix_timestamp,
-        io::{atomic_write_json, read_json_value},
-        schema::validate_instance,
-        MetadataError, MetadataHeader, MetadataKind, ACCOUNTS_METADATA_VERSION,
-    },
+use fumi_executor_core::{ExecutorKind, ExecutorPortPool, ExecutorPortSummary};
+#[cfg(test)]
+use fumi_executor_core as executor;
+use fumi_metadata::{
+    backup::{create_backup, join_backup_path},
+    current_unix_timestamp,
+    io::{atomic_write_json, read_json_value},
+    schema::validate_instance,
+    MetadataError, MetadataHeader, MetadataKind, ACCOUNTS_METADATA_VERSION,
 };
 
 use super::binarycookies::{
@@ -33,17 +32,16 @@ use super::models::{
     AccountListResponse, AccountSummary, PersistedAccountsDocumentV1, PersistedAccountsDocumentV2,
     PersistedAccountsDocumentV3, ResolvedRobloxAccount, RobloxAccountIdentity, RobloxProcessInfo,
     StoredAccountRecord, StoredAccountsManifest, StoredRobloxBindingRecord,
-    ACCOUNTS_COOKIES_DIR_NAME, ACCOUNTS_DIR_NAME, ACCOUNTS_MANIFEST_FILE_NAME,
-    ACCOUNTS_MANIFEST_VERSION,
+    ACCOUNTS_COOKIES_DIR_NAME, ACCOUNTS_MANIFEST_FILE_NAME, ACCOUNTS_MANIFEST_VERSION,
 };
 use super::process::{
     get_process_start_time, launch_roblox_application, list_roblox_process_ids,
     sort_roblox_processes, terminate_process, terminate_processes,
 };
 
-const ROBLOX_BINARYCOOKIES_RELATIVE_PATH: &str =
+pub const ROBLOX_BINARYCOOKIES_RELATIVE_PATH: &str =
     "Library/HTTPStorages/com.roblox.RobloxPlayer.binarycookies";
-pub(crate) const ROBLOX_APPLICATION_PATH: &str = "/Applications/Roblox.app";
+pub const ROBLOX_APPLICATION_PATH: &str = "/Applications/Roblox.app";
 const PROCESS_DISCOVERY_POLL_INTERVAL: Duration = Duration::from_millis(200);
 const PROCESS_DISCOVERY_POLL_ATTEMPTS: usize = 120;
 static ROBLOX_LAUNCH_FLOW_MUTEX: Mutex<()> = Mutex::new(());
@@ -66,13 +64,20 @@ struct InferredRobloxBindingAccount {
     account_id: String,
 }
 
-pub(super) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountListResponse> {
-    let accounts_root = get_accounts_root(app)?;
-    let executor_port_pool = executor::current_executor_port_pool();
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LaunchOutcome {
+    pub summary: Option<AccountSummary>,
+    pub selected_port: Option<u16>,
+}
+
+pub fn list_accounts(
+    accounts_root: &Path,
+    executor_port_pool: &ExecutorPortPool,
+) -> Result<AccountListResponse> {
     let running_processes = list_roblox_processes()?;
     let manifest = sync_accounts_manifest(
-        &accounts_root,
-        &executor_port_pool,
+        accounts_root,
+        executor_port_pool,
         running_processes.as_slice(),
     )?;
 
@@ -82,31 +87,29 @@ pub(super) fn list_accounts<R: Runtime>(app: &AppHandle<R>) -> Result<AccountLis
     ))
 }
 
-pub(super) fn upsert_account<R: Runtime>(
-    app: &AppHandle<R>,
+pub fn upsert_account(
+    accounts_root: &Path,
+    executor_port_pool: &ExecutorPortPool,
     resolved_account: &ResolvedRobloxAccount,
     cookie_value: &str,
 ) -> Result<AccountSummary> {
-    let accounts_root = get_accounts_root(app)?;
-    let executor_port_pool = executor::current_executor_port_pool();
     let running_processes = list_roblox_processes()?;
 
     upsert_account_at_with_runtime(
-        &accounts_root,
+        accounts_root,
         resolved_account,
         cookie_value,
-        &executor_port_pool,
+        executor_port_pool,
         running_processes.as_slice(),
     )
 }
 
-pub(super) fn launch_account<R: Runtime>(
-    app: &AppHandle<R>,
+pub fn launch_account(
+    accounts_root: &Path,
+    live_cookie_path: &Path,
+    executor_port_pool: &ExecutorPortPool,
     account_id: &str,
-) -> Result<AccountSummary> {
-    let accounts_root = get_accounts_root(app)?;
-    let live_cookie_path = get_live_roblox_cookie_path()?;
-    let executor_port_pool = executor::current_executor_port_pool();
+) -> Result<LaunchOutcome> {
     let _launch_flow_guard = lock_roblox_launch_flow();
     let running_processes = list_roblox_processes()?;
     let existing_pids = running_processes
@@ -114,18 +117,18 @@ pub(super) fn launch_account<R: Runtime>(
         .map(|process| process.pid)
         .collect::<HashSet<_>>();
     let mut manifest = sync_accounts_manifest(
-        &accounts_root,
-        &executor_port_pool,
+        accounts_root,
+        executor_port_pool,
         running_processes.as_slice(),
     )?;
-    let reserved_port = reserve_free_executor_port(&manifest, &executor_port_pool)?;
+    let reserved_port = reserve_free_executor_port(&manifest, executor_port_pool)?;
     let account_index = manifest
         .accounts
         .iter()
         .position(|account| account.id == account_id)
         .ok_or_else(|| anyhow!("account not found"))?;
     let cookie_path = get_cookie_path(
-        &accounts_root,
+        accounts_root,
         &manifest.accounts[account_index].cookie_file_name,
     );
     let cookie_value = fs::read_to_string(&cookie_path)
@@ -133,7 +136,7 @@ pub(super) fn launch_account<R: Runtime>(
     let timestamp = current_timestamp()?;
     let previous_live_cookie_snapshot = snapshot_file_bytes(&live_cookie_path)?;
 
-    let launch_result = (|| -> Result<AccountSummary> {
+    let launch_result = (|| -> Result<LaunchOutcome> {
         write_minimal_roblosecurity_cookie_file(&live_cookie_path, cookie_value.as_bytes())?;
         let launched_pid = launch_roblox_application(Path::new(ROBLOX_APPLICATION_PATH))?;
         let launched_process = wait_for_new_roblox_process(&existing_pids, Some(launched_pid))?;
@@ -148,13 +151,14 @@ pub(super) fn launch_account<R: Runtime>(
         );
 
         write_accounts_manifest(&accounts_root, &manifest)?;
-        let _ = executor::select_current_executor_port(app, reserved_port)?;
-
-        Ok(manifest.accounts[account_index].to_summary(Some(reserved_port)))
+        Ok(LaunchOutcome {
+            summary: Some(manifest.accounts[account_index].to_summary(Some(reserved_port))),
+            selected_port: Some(reserved_port),
+        })
     })();
 
     match launch_result {
-        Ok(summary) => Ok(summary),
+        Ok(outcome) => Ok(outcome),
         Err(error) => {
             if let Err(restore_error) =
                 restore_file_bytes(&live_cookie_path, previous_live_cookie_snapshot.as_deref())
@@ -169,14 +173,15 @@ pub(super) fn launch_account<R: Runtime>(
     }
 }
 
-pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
-    let accounts_root = get_accounts_root(app)?;
-    let executor_port_pool = executor::current_executor_port_pool();
+pub fn launch_roblox(
+    accounts_root: &Path,
+    executor_port_pool: &ExecutorPortPool,
+) -> Result<LaunchOutcome> {
     let _launch_flow_guard = lock_roblox_launch_flow();
     let running_processes = list_roblox_processes()?;
     let mut manifest = sync_accounts_manifest(
-        &accounts_root,
-        &executor_port_pool,
+        accounts_root,
+        executor_port_pool,
         running_processes.as_slice(),
     )?;
     let existing_pids = running_processes
@@ -197,7 +202,7 @@ pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
         let mut detected_processes = running_processes.clone();
         detected_processes.push(launched_process.clone());
         let inferred_binding = infer_saved_account_binding_for_new_processes(
-            &accounts_root,
+            accounts_root,
             &manifest,
             detected_processes.as_slice(),
         );
@@ -210,20 +215,21 @@ pub(super) fn launch_roblox<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
     }
 
     write_accounts_manifest(&accounts_root, &manifest)?;
-    if let Some(port) = reserved_port {
-        let _ = executor::select_current_executor_port(app, port)?;
-    }
-
-    Ok(())
+    Ok(LaunchOutcome {
+        summary: None,
+        selected_port: reserved_port,
+    })
 }
 
-pub(super) fn delete_account<R: Runtime>(app: &AppHandle<R>, account_id: &str) -> Result<()> {
-    let accounts_root = get_accounts_root(app)?;
-    let executor_port_pool = executor::current_executor_port_pool();
+pub fn delete_account(
+    accounts_root: &Path,
+    executor_port_pool: &ExecutorPortPool,
+    account_id: &str,
+) -> Result<()> {
     let running_processes = list_roblox_processes()?;
     let mut manifest = sync_accounts_manifest(
-        &accounts_root,
-        &executor_port_pool,
+        accounts_root,
+        executor_port_pool,
         running_processes.as_slice(),
     )?;
     let account_index = manifest
@@ -233,7 +239,7 @@ pub(super) fn delete_account<R: Runtime>(app: &AppHandle<R>, account_id: &str) -
         .ok_or_else(|| anyhow!("account not found"))?;
     let account = manifest.accounts.remove(account_index);
 
-    remove_file_if_exists(&get_cookie_path(&accounts_root, &account.cookie_file_name))?;
+    remove_file_if_exists(&get_cookie_path(accounts_root, &account.cookie_file_name))?;
 
     for binding in &mut manifest.roblox_bindings {
         if binding.account_id.as_deref() == Some(account.id.as_str()) {
@@ -241,21 +247,15 @@ pub(super) fn delete_account<R: Runtime>(app: &AppHandle<R>, account_id: &str) -
         }
     }
 
-    write_accounts_manifest(&accounts_root, &manifest)?;
-    let _ = executor::emit_current_executor_status(app)?;
-
-    Ok(())
+    write_accounts_manifest(accounts_root, &manifest)
 }
 
-pub(super) fn kill_roblox_processes<R: Runtime>(app: &AppHandle<R>) -> Result<()> {
+pub fn kill_roblox_processes() -> Result<()> {
     let pids = list_roblox_process_ids()?;
-    terminate_processes(&pids)?;
-
-    let _ = executor::emit_current_executor_status(app)?;
-    Ok(())
+    terminate_processes(&pids)
 }
 
-pub(super) fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {
+pub fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {
     let pids = list_roblox_process_ids()?;
     let mut processes = Vec::with_capacity(pids.len());
 
@@ -274,15 +274,14 @@ pub(super) fn list_roblox_processes() -> Result<Vec<RobloxProcessInfo>> {
     Ok(processes)
 }
 
-pub(super) fn list_roblox_processes_with_bindings<R: Runtime>(
-    app: &AppHandle<R>,
+pub fn list_roblox_processes_with_bindings(
+    accounts_root: &Path,
+    executor_port_pool: &ExecutorPortPool,
 ) -> Result<Vec<RobloxProcessInfo>> {
-    let accounts_root = get_accounts_root(app)?;
-    let executor_port_pool = executor::current_executor_port_pool();
     let running_processes = list_roblox_processes()?;
     let manifest = sync_accounts_manifest(
-        &accounts_root,
-        &executor_port_pool,
+        accounts_root,
+        executor_port_pool,
         running_processes.as_slice(),
     )?;
 
@@ -292,36 +291,33 @@ pub(super) fn list_roblox_processes_with_bindings<R: Runtime>(
     ))
 }
 
-pub(super) async fn get_live_roblox_account<R: Runtime>(
-    app: &AppHandle<R>,
+pub async fn get_live_roblox_account(
+    live_cookie_path: &Path,
+    user_agent: &str,
 ) -> Result<Option<RobloxAccountIdentity>> {
-    let live_cookie_path = get_live_roblox_cookie_path()?;
     let Some(cookie_value) = read_roblosecurity_cookie_value(&live_cookie_path)? else {
         return Ok(None);
     };
-    let resolved_account = super::roblox::resolve_account_from_cookie(app, &cookie_value).await?;
+    let resolved_account = super::roblox::resolve_account_from_cookie(user_agent, &cookie_value).await?;
 
     Ok(Some(resolved_account.into_identity()))
 }
 
-pub(super) fn kill_roblox_process<R: Runtime>(app: &AppHandle<R>, pid: u32) -> Result<()> {
+pub fn kill_roblox_process(pid: u32) -> Result<()> {
     if !list_roblox_process_ids()?.contains(&pid) {
         return Err(anyhow!("roblox process {pid} is no longer running"));
     }
 
-    terminate_process(pid).with_context(|| format!("failed to kill roblox process {pid}"))?;
-    let _ = executor::emit_current_executor_status(app)?;
-    Ok(())
+    terminate_process(pid).with_context(|| format!("failed to kill roblox process {pid}"))
 }
 
-pub(crate) fn list_executor_port_summaries<R: Runtime>(
-    app: &AppHandle<R>,
+pub fn list_executor_port_summaries(
+    accounts_root: &Path,
     executor_port_pool: &ExecutorPortPool,
 ) -> Result<Vec<ExecutorPortSummary>> {
-    let accounts_root = get_accounts_root(app)?;
     let running_processes = list_roblox_processes()?;
     let manifest = sync_accounts_manifest(
-        &accounts_root,
+        accounts_root,
         executor_port_pool,
         running_processes.as_slice(),
     )?;
@@ -333,7 +329,7 @@ pub(crate) fn list_executor_port_summaries<R: Runtime>(
 }
 
 #[cfg(test)]
-pub(super) fn list_accounts_at(
+pub fn list_accounts_at(
     accounts_root: &Path,
     executor_port_pool: &ExecutorPortPool,
     running_processes: &[RobloxProcessInfo],
@@ -346,7 +342,7 @@ pub(super) fn list_accounts_at(
 }
 
 #[cfg(test)]
-pub(super) fn upsert_account_at(
+pub fn upsert_account_at(
     accounts_root: &Path,
     resolved_account: &ResolvedRobloxAccount,
     cookie_value: &str,
@@ -691,7 +687,7 @@ fn current_accounts_document_from_manifest(
     });
     let header = existing_document
         .map(|document| MetadataHeader {
-            schema: crate::metadata::metadata_schema_id(
+            schema: fumi_metadata::metadata_schema_id(
                 MetadataKind::Accounts,
                 ACCOUNTS_METADATA_VERSION,
             )
@@ -708,7 +704,7 @@ fn current_accounts_document_from_manifest(
             written_by_app_version: if preserve_updated_at {
                 document.header.written_by_app_version.clone()
             } else {
-                crate::metadata::CURRENT_APP_VERSION.to_string()
+                fumi_metadata::CURRENT_APP_VERSION.to_string()
             },
         })
         .unwrap_or_else(|| {
@@ -1258,15 +1254,7 @@ fn remove_file_if_exists(path: &Path) -> Result<()> {
     }
 }
 
-fn get_accounts_root<R: Runtime>(app: &AppHandle<R>) -> Result<PathBuf> {
-    Ok(app
-        .path()
-        .app_local_data_dir()
-        .context("failed to resolve the app local data directory")?
-        .join(ACCOUNTS_DIR_NAME))
-}
-
-fn get_live_roblox_cookie_path() -> Result<PathBuf> {
+pub fn get_live_roblox_cookie_path() -> Result<PathBuf> {
     let home_dir =
         std::env::var_os("HOME").ok_or_else(|| anyhow!("failed to resolve the home directory"))?;
 
@@ -1285,7 +1273,7 @@ fn get_cookie_path(accounts_root: &Path, cookie_file_name: &str) -> PathBuf {
     get_cookies_directory(accounts_root).join(cookie_file_name)
 }
 
-pub(super) fn normalize_cookie_value(cookie_value: &str) -> Result<String> {
+pub fn normalize_cookie_value(cookie_value: &str) -> Result<String> {
     let trimmed_cookie = cookie_value.trim();
     let without_prefix = trimmed_cookie
         .strip_prefix(".ROBLOSECURITY=")
@@ -1312,7 +1300,6 @@ fn current_timestamp() -> Result<i64> {
         .try_into()
         .context("timestamp exceeds i64")
 }
-
 
 #[cfg(test)]
 mod tests;

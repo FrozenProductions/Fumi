@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::{Context, Result};
 
-pub(crate) fn create_backup(source_path: &Path, backup_path: &Path) -> Result<bool> {
+pub fn create_backup(source_path: &Path, backup_path: &Path) -> Result<bool> {
     let bytes = match fs::read(source_path) {
         Ok(bytes) => bytes,
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(false),
@@ -28,11 +28,11 @@ pub(crate) fn create_backup(source_path: &Path, backup_path: &Path) -> Result<bo
     Ok(true)
 }
 
-pub(crate) fn versioned_backup_file_name(version: u8, timestamp: i64) -> String {
+pub fn versioned_backup_file_name(version: u8, timestamp: i64) -> String {
     format!("{timestamp}-v{version}.json")
 }
 
-pub(crate) fn join_backup_path(root: &Path, folder: &str, version: u8, timestamp: i64) -> PathBuf {
+pub fn join_backup_path(root: &Path, folder: &str, version: u8, timestamp: i64) -> PathBuf {
     root.join(folder)
         .join(versioned_backup_file_name(version, timestamp))
 }

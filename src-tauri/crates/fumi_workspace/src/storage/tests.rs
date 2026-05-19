@@ -1,5 +1,5 @@
 use super::*;
-use crate::executor::ExecutorKind;
+use fumi_executor_core::ExecutorKind;
 use serde_json::{json, Map};
 use std::time::{SystemTime, UNIX_EPOCH};
 

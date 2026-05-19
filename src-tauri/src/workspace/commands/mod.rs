@@ -2,13 +2,13 @@
 
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Result};
-use tauri::{command, AppHandle, State};
+use anyhow::{anyhow, Context, Result};
+use tauri::{command, AppHandle, Manager, State};
 
 use crate::command;
 use crate::state::AppRuntimeState;
 use crate::workspace::{
-    models::StoredWorkspaceMetadata,
+    models::{StoredWorkspaceMetadata, APP_STATE_FILE_NAME},
     storage::{
         delete_workspace_file_from_disk, ensure_workspace_exists,
         normalize_new_workspace_file_name, normalize_workspace_metadata,
@@ -24,6 +24,14 @@ pub(crate) mod session;
 
 pub(super) use command::{run_command, CommandResponse};
 
+pub(super) fn app_state_path(app: &AppHandle) -> Result<PathBuf> {
+    Ok(app
+        .path()
+        .app_local_data_dir()
+        .context("failed to resolve app local data directory")?
+        .join(APP_STATE_FILE_NAME))
+}
+
 pub(super) fn load_workspace_metadata(workspace_path: &Path) -> Result<WorkspaceMetadata> {
     ensure_workspace_exists(workspace_path)?;
     read_workspace_metadata(workspace_path)
@@ -35,7 +43,7 @@ pub(super) fn persist_workspace_metadata(
     metadata: &WorkspaceMetadata,
 ) -> Result<()> {
     write_workspace_metadata(workspace_path, metadata)?;
-    persist_workspace_launch_state(app, workspace_path)
+    persist_workspace_launch_state(&app_state_path(app)?, workspace_path)
 }
 
 pub(super) fn find_workspace_tab(

@@ -3,7 +3,7 @@ use thiserror::Error;
 use super::registry::MetadataKind;
 
 #[derive(Debug, Error)]
-pub(crate) enum MetadataError {
+pub enum MetadataError {
     #[error("unsupported {kind} metadata version {version}")]
     UnsupportedVersion { kind: MetadataKind, version: u64 },
     #[error("{kind} metadata schema validation failed: {message}")]
