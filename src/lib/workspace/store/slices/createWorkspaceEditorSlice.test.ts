@@ -134,7 +134,7 @@ describe("createWorkspaceEditorSlice", () => {
         mocks.saveWorkspaceFile.mockReset();
     });
 
-    it("stores cursor moves in transient state without rebuilding the workspace", async () => {
+    it("stores cursor moves in transient state and triggers persistence", async () => {
         const store = await createEditorStore({
             persistRevision: 4,
             lastPersistedRevision: 2,
@@ -148,7 +148,7 @@ describe("createWorkspaceEditorSlice", () => {
         });
 
         expect(store.getState().workspace).toBe(previousWorkspace);
-        expect(store.getState().persistRevision).toBe(4);
+        expect(store.getState().persistRevision).toBe(5);
         expect(store.getState().lastPersistedRevision).toBe(2);
         expect(store.getState().transientTabCursorsById).toEqual({
             "tab-1": {
@@ -159,7 +159,7 @@ describe("createWorkspaceEditorSlice", () => {
         });
     });
 
-    it("stores scroll updates in transient state without rebuilding the workspace", async () => {
+    it("stores scroll updates in transient state and triggers persistence", async () => {
         const store = await createEditorStore({
             persistRevision: 6,
             lastPersistedRevision: 6,
@@ -169,7 +169,7 @@ describe("createWorkspaceEditorSlice", () => {
         store.getState().updateActiveTabScrollTop(240);
 
         expect(store.getState().workspace).toBe(previousWorkspace);
-        expect(store.getState().persistRevision).toBe(6);
+        expect(store.getState().persistRevision).toBe(7);
         expect(store.getState().lastPersistedRevision).toBe(6);
         expect(store.getState().transientTabCursorsById).toEqual({
             "tab-1": {

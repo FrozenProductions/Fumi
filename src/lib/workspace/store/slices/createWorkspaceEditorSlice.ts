@@ -226,6 +226,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                         ...state.transientTabCursorsById,
                         [activeTab.id]: nextCursor,
                     },
+                    persistRevision: state.persistRevision + 1,
                 };
             });
         },
@@ -254,6 +255,7 @@ export const createWorkspaceEditorSlice: WorkspaceStoreSliceCreator<
                         ...state.transientTabCursorsById,
                         [activeTab.id]: nextCursor,
                     },
+                    persistRevision: state.persistRevision + 1,
                 };
             });
         },
