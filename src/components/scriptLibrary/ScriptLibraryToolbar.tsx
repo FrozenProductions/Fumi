@@ -85,11 +85,11 @@ export function ScriptLibraryToolbar({
                         <AppIcon icon={StarIcon} size={12} strokeWidth={2.5} />
                         Favorites
                         <span
-                            className={`inline-flex min-w-[1.15rem] items-center justify-center rounded-full px-1 py-0.5 text-[10px] font-semibold ${
+                            className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
                                 contentMode === "favorites"
                                     ? "bg-fumi-50/20 text-fumi-50"
                                     : "bg-fumi-100 text-fumi-700"
-                            }`}
+                            } ${favoriteCount < 10 ? "size-4" : ""}`}
                         >
                             {favoriteCount}
                         </span>
