@@ -192,11 +192,7 @@ export const useAppStore = create<AppStore>()(
                         return state;
                     }
 
-                    const nextHotkeyBindings = { ...state.hotkeyBindings };
-                    delete nextHotkeyBindings[action];
-
                     return {
-                        hotkeyBindings: nextHotkeyBindings,
                         disabledHotkeys: [...state.disabledHotkeys, action],
                     };
                 });
