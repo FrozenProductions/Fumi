@@ -75,6 +75,10 @@ export function AutomaticExecutionEditor({
     );
 
     useEffect(() => {
+        if (!script || editorLoaderState) {
+            return;
+        }
+
         let isMounted = true;
 
         void (async () => {
@@ -97,7 +101,7 @@ export function AutomaticExecutionEditor({
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [editorLoaderState, script]);
 
     if (!script) {
         return (

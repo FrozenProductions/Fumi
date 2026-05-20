@@ -29,6 +29,11 @@ import type {
     ScriptLibrarySort,
 } from "./scriptLibrary.type";
 
+type RankedSearchScript = {
+    rank: number;
+    script: ScriptLibraryEntry;
+};
+
 async function fetchRawScriptText(
     script: ScriptLibraryEntry,
     signal?: AbortSignal,
@@ -258,12 +263,19 @@ function getRankedSearchScripts(
     query: string,
     orderBy: ScriptLibrarySort,
 ): ScriptLibraryEntry[] {
-    return scripts
-        .map((script) => ({
-            rank: getScriptSearchRank(script, query),
-            script,
-        }))
-        .filter((entry) => entry.rank > 0)
+    const rankedScripts: RankedSearchScript[] = [];
+
+    for (const script of scripts) {
+        const rank = getScriptSearchRank(script, query);
+
+        if (rank <= 0) {
+            continue;
+        }
+
+        rankedScripts.push({ rank, script });
+    }
+
+    return rankedScripts
         .toSorted((left, right) => {
             return (
                 right.rank - left.rank ||

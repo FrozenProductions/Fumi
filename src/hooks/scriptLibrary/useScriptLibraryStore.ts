@@ -264,6 +264,10 @@ export const createScriptLibraryStoreStateCreator: StateCreator<
 
             try {
                 if (hasActiveFilters) {
+                    if (signal.aborted) {
+                        return;
+                    }
+
                     const result = await fetchFilteredScriptsPage(
                         session,
                         trimmedQuery,
@@ -283,6 +287,10 @@ export const createScriptLibraryStoreStateCreator: StateCreator<
                         maxPages: result.maxPages,
                         isLoading: false,
                     });
+                    return;
+                }
+
+                if (signal.aborted) {
                     return;
                 }
 

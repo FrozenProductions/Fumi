@@ -240,13 +240,14 @@ export function findAppHotkeyConflict(
     disabledHotkeys: AppHotkeyAction[] = [],
 ): AppHotkeyConflict | null {
     const normalizedBinding = normalizeAppHotkeyBinding(binding);
+    const disabledHotkeySet = new Set(disabledHotkeys);
 
     for (const currentAction of APP_HOTKEY_ACTIONS) {
         if (currentAction === action) {
             continue;
         }
 
-        if (disabledHotkeys.includes(currentAction)) {
+        if (disabledHotkeySet.has(currentAction)) {
             continue;
         }
 

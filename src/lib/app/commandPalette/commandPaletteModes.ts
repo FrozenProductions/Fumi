@@ -131,14 +131,20 @@ export function getSymbolCommandPaletteItems({
         getLiveWorkspaceEditorContent(activeTab.id) ?? activeTab.content;
     const analysis = scanLuauFileAnalysis(content);
 
-    return analysis.symbols.filter(isJumpableSymbol).map((symbol) => {
+    const items: AppCommandPaletteItem[] = [];
+
+    for (const symbol of analysis.symbols) {
+        if (!isJumpableSymbol(symbol)) {
+            continue;
+        }
+
         const label = getSymbolLabel(symbol);
         const lineNumber = getWorkspaceLineNumberFromOffset(
             content,
             symbol.declarationStart,
         );
 
-        return {
+        items.push({
             id: `command-goto-symbol-${symbol.kind}-${symbol.declarationStart}`,
             label,
             description: `Jump to line ${lineNumber} in ${activeTab.fileName}.`,
@@ -149,8 +155,10 @@ export function getSymbolCommandPaletteItems({
                 onOpenWorkspaceScreen();
                 onGoToLine(lineNumber);
             },
-        };
-    });
+        });
+    }
+
+    return items;
 }
 
 /** Builds command palette items for switching between light, dark, and system themes. */

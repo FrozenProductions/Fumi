@@ -91,8 +91,10 @@ export function useWorkspaceExecutionHistoryPreview({
 
         void (async () => {
             try {
-                const loadedAceRuntime = await loadAceRuntime();
-                const reactAceModule = await import("react-ace");
+                const [loadedAceRuntime, reactAceModule] = await Promise.all([
+                    loadAceRuntime(),
+                    import("react-ace"),
+                ]);
                 const reactAceComponent = getReactAceComponent(reactAceModule);
 
                 if (!isMounted) {
