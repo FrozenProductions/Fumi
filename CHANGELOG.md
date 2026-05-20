@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-05-20
+
 ### Added
 
 - Add execution history search and filters.
@@ -281,7 +283,8 @@ _First public release._
 - Fix Ace loading in production builds.
 - Fix Ace interop and Escape hotkeys.
 
-[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.8...HEAD
+[Unreleased]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.9...HEAD
+[1.0.9]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.8...app-v1.0.9
 [1.0.8]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.7...app-v1.0.8
 [1.0.7]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.6...app-v1.0.7
 [1.0.6]: https://github.com/FrozenProductions/Fumi/compare/app-v1.0.5...app-v1.0.6
