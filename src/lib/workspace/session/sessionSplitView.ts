@@ -532,6 +532,55 @@ export function getFocusedPaneTabId(
 }
 
 /**
+ * Adds a tab to the currently focused split pane and makes it active.
+ */
+export function addTabToActiveSplitPane(
+    splitView: WorkspaceSplitView | null,
+    tabId: string,
+): WorkspaceSplitView | null {
+    if (!splitView?.root) {
+        return splitView;
+    }
+
+    const fallbackPaneId = getWorkspaceSplitPanes(splitView.root)[0]?.id;
+    const activePane = findPanePath(
+        splitView.root,
+        splitView.activePaneId ?? fallbackPaneId ?? ROOT_PANE_ID,
+    );
+
+    if (!activePane) {
+        return splitView;
+    }
+
+    const nextRoot = updateNodeAtPath(
+        splitView.root,
+        activePane.path,
+        (node) => {
+            if (!isSplitPaneNode(node)) {
+                return node;
+            }
+
+            return {
+                ...node,
+                activeTabId: tabId,
+                tabIds: node.tabIds.includes(tabId)
+                    ? node.tabIds
+                    : [...node.tabIds, tabId],
+            };
+        },
+    );
+
+    if (!nextRoot) {
+        return splitView;
+    }
+
+    return {
+        root: nextRoot,
+        activePaneId: activePane.pane.id,
+    };
+}
+
+/**
  * Returns the tab IDs that share a split pane with the target tab.
  */
 export function getWorkspaceSplitScopeTabIds(

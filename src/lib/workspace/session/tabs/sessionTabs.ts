@@ -1,7 +1,11 @@
 import type { WorkspaceSnapshot } from "../../persistence.type";
 import type { WorkspaceSession } from "../session.type";
 import { clampCursorToContent } from "../sessionCursor";
-import { getFocusedPaneTabId, normalizeSplitView } from "../sessionSplitView";
+import {
+    addTabToActiveSplitPane,
+    getFocusedPaneTabId,
+    normalizeSplitView,
+} from "../sessionSplitView";
 import type {
     WorkspaceTab,
     WorkspaceTabSnapshot,
@@ -153,7 +157,7 @@ export function getWorkspaceDirtyTabCount(
  *
  * @remarks
  * Removes any archived tab with the same ID, sets the tab as active,
- * and clears the split view.
+ * and adds it to the active split pane when split view is open.
  */
 export function upsertWorkspaceTab(
     currentWorkspace: WorkspaceSession,
@@ -169,7 +173,7 @@ export function upsertWorkspaceTab(
     return {
         ...currentWorkspace,
         activeTabId: tab.id,
-        splitView: null,
+        splitView: addTabToActiveSplitPane(currentWorkspace.splitView, tab.id),
         archivedTabs: currentWorkspace.archivedTabs.filter(
             (archivedTab) => archivedTab.id !== tab.id,
         ),

@@ -462,4 +462,57 @@ describe("createWorkspaceTabSlice", () => {
         });
         expect(store.persistWorkspaceState).toHaveBeenCalledOnce();
     });
+
+    it("keeps split view open when creating a tab in the active pane", async () => {
+        const store = await createTabStore(
+            createWorkspaceSession({
+                splitView: createWorkspaceSplitView({
+                    direction: "vertical",
+                    primaryTabId: "tab-1",
+                    secondaryTabId: "tab-3",
+                    secondaryTabIds: ["tab-3", "tab-4"],
+                    splitRatio: DEFAULT_WORKSPACE_SPLIT_RATIO,
+                    focusedPane: "secondary",
+                }),
+            }),
+        );
+
+        const workspaceCommands = await import(
+            "../../../platform/workspace/workspace"
+        );
+
+        vi.mocked(workspaceCommands.createWorkspaceFile).mockResolvedValueOnce(
+            {
+                id: "tab-5",
+                fileName: "tab-5.lua",
+                content: "print(\"tab-5\")",
+                isDirty: false,
+                isPinned: false,
+                cursor: {
+                    line: 0,
+                    column: 0,
+                    scrollTop: 0,
+                },
+            },
+        );
+
+        await store.getState().addWorkspaceScriptTab("tab-5.lua", "");
+
+        expect(store.getState().workspace?.activeTabId).toBe("tab-5");
+        expect(store.getState().workspace?.splitView).toMatchObject({
+            activePaneId: "pane-secondary",
+            root: {
+                direction: "horizontal",
+                children: [
+                    { id: "pane-primary", tabIds: ["tab-1", "tab-2"] },
+                    {
+                        id: "pane-secondary",
+                        activeTabId: "tab-5",
+                        tabIds: ["tab-3", "tab-4", "tab-5"],
+                    },
+                ],
+            },
+        });
+        expect(store.persistWorkspaceState).not.toHaveBeenCalled();
+    });
 });
