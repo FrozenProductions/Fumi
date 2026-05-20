@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Add command palette commands for symbols, tab size, and intellisense priority.
 - Add Luau beautify command with native beautifier.
 - Add focus delay for tabs mode in command palette.
+- Add hotkey disable support with Backspace shortcut to disable and re-enable custom hotkey bindings.
 - Improve script library search ranking and display titles.
 
 ### Changed
@@ -38,12 +39,16 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Upgrade Rust toolchain to 1.89 for smol_str MSRV compatibility.
 - Replace O(n) favorite lookup with Set index in script library store.
 - Adjust command palette UI sizing and increase max results.
+- Refactor codebase into crates.
+- Extract types into `.type.ts` sidecars and add docstrings to uncovered code.
+- Refine favorite count badge styling.
 
 ### Removed
 
 - Trim low-value frontend tests.
 - Remove animated text derived state and unused code.
 - Remove unused export resetFavoriteScriptIds.
+- Remove unused editorValue state and useEffect sync.
 
 ### Fixed
 
@@ -58,6 +63,9 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Improve keyboard focus handling for editor split panes.
 - Wrap settings select handlers to avoid passing raw setters through UI props.
 - Fix Escape closing command palette in special mode selectors.
+- Preserve custom hotkey binding when disabling.
+- Persist cursor and scroll positions on app reload.
+- Force WorkspaceAcePane remount on tab switch to prevent stale state.
 
 ## [1.0.8] - 2026-05-02
 
