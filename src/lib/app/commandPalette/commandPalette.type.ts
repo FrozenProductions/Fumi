@@ -24,6 +24,8 @@ export type GetCommandPaletteCommandItemsOptions = {
     activeSidebarItem: AppSidebarItem;
     sidebarPosition: AppSidebarPosition;
     hotkeyLabels: AppCommandPaletteHotkeyLabels;
+    onActivateArchivedTabMode: () => void;
+    onActivateDeleteArchivedTabMode: () => void;
     onActivateGoToLineMode: () => void;
     onActivateAttachMode: () => void;
     onActivateIntellisensePriorityMode: () => void;
@@ -196,6 +198,8 @@ export type GetAppCommandPaletteResultsOptions = Pick<
     mode: AppCommandPaletteViewMode;
     scope: AppCommandPaletteScope;
     normalizedQuery: string;
+    onActivateArchivedTabMode: () => void;
+    onActivateDeleteArchivedTabMode: () => void;
     onActivateGoToLineMode: () => void;
     onActivateAttachMode: () => void;
     onActivateIntellisensePriorityMode: () => void;
@@ -212,6 +216,16 @@ export type GetGoToLineCommandPaletteItemsOptions = {
 
 export type GetAttachCommandPaletteItemsOptions = {
     workspaceExecutor: UseWorkspaceExecutorResult;
+    onOpenWorkspaceScreen: () => void;
+};
+
+export type GetArchivedTabCommandPaletteItemsOptions = {
+    workspaceSession: UseWorkspaceSessionResult;
+    onOpenWorkspaceScreen: () => void;
+};
+
+export type GetDeleteArchivedTabCommandPaletteItemsOptions = {
+    workspaceSession: UseWorkspaceSessionResult;
     onOpenWorkspaceScreen: () => void;
 };
 

@@ -155,6 +155,133 @@ describe("getCommandCommandPaletteItems", () => {
         expect(resetWorkspaceSplitView).toHaveBeenCalledOnce();
     });
 
+    it("adds commands for restoring archived tabs", () => {
+        const onActivateArchivedTabMode = vi.fn();
+        const onActivateDeleteArchivedTabMode = vi.fn();
+        const onOpenWorkspaceScreen = vi.fn();
+        const deleteAllArchivedWorkspaceTabs = vi
+            .fn()
+            .mockResolvedValue(undefined);
+        const restoreAllArchivedWorkspaceTabs = vi
+            .fn()
+            .mockResolvedValue(undefined);
+
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: null,
+                            splitView: null,
+                            tabs: [],
+                            archivedTabs: [
+                                {
+                                    id: "archived-tab-1",
+                                    fileName: "archived.lua",
+                                    archivedAt: 123,
+                                    cursor: {
+                                        line: 0,
+                                        column: 0,
+                                        scrollTop: 0,
+                                    },
+                                },
+                            ],
+                            executionHistory: [],
+                        },
+                    },
+                    archiveActions: {
+                        deleteAllArchivedWorkspaceTabs,
+                        restoreAllArchivedWorkspaceTabs,
+                    },
+                }),
+                onActivateArchivedTabMode,
+                onActivateDeleteArchivedTabMode,
+                onOpenWorkspaceScreen,
+            }),
+        );
+        const restoreTabItem = items.find(
+            (item) => item.id === "command-restore-archived-tab",
+        );
+        const restoreAllItem = items.find(
+            (item) => item.id === "command-restore-all-archived-tabs",
+        );
+        const deleteTabItem = items.find(
+            (item) => item.id === "command-delete-archived-tab",
+        );
+        const deleteAllItem = items.find(
+            (item) => item.id === "command-delete-all-archived-tabs",
+        );
+
+        expect(restoreTabItem).toMatchObject({
+            label: "Restore archived tab",
+            closeOnSelect: false,
+            isDisabled: false,
+        });
+        expect(restoreAllItem).toMatchObject({
+            label: "Restore all archived tabs",
+            isDisabled: false,
+        });
+        expect(deleteTabItem).toMatchObject({
+            label: "Delete archived tab",
+            closeOnSelect: false,
+            isDisabled: false,
+        });
+        expect(deleteAllItem).toMatchObject({
+            label: "Delete all archived tabs",
+            isDisabled: false,
+        });
+
+        restoreTabItem?.onSelect();
+        restoreAllItem?.onSelect();
+        deleteTabItem?.onSelect();
+        deleteAllItem?.onSelect();
+
+        expect(onActivateArchivedTabMode).toHaveBeenCalledOnce();
+        expect(onActivateDeleteArchivedTabMode).toHaveBeenCalledOnce();
+        expect(onOpenWorkspaceScreen).toHaveBeenCalledTimes(2);
+        expect(restoreAllArchivedWorkspaceTabs).toHaveBeenCalledOnce();
+        expect(deleteAllArchivedWorkspaceTabs).toHaveBeenCalledOnce();
+    });
+
+    it("disables archived tab commands when there are no archived tabs", () => {
+        const items = getCommandCommandPaletteItems(
+            createCommandPaletteOptions({
+                workspaceSession: createWorkspaceSession({
+                    state: {
+                        workspace: {
+                            workspacePath: "/workspace/current",
+                            workspaceName: "current",
+                            activeTabId: null,
+                            splitView: null,
+                            tabs: [],
+                            archivedTabs: [],
+                            executionHistory: [],
+                        },
+                    },
+                }),
+            }),
+        );
+
+        expect(
+            items.find((item) => item.id === "command-restore-archived-tab"),
+        ).toMatchObject({ isDisabled: true });
+        expect(
+            items.find(
+                (item) => item.id === "command-restore-all-archived-tabs",
+            ),
+        ).toMatchObject({ isDisabled: true });
+        expect(
+            items.find((item) => item.id === "command-delete-archived-tab"),
+        ).toMatchObject({ isDisabled: true });
+        expect(
+            items.find(
+                (item) => item.id === "command-delete-all-archived-tabs",
+            ),
+        ).toMatchObject({ isDisabled: true });
+    });
+
     it("uses resolved hotkey labels in command metadata", () => {
         const items = getCommandCommandPaletteItems(
             createCommandPaletteOptions({

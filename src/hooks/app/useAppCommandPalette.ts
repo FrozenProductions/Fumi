@@ -229,6 +229,32 @@ export function useAppCommandPalette({
         scheduleInputFocus({ shouldSelect: true });
     }, [scheduleInputFocus]);
 
+    const activateArchivedTabMode = useCallback((): void => {
+        startTransition(() => {
+            setState({
+                mode: "archived-tab",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
+    const activateDeleteArchivedTabMode = useCallback((): void => {
+        startTransition(() => {
+            setState({
+                mode: "delete-archived-tab",
+                scope: "commands",
+                query: "",
+                activeResultIndex: 0,
+            });
+        });
+
+        scheduleInputFocus({ shouldSelect: true });
+    }, [scheduleInputFocus]);
+
     const activateIntellisensePriorityMode = useCallback((): void => {
         startTransition(() => {
             setState({
@@ -305,7 +331,9 @@ export function useAppCommandPalette({
         mode,
         scope,
         normalizedQuery,
+        onActivateArchivedTabMode: activateArchivedTabMode,
         onActivateAttachMode: activateAttachMode,
+        onActivateDeleteArchivedTabMode: activateDeleteArchivedTabMode,
         onActivateGoToLineMode: activateGoToLineMode,
         onActivateIntellisensePriorityMode: activateIntellisensePriorityMode,
         onActivateSymbolMode: activateSymbolMode,
@@ -329,7 +357,9 @@ export function useAppCommandPalette({
         function handleCaptureEscape(event: globalThis.KeyboardEvent): void {
             if (
                 event.key === "Escape" &&
-                (mode === "attach" ||
+                (mode === "archived-tab" ||
+                    mode === "attach" ||
+                    mode === "delete-archived-tab" ||
                     mode === "goto-line" ||
                     mode === "intellisense-priority" ||
                     mode === "symbol" ||
@@ -514,7 +544,9 @@ export function useAppCommandPalette({
                 event.preventDefault();
 
                 if (
+                    mode === "archived-tab" ||
                     mode === "attach" ||
+                    mode === "delete-archived-tab" ||
                     mode === "goto-line" ||
                     mode === "intellisense-priority" ||
                     mode === "symbol" ||

@@ -6,7 +6,9 @@ import type {
     GetAppCommandPaletteResultsOptions,
 } from "./commandPalette.type";
 import {
+    getArchivedTabCommandPaletteItems,
     getAttachCommandPaletteItems,
+    getDeleteArchivedTabCommandPaletteItems,
     getGoToLineCommandPaletteItems,
     getIntellisensePriorityCommandPaletteItems,
     getSymbolCommandPaletteItems,
@@ -150,17 +152,41 @@ export function getAppCommandPaletteResults({
     mode,
     scope,
     normalizedQuery,
+    onActivateArchivedTabMode,
     onActivateAttachMode,
+    onActivateDeleteArchivedTabMode,
     onActivateGoToLineMode,
     onActivateIntellisensePriorityMode,
     onActivateSymbolMode,
     onActivateTabSizeMode,
     onActivateThemeMode,
 }: GetAppCommandPaletteResultsOptions) {
+    if (mode === "archived-tab") {
+        return searchAppCommandPaletteItems(
+            getArchivedTabCommandPaletteItems({
+                workspaceSession,
+                onOpenWorkspaceScreen,
+            }),
+            normalizedQuery,
+            APP_COMMAND_PALETTE_MAX_RESULTS,
+        );
+    }
+
     if (mode === "attach") {
         return searchAppCommandPaletteItems(
             getAttachCommandPaletteItems({
                 workspaceExecutor,
+                onOpenWorkspaceScreen,
+            }),
+            normalizedQuery,
+            APP_COMMAND_PALETTE_MAX_RESULTS,
+        );
+    }
+
+    if (mode === "delete-archived-tab") {
+        return searchAppCommandPaletteItems(
+            getDeleteArchivedTabCommandPaletteItems({
+                workspaceSession,
                 onOpenWorkspaceScreen,
             }),
             normalizedQuery,
@@ -219,7 +245,9 @@ export function getAppCommandPaletteResults({
                 sidebarPosition,
                 editorSettings,
                 hotkeyLabels: getAppCommandPaletteHotkeyLabels(hotkeyBindings),
+                onActivateArchivedTabMode,
                 onActivateAttachMode,
+                onActivateDeleteArchivedTabMode,
                 onActivateGoToLineMode,
                 onActivateIntellisensePriorityMode,
                 onActivateSymbolMode,

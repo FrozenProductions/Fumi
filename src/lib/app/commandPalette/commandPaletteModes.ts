@@ -1,4 +1,4 @@
-import { CommandIcon } from "@hugeicons/core-free-icons";
+import { CommandIcon, FileCodeIcon } from "@hugeicons/core-free-icons";
 import {
     APP_EDITOR_TAB_SIZE_OPTIONS,
     APP_INTELLISENSE_PRIORITY_OPTIONS,
@@ -9,7 +9,9 @@ import { scanLuauFileAnalysis } from "../../luau/symbolScanner/symbolScanner";
 import { getLiveWorkspaceEditorContent } from "../../workspace/editor/liveWorkspaceEditorContent";
 import { getWorkspaceLineNumberFromOffset } from "../../workspace/outline/outline";
 import type {
+    GetArchivedTabCommandPaletteItemsOptions,
     GetAttachCommandPaletteItemsOptions,
+    GetDeleteArchivedTabCommandPaletteItemsOptions,
     GetGoToLineCommandPaletteItemsOptions,
     GetIntellisensePriorityCommandPaletteItemsOptions,
     GetSymbolCommandPaletteItemsOptions,
@@ -103,6 +105,104 @@ export function getAttachCommandPaletteItems({
         onSelect: () => {
             onOpenWorkspaceScreen();
             void attachToPort(summary.port);
+        },
+    }));
+}
+
+/** Builds command palette items for restoring archived workspace tabs. */
+export function getArchivedTabCommandPaletteItems({
+    workspaceSession,
+    onOpenWorkspaceScreen,
+}: GetArchivedTabCommandPaletteItemsOptions): AppCommandPaletteItem[] {
+    const { workspace } = workspaceSession.state;
+    const { restoreArchivedWorkspaceTab } = workspaceSession.archiveActions;
+
+    if (!workspace) {
+        return [
+            {
+                id: "command-restore-archived-tab-no-workspace",
+                label: "No workspace open",
+                description: "Open a workspace before restoring archived tabs.",
+                icon: CommandIcon,
+                keywords: "restore archived tab unavailable workspace",
+                isDisabled: true,
+                onSelect: () => {},
+            },
+        ];
+    }
+
+    if (workspace.archivedTabs.length === 0) {
+        return [
+            {
+                id: "command-restore-archived-tab-empty",
+                label: "No archived tabs",
+                description: "Archive a tab before restoring it here.",
+                icon: CommandIcon,
+                keywords: `restore archived tab empty ${workspace.workspaceName}`,
+                isDisabled: true,
+                onSelect: () => {},
+            },
+        ];
+    }
+
+    return workspace.archivedTabs.map((tab) => ({
+        id: `command-restore-archived-tab-${tab.id}`,
+        label: tab.fileName,
+        description: "Restore this tab to the current workspace.",
+        icon: FileCodeIcon,
+        keywords: `restore archived tab file ${tab.fileName} ${workspace.workspaceName}`,
+        onSelect: () => {
+            onOpenWorkspaceScreen();
+            void restoreArchivedWorkspaceTab(tab.id);
+        },
+    }));
+}
+
+/** Builds command palette items for deleting archived workspace tabs. */
+export function getDeleteArchivedTabCommandPaletteItems({
+    workspaceSession,
+    onOpenWorkspaceScreen,
+}: GetDeleteArchivedTabCommandPaletteItemsOptions): AppCommandPaletteItem[] {
+    const { workspace } = workspaceSession.state;
+    const { deleteArchivedWorkspaceTab } = workspaceSession.archiveActions;
+
+    if (!workspace) {
+        return [
+            {
+                id: "command-delete-archived-tab-no-workspace",
+                label: "No workspace open",
+                description: "Open a workspace before deleting archived tabs.",
+                icon: CommandIcon,
+                keywords: "delete archived tab unavailable workspace",
+                isDisabled: true,
+                onSelect: () => {},
+            },
+        ];
+    }
+
+    if (workspace.archivedTabs.length === 0) {
+        return [
+            {
+                id: "command-delete-archived-tab-empty",
+                label: "No archived tabs",
+                description: "Archive a tab before deleting it here.",
+                icon: CommandIcon,
+                keywords: `delete archived tab empty ${workspace.workspaceName}`,
+                isDisabled: true,
+                onSelect: () => {},
+            },
+        ];
+    }
+
+    return workspace.archivedTabs.map((tab) => ({
+        id: `command-delete-archived-tab-${tab.id}`,
+        label: tab.fileName,
+        description: "Permanently delete this archived tab.",
+        icon: FileCodeIcon,
+        keywords: `delete archived tab file remove permanent ${tab.fileName} ${workspace.workspaceName}`,
+        onSelect: () => {
+            onOpenWorkspaceScreen();
+            void deleteArchivedWorkspaceTab(tab.id);
         },
     }));
 }

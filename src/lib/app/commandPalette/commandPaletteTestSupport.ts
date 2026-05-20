@@ -179,6 +179,8 @@ export function createCommandPaletteOptions(
             toggleSidebarPosition: "",
         },
         editorSettings: DEFAULT_APP_EDITOR_SETTINGS,
+        onActivateArchivedTabMode: vi.fn(),
+        onActivateDeleteArchivedTabMode: vi.fn(),
         onActivateGoToLineMode: vi.fn(),
         onActivateAttachMode: vi.fn(),
         onActivateIntellisensePriorityMode: vi.fn(),

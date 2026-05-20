@@ -2,7 +2,9 @@ import type { IconSvgElement } from "@hugeicons/react";
 
 export type AppCommandPaletteScope = "tabs" | "commands" | "workspaces";
 export type AppCommandPaletteMode =
+    | "archived-tab"
     | "attach"
+    | "delete-archived-tab"
     | "goto-line"
     | "intellisense-priority"
     | "symbol"
