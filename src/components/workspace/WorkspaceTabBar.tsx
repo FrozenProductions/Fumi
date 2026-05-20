@@ -57,10 +57,9 @@ export function WorkspaceTabBar({
     } = renameState;
 
     const isSplit = splitView !== null;
-    const controlsClearanceClass = isSplit ? "pr-32" : "pr-24";
+    const controlsClearanceClass = isSplit ? "mr-32" : "mr-24";
     const singlePaneTabsClassName = joinClassNames(
         "min-w-0 flex items-center gap-2 px-2 py-1.5 overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        controlsClearanceClass,
     );
     const tabListButtonClassName = joinClassNames(
         "app-select-none inline-flex size-7 items-center justify-center rounded-md border text-fumi-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fumi-600 focus-visible:ring-offset-1 focus-visible:ring-offset-fumi-100",
@@ -149,7 +148,7 @@ export function WorkspaceTabBar({
                     ref={tabListContainerRef}
                     role="tablist"
                     aria-label="Workspace files"
-                    className="min-w-0 flex-1 overflow-hidden"
+                    className={`min-w-0 flex-1 overflow-hidden ${controlsClearanceClass}`}
                 >
                     <WorkspaceTabBarTabs layout={tabsLayout} items={tabItems} />
                 </div>
