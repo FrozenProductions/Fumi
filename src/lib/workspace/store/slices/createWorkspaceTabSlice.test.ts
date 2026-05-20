@@ -481,20 +481,18 @@ describe("createWorkspaceTabSlice", () => {
             "../../../platform/workspace/workspace"
         );
 
-        vi.mocked(workspaceCommands.createWorkspaceFile).mockResolvedValueOnce(
-            {
-                id: "tab-5",
-                fileName: "tab-5.lua",
-                content: "print(\"tab-5\")",
-                isDirty: false,
-                isPinned: false,
-                cursor: {
-                    line: 0,
-                    column: 0,
-                    scrollTop: 0,
-                },
+        vi.mocked(workspaceCommands.createWorkspaceFile).mockResolvedValueOnce({
+            id: "tab-5",
+            fileName: "tab-5.lua",
+            content: 'print("tab-5")',
+            isDirty: false,
+            isPinned: false,
+            cursor: {
+                line: 0,
+                column: 0,
+                scrollTop: 0,
             },
-        );
+        });
 
         await store.getState().addWorkspaceScriptTab("tab-5.lua", "");
 
