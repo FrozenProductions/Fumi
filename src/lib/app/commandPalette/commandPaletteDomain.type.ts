@@ -26,7 +26,13 @@ export type AppCommandPaletteItem = {
 
 export type AppGoToLineRequest = {
     lineNumber: number;
+    column?: number;
     requestId: number;
+};
+
+export type ParsedGoToLineResult = {
+    line: number;
+    column: number | null;
 };
 
 export type AppRenameCurrentTabRequest = {

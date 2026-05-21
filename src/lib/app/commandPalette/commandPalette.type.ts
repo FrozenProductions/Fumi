@@ -15,6 +15,7 @@ import type {
     AppCommandPaletteMode,
     AppCommandPaletteScope,
     AppCommandPaletteViewMode,
+    ParsedGoToLineResult,
 } from "./commandPaletteDomain.type";
 
 export type GetCommandPaletteCommandItemsOptions = {
@@ -71,7 +72,7 @@ export type AppCommandPaletteControllerOptions = {
     sidebarPosition: AppSidebarPosition;
     editorSettings: AppEditorSettings;
     onClose: () => void;
-    onGoToLine: (lineNumber: number) => void;
+    onGoToLine: (line: number, column?: number) => void;
     onOpenWorkspaceScreen: () => void;
     onOpenAutomaticExecution: () => void;
     onOpenScriptLibrary: () => void;
@@ -194,7 +195,7 @@ export type GetAppCommandPaletteResultsOptions = Pick<
 > & {
     hotkeyBindings: AppHotkeyBindings;
     activeTab: WorkspaceTab | null;
-    goToLineNumber: number | null;
+    goToLineTarget: ParsedGoToLineResult | null;
     mode: AppCommandPaletteViewMode;
     scope: AppCommandPaletteScope;
     normalizedQuery: string;
@@ -210,8 +211,8 @@ export type GetAppCommandPaletteResultsOptions = Pick<
 
 export type GetGoToLineCommandPaletteItemsOptions = {
     activeTab: WorkspaceTab | null;
-    goToLineNumber: number | null;
-    onGoToLine: (lineNumber: number) => void;
+    goToLineTarget: ParsedGoToLineResult | null;
+    onGoToLine: (line: number, column?: number) => void;
 };
 
 export type GetAttachCommandPaletteItemsOptions = {
@@ -246,7 +247,7 @@ export type GetTabSizeCommandPaletteItemsOptions = {
 
 export type GetSymbolCommandPaletteItemsOptions = {
     activeTab: WorkspaceTab | null;
-    onGoToLine: (lineNumber: number) => void;
+    onGoToLine: (line: number, column?: number) => void;
     onOpenWorkspaceScreen: () => void;
 };
 

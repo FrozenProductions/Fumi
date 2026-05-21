@@ -254,7 +254,7 @@ export function useWorkspaceCodeCompletion({
     });
 
     const goToLine = useCallback(
-        (lineNumber: number): boolean => {
+        (lineNumber: number, column?: number): boolean => {
             const editor = getActiveEditor();
 
             if (!editor || !Number.isInteger(lineNumber) || lineNumber < 1) {
@@ -264,7 +264,7 @@ export function useWorkspaceCodeCompletion({
             const lastLineNumber = Math.max(editor.session.getLength(), 1);
             const targetLineNumber = Math.min(lineNumber, lastLineNumber);
 
-            editor.gotoLine(targetLineNumber, 0, true);
+            editor.gotoLine(targetLineNumber, column ?? 0, true);
             editor.clearSelection();
             editor.focus();
             closeCompletionPopup();

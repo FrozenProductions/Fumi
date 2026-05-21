@@ -183,7 +183,8 @@ export function useAppShellController(): UseAppShellControllerResult {
     } as const;
     const commandPaletteActions = {
         onClose: closeCommandPalette,
-        onGoToLine: requestGoToLine,
+        onGoToLine: (line: number, column?: number) =>
+            requestGoToLine(line, column),
         onOpenWorkspaceScreen: handleOpenWorkspaceScreen,
         onOpenAutomaticExecution: handleOpenAutomaticExecution,
         onOpenScriptLibrary: handleOpenScriptLibrary,

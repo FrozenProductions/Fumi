@@ -20,36 +20,46 @@ import type {
 } from "./commandPalette.type";
 import type { AppCommandPaletteItem } from "./commandPaletteDomain.type";
 
-/** Builds a command palette item that navigates to a specific line in the active tab. */
+/** Builds a command palette item that navigates to a specific line (and optional column) in the active tab. */
 export function getGoToLineCommandPaletteItems({
     activeTab,
-    goToLineNumber,
+    goToLineTarget,
     onGoToLine,
 }: GetGoToLineCommandPaletteItemsOptions): AppCommandPaletteItem[] {
     if (!activeTab) {
         return [];
     }
 
+    const labelSuffix =
+        goToLineTarget === null
+            ? ""
+            : goToLineTarget.column !== null
+              ? ` ${goToLineTarget.line}:${goToLineTarget.column}`
+              : ` ${goToLineTarget.line}`;
+
     return [
         {
             id: "command-goto-line",
             label:
-                goToLineNumber === null
+                goToLineTarget === null
                     ? "Go to line"
-                    : `Go to line ${goToLineNumber}`,
+                    : `Go to line${labelSuffix}`,
             description:
-                goToLineNumber === null
+                goToLineTarget === null
                     ? `Type a line number for ${activeTab.fileName}.`
                     : `Jump within ${activeTab.fileName}.`,
             icon: CommandIcon,
             keywords: `goto go to jump line ${activeTab.fileName}`,
-            isDisabled: goToLineNumber === null,
+            isDisabled: goToLineTarget === null,
             onSelect: () => {
-                if (goToLineNumber === null) {
+                if (goToLineTarget === null) {
                     return;
                 }
 
-                onGoToLine(goToLineNumber);
+                onGoToLine(
+                    goToLineTarget.line,
+                    goToLineTarget.column ?? undefined,
+                );
             },
         },
     ];

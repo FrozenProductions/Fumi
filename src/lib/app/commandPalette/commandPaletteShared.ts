@@ -1,6 +1,7 @@
 import { confirmAction } from "../../platform/core/dialog";
 import { killRobloxProcesses } from "../../platform/roblox/accounts";
 import { getErrorMessage } from "../../shared/errorMessage";
+import type { ParsedGoToLineResult } from "./commandPaletteDomain.type";
 
 /** Runs an async command palette action without allowing rejected promises to escape. */
 export function runCommandPaletteAsyncAction(
@@ -13,13 +14,13 @@ export function runCommandPaletteAsyncAction(
 }
 
 /**
- * Parses a go-to-line query string into a line number.
+ * Parses a go-to-line query string into a line number and optional column.
  *
  * @remarks
- * Accepts formats like "42", ":42", "line 42", "go to line 42".
+ * Accepts formats like "42", ":42", "line 42", "go to line 42:10".
  * Returns null for empty or invalid input.
  */
-export function parseGoToLineQuery(value: string): number | null {
+export function parseGoToLineQuery(value: string): ParsedGoToLineResult | null {
     const trimmedValue = value.trim();
 
     if (!trimmedValue) {
@@ -27,7 +28,7 @@ export function parseGoToLineQuery(value: string): number | null {
     }
 
     const match = trimmedValue.match(
-        /^(?::|line\s+|go\s+to\s+line\s+)?(\d+)(?::\d+)?$/i,
+        /^(?::|line\s+|go\s+to\s+line\s+)?(\d+)(?::(\d+))?$/i,
     );
 
     if (!match) {
@@ -36,7 +37,15 @@ export function parseGoToLineQuery(value: string): number | null {
 
     const lineNumber = Number.parseInt(match[1], 10);
 
-    return Number.isInteger(lineNumber) && lineNumber > 0 ? lineNumber : null;
+    if (!Number.isInteger(lineNumber) || lineNumber < 1) {
+        return null;
+    }
+
+    const columnRaw = match[2];
+    const column =
+        columnRaw !== undefined ? Number.parseInt(columnRaw, 10) : null;
+
+    return { line: lineNumber, column };
 }
 
 /** Prompts the user to confirm and then kills running Roblox processes. */

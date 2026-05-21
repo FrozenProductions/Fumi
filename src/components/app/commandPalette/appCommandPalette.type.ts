@@ -35,7 +35,7 @@ export type AppCommandPaletteContextProps = {
 
 export type AppCommandPaletteActionProps = {
     onClose: () => void;
-    onGoToLine: (lineNumber: number) => void;
+    onGoToLine: (line: number, column?: number) => void;
     onOpenWorkspaceScreen: () => void;
     onOpenAutomaticExecution: () => void;
     onOpenScriptLibrary: () => void;

@@ -114,7 +114,7 @@ export function useAppCommandPalette({
     const hotkeyBindings = useAppStore((state) => state.hotkeyBindings);
     const { activeTab } = workspaceSession.state;
     const currentLineNumber = activeTab ? activeTab.cursor.line + 1 : null;
-    const goToLineNumber =
+    const goToLineTarget =
         mode === "goto-line" ? parseGoToLineQuery(query) : null;
 
     isOpenRef.current = isOpen;
@@ -327,7 +327,7 @@ export function useAppCommandPalette({
         onSetEditorWordWrapEnabled,
         hotkeyBindings,
         activeTab,
-        goToLineNumber,
+        goToLineTarget,
         mode,
         scope,
         normalizedQuery,
@@ -530,8 +530,11 @@ export function useAppCommandPalette({
                 if (mode === "goto-line") {
                     event.preventDefault();
 
-                    if (goToLineNumber !== null) {
-                        onGoToLine(goToLineNumber);
+                    if (goToLineTarget !== null) {
+                        onGoToLine(
+                            goToLineTarget.line,
+                            goToLineTarget.column ?? undefined,
+                        );
                         onClose();
                     }
 
@@ -577,7 +580,7 @@ export function useAppCommandPalette({
         [
             clampedActiveResultIndex,
             commitSelection,
-            goToLineNumber,
+            goToLineTarget,
             mode,
             onClose,
             onGoToLine,

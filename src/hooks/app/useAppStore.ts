@@ -92,7 +92,7 @@ export const useAppStore = create<AppStore>()(
                     };
                 });
             },
-            requestGoToLine: (lineNumber) => {
+            requestGoToLine: (lineNumber, column) => {
                 if (!Number.isInteger(lineNumber) || lineNumber < 1) {
                     return;
                 }
@@ -104,6 +104,7 @@ export const useAppStore = create<AppStore>()(
                     return {
                         goToLineRequest: {
                             lineNumber,
+                            column,
                             requestId: nextGoToLineRequestId,
                         },
                         nextGoToLineRequestId,

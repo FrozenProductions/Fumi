@@ -1,21 +1,6 @@
-import type { RefObject } from "react";
 import { useEffect } from "react";
-import type { AceEditorInstance } from "../../../lib/workspace/codeCompletion/ace.type";
-import type { WorkspaceTab } from "../../../lib/workspace/session/tabs/sessionTabs.type";
 import { useAppStore } from "../../app/useAppStore";
-import type { StoredAceSessionState } from "./useWorkspaceCodeCompletionLifecycle.type";
-
-type UseWorkspaceCodeCompletionLifecycleOptions = {
-    activeTabId: string | null;
-    closeCompletionPopup: () => void;
-    cursorListenerCleanupByTabIdRef: RefObject<Map<string, () => void>>;
-    editorByTabIdRef: RefObject<Map<string, AceEditorInstance>>;
-    getActiveEditor: () => AceEditorInstance | null;
-    goToLine: (lineNumber: number) => boolean;
-    saveActiveWorkspaceTab: () => Promise<void>;
-    sessionStateByTabIdRef: RefObject<Map<string, StoredAceSessionState>>;
-    tabs: readonly WorkspaceTab[];
-};
+import type { UseWorkspaceCodeCompletionLifecycleOptions } from "./useWorkspaceCodeCompletionLifecycle.type";
 
 /**
  * Manages editor lifecycle concerns: save shortcut, tab switching, go-to-line, and orphaned editor cleanup.
@@ -98,7 +83,7 @@ export function useWorkspaceCodeCompletionLifecycle({
             return;
         }
 
-        if (goToLine(goToLineRequest.lineNumber)) {
+        if (goToLine(goToLineRequest.lineNumber, goToLineRequest.column)) {
             clearGoToLineRequest();
         }
     }, [activeTabId, clearGoToLineRequest, goToLine, goToLineRequest]);

@@ -148,7 +148,7 @@ export function getAppCommandPaletteResults({
     onSetEditorWordWrapEnabled,
     hotkeyBindings,
     activeTab,
-    goToLineNumber,
+    goToLineTarget,
     mode,
     scope,
     normalizedQuery,
@@ -197,7 +197,7 @@ export function getAppCommandPaletteResults({
     if (mode === "goto-line") {
         return getGoToLineCommandPaletteItems({
             activeTab,
-            goToLineNumber,
+            goToLineTarget,
             onGoToLine,
         });
     }

@@ -418,7 +418,7 @@ describe("getCommandCommandPaletteItems", () => {
         const items = getAppCommandPaletteResults({
             ...options,
             activeTab: null,
-            goToLineNumber: null,
+            goToLineTarget: null,
             hotkeyBindings: {},
             mode: "tab-size",
             normalizedQuery: "",
@@ -452,7 +452,7 @@ describe("getCommandCommandPaletteItems", () => {
         const items = getAppCommandPaletteResults({
             ...options,
             activeTab: null,
-            goToLineNumber: null,
+            goToLineTarget: null,
             hotkeyBindings: {},
             mode: "intellisense-priority",
             normalizedQuery: "",
@@ -653,7 +653,7 @@ describe("getCommandCommandPaletteItems", () => {
         const items = getAppCommandPaletteResults({
             ...options,
             activeTab: null,
-            goToLineNumber: null,
+            goToLineTarget: null,
             hotkeyBindings: {},
             mode: "attach",
             normalizedQuery: "5553",
@@ -687,7 +687,7 @@ describe("getCommandCommandPaletteItems", () => {
         const items = getAppCommandPaletteResults({
             ...options,
             activeTab,
-            goToLineNumber: null,
+            goToLineTarget: null,
             hotkeyBindings: {},
             mode: "symbol",
             normalizedQuery: "beta",
