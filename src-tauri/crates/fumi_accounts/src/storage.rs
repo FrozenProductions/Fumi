@@ -14,14 +14,14 @@ use anyhow::{anyhow, Context, Result};
 use serde_json::Value;
 use uuid::Uuid;
 
-use fumi_executor_core::{ExecutorKind, ExecutorPortPool, ExecutorPortSummary};
 #[cfg(test)]
 use fumi_executor_core as executor;
+use fumi_executor_core::{ExecutorKind, ExecutorPortPool, ExecutorPortSummary};
 use fumi_metadata::{
     backup::{create_backup, join_backup_path},
     current_unix_timestamp,
     io::{atomic_write_json, read_json_value},
-    schema::validate_instance,
+    schema::{parse_metadata_document, validate_metadata_header},
     MetadataError, MetadataHeader, MetadataKind, ACCOUNTS_METADATA_VERSION,
 };
 
@@ -298,7 +298,8 @@ pub async fn get_live_roblox_account(
     let Some(cookie_value) = read_roblosecurity_cookie_value(&live_cookie_path)? else {
         return Ok(None);
     };
-    let resolved_account = super::roblox::resolve_account_from_cookie(user_agent, &cookie_value).await?;
+    let resolved_account =
+        super::roblox::resolve_account_from_cookie(user_agent, &cookie_value).await?;
 
     Ok(Some(resolved_account.into_identity()))
 }
@@ -676,6 +677,14 @@ fn accounts_manifest_matches_document(
     document.accounts == manifest.accounts && document.roblox_bindings == manifest.roblox_bindings
 }
 
+fn validate_current_accounts_document(document: &PersistedAccountsDocumentV3) -> Result<()> {
+    validate_metadata_header(
+        &document.header,
+        MetadataKind::Accounts,
+        ACCOUNTS_METADATA_VERSION,
+    )
+}
+
 fn current_accounts_document_from_manifest(
     manifest: StoredAccountsManifest,
     existing_document: Option<&PersistedAccountsDocumentV3>,
@@ -732,10 +741,7 @@ fn write_accounts_document(
     document: &PersistedAccountsDocumentV3,
     existing_version: Option<u8>,
 ) -> Result<bool> {
-    validate_instance(
-        MetadataKind::Accounts,
-        &serde_json::to_value(document).context("failed to serialize accounts metadata")?,
-    )?;
+    validate_current_accounts_document(document)?;
 
     let mut created_backup = false;
     if let Some(version) = existing_version.filter(|version| *version != ACCOUNTS_METADATA_VERSION)
@@ -769,8 +775,10 @@ fn sync_accounts_manifest(
 
             match version {
                 1 => {
-                    let legacy_manifest =
-                        serde_json::from_value::<PersistedAccountsDocumentV1>(raw_value)?;
+                    let legacy_manifest = parse_metadata_document::<PersistedAccountsDocumentV1>(
+                        MetadataKind::Accounts,
+                        raw_value,
+                    )?;
                     let migrated_manifest = migrate_accounts_manifest(
                         legacy_manifest.clone(),
                         &sorted_processes,
@@ -791,8 +799,10 @@ fn sync_accounts_manifest(
                     (migrated_manifest, Some(current_document), Some(1), true)
                 }
                 2 => {
-                    let persisted_manifest =
-                        serde_json::from_value::<PersistedAccountsDocumentV2>(raw_value)?;
+                    let persisted_manifest = parse_metadata_document::<PersistedAccountsDocumentV2>(
+                        MetadataKind::Accounts,
+                        raw_value,
+                    )?;
                     let manifest = StoredAccountsManifest {
                         version: ACCOUNTS_MANIFEST_VERSION,
                         accounts: persisted_manifest.accounts,
@@ -813,9 +823,11 @@ fn sync_accounts_manifest(
                     (manifest, Some(current_document), Some(2), true)
                 }
                 ACCOUNTS_METADATA_VERSION => {
-                    let persisted_manifest =
-                        serde_json::from_value::<PersistedAccountsDocumentV3>(raw_value.clone())?;
-                    validate_instance(MetadataKind::Accounts, &raw_value)?;
+                    let persisted_manifest = parse_metadata_document::<PersistedAccountsDocumentV3>(
+                        MetadataKind::Accounts,
+                        raw_value.clone(),
+                    )?;
+                    validate_current_accounts_document(&persisted_manifest)?;
                     let manifest = persisted_manifest.clone().into_runtime();
 
                     (
@@ -1189,9 +1201,12 @@ fn write_accounts_manifest(accounts_root: &Path, manifest: &StoredAccountsManife
         .map(detect_accounts_manifest_version)
         .transpose()?;
     let existing_document = match existing_value {
-        Some(raw_value) if existing_version == Some(ACCOUNTS_METADATA_VERSION) => Some(
-            serde_json::from_value::<PersistedAccountsDocumentV3>(raw_value)?,
-        ),
+        Some(raw_value) if existing_version == Some(ACCOUNTS_METADATA_VERSION) => {
+            Some(parse_metadata_document::<PersistedAccountsDocumentV3>(
+                MetadataKind::Accounts,
+                raw_value,
+            )?)
+        }
         _ => None,
     };
     let document = current_accounts_document_from_manifest(

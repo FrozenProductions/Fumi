@@ -16,7 +16,7 @@ use fumi_metadata::{
     backup::{create_backup, join_backup_path},
     current_unix_timestamp,
     io::{atomic_write_json, ensure_file_parent_directory, read_json_file, read_json_value},
-    schema::validate_instance,
+    schema::{parse_metadata_document, validate_metadata_header},
     MetadataError, MetadataHeader, MetadataKind, MetadataReadResult, MigrationReport,
     CURRENT_WORKSPACE_METADATA_VERSION,
 };
@@ -25,8 +25,8 @@ use super::models::{
     PersistedWorkspaceDocumentV1, PersistedWorkspaceDocumentV2, PersistedWorkspaceDocumentV3,
     PersistedWorkspaceDocumentV4, PersistedWorkspaceDocumentV5, StoredAppState,
     StoredWorkspaceMetadata, WorkspaceCursorState, WorkspaceExecutionHistoryEntry,
-    WorkspaceMetadata, WorkspaceSnapshot, WorkspaceSplitView,
-    WorkspaceTabSnapshot, WorkspaceTabState, APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME,
+    WorkspaceMetadata, WorkspaceSnapshot, WorkspaceSplitView, WorkspaceTabSnapshot,
+    WorkspaceTabState, APP_STATE_FILE_NAME, DEFAULT_WORKSPACE_FILE_BASE_NAME,
     DEFAULT_WORKSPACE_FILE_EXTENSION, LEGACY_STATE_DIRECTORIES,
     MAX_WORKSPACE_EXECUTION_HISTORY_ENTRIES, MAX_WORKSPACE_TAB_NAME_LENGTH,
     WORKSPACE_METADATA_DIR_NAME, WORKSPACE_METADATA_FILE_NAME, WORKSPACE_METADATA_VERSION,
@@ -228,6 +228,14 @@ fn workspace_document_matches_runtime(
         && document.execution_history == metadata.execution_history
 }
 
+fn validate_current_workspace_document(document: &PersistedWorkspaceDocumentV5) -> Result<()> {
+    validate_metadata_header(
+        &document.header,
+        MetadataKind::Workspace,
+        CURRENT_WORKSPACE_METADATA_VERSION,
+    )
+}
+
 fn stored_workspace_from_v1(document: PersistedWorkspaceDocumentV1) -> StoredWorkspaceMetadata {
     StoredWorkspaceMetadata {
         version: document.version,
@@ -334,29 +342,43 @@ fn migrate_workspace_document(
 )> {
     let (stored_metadata, extra_fields, migrated_from_version) = match version {
         1 => {
-            let document = serde_json::from_value::<PersistedWorkspaceDocumentV1>(raw_value)?;
+            let document = parse_metadata_document::<PersistedWorkspaceDocumentV1>(
+                MetadataKind::Workspace,
+                raw_value,
+            )?;
             let extra_fields = document.extra_fields.clone();
             (stored_workspace_from_v1(document), extra_fields, Some(1))
         }
         2 => {
-            let document = serde_json::from_value::<PersistedWorkspaceDocumentV2>(raw_value)?;
+            let document = parse_metadata_document::<PersistedWorkspaceDocumentV2>(
+                MetadataKind::Workspace,
+                raw_value,
+            )?;
             let extra_fields = document.extra_fields.clone();
             (stored_workspace_from_v2(document), extra_fields, Some(2))
         }
         3 => {
-            let document = serde_json::from_value::<PersistedWorkspaceDocumentV3>(raw_value)?;
+            let document = parse_metadata_document::<PersistedWorkspaceDocumentV3>(
+                MetadataKind::Workspace,
+                raw_value,
+            )?;
             let extra_fields = document.extra_fields.clone();
             (stored_workspace_from_v3(document), extra_fields, Some(3))
         }
         4 => {
-            let document = serde_json::from_value::<PersistedWorkspaceDocumentV4>(raw_value)?;
+            let document = parse_metadata_document::<PersistedWorkspaceDocumentV4>(
+                MetadataKind::Workspace,
+                raw_value,
+            )?;
             let extra_fields = document.extra_fields.clone();
             (stored_workspace_from_v4(document), extra_fields, Some(4))
         }
         CURRENT_WORKSPACE_METADATA_VERSION => {
-            let document =
-                serde_json::from_value::<PersistedWorkspaceDocumentV5>(raw_value.clone())?;
-            validate_instance(MetadataKind::Workspace, &raw_value)?;
+            let document = parse_metadata_document::<PersistedWorkspaceDocumentV5>(
+                MetadataKind::Workspace,
+                raw_value.clone(),
+            )?;
+            validate_current_workspace_document(&document)?;
             let runtime_metadata = normalize_workspace_metadata(Some(
                 workspace_metadata_to_stored(document.clone().into_runtime()),
             ));
@@ -416,10 +438,7 @@ fn write_workspace_document(
     existing_version: Option<u8>,
     migration_report: &mut Option<MigrationReport>,
 ) -> Result<()> {
-    validate_instance(
-        MetadataKind::Workspace,
-        &serde_json::to_value(document).context("failed to serialize workspace metadata")?,
-    )?;
+    validate_current_workspace_document(document)?;
 
     if let Some(version) =
         existing_version.filter(|version| *version != CURRENT_WORKSPACE_METADATA_VERSION)
@@ -673,10 +692,7 @@ pub fn read_workspace_metadata(workspace_path: &Path) -> Result<WorkspaceMetadat
     Ok(read_workspace_metadata_impl(workspace_path, true)?.value)
 }
 
-pub fn write_workspace_metadata(
-    workspace_path: &Path,
-    metadata: &WorkspaceMetadata,
-) -> Result<()> {
+pub fn write_workspace_metadata(workspace_path: &Path, metadata: &WorkspaceMetadata) -> Result<()> {
     ensure_workspace_exists(workspace_path)?;
     let metadata_path = get_workspace_metadata_path(workspace_path);
     let timestamp = current_unix_timestamp()?;
@@ -686,9 +702,12 @@ pub fn write_workspace_metadata(
         .map(detect_workspace_metadata_version)
         .transpose()?;
     let existing_document = match existing_value {
-        Some(raw_value) if existing_version == Some(CURRENT_WORKSPACE_METADATA_VERSION) => Some(
-            serde_json::from_value::<PersistedWorkspaceDocumentV5>(raw_value)?,
-        ),
+        Some(raw_value) if existing_version == Some(CURRENT_WORKSPACE_METADATA_VERSION) => {
+            Some(parse_metadata_document::<PersistedWorkspaceDocumentV5>(
+                MetadataKind::Workspace,
+                raw_value,
+            )?)
+        }
         _ => None,
     };
     let document = current_workspace_document_from_runtime(
@@ -790,10 +809,7 @@ fn write_app_state(app_state_path: &Path, app_state: &StoredAppState) -> Result<
     atomic_write_json(app_state_path, app_state)
 }
 
-pub fn persist_workspace_launch_state(
-    app_state_path: &Path,
-    workspace_path: &Path,
-) -> Result<()> {
+pub fn persist_workspace_launch_state(app_state_path: &Path, workspace_path: &Path) -> Result<()> {
     write_app_state(
         app_state_path,
         &StoredAppState {

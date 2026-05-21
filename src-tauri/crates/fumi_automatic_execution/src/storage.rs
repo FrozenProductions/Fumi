@@ -14,7 +14,7 @@ use fumi_metadata::{
     backup::{create_backup, join_backup_path},
     current_unix_timestamp,
     io::{atomic_write_json, read_json_value},
-    schema::validate_instance,
+    schema::{parse_metadata_document, validate_metadata_header},
     MetadataError, MetadataHeader, MetadataKind, MetadataReadResult, MigrationReport,
     AUTOMATIC_EXECUTION_METADATA_VERSION,
 };
@@ -283,6 +283,16 @@ fn automatic_execution_document_matches_runtime(
     document.active_script_id == metadata.active_script_id && document.scripts == metadata.scripts
 }
 
+fn validate_current_automatic_execution_document(
+    document: &PersistedAutomaticExecutionDocumentV2,
+) -> Result<()> {
+    validate_metadata_header(
+        &document.header,
+        MetadataKind::AutomaticExecution,
+        AUTOMATIC_EXECUTION_METADATA_VERSION,
+    )
+}
+
 fn current_automatic_execution_document_from_runtime(
     metadata: AutomaticExecutionMetadata,
     existing_document: Option<&PersistedAutomaticExecutionDocumentV2>,
@@ -490,8 +500,10 @@ fn migrate_automatic_execution_document(
 
     match version {
         1 => {
-            let document =
-                serde_json::from_value::<PersistedAutomaticExecutionDocumentV1>(raw_value)?;
+            let document = parse_metadata_document::<PersistedAutomaticExecutionDocumentV1>(
+                MetadataKind::AutomaticExecution,
+                raw_value,
+            )?;
             let normalized_metadata = normalize_automatic_execution_metadata(
                 Some(StoredAutomaticExecutionMetadata {
                     version: document.version,
@@ -525,9 +537,11 @@ fn migrate_automatic_execution_document(
             ))
         }
         AUTOMATIC_EXECUTION_METADATA_VERSION => {
-            let document =
-                serde_json::from_value::<PersistedAutomaticExecutionDocumentV2>(raw_value.clone())?;
-            validate_instance(MetadataKind::AutomaticExecution, &raw_value)?;
+            let document = parse_metadata_document::<PersistedAutomaticExecutionDocumentV2>(
+                MetadataKind::AutomaticExecution,
+                raw_value.clone(),
+            )?;
+            validate_current_automatic_execution_document(&document)?;
             let runtime_metadata = normalize_automatic_execution_metadata(
                 Some(StoredAutomaticExecutionMetadata {
                     version: document.header.version,
@@ -569,11 +583,7 @@ fn write_automatic_execution_document(
     existing_version: Option<u8>,
     migration_report: &mut Option<MigrationReport>,
 ) -> Result<()> {
-    validate_instance(
-        MetadataKind::AutomaticExecution,
-        &serde_json::to_value(document)
-            .context("failed to serialize automatic execution metadata")?,
-    )?;
+    validate_current_automatic_execution_document(document)?;
 
     if let Some(version) =
         existing_version.filter(|version| *version != AUTOMATIC_EXECUTION_METADATA_VERSION)
@@ -665,9 +675,9 @@ pub fn write_automatic_execution_metadata(
         .transpose()?;
     let existing_document = match existing_value {
         Some(raw_value) if existing_version == Some(AUTOMATIC_EXECUTION_METADATA_VERSION) => {
-            Some(serde_json::from_value::<
+            Some(parse_metadata_document::<
                 PersistedAutomaticExecutionDocumentV2,
-            >(raw_value)?)
+            >(MetadataKind::AutomaticExecution, raw_value)?)
         }
         _ => None,
     };
@@ -1219,5 +1229,116 @@ mod tests {
         assert!(cleaned_metadata.scripts.is_empty());
         assert!(cleaned_metadata.active_script_id.is_none());
         Ok(())
+    }
+
+    fn automatic_execution_document_value(version: u8) -> serde_json::Value {
+        match version {
+            1 => serde_json::json!({
+                "version": 1,
+                "activeScriptId": null,
+                "scripts": []
+            }),
+            AUTOMATIC_EXECUTION_METADATA_VERSION => serde_json::json!({
+                "$schema": fumi_metadata::metadata_schema_id(
+                    MetadataKind::AutomaticExecution,
+                    AUTOMATIC_EXECUTION_METADATA_VERSION
+                ),
+                "kind": "automatic_execution",
+                "version": AUTOMATIC_EXECUTION_METADATA_VERSION,
+                "createdAt": 1,
+                "updatedAt": 1,
+                "writtenByAppVersion": "test",
+                "activeScriptId": null,
+                "scripts": []
+            }),
+            _ => unreachable!("unsupported test version"),
+        }
+    }
+
+    fn assert_schema_validation_error(error: anyhow::Error, expected_kind: MetadataKind) {
+        let metadata_error = error
+            .downcast_ref::<MetadataError>()
+            .expect("error should be a metadata error");
+        assert!(matches!(
+            metadata_error,
+            MetadataError::SchemaValidation { kind, .. } if *kind == expected_kind
+        ));
+    }
+
+    #[test]
+    fn migrate_automatic_execution_document_accepts_supported_versions() -> anyhow::Result<()> {
+        let on_disk_file_names = Vec::new();
+
+        for version in [1, AUTOMATIC_EXECUTION_METADATA_VERSION] {
+            let document_value = automatic_execution_document_value(version);
+            let (document, metadata, should_write, migration_report) =
+                migrate_automatic_execution_document(document_value, &on_disk_file_names, 10)?;
+
+            assert_eq!(document.header.kind, MetadataKind::AutomaticExecution);
+            assert_eq!(
+                document.header.version,
+                AUTOMATIC_EXECUTION_METADATA_VERSION
+            );
+            assert_eq!(metadata.version, AUTOMATIC_EXECUTION_METADATA_VERSION);
+            assert_eq!(
+                should_write,
+                version != AUTOMATIC_EXECUTION_METADATA_VERSION
+            );
+            assert_eq!(
+                migration_report.as_ref().map(|report| report.from_version),
+                (version != AUTOMATIC_EXECUTION_METADATA_VERSION).then_some(version)
+            );
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn migrate_automatic_execution_document_rejects_invalid_envelopes() {
+        let on_disk_file_names = Vec::new();
+        let mut mismatched_kind =
+            automatic_execution_document_value(AUTOMATIC_EXECUTION_METADATA_VERSION);
+        mismatched_kind["kind"] = serde_json::json!("workspace");
+        let error = migrate_automatic_execution_document(mismatched_kind, &on_disk_file_names, 10)
+            .expect_err("kind mismatch should fail");
+        assert_schema_validation_error(error, MetadataKind::AutomaticExecution);
+
+        let mut bad_discriminant =
+            automatic_execution_document_value(AUTOMATIC_EXECUTION_METADATA_VERSION);
+        bad_discriminant["kind"] = serde_json::json!("unknown");
+        let error = migrate_automatic_execution_document(bad_discriminant, &on_disk_file_names, 10)
+            .expect_err("bad kind discriminant should fail");
+        assert_schema_validation_error(error, MetadataKind::AutomaticExecution);
+
+        let mut missing_required =
+            automatic_execution_document_value(AUTOMATIC_EXECUTION_METADATA_VERSION);
+        missing_required
+            .as_object_mut()
+            .expect("test document should be an object")
+            .remove("scripts");
+        let error = migrate_automatic_execution_document(missing_required, &on_disk_file_names, 10)
+            .expect_err("missing required payload field should fail");
+        assert_schema_validation_error(error, MetadataKind::AutomaticExecution);
+    }
+
+    #[test]
+    fn migrate_automatic_execution_document_rejects_unknown_versions() {
+        let on_disk_file_names = Vec::new();
+        let error = migrate_automatic_execution_document(
+            serde_json::json!({ "version": 99 }),
+            &on_disk_file_names,
+            10,
+        )
+        .expect_err("unknown version should fail");
+        let metadata_error = error
+            .downcast_ref::<MetadataError>()
+            .expect("error should be a metadata error");
+        assert!(matches!(
+            metadata_error,
+            MetadataError::UnsupportedVersion {
+                kind: MetadataKind::AutomaticExecution,
+                version: 99
+            }
+        ));
     }
 }

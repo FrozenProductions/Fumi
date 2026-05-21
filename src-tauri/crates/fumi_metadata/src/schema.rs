@@ -1,37 +1,94 @@
-//! JSON schema validation for metadata documents.
+//! Metadata schema export helpers and focused persisted document validators.
 
-use std::sync::OnceLock;
-
-use anyhow::{anyhow, Context, Result};
-use jsonschema::Validator;
+use anyhow::{anyhow, Result};
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use super::{error::MetadataError, registry::MetadataKind};
+use super::{
+    error::MetadataError,
+    registry::{metadata_schema_id, MetadataHeader, MetadataKind},
+};
 
-struct CompiledSchema {
-    validator: Validator,
-}
-
-static WORKSPACE_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
-static AUTOMATIC_EXECUTION_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
-static ACCOUNTS_SCHEMA: OnceLock<Result<CompiledSchema, String>> = OnceLock::new();
-
-pub fn validate_instance(kind: MetadataKind, instance: &Value) -> Result<()> {
-    let compiled = compiled_schema(kind)?;
-    compiled
-        .validator
-        .validate(instance)
-        .map_err(|error| MetadataError::SchemaValidation {
-            kind,
-            message: error.to_string(),
-        })?;
-
+pub fn validate_metadata_header(
+    header: &MetadataHeader,
+    expected_kind: MetadataKind,
+    expected_version: u8,
+) -> Result<()> {
+    if header.kind != expected_kind {
+        return schema_validation_error(
+            expected_kind,
+            format!("expected kind {expected_kind}, found {}", header.kind),
+        );
+    }
+    if header.version != expected_version {
+        return schema_validation_error(
+            expected_kind,
+            format!(
+                "expected version {expected_version}, found {}",
+                header.version
+            ),
+        );
+    }
+    let expected_schema = metadata_schema_id(expected_kind, expected_version);
+    if header.schema != expected_schema {
+        return schema_validation_error(
+            expected_kind,
+            format!("expected schema {expected_schema}, found {}", header.schema),
+        );
+    }
+    if header.created_at < 0 {
+        return schema_validation_error(expected_kind, "createdAt must be non-negative");
+    }
+    if header.updated_at < 0 {
+        return schema_validation_error(expected_kind, "updatedAt must be non-negative");
+    }
+    if header.updated_at < header.created_at {
+        return schema_validation_error(expected_kind, "updatedAt must not be before createdAt");
+    }
+    if header.written_by_app_version.trim().is_empty() {
+        return schema_validation_error(expected_kind, "writtenByAppVersion is required");
+    }
     Ok(())
 }
 
+pub fn schema_validation_error<T>(kind: MetadataKind, message: impl Into<String>) -> Result<T> {
+    Err(MetadataError::SchemaValidation {
+        kind,
+        message: message.into(),
+    }
+    .into())
+}
+
+pub fn parse_metadata_document<T>(kind: MetadataKind, value: Value) -> Result<T>
+where
+    T: DeserializeOwned,
+{
+    serde_json::from_value(value).map_err(|error| {
+        MetadataError::SchemaValidation {
+            kind,
+            message: error.to_string(),
+        }
+        .into()
+    })
+}
+
 pub fn validate_schema_document(schema: &Value) -> Result<()> {
-    jsonschema::meta::validate(schema)
-        .map_err(|error| anyhow!("metadata schema document is invalid: {error}"))?;
+    let object = schema
+        .as_object()
+        .ok_or_else(|| anyhow!("metadata schema document must be an object"))?;
+
+    for field in ["$schema", "$id", "type", "properties"] {
+        if !object.contains_key(field) {
+            return Err(anyhow!("metadata schema document is missing {field}"));
+        }
+    }
+    if object.get("type").and_then(Value::as_str) != Some("object") {
+        return Err(anyhow!("metadata schema document type must be object"));
+    }
+    if !object.get("properties").is_some_and(Value::is_object) {
+        return Err(anyhow!("metadata schema properties must be an object"));
+    }
+
     Ok(())
 }
 
@@ -39,7 +96,7 @@ pub fn export_schema_value<T>(kind: MetadataKind, version: u8) -> Result<Value>
 where
     T: schemars::JsonSchema,
 {
-    use super::registry::{metadata_schema_id, CURRENT_SCHEMA_DRAFT};
+    use super::registry::CURRENT_SCHEMA_DRAFT;
     use anyhow::Context;
     use schemars::schema_for;
 
@@ -84,11 +141,7 @@ where
     Ok(sort_json_value(value))
 }
 
-pub fn write_schema_file<T>(
-    path: &std::path::Path,
-    kind: MetadataKind,
-    version: u8,
-) -> Result<()>
+pub fn write_schema_file<T>(path: &std::path::Path, kind: MetadataKind, version: u8) -> Result<()>
 where
     T: schemars::JsonSchema,
 {
@@ -106,40 +159,6 @@ where
 
     std::fs::write(path, format!("{contents}\n"))
         .with_context(|| format!("failed to write {}", path.display()))
-}
-
-fn compiled_schema(kind: MetadataKind) -> Result<&'static CompiledSchema> {
-    let cell = match kind {
-        MetadataKind::Workspace => &WORKSPACE_SCHEMA,
-        MetadataKind::AutomaticExecution => &AUTOMATIC_EXECUTION_SCHEMA,
-        MetadataKind::Accounts => &ACCOUNTS_SCHEMA,
-    };
-
-    cell.get_or_init(|| load_compiled_schema(kind).map_err(|error| format!("{error:#}")))
-        .as_ref()
-        .map_err(|message| anyhow!(message.clone()))
-}
-
-fn load_compiled_schema(kind: MetadataKind) -> Result<CompiledSchema> {
-    let text = match kind {
-        MetadataKind::Workspace => {
-            include_str!("../../../../src/shared/metadata/schemas/workspace.v5.schema.json")
-        }
-        MetadataKind::AutomaticExecution => {
-            include_str!("../../../../src/shared/metadata/schemas/automatic-execution.v2.schema.json")
-        }
-        MetadataKind::Accounts => {
-            include_str!("../../../../src/shared/metadata/schemas/accounts.v3.schema.json")
-        }
-    };
-    let raw: Value = serde_json::from_str(text)
-        .with_context(|| format!("failed to parse embedded {kind} metadata schema"))?;
-    validate_schema_document(&raw)
-        .with_context(|| format!("embedded {kind} metadata schema is invalid"))?;
-    let validator = jsonschema::validator_for(&raw)
-        .with_context(|| format!("failed to compile embedded {kind} metadata validator"))?;
-
-    Ok(CompiledSchema { validator })
 }
 
 fn sort_json_value(value: Value) -> Value {

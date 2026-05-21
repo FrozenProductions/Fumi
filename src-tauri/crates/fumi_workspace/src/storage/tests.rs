@@ -628,3 +628,124 @@ fn append_workspace_execution_history_normalizes_legacy_metadata_before_persisti
 
     Ok(())
 }
+
+fn workspace_document_value(version: u8) -> serde_json::Value {
+    match version {
+        1 => json!({
+            "version": 1,
+            "activeTabId": null,
+            "tabs": []
+        }),
+        2 => json!({
+            "version": 2,
+            "activeTabId": null,
+            "tabs": [],
+            "archivedTabs": []
+        }),
+        3 => json!({
+            "version": 3,
+            "activeTabId": null,
+            "splitView": null,
+            "tabs": [],
+            "archivedTabs": []
+        }),
+        4 => json!({
+            "version": 4,
+            "activeTabId": null,
+            "splitView": null,
+            "tabs": [],
+            "archivedTabs": [],
+            "executionHistory": []
+        }),
+        CURRENT_WORKSPACE_METADATA_VERSION => json!({
+            "$schema": fumi_metadata::metadata_schema_id(
+                MetadataKind::Workspace,
+                CURRENT_WORKSPACE_METADATA_VERSION
+            ),
+            "kind": "workspace",
+            "version": CURRENT_WORKSPACE_METADATA_VERSION,
+            "createdAt": 1,
+            "updatedAt": 1,
+            "writtenByAppVersion": "test",
+            "activeTabId": null,
+            "splitView": null,
+            "tabs": [],
+            "archivedTabs": [],
+            "executionHistory": []
+        }),
+        _ => unreachable!("unsupported test version"),
+    }
+}
+
+fn assert_schema_validation_error(error: anyhow::Error, expected_kind: MetadataKind) {
+    let metadata_error = error
+        .downcast_ref::<MetadataError>()
+        .expect("error should be a metadata error");
+    assert!(matches!(
+        metadata_error,
+        MetadataError::SchemaValidation { kind, .. } if *kind == expected_kind
+    ));
+}
+
+#[test]
+fn migrate_workspace_document_accepts_supported_versions() -> anyhow::Result<()> {
+    for version in 1..=CURRENT_WORKSPACE_METADATA_VERSION {
+        let document_value = workspace_document_value(version);
+        let detected_version = detect_workspace_metadata_version(&document_value)?;
+        let (document, metadata, should_write, migration_report) =
+            migrate_workspace_document(document_value, detected_version, 10)?;
+
+        assert_eq!(document.header.kind, MetadataKind::Workspace);
+        assert_eq!(document.header.version, CURRENT_WORKSPACE_METADATA_VERSION);
+        assert_eq!(metadata.version, WORKSPACE_METADATA_VERSION);
+        assert_eq!(should_write, version != CURRENT_WORKSPACE_METADATA_VERSION);
+        assert_eq!(
+            migration_report.as_ref().map(|report| report.from_version),
+            (version != CURRENT_WORKSPACE_METADATA_VERSION).then_some(version)
+        );
+    }
+
+    Ok(())
+}
+
+#[test]
+fn migrate_workspace_document_rejects_invalid_envelopes() {
+    let mut mismatched_kind = workspace_document_value(CURRENT_WORKSPACE_METADATA_VERSION);
+    mismatched_kind["kind"] = json!("accounts");
+    let error = migrate_workspace_document(mismatched_kind, CURRENT_WORKSPACE_METADATA_VERSION, 10)
+        .expect_err("kind mismatch should fail");
+    assert_schema_validation_error(error, MetadataKind::Workspace);
+
+    let mut bad_discriminant = workspace_document_value(CURRENT_WORKSPACE_METADATA_VERSION);
+    bad_discriminant["kind"] = json!("unknown");
+    let error =
+        migrate_workspace_document(bad_discriminant, CURRENT_WORKSPACE_METADATA_VERSION, 10)
+            .expect_err("bad kind discriminant should fail");
+    assert_schema_validation_error(error, MetadataKind::Workspace);
+
+    let mut missing_required = workspace_document_value(CURRENT_WORKSPACE_METADATA_VERSION);
+    missing_required
+        .as_object_mut()
+        .expect("test document should be an object")
+        .remove("tabs");
+    let error =
+        migrate_workspace_document(missing_required, CURRENT_WORKSPACE_METADATA_VERSION, 10)
+            .expect_err("missing required payload field should fail");
+    assert_schema_validation_error(error, MetadataKind::Workspace);
+}
+
+#[test]
+fn detect_workspace_metadata_version_rejects_unknown_versions() {
+    let error = migrate_workspace_document(json!({ "version": 99 }), 99, 10)
+        .expect_err("unknown version should fail");
+    let metadata_error = error
+        .downcast_ref::<MetadataError>()
+        .expect("error should be a metadata error");
+    assert!(matches!(
+        metadata_error,
+        MetadataError::UnsupportedVersion {
+            kind: MetadataKind::Workspace,
+            version: 99
+        }
+    ));
+}
