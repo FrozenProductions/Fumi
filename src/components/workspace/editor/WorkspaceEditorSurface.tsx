@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/react";
 import type { CSSProperties, ReactElement, ReactNode, RefObject } from "react";
-import { memo, useCallback, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     WORKSPACE_EDITOR_OPTIONS,
     WORKSPACE_EDITOR_PROPS,
@@ -14,6 +14,7 @@ import { useWorkspaceAcePaneHandlers } from "../../../hooks/workspace/useWorkspa
 import { useWorkspaceSplitResizeHandle } from "../../../hooks/workspace/useWorkspaceSplitResizeHandle";
 import { joinClassNames } from "../../../lib/shared/className";
 import type { AceChangeDelta } from "../../../lib/workspace/codeCompletion/ace.type";
+import { getLiveWorkspaceEditorContent } from "../../../lib/workspace/editor/liveWorkspaceEditorContent";
 import type {
     WorkspaceSplitNode,
     WorkspaceSplitPaneNode,
@@ -50,6 +51,9 @@ const WorkspaceAcePane = memo(function WorkspaceAcePane({
     tab,
     tabSize,
 }: WorkspaceAcePaneProps): ReactElement {
+    const [editorValue, setEditorValue] = useState(
+        () => getLiveWorkspaceEditorContent(tab.id) ?? tab.content,
+    );
     const acePaneHandlers = useWorkspaceAcePaneHandlers({
         createHandleEditorChange,
         createHandleEditorLoad,
@@ -85,10 +89,15 @@ const WorkspaceAcePane = memo(function WorkspaceAcePane({
     );
     const syncEditorValueChange = useCallback(
         (value: string, delta?: AceChangeDelta): void => {
+            setEditorValue(value);
             acePaneHandlers.onChange(value, delta);
         },
         [acePaneHandlers],
     );
+
+    useEffect(() => {
+        setEditorValue(getLiveWorkspaceEditorContent(tab.id) ?? tab.content);
+    }, [tab.content, tab.id]);
 
     return (
         <div
@@ -103,7 +112,7 @@ const WorkspaceAcePane = memo(function WorkspaceAcePane({
                 theme={aceRuntime.getTheme(appTheme)}
                 width="100%"
                 height="100%"
-                value={tab.content}
+                value={editorValue}
                 onLoad={acePaneHandlers.onLoad}
                 onChange={syncEditorValueChange}
                 onScroll={acePaneHandlers.onScroll}
