@@ -37,7 +37,7 @@ export function AppCommandPaletteResultItem({
         item.isDisabled && "cursor-default opacity-60",
         isActive
             ? "scale-[1.01] border-transparent bg-fumi-100/70"
-            : "border-transparent bg-transparent hover:bg-fumi-100/50",
+            : "border-transparent bg-transparent",
     );
     const iconClassName = joinClassNames(
         "inline-flex size-6 shrink-0 items-center justify-center rounded-[var(--command-results-element-radius)] border",
@@ -49,9 +49,10 @@ export function AppCommandPaletteResultItem({
     return (
         <button
             type="button"
-            disabled={item.isDisabled}
+            aria-disabled={item.isDisabled === true}
             onClick={() => onCommitSelection(item)}
-            onMouseEnter={() => onHoverItem(index)}
+            onPointerEnter={() => onHoverItem(index)}
+            onPointerMove={() => onHoverItem(index)}
             className={itemClassName}
         >
             <span className={iconClassName}>

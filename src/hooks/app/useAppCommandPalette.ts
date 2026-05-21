@@ -499,7 +499,10 @@ export function useAppCommandPalette({
                         results.length === 0
                             ? 0
                             : Math.min(
-                                  currentState.activeResultIndex + 1,
+                                  Math.min(
+                                      currentState.activeResultIndex,
+                                      results.length - 1,
+                                  ) + 1,
                                   results.length - 1,
                               ),
                 }));
@@ -512,7 +515,13 @@ export function useAppCommandPalette({
                     activeResultIndex:
                         results.length === 0
                             ? 0
-                            : Math.max(currentState.activeResultIndex - 1, 0),
+                            : Math.max(
+                                  Math.min(
+                                      currentState.activeResultIndex,
+                                      results.length - 1,
+                                  ) - 1,
+                                  0,
+                              ),
                 }));
                 return;
             }
@@ -593,7 +602,13 @@ export function useAppCommandPalette({
     );
 
     const handleHoverItem = useCallback((index: number): void => {
-        setState({ activeResultIndex: index });
+        setState((currentState) => {
+            if (currentState.activeResultIndex === index) {
+                return {};
+            }
+
+            return { activeResultIndex: index };
+        });
     }, []);
 
     return {
