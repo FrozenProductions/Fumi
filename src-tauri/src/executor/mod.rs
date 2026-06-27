@@ -789,7 +789,7 @@ mod tests {
     #[test]
     fn normalize_executor_port_uses_the_first_valid_port_per_executor() {
         assert_eq!(normalize_executor_port(ExecutorKind::Macsploit, 9999), 5553);
-        assert_eq!(normalize_executor_port(ExecutorKind::Opiumware, 5553), 8392);
+        assert_eq!(normalize_executor_port(ExecutorKind::Opiumware, 5553), 8390);
         assert_eq!(normalize_executor_port(ExecutorKind::Opiumware, 8395), 8395);
     }
 
@@ -842,7 +842,12 @@ mod tests {
         );
         assert_eq!(
             executor_port_pool_for_kind(ExecutorKind::Opiumware).ports,
-            vec![8392, 8393, 8394, 8395, 8396, 8397]
+            vec![
+                8390, 8391, 8392, 8393, 8394, 8395, 8396, 8397, 8398, 8399,
+                8400, 8401, 8402, 8403, 8404, 8405, 8406, 8407, 8408, 8409,
+                8410, 8411, 8412, 8413, 8414, 8415, 8416, 8417, 8418, 8419,
+                8420,
+            ]
         );
         assert_eq!(
             executor_port_pool_for_kind(ExecutorKind::Unsupported).ports,
