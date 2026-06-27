@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- Support line:column syntax in the goto command palette.
+- Add restore and delete archived tab commands to the command palette.
+
+### Changed
+
+- Replace jsonschema validation with typed serde parsing, removing the jsonschema crate.
+- Improve performance and fix async handling across modules.
+
+### Fixed
+
+- Fix editor typing feedback loop from stale debounced content.
+- Fix command palette hover and arrow key index drift.
+- Keep split view open when creating a new tab.
+- Fix tab bar scroll triggering too late by moving controls clearance to margin.
+
+### Other
+
+- Expand Opiumware executor port range to 8390-8420.
+
 ## [1.0.9] - 2026-05-20
 
 ### Added
