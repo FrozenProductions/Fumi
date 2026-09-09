@@ -53,7 +53,7 @@ impl MetadataHeader {
         migrated_from_version: Option<u8>,
     ) -> Self {
         Self {
-            schema: metadata_schema_id(kind, version).to_string(),
+            schema: metadata_schema_id(kind, version),
             kind,
             version,
             created_at,
@@ -64,23 +64,8 @@ impl MetadataHeader {
     }
 }
 
-pub fn metadata_schema_id(kind: MetadataKind, version: u8) -> &'static str {
-    match (kind, version) {
-        (MetadataKind::Workspace, CURRENT_WORKSPACE_METADATA_VERSION) => {
-            "https://fumi.app/schemas/workspace.v5.schema.json"
-        }
-        (MetadataKind::AutomaticExecution, AUTOMATIC_EXECUTION_METADATA_VERSION) => {
-            "https://fumi.app/schemas/automatic-execution.v2.schema.json"
-        }
-        (MetadataKind::Accounts, ACCOUNTS_METADATA_VERSION) => {
-            "https://fumi.app/schemas/accounts.v3.schema.json"
-        }
-        (MetadataKind::Workspace, _) => "https://fumi.app/schemas/workspace.schema.json",
-        (MetadataKind::AutomaticExecution, _) => {
-            "https://fumi.app/schemas/automatic-execution.schema.json"
-        }
-        (MetadataKind::Accounts, _) => "https://fumi.app/schemas/accounts.schema.json",
-    }
+pub fn metadata_schema_id(kind: MetadataKind, version: u8) -> String {
+    format!("{kind}.v{version}")
 }
 
 pub fn current_unix_timestamp() -> Result<i64> {

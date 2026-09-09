@@ -1,6 +1,7 @@
 {
     "$defs": {
         "ExecutorKind": {
+            "description": "The kind of script executor detected on the system.",
             "enum": ["macsploit", "opiumware", "unsupported"],
             "type": "string"
         },
@@ -9,6 +10,7 @@
             "type": "string"
         },
         "WorkspaceCursorState": {
+            "description": "Cursor position and scroll state for a workspace editor tab.",
             "properties": {
                 "column": {
                     "format": "int64",
@@ -27,6 +29,7 @@
             "type": "object"
         },
         "WorkspaceExecutionHistoryEntry": {
+            "description": "A single execution history entry recording when and where a script was executed.",
             "properties": {
                 "accountDisplayName": {
                     "type": ["string", "null"]
@@ -71,11 +74,8 @@
             ],
             "type": "object"
         },
-        "WorkspaceSplitView": {
-            "additionalProperties": true,
-            "type": "object"
-        },
         "WorkspaceTabState": {
+            "description": "Persistent state for a workspace tab, including its cursor position and archive status.",
             "properties": {
                 "archivedAt": {
                     "default": null,
@@ -100,12 +100,12 @@
             "type": "object"
         }
     },
-    "$id": "https://fumi.app/schemas/workspace.v5.schema.json",
+    "$id": "workspace.v5",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "additionalProperties": true,
     "properties": {
         "$schema": {
-            "const": "https://fumi.app/schemas/workspace.v5.schema.json",
+            "const": "workspace.v5",
             "type": "string"
         },
         "activeTabId": {
@@ -140,14 +140,6 @@
             "type": ["integer", "null"]
         },
         "splitView": {
-            "anyOf": [
-                {
-                    "$ref": "#/$defs/WorkspaceSplitView"
-                },
-                {
-                    "type": "null"
-                }
-            ],
             "default": null
         },
         "tabs": {

@@ -308,8 +308,7 @@ fn current_automatic_execution_document_from_runtime(
             schema: fumi_metadata::metadata_schema_id(
                 MetadataKind::AutomaticExecution,
                 AUTOMATIC_EXECUTION_METADATA_VERSION,
-            )
-            .to_string(),
+            ),
             kind: MetadataKind::AutomaticExecution,
             version: AUTOMATIC_EXECUTION_METADATA_VERSION,
             created_at: document.header.created_at,

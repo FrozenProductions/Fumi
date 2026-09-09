@@ -1,6 +1,7 @@
 {
     "$defs": {
         "AutomaticExecutionCursorState": {
+            "description": "Cursor position and scroll state for an automatic execution script editor.",
             "properties": {
                 "column": {
                     "format": "int64",
@@ -19,6 +20,7 @@
             "type": "object"
         },
         "AutomaticExecutionScriptState": {
+            "description": "Persistent state for an automatic execution script tab.",
             "properties": {
                 "cursor": {
                     "$ref": "#/$defs/AutomaticExecutionCursorState"
@@ -38,12 +40,12 @@
             "type": "string"
         }
     },
-    "$id": "https://fumi.app/schemas/automatic-execution.v2.schema.json",
+    "$id": "automatic_execution.v2",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "additionalProperties": true,
     "properties": {
         "$schema": {
-            "const": "https://fumi.app/schemas/automatic-execution.v2.schema.json",
+            "const": "automatic_execution.v2",
             "type": "string"
         },
         "activeScriptId": {

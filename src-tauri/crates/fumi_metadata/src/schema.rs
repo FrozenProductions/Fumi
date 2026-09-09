@@ -112,7 +112,7 @@ where
     );
     object.insert(
         "$id".to_string(),
-        Value::String(metadata_schema_id(kind, version).to_string()),
+        Value::String(metadata_schema_id(kind, version)),
     );
     if let Some(properties) = object.get_mut("properties").and_then(Value::as_object_mut) {
         properties.insert(

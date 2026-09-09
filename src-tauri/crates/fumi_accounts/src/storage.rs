@@ -699,8 +699,7 @@ fn current_accounts_document_from_manifest(
             schema: fumi_metadata::metadata_schema_id(
                 MetadataKind::Accounts,
                 ACCOUNTS_METADATA_VERSION,
-            )
-            .to_string(),
+            ),
             kind: MetadataKind::Accounts,
             version: ACCOUNTS_METADATA_VERSION,
             created_at: document.header.created_at,

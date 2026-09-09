@@ -294,8 +294,7 @@ fn current_workspace_document_from_runtime(
             schema: fumi_metadata::metadata_schema_id(
                 MetadataKind::Workspace,
                 CURRENT_WORKSPACE_METADATA_VERSION,
-            )
-            .to_string(),
+            ),
             kind: MetadataKind::Workspace,
             version: CURRENT_WORKSPACE_METADATA_VERSION,
             created_at: document.header.created_at,
